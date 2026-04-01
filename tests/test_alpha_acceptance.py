@@ -47,27 +47,23 @@ def _write_returns_fixture(
 
 def _write_acceptance_fixture(tmp_path: Path) -> SnapshotFixture:
     periods = 260
+    tickers = [f"T{index:02d}" for index in range(20)]
+    returns_by_ticker = {
+        ticker: [0.02 - 0.002 * index] * periods
+        for index, ticker in enumerate(tickers)
+    }
     return _write_returns_fixture(
         tmp_path,
-        returns_by_ticker={
-            "AAA": [0.020] * periods,
-            "BBB": [-0.020] * periods,
-            "CCC": [0.010] * periods,
-            "DDD": [-0.010] * periods,
-        },
+        returns_by_ticker=returns_by_ticker,
     )
 
 
 def _write_rejection_fixture(tmp_path: Path) -> SnapshotFixture:
     periods = 260
+    tickers = [f"T{index:02d}" for index in range(20)]
     return _write_returns_fixture(
         tmp_path,
-        returns_by_ticker={
-            "AAA": [0.0] * periods,
-            "BBB": [0.0] * periods,
-            "CCC": [0.0] * periods,
-            "DDD": [0.0] * periods,
-        },
+        returns_by_ticker={ticker: [0.0] * periods for ticker in tickers},
     )
 
 

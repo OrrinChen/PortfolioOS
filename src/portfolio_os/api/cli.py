@@ -9,6 +9,7 @@ import pandas as pd
 import typer
 import yaml
 
+from portfolio_os.alpha.acceptance import run_alpha_acceptance_gate
 from portfolio_os.alpha.research import run_alpha_research
 from portfolio_os.backtest.engine import run_backtest
 from portfolio_os.backtest.sweep import run_backtest_cost_sweep, run_backtest_risk_sweep
@@ -85,6 +86,7 @@ from portfolio_os.workflow.single_run import run_single_rebalance
 
 app = typer.Typer(add_completion=False, help="PortfolioOS compliance-aware rebalance CLI.")
 alpha_research_app = typer.Typer(add_completion=False, help="PortfolioOS alpha research CLI.")
+alpha_acceptance_app = typer.Typer(add_completion=False, help="PortfolioOS alpha acceptance-gate CLI.")
 backtest_app = typer.Typer(add_completion=False, help="PortfolioOS historical backtest CLI.")
 backtest_sweep_app = typer.Typer(add_completion=False, help="PortfolioOS backtest parameter sweep CLI.")
 risk_sweep_app = typer.Typer(add_completion=False, help="PortfolioOS risk aversion parameter sweep CLI.")
@@ -227,6 +229,30 @@ def main(
         typer.echo(f"alpha_signal_summary.csv: {result.output_dir / 'alpha_signal_summary.csv'}")
         typer.echo(f"alpha_research_summary.json: {result.output_dir / 'alpha_research_summary.json'}")
         typer.echo(f"alpha_research_report.md: {result.output_dir / 'alpha_research_report.md'}")
+    except PortfolioOSError as exc:
+        logger.error("%s", exc)
+        raise typer.Exit(code=1) from exc
+
+
+@alpha_acceptance_app.command()
+def main(
+    returns_file: Path = typer.Option(..., exists=True, file_okay=True, dir_okay=False),
+    output_dir: Path = typer.Option(...),
+    max_rounds: int = typer.Option(3),
+) -> None:
+    """Run the Phase 1 alpha acceptance gate on one frozen returns snapshot."""
+
+    logger = configure_logging()
+    try:
+        result = run_alpha_acceptance_gate(
+            returns_file=returns_file,
+            output_dir=output_dir,
+            max_rounds=max_rounds,
+        )
+        typer.echo(f"alpha_sweep_summary.csv: {result.output_dir / 'alpha_sweep_summary.csv'}")
+        typer.echo(f"alpha_sweep_manifest.json: {result.output_dir / 'alpha_sweep_manifest.json'}")
+        typer.echo(f"alpha_acceptance_decision.json: {result.output_dir / 'alpha_acceptance_decision.json'}")
+        typer.echo(f"alpha_acceptance_note.md: {result.output_dir / 'alpha_acceptance_note.md'}")
     except PortfolioOSError as exc:
         logger.error("%s", exc)
         raise typer.Exit(code=1) from exc

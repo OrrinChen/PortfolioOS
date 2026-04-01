@@ -24,6 +24,7 @@ pytest = "^8.3.0"
 [tool.poetry.scripts]
 portfolio-os = "portfolio_os.api.cli:app"
 portfolio-os-alpha-research = "portfolio_os.api.cli:alpha_research_app"
+portfolio-os-alpha-acceptance = "portfolio_os.api.cli:alpha_acceptance_app"
 portfolio-os-backtest = "portfolio_os.api.cli:backtest_app"
 portfolio-os-backtest-sweep = "portfolio_os.api.cli:backtest_sweep_app"
 portfolio-os-risk-sweep = "portfolio_os.api.cli:risk_sweep_app"

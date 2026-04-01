@@ -4,10 +4,12 @@ import json
 from pathlib import Path
 
 import pandas as pd
+import pytest
 from typer.testing import CliRunner
 
 from portfolio_os.api.cli import alpha_research_app
 from portfolio_os.alpha.research import run_alpha_research
+from portfolio_os.domain.errors import InputValidationError
 
 
 def _write_returns_fixture(tmp_path: Path) -> Path:
@@ -179,6 +181,25 @@ def test_run_alpha_research_writes_expected_artifacts(tmp_path: Path) -> None:
     assert len(summary_payload["signal_summaries"]) == 3
     assert "# Alpha Research Report" in report_text
     assert "## Signal Leaderboard" in report_text
+
+
+def test_run_alpha_research_raises_clear_error_when_no_dates_survive_min_asset_threshold(tmp_path: Path) -> None:
+    returns_path = _write_returns_fixture(tmp_path)
+    output_dir = tmp_path / "alpha_output"
+
+    with pytest.raises(InputValidationError, match="No alpha evaluation dates survived the minimum asset threshold."):
+        run_alpha_research(
+            returns_file=returns_path,
+            output_dir=output_dir,
+            reversal_lookback_days=2,
+            momentum_lookback_days=3,
+            momentum_skip_days=1,
+            forward_horizon_days=2,
+            reversal_weight=0.0,
+            momentum_weight=1.0,
+            min_assets_per_date=5,
+            quantiles=2,
+        )
 
 
 def test_alpha_research_cli_writes_outputs(tmp_path: Path) -> None:
