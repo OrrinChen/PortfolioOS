@@ -119,6 +119,41 @@ def _stack_named_frame(frame: pd.DataFrame, value_name: str) -> pd.DataFrame:
     return stacked
 
 
+def build_alpha_score_frame(
+    returns_panel: pd.DataFrame,
+    *,
+    reversal_lookback_days: int,
+    momentum_lookback_days: int,
+    momentum_skip_days: int,
+    reversal_weight: float,
+    momentum_weight: float,
+) -> pd.DataFrame:
+    """Build one long-form alpha score panel without forward-return labels."""
+
+    reversal_raw = _build_reversal_signal(returns_panel, reversal_lookback_days)
+    momentum_raw = _build_momentum_signal(
+        returns_panel,
+        lookback_days=momentum_lookback_days,
+        skip_days=momentum_skip_days,
+    )
+    reversal_rank = _centered_cross_sectional_rank(reversal_raw)
+    momentum_rank = _centered_cross_sectional_rank(momentum_raw)
+    alpha_score = float(reversal_weight) * reversal_rank + float(momentum_weight) * momentum_rank
+
+    merged = _stack_named_frame(reversal_raw, "reversal_raw")
+    for frame, value_name in (
+        (momentum_raw, "momentum_raw"),
+        (reversal_rank, "reversal_rank"),
+        (momentum_rank, "momentum_rank"),
+        (alpha_score, "alpha_score"),
+    ):
+        merged = merged.merge(_stack_named_frame(frame, value_name), on=["date", "ticker"], how="inner")
+    merged = merged.dropna(subset=["alpha_score"]).sort_values(["date", "ticker"]).reset_index(drop=True)
+    if merged.empty:
+        raise InputValidationError("Alpha score frame is empty after applying signal windows.")
+    return merged
+
+
 def build_alpha_research_frame(
     returns_panel: pd.DataFrame,
     *,
@@ -131,26 +166,17 @@ def build_alpha_research_frame(
 ) -> pd.DataFrame:
     """Build one long-form signal-and-label research frame."""
 
-    reversal_raw = _build_reversal_signal(returns_panel, reversal_lookback_days)
-    momentum_raw = _build_momentum_signal(
+    merged = build_alpha_score_frame(
         returns_panel,
-        lookback_days=momentum_lookback_days,
-        skip_days=momentum_skip_days,
+        reversal_lookback_days=reversal_lookback_days,
+        momentum_lookback_days=momentum_lookback_days,
+        momentum_skip_days=momentum_skip_days,
+        reversal_weight=reversal_weight,
+        momentum_weight=momentum_weight,
     )
-    reversal_rank = _centered_cross_sectional_rank(reversal_raw)
-    momentum_rank = _centered_cross_sectional_rank(momentum_raw)
-    alpha_score = float(reversal_weight) * reversal_rank + float(momentum_weight) * momentum_rank
     forward_return = _build_forward_returns(returns_panel, forward_horizon_days)
 
-    merged = _stack_named_frame(reversal_raw, "reversal_raw")
-    for frame, value_name in (
-        (momentum_raw, "momentum_raw"),
-        (reversal_rank, "reversal_rank"),
-        (momentum_rank, "momentum_rank"),
-        (alpha_score, "alpha_score"),
-        (forward_return, "forward_return"),
-    ):
-        merged = merged.merge(_stack_named_frame(frame, value_name), on=["date", "ticker"], how="inner")
+    merged = merged.merge(_stack_named_frame(forward_return, "forward_return"), on=["date", "ticker"], how="inner")
     merged = merged.dropna(subset=["alpha_score", "forward_return"]).sort_values(["date", "ticker"]).reset_index(drop=True)
     if merged.empty:
         raise InputValidationError("Alpha research frame is empty after applying signal and label windows.")
