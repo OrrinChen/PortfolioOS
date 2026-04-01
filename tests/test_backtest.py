@@ -576,6 +576,35 @@ def test_alpha_enabled_manifest_with_zero_alpha_weight_matches_baseline_optimize
     pd.testing.assert_series_equal(alpha_optimizer, baseline_optimizer, check_names=False)
 
 
+def test_run_backtest_alpha_manifest_exposes_alpha_panel_and_comparisons(tmp_path: Path) -> None:
+    manifest_path = _write_alpha_enabled_backtest_fixture(tmp_path)
+
+    result = run_backtest(manifest_path)
+
+    assert result.alpha_panel is not None
+    assert {
+        "date",
+        "ticker",
+        "alpha_score",
+        "alpha_rank_pct",
+        "alpha_zscore",
+        "expected_return",
+        "quantile",
+        "signal_strength_confidence",
+        "annualized_top_bottom_spread",
+    } <= set(result.alpha_panel.columns)
+    assert result.summary["alpha_model"]["enabled"] is True
+    assert result.summary["alpha_model"]["recipe_name"] == "alt_momentum_4_1"
+    assert result.summary["alpha_model"]["panel_row_count"] == len(result.alpha_panel)
+    assert "optimizer_vs_alpha_only_sharpe_delta" in result.summary["comparison"]
+    assert "alpha_only_vs_naive_sharpe_delta" in result.summary["comparison"]
+    assert "optimizer_vs_alpha_only_period_pnl_delta" in result.period_attribution.columns
+    assert "alpha_only_vs_naive_period_pnl_delta" in result.period_attribution.columns
+    assert "## Alpha Model" in result.report_markdown
+    assert "## Optimizer Vs Alpha-Only" in result.report_markdown
+    assert "## Alpha-Only Vs Naive" in result.report_markdown
+
+
 def test_backtest_cli_writes_json_and_nav_series(tmp_path: Path) -> None:
     manifest_path = _write_backtest_fixture(tmp_path)
     output_dir = tmp_path / "backtest_output"
@@ -607,6 +636,31 @@ def test_backtest_cli_writes_json_and_nav_series(tmp_path: Path) -> None:
     assert set(nav_frame["strategy"]) == {"optimizer", "naive_pro_rata", "buy_and_hold"}
     assert set(attribution_frame["strategy"]) == {"optimizer", "naive_pro_rata", "buy_and_hold"}
     assert "# Backtest Report" in report_text
+
+
+def test_backtest_cli_writes_alpha_panel_for_alpha_manifest(tmp_path: Path) -> None:
+    manifest_path = _write_alpha_enabled_backtest_fixture(tmp_path)
+    output_dir = tmp_path / "alpha_backtest_output"
+    runner = CliRunner()
+
+    result = runner.invoke(
+        backtest_app,
+        [
+            "--manifest",
+            str(manifest_path),
+            "--output-dir",
+            str(output_dir),
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert (output_dir / "alpha_panel.csv").exists()
+    with (output_dir / "backtest_results.json").open("r", encoding="utf-8") as handle:
+        payload = json.load(handle)
+    alpha_panel = pd.read_csv(output_dir / "alpha_panel.csv")
+
+    assert payload["summary"]["alpha_model"]["enabled"] is True
+    assert payload["summary"]["alpha_model"]["panel_row_count"] == len(alpha_panel)
 
 
 def test_run_backtest_cost_sweep_scales_cost_bundle(tmp_path: Path) -> None:

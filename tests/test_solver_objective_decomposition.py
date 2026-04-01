@@ -76,7 +76,7 @@ def test_risk_mode_objective_decomposition_fields_and_values(sample_context: dic
     assert decomposition["integration_mode"] == "replace"
     assert decomposition["objective_value"] == pytest.approx(1.25)
     assert decomposition["abs_weighted_sum"] == pytest.approx(17.5)
-    assert set(decomposition["components"].keys()) == {"risk_term", "tracking_error", "transaction_cost"}
+    assert set(decomposition["components"].keys()) == {"risk_term", "tracking_error", "transaction_cost", "alpha_reward"}
 
     risk_term = decomposition["components"]["risk_term"]
     assert risk_term["raw_value"] == pytest.approx(10.0)
@@ -91,6 +91,9 @@ def test_risk_mode_objective_decomposition_fields_and_values(sample_context: dic
     transaction_cost = decomposition["components"]["transaction_cost"]
     assert transaction_cost["weighted_value"] == pytest.approx(4.5)
     assert transaction_cost["share_abs_weighted"] == pytest.approx(4.5 / 17.5)
+    assert decomposition["components"]["alpha_reward"]["weight"] == pytest.approx(0.0)
+    assert decomposition["components"]["alpha_reward"]["weighted_value"] == pytest.approx(-0.0)
+    assert decomposition["components"]["alpha_reward"]["share_abs_weighted"] == pytest.approx(0.0)
 
 
 def test_legacy_mode_objective_decomposition_fields_and_values(sample_context: dict, monkeypatch) -> None:
@@ -119,6 +122,7 @@ def test_legacy_mode_objective_decomposition_fields_and_values(sample_context: d
     assert decomposition["objective_value"] == pytest.approx(9.9)
     assert decomposition["abs_weighted_sum"] == pytest.approx(17.5)
     assert set(decomposition["components"].keys()) == {
+        "alpha_reward",
         "target_deviation",
         "transaction_fee",
         "turnover_penalty",
@@ -128,6 +132,8 @@ def test_legacy_mode_objective_decomposition_fields_and_values(sample_context: d
     assert decomposition["components"]["transaction_fee"]["weighted_value"] == pytest.approx(8.0)
     assert decomposition["components"]["turnover_penalty"]["weighted_value"] == pytest.approx(1.5)
     assert decomposition["components"]["slippage_penalty"]["weighted_value"] == pytest.approx(6.0)
+    assert decomposition["components"]["alpha_reward"]["weight"] == pytest.approx(0.0)
+    assert decomposition["components"]["alpha_reward"]["weighted_value"] == pytest.approx(-0.0)
 
 
 def test_objective_decomposition_sets_share_zero_when_abs_weighted_sum_zero(
@@ -163,6 +169,7 @@ def test_objective_decomposition_sets_share_zero_when_abs_weighted_sum_zero(
     decomposition = result.objective_decomposition
     assert decomposition["integration_mode"] == "augment"
     assert set(decomposition["components"].keys()) == {
+        "alpha_reward",
         "risk_term",
         "tracking_error",
         "transaction_cost",
@@ -210,6 +217,7 @@ def test_augment_mode_objective_decomposition_has_seven_components_and_shares_su
     assert decomposition["mode"] == "risk"
     assert decomposition["integration_mode"] == "augment"
     assert set(decomposition["components"].keys()) == {
+        "alpha_reward",
         "risk_term",
         "tracking_error",
         "transaction_cost",

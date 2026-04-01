@@ -27,7 +27,40 @@ _PERIOD_ATTRIBUTION_COLUMNS = [
     "period_pnl",
     "period_return",
     "optimizer_vs_naive_period_pnl_delta",
+    "optimizer_vs_alpha_only_period_pnl_delta",
+    "alpha_only_vs_naive_period_pnl_delta",
 ]
+
+
+def _period_pnl_by_strategy(frame: pd.DataFrame, strategy_name: str) -> pd.Series:
+    """Return one period-indexed PnL lookup for one strategy."""
+
+    if strategy_name not in set(frame["strategy"]):
+        return pd.Series(dtype=float)
+    return (
+        frame.loc[frame["strategy"] == strategy_name, ["period_index", "period_pnl"]]
+        .drop_duplicates(subset=["period_index"])
+        .set_index("period_index")["period_pnl"]
+    )
+
+
+def _attach_period_delta(
+    frame: pd.DataFrame,
+    *,
+    lhs_strategy: str,
+    rhs_strategy: str,
+    output_column: str,
+) -> None:
+    """Attach one pairwise period PnL delta column in-place."""
+
+    rhs_period_pnl = _period_pnl_by_strategy(frame, rhs_strategy)
+    if rhs_period_pnl.empty or lhs_strategy not in set(frame["strategy"]):
+        return
+    lhs_mask = frame["strategy"] == lhs_strategy
+    frame.loc[lhs_mask, output_column] = (
+        frame.loc[lhs_mask, "period_pnl"]
+        - frame.loc[lhs_mask, "period_index"].map(rhs_period_pnl)
+    ).astype(float)
 
 
 def build_period_attribution_frame(period_rows: list[dict[str, Any]]) -> pd.DataFrame:
@@ -39,19 +72,28 @@ def build_period_attribution_frame(period_rows: list[dict[str, Any]]) -> pd.Data
     frame = pd.DataFrame(period_rows)
     if "optimizer_vs_naive_period_pnl_delta" not in frame.columns:
         frame["optimizer_vs_naive_period_pnl_delta"] = np.nan
-    naive_period_pnl = (
-        frame.loc[frame["strategy"] == "naive_pro_rata", ["period_index", "period_pnl"]]
-        .drop_duplicates(subset=["period_index"])
-        .set_index("period_index")["period_pnl"]
-        if "naive_pro_rata" in set(frame["strategy"])
-        else pd.Series(dtype=float)
+    if "optimizer_vs_alpha_only_period_pnl_delta" not in frame.columns:
+        frame["optimizer_vs_alpha_only_period_pnl_delta"] = np.nan
+    if "alpha_only_vs_naive_period_pnl_delta" not in frame.columns:
+        frame["alpha_only_vs_naive_period_pnl_delta"] = np.nan
+    _attach_period_delta(
+        frame,
+        lhs_strategy="optimizer",
+        rhs_strategy="naive_pro_rata",
+        output_column="optimizer_vs_naive_period_pnl_delta",
     )
-    if not naive_period_pnl.empty:
-        optimizer_mask = frame["strategy"] == "optimizer"
-        frame.loc[optimizer_mask, "optimizer_vs_naive_period_pnl_delta"] = (
-            frame.loc[optimizer_mask, "period_pnl"]
-            - frame.loc[optimizer_mask, "period_index"].map(naive_period_pnl)
-        ).astype(float)
+    _attach_period_delta(
+        frame,
+        lhs_strategy="optimizer",
+        rhs_strategy="alpha_only_top_quintile",
+        output_column="optimizer_vs_alpha_only_period_pnl_delta",
+    )
+    _attach_period_delta(
+        frame,
+        lhs_strategy="alpha_only_top_quintile",
+        rhs_strategy="naive_pro_rata",
+        output_column="alpha_only_vs_naive_period_pnl_delta",
+    )
     frame = frame.reindex(columns=_PERIOD_ATTRIBUTION_COLUMNS)
     return frame.sort_values(["period_index", "strategy"]).reset_index(drop=True)
 
@@ -92,6 +134,47 @@ def _max_drawdown(nav: pd.Series) -> float:
     return float(drawdown.min())
 
 
+def _update_pairwise_comparison(
+    summary: dict[str, Any],
+    *,
+    left_name: str,
+    right_name: str,
+    prefix: str,
+    ending_nav_by_strategy: dict[str, float],
+    total_return_by_strategy: dict[str, float],
+    annualized_by_strategy: dict[str, float],
+    sharpe_by_strategy: dict[str, float],
+) -> None:
+    """Attach one pairwise strategy comparison block when both strategies exist."""
+
+    if left_name not in ending_nav_by_strategy or right_name not in ending_nav_by_strategy:
+        return
+    summary["comparison"].update(
+        {
+            f"{prefix}_ending_nav_delta": float(
+                ending_nav_by_strategy[left_name] - ending_nav_by_strategy[right_name]
+            ),
+            f"{prefix}_total_return_delta": float(
+                total_return_by_strategy[left_name] - total_return_by_strategy[right_name]
+            ),
+            f"{prefix}_annualized_return_delta": float(
+                annualized_by_strategy[left_name] - annualized_by_strategy[right_name]
+            ),
+            f"{prefix}_sharpe_delta": float(
+                sharpe_by_strategy[left_name] - sharpe_by_strategy[right_name]
+            ),
+            f"{prefix}_total_cost_delta": float(
+                summary["strategies"][left_name]["total_transaction_cost"]
+                - summary["strategies"][right_name]["total_transaction_cost"]
+            ),
+            f"{prefix}_total_turnover_delta": float(
+                summary["strategies"][left_name]["total_turnover"]
+                - summary["strategies"][right_name]["total_turnover"]
+            ),
+        }
+    )
+
+
 def build_backtest_summary(
     *,
     schedule: list[pd.Timestamp],
@@ -112,6 +195,7 @@ def build_backtest_summary(
     ending_nav_by_strategy: dict[str, float] = {}
     total_return_by_strategy: dict[str, float] = {}
     annualized_by_strategy: dict[str, float] = {}
+    sharpe_by_strategy: dict[str, float] = {}
     for strategy_name, state_metrics in strategy_state_summary.items():
         strategy_nav = nav_series.loc[nav_series["strategy"] == strategy_name, "nav"].astype(float).reset_index(drop=True)
         starting_nav = float(strategy_nav.iloc[0]) if not strategy_nav.empty else 0.0
@@ -139,25 +223,36 @@ def build_backtest_summary(
         ending_nav_by_strategy[strategy_name] = ending_nav
         total_return_by_strategy[strategy_name] = total_return
         annualized_by_strategy[strategy_name] = annualized_return
+        sharpe_by_strategy[strategy_name] = sharpe
 
-    if "optimizer" in ending_nav_by_strategy and "naive_pro_rata" in ending_nav_by_strategy:
-        summary["comparison"] = {
-            "optimizer_vs_naive_ending_nav_delta": float(
-                ending_nav_by_strategy["optimizer"] - ending_nav_by_strategy["naive_pro_rata"]
-            ),
-            "optimizer_vs_naive_total_return_delta": float(
-                total_return_by_strategy["optimizer"] - total_return_by_strategy["naive_pro_rata"]
-            ),
-            "optimizer_vs_naive_annualized_return_delta": float(
-                annualized_by_strategy["optimizer"] - annualized_by_strategy["naive_pro_rata"]
-            ),
-            "optimizer_vs_naive_total_cost_delta": float(
-                summary["strategies"]["optimizer"]["total_transaction_cost"]
-                - summary["strategies"]["naive_pro_rata"]["total_transaction_cost"]
-            ),
-            "optimizer_vs_naive_total_turnover_delta": float(
-                summary["strategies"]["optimizer"]["total_turnover"]
-                - summary["strategies"]["naive_pro_rata"]["total_turnover"]
-            ),
-        }
+    _update_pairwise_comparison(
+        summary,
+        left_name="optimizer",
+        right_name="naive_pro_rata",
+        prefix="optimizer_vs_naive",
+        ending_nav_by_strategy=ending_nav_by_strategy,
+        total_return_by_strategy=total_return_by_strategy,
+        annualized_by_strategy=annualized_by_strategy,
+        sharpe_by_strategy=sharpe_by_strategy,
+    )
+    _update_pairwise_comparison(
+        summary,
+        left_name="optimizer",
+        right_name="alpha_only_top_quintile",
+        prefix="optimizer_vs_alpha_only",
+        ending_nav_by_strategy=ending_nav_by_strategy,
+        total_return_by_strategy=total_return_by_strategy,
+        annualized_by_strategy=annualized_by_strategy,
+        sharpe_by_strategy=sharpe_by_strategy,
+    )
+    _update_pairwise_comparison(
+        summary,
+        left_name="alpha_only_top_quintile",
+        right_name="naive_pro_rata",
+        prefix="alpha_only_vs_naive",
+        ending_nav_by_strategy=ending_nav_by_strategy,
+        total_return_by_strategy=total_return_by_strategy,
+        annualized_by_strategy=annualized_by_strategy,
+        sharpe_by_strategy=sharpe_by_strategy,
+    )
     return summary

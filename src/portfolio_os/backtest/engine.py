@@ -56,14 +56,33 @@ class BacktestResult:
     period_attribution: pd.DataFrame
     summary: dict[str, Any]
     report_markdown: str
+    alpha_panel: pd.DataFrame | None = None
 
-    def to_payload(self) -> dict[str, Any]:
+    def to_payload(self, *, alpha_panel_path: str | Path | None = None) -> dict[str, Any]:
         """Build the JSON payload written by the CLI."""
 
-        return {
+        payload = {
             "manifest_path": str(self.manifest_path),
             "summary": self.summary,
         }
+        if alpha_panel_path is not None:
+            payload["artifacts"] = {
+                "alpha_panel": str(Path(alpha_panel_path)),
+            }
+        return payload
+
+
+_ALPHA_PANEL_COLUMNS = [
+    "date",
+    "ticker",
+    "alpha_score",
+    "alpha_rank_pct",
+    "alpha_zscore",
+    "expected_return",
+    "quantile",
+    "signal_strength_confidence",
+    "annualized_top_bottom_spread",
+]
 
 
 def _load_returns_long(path: Path) -> pd.DataFrame:
@@ -382,6 +401,8 @@ def run_backtest(manifest_path: str | Path) -> BacktestResult:
 
     nav_rows: list[dict[str, Any]] = []
     period_rows: list[dict[str, Any]] = []
+    alpha_panel_frames: list[pd.DataFrame] = []
+    alpha_ready_rebalance_count = 0
     commission_rate = float(app_config.fees.commission_rate)
     half_spread_bps = float(app_config.execution.backtest_fixed_half_spread_bps)
     schedule_index_map = {pd.Timestamp(item).normalize(): idx for idx, item in enumerate(schedule, start=1)}
@@ -424,6 +445,12 @@ def run_backtest(manifest_path: str | Path) -> BacktestResult:
             except InputValidationError:
                 # Early rebalance dates can legitimately lack enough history for the accepted recipe.
                 alpha_snapshot = None
+        if alpha_snapshot is not None:
+            alpha_ready_rebalance_count += 1
+            alpha_panel_frame = alpha_snapshot.current_cross_section.copy()
+            if "date" not in alpha_panel_frame.columns:
+                alpha_panel_frame["date"] = current_date.strftime("%Y-%m-%d")
+            alpha_panel_frames.append(alpha_panel_frame.reindex(columns=_ALPHA_PANEL_COLUMNS).copy())
 
         optimizer_start_quantities = states["optimizer"].quantities.copy()
         optimizer_start_cash = float(states["optimizer"].cash)
@@ -612,6 +639,13 @@ def run_backtest(manifest_path: str | Path) -> BacktestResult:
         ordered=True,
     )
     nav_series = nav_series.sort_values(["date", "strategy"]).reset_index(drop=True)
+    alpha_panel = None
+    if manifest.alpha_model is not None and manifest.alpha_model.enabled:
+        alpha_panel = (
+            pd.concat(alpha_panel_frames, ignore_index=True)
+            if alpha_panel_frames
+            else pd.DataFrame(columns=_ALPHA_PANEL_COLUMNS)
+        )
     period_attribution = build_period_attribution_frame(period_rows)
     state_summary = _build_summary(states=states)
     summary = build_backtest_summary(
@@ -620,12 +654,31 @@ def run_backtest(manifest_path: str | Path) -> BacktestResult:
         period_attribution=period_attribution,
         strategy_state_summary=state_summary,
     )
+    summary["alpha_model"] = {
+        "enabled": bool(manifest.alpha_model is not None and manifest.alpha_model.enabled),
+        "recipe_name": (
+            manifest.alpha_model.recipe_name
+            if manifest.alpha_model is not None and manifest.alpha_model.enabled
+            else None
+        ),
+        "alpha_weight": float(app_config.objective_weights.alpha_weight or 0.0),
+        "write_alpha_panel": bool(manifest.alpha_model.write_alpha_panel) if manifest.alpha_model is not None else False,
+        "add_alpha_only_baseline": (
+            bool(manifest.alpha_model.add_alpha_only_baseline)
+            if manifest.alpha_model is not None
+            else False
+        ),
+        "panel_row_count": int(len(alpha_panel)) if alpha_panel is not None else 0,
+        "rebalance_dates_with_alpha_signal": int(alpha_ready_rebalance_count),
+        "rebalance_dates_without_alpha_signal": int(len(schedule) - alpha_ready_rebalance_count),
+    }
     result = BacktestResult(
         manifest_path=manifest.manifest_path,
         nav_series=nav_series,
         period_attribution=period_attribution,
         summary=summary,
         report_markdown="",
+        alpha_panel=alpha_panel,
     )
     result.report_markdown = render_backtest_report(result)
     return result

@@ -182,7 +182,11 @@ def main(
         nav_series_path = output_dir / "nav_series.csv"
         period_attribution_path = output_dir / "period_attribution.csv"
         backtest_report_path = output_dir / "backtest_report.md"
-        write_json(backtest_results_path, result.to_payload())
+        alpha_panel_path: Path | None = None
+        if result.alpha_panel is not None:
+            alpha_panel_path = output_dir / "alpha_panel.csv"
+            result.alpha_panel.to_csv(alpha_panel_path, index=False)
+        write_json(backtest_results_path, result.to_payload(alpha_panel_path=alpha_panel_path))
         result.nav_series.to_csv(nav_series_path, index=False)
         result.period_attribution.to_csv(period_attribution_path, index=False)
         write_text(backtest_report_path, result.report_markdown)
@@ -190,6 +194,8 @@ def main(
         typer.echo(f"nav_series.csv: {nav_series_path}")
         typer.echo(f"period_attribution.csv: {period_attribution_path}")
         typer.echo(f"backtest_report.md: {backtest_report_path}")
+        if alpha_panel_path is not None:
+            typer.echo(f"alpha_panel.csv: {alpha_panel_path}")
     except PortfolioOSError as exc:
         logger.error("%s", exc)
         raise typer.Exit(code=1) from exc

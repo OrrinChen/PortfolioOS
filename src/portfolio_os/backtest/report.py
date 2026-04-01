@@ -22,6 +22,32 @@ def _fmt_float(value: float) -> str:
     return f"{value:.2f}"
 
 
+def _append_pairwise_comparison(
+    lines: list[str],
+    *,
+    title: str,
+    comparison: dict[str, float],
+    prefix: str,
+) -> None:
+    """Append one pairwise comparison section when the required keys exist."""
+
+    required_key = f"{prefix}_ending_nav_delta"
+    if required_key not in comparison:
+        return
+    lines.extend(
+        [
+            "",
+            f"## {title}",
+            f"- Ending NAV delta: {_fmt_float(float(comparison[required_key]))}",
+            f"- Total return delta: {_fmt_pct(float(comparison[f'{prefix}_total_return_delta']))}",
+            f"- Annualized return delta: {_fmt_pct(float(comparison[f'{prefix}_annualized_return_delta']))}",
+            f"- Sharpe delta: {_fmt_float(float(comparison[f'{prefix}_sharpe_delta']))}",
+            f"- Total cost delta: {_fmt_float(float(comparison[f'{prefix}_total_cost_delta']))}",
+            f"- Total turnover delta: {_fmt_float(float(comparison[f'{prefix}_total_turnover_delta']))}",
+        ]
+    )
+
+
 def render_backtest_report(result: "BacktestResult") -> str:
     """Render a compact markdown report for the backtest outputs."""
 
@@ -50,18 +76,48 @@ def render_backtest_report(result: "BacktestResult") -> str:
         )
 
     comparison = summary.get("comparison", {})
-    if comparison:
+    alpha_model = summary.get("alpha_model", {})
+    if alpha_model.get("enabled"):
         lines.extend(
             [
                 "",
-                "## Optimizer Vs Naive",
-                f"- Ending NAV delta: {_fmt_float(comparison['optimizer_vs_naive_ending_nav_delta'])}",
-                f"- Total return delta: {_fmt_pct(comparison['optimizer_vs_naive_total_return_delta'])}",
-                f"- Annualized return delta: {_fmt_pct(comparison['optimizer_vs_naive_annualized_return_delta'])}",
-                f"- Total cost delta: {_fmt_float(comparison['optimizer_vs_naive_total_cost_delta'])}",
-                f"- Total turnover delta: {_fmt_float(comparison['optimizer_vs_naive_total_turnover_delta'])}",
+                "## Alpha Model",
+                f"- Recipe: `{alpha_model.get('recipe_name')}`",
+                f"- Alpha weight: {_fmt_float(float(alpha_model.get('alpha_weight', 0.0)))}",
+                f"- Alpha panel rows: {int(alpha_model.get('panel_row_count', 0))}",
+                (
+                    "- Signal-ready rebalances: "
+                    f"{int(alpha_model.get('rebalance_dates_with_alpha_signal', 0))} / {summary['rebalance_count']}"
+                ),
+                (
+                    "- Cold-start rebalances without enough history: "
+                    f"{int(alpha_model.get('rebalance_dates_without_alpha_signal', 0))}"
+                ),
+                (
+                    "- Alpha-only baseline enabled: "
+                    f"{'yes' if alpha_model.get('add_alpha_only_baseline') else 'no'}"
+                ),
             ]
         )
+
+    _append_pairwise_comparison(
+        lines,
+        title="Optimizer Vs Naive",
+        comparison=comparison,
+        prefix="optimizer_vs_naive",
+    )
+    _append_pairwise_comparison(
+        lines,
+        title="Optimizer Vs Alpha-Only",
+        comparison=comparison,
+        prefix="optimizer_vs_alpha_only",
+    )
+    _append_pairwise_comparison(
+        lines,
+        title="Alpha-Only Vs Naive",
+        comparison=comparison,
+        prefix="alpha_only_vs_naive",
+    )
 
     optimizer_rows = result.period_attribution.loc[result.period_attribution["strategy"] == "optimizer"].copy()
     if not optimizer_rows.empty:
@@ -101,6 +157,16 @@ def render_backtest_report(result: "BacktestResult") -> str:
             )
         else:
             lines.append("Optimizer and naive pro-rata finished at the same ending NAV after explicit transaction costs.")
+        if "optimizer_vs_alpha_only_sharpe_delta" in comparison:
+            alpha_only_sharpe_delta = float(comparison["optimizer_vs_alpha_only_sharpe_delta"])
+            if alpha_only_sharpe_delta >= 0.0:
+                lines.append(
+                    f"Optimizer matched or exceeded alpha-only on Sharpe by {_fmt_float(alpha_only_sharpe_delta)}."
+                )
+            else:
+                lines.append(
+                    f"Optimizer lagged alpha-only on Sharpe by {_fmt_float(abs(alpha_only_sharpe_delta))}."
+                )
     else:
         lines.append("No optimizer-vs-naive comparison was available for this backtest run.")
     lines.append("")

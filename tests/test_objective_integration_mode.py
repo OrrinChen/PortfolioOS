@@ -51,7 +51,8 @@ def test_replace_mode_keeps_risk_components_only(sample_context: dict) -> None:
         risk_context=_mock_risk_context(universe),
     )
 
-    assert set(components.keys()) == {"risk_term", "tracking_error", "transaction_cost"}
+    assert set(components.keys()) == {"risk_term", "tracking_error", "transaction_cost", "alpha_reward"}
+    assert float(components["alpha_reward"].value) == pytest.approx(0.0)
     risk_total = (
         config.objective_weights.risk_term * float(components["risk_term"].value)
         + config.objective_weights.tracking_error * float(components["tracking_error"].value)
@@ -84,6 +85,7 @@ def test_augment_mode_combines_legacy_and_risk_components(sample_context: dict) 
     )
 
     assert set(components.keys()) == {
+        "alpha_reward",
         "risk_term",
         "tracking_error",
         "transaction_cost",
@@ -92,6 +94,7 @@ def test_augment_mode_combines_legacy_and_risk_components(sample_context: dict) 
         "turnover_penalty",
         "slippage_penalty",
     }
+    assert float(components["alpha_reward"].value) == pytest.approx(0.0)
     risk_total = (
         config.objective_weights.risk_term * float(components["risk_term"].value)
         + config.objective_weights.tracking_error * float(components["tracking_error"].value)

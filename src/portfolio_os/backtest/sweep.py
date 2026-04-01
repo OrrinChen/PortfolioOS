@@ -58,7 +58,11 @@ def _write_backtest_artifacts(result: BacktestResult, output_dir: Path) -> None:
     """Write the standard backtest artifact set to one directory."""
 
     output_dir.mkdir(parents=True, exist_ok=True)
-    write_json(output_dir / "backtest_results.json", result.to_payload())
+    alpha_panel_path: Path | None = None
+    if result.alpha_panel is not None:
+        alpha_panel_path = output_dir / "alpha_panel.csv"
+        result.alpha_panel.to_csv(alpha_panel_path, index=False)
+    write_json(output_dir / "backtest_results.json", result.to_payload(alpha_panel_path=alpha_panel_path))
     result.nav_series.to_csv(output_dir / "nav_series.csv", index=False)
     result.period_attribution.to_csv(output_dir / "period_attribution.csv", index=False)
     write_text(output_dir / "backtest_report.md", result.report_markdown)
