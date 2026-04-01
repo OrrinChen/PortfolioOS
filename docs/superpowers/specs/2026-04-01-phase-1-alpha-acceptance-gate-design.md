@@ -99,6 +99,11 @@ Each recipe is a deterministic configuration over the existing alpha research wo
 
 The implementation should reuse the existing `run_alpha_research(...)` logic as much as possible rather than building a second evaluation engine.
 
+Unless a recipe explicitly overrides them, the Phase 1 defaults are:
+
+- `quantiles = 5`
+- `min_assets_per_date = 20`
+
 ## First-Round Recipe Set
 
 Round 1 must stay small and momentum-first. It should evaluate exactly these five recipes:
@@ -110,18 +115,26 @@ Round 1 must stay small and momentum-first. It should evaluate exactly these fiv
    - `forward_horizon_days = 5`
    - `reversal_weight = 0.0`
    - `momentum_weight = 1.0`
+   - `quantiles = 5`
+   - `min_assets_per_date = 20`
 2. `momentum_heavy_10_90`
    - same windows
    - `reversal_weight = 0.1`
    - `momentum_weight = 0.9`
+   - `quantiles = 5`
+   - `min_assets_per_date = 20`
 3. `momentum_heavy_25_75`
    - same windows
    - `reversal_weight = 0.25`
    - `momentum_weight = 0.75`
+   - `quantiles = 5`
+   - `min_assets_per_date = 20`
 4. `current_50_50`
    - same windows
    - `reversal_weight = 0.5`
    - `momentum_weight = 0.5`
+   - `quantiles = 5`
+   - `min_assets_per_date = 20`
 5. `alt_momentum_4_1`
    - `reversal_lookback_days = 21`
    - `momentum_lookback_days = 84`
@@ -129,6 +142,8 @@ Round 1 must stay small and momentum-first. It should evaluate exactly these fiv
    - `forward_horizon_days = 5`
    - `reversal_weight = 0.0`
    - `momentum_weight = 1.0`
+   - `quantiles = 5`
+   - `min_assets_per_date = 20`
 
 ## Development And Holdout Split
 
@@ -165,6 +180,8 @@ For each recipe and each slice, the system must compute:
 - `evaluation_date_count`
 - `mean_monthly_factor_turnover`
 
+`mean_ic` is diagnostic-only in Phase 1. It should be written into artifacts for inspection, but it does not participate in gate passage.
+
 ### Monthly Factor Turnover Definition
 
 Phase 1 turnover is a research proxy, not a live portfolio turnover estimate.
@@ -200,13 +217,17 @@ Baseline rule:
 - if a recipe passes in a round, that accepted winner becomes the baseline for future reruns of the gate on the same snapshot family
 - within a single run, if no recipe passes, the current round baseline stays unchanged
 
-A holdout candidate passes the relative gate only if:
+The baseline recipe is included in the evaluated recipe set each round, but the relative gate is applied only to non-baseline challengers.
+
+A non-baseline holdout candidate passes the relative gate only if:
 
 - `candidate mean_rank_ic > baseline mean_rank_ic`
 - `candidate mean_top_bottom_spread > baseline mean_top_bottom_spread`
 - `candidate positive_rank_ic_ratio >= baseline positive_rank_ic_ratio - 0.02`
 
 The positive-ratio tolerance exists so a candidate is not rejected for immaterial noise when the other holdout metrics improve.
+
+The baseline does not need to beat itself. It may still be accepted for the round if it clears the absolute gate and no challenger clears both the relative and absolute gates.
 
 ### Absolute Gate
 
@@ -222,10 +243,22 @@ These thresholds are intentionally modest. They represent a Phase 1 "minimum res
 
 ### Final Acceptance Rule
 
-A candidate is `accepted` only if it passes both:
+A non-baseline challenger is `accepted` only if it passes both:
 
 - the relative gate
 - the absolute gate
+
+If no challenger passes both gates, but the round baseline passes the absolute gate, the run status is still:
+
+- `accepted`
+
+In that case the decision payload must record:
+
+- `acceptance_mode = accepted_as_baseline`
+
+If a non-baseline challenger wins, the decision payload must record:
+
+- `acceptance_mode = accepted_by_relative_and_absolute_gates`
 
 If no candidate passes after all allowed rounds, the final status is:
 
@@ -296,6 +329,7 @@ Recommended structure:
   - run timestamps
 - decision JSON:
   - final status
+  - acceptance mode
   - accepted recipe if any
   - baseline recipe
   - gate outcomes
@@ -317,6 +351,12 @@ The note must say:
 - that Phase 1 is complete
 - that the next step is Phase 1.5 expected-return integration
 
+If the accepted recipe is the baseline, the note must say:
+
+- that no challenger cleared the relative gate
+- that the baseline itself cleared the absolute gate
+- that acceptance occurred via `accepted_as_baseline`
+
 ### If Rejected
 
 The note must say:
@@ -335,6 +375,7 @@ The implementation should be covered by tests for:
 - common-date alignment across recipes
 - relative gate evaluation
 - absolute gate evaluation including turnover
+- baseline acceptance when no challenger beats it but the baseline clears the absolute gate
 - round expansion and deduplication
 - final terminal states:
   - `accepted`
