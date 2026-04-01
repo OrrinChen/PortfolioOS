@@ -69,6 +69,18 @@ The accepted recipe cleared both gates:
 - relative gate: it beat the baseline on holdout mean rank IC and mean top-bottom spread while keeping positive rank IC ratio within tolerance
 - absolute gate: it cleared the minimum thresholds for holdout signal quality, evaluation coverage, and turnover control
 
+## Statistical Health Warning
+
+All five recipes exhibited a sign flip in mean rank IC between the development and holdout slices. The accepted recipe `alt_momentum_4_1` ranked last on development (mean rank IC = -0.040) and first on holdout (mean rank IC = +0.106). This pattern suggests a regime change within the 100-date evaluation window rather than a stable predictive signal.
+
+Additional concerns:
+
+- Holdout contains only 40 evaluation dates across 50 stocks
+- The t-statistic for holdout mean rank IC is approximately 2.9, which is still only moderate evidence on a short sample
+- The development-holdout inversion means the holdout result alone cannot confirm signal robustness
+
+This caveat does not invalidate the Phase 1 gate outcome. The gate was designed to enforce minimum viability, not production robustness. However, Phase 1.5 should treat the accepted recipe as a provisional seed, not a validated alpha, and should include a longer-sample robustness check when more data becomes available.
+
 ## Phase 1 Deliverables
 
 Implemented in code:
