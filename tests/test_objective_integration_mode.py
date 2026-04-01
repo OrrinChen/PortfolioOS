@@ -106,6 +106,67 @@ def test_augment_mode_combines_legacy_and_risk_components(sample_context: dict) 
     assert float(objective.value) == pytest.approx(risk_total + legacy_total, abs=1e-10)
 
 
+def test_alpha_weight_zero_keeps_objective_value_unchanged(sample_context: dict) -> None:
+    universe = sample_context["universe"].copy()
+    expected_returns = np.linspace(-0.05, 0.10, len(universe), dtype=float)
+    universe["expected_return"] = expected_returns
+    config = sample_context["config"].model_copy(deep=True)
+    config.objective_weights.alpha_weight = 0.0
+
+    trades = cp.Variable(len(universe))
+    trades.value = np.array([(-1.0) ** i * 0.5 for i in range(len(universe))], dtype=float)
+    objective, components = build_objective(
+        trades,
+        universe,
+        config,
+        _pre_trade_nav(universe, config),
+        risk_context=None,
+    )
+
+    legacy_total = (
+        float(config.objective_weights.target_deviation or 0.0) * float(components["target_deviation"].value)
+        + float(config.objective_weights.transaction_fee or 0.0) * float(components["transaction_fee"].value)
+        + float(config.objective_weights.turnover_penalty or 0.0) * float(components["turnover_penalty"].value)
+        + float(config.objective_weights.slippage_penalty or 0.0) * float(components["slippage_penalty"].value)
+    )
+    assert "alpha_reward" in components
+    assert float(components["alpha_reward"].value) != 0.0
+    assert float(objective.value) == pytest.approx(legacy_total, abs=1e-10)
+
+
+def test_alpha_weight_adds_negative_alpha_reward_term(sample_context: dict) -> None:
+    universe = sample_context["universe"].copy()
+    expected_returns = np.linspace(0.20, -0.10, len(universe), dtype=float)
+    universe["expected_return"] = expected_returns
+    config = sample_context["config"].model_copy(deep=True)
+    config.objective_weights.alpha_weight = 2.5
+
+    trades = cp.Variable(len(universe))
+    trades.value = np.zeros(len(universe), dtype=float)
+    objective, components = build_objective(
+        trades,
+        universe,
+        config,
+        _pre_trade_nav(universe, config),
+        risk_context=None,
+    )
+
+    alpha_reward = float(components["alpha_reward"].value)
+    legacy_total = (
+        float(config.objective_weights.target_deviation or 0.0) * float(components["target_deviation"].value)
+        + float(config.objective_weights.transaction_fee or 0.0) * float(components["transaction_fee"].value)
+        + float(config.objective_weights.turnover_penalty or 0.0) * float(components["turnover_penalty"].value)
+        + float(config.objective_weights.slippage_penalty or 0.0) * float(components["slippage_penalty"].value)
+    )
+
+    assert "alpha_reward" in components
+    assert alpha_reward != 0.0
+    assert float(objective.value) == pytest.approx(
+        legacy_total - float(config.objective_weights.alpha_weight) * alpha_reward,
+        abs=1e-10,
+    )
+
+
 def test_invalid_integration_mode_is_rejected_by_config_schema() -> None:
     with pytest.raises(ValidationError):
         RiskModelConfig.model_validate({"enabled": False, "integration_mode": "bad_mode"})

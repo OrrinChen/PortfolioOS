@@ -29,12 +29,23 @@ def build_objective(
 
     post_trade_quantities = current_quantities + trades
     post_trade_weights = cp.multiply(prices, post_trade_quantities) / pre_trade_nav
+    expected_return = (
+        universe["expected_return"].to_numpy(dtype=float)
+        if "expected_return" in universe.columns
+        else None
+    )
 
     target_deviation = cp.sum_squares(post_trade_weights - target_weights)
     transaction_fee = fee_expression(trades, prices, config.fees)
     turnover_penalty = turnover_penalty_expression(trades, prices, pre_trade_nav)
     slippage_penalty = slippage_expression(trades, prices, adv_shares, config.slippage)
     transaction_cost = transaction_fee + slippage_penalty
+    alpha_reward = (
+        cp.sum(cp.multiply(expected_return, post_trade_weights))
+        if expected_return is not None
+        else cp.Constant(0.0)
+    )
+    alpha_penalty = float(config.objective_weights.alpha_weight or 0.0) * alpha_reward
 
     legacy_objective = (
         float(config.objective_weights.target_deviation or 0.0) * target_deviation
@@ -55,7 +66,7 @@ def build_objective(
             + config.objective_weights.transaction_cost * transaction_cost
         )
         if config.risk_model.integration_mode == "augment":
-            objective = legacy_objective + risk_objective
+            objective = legacy_objective + risk_objective - alpha_penalty
             return objective, {
                 "risk_term": risk_term,
                 "tracking_error": tracking_error,
@@ -64,16 +75,19 @@ def build_objective(
                 "transaction_fee": transaction_fee,
                 "turnover_penalty": turnover_penalty,
                 "slippage_penalty": slippage_penalty,
+                "alpha_reward": alpha_reward,
             }
-        return risk_objective, {
+        return risk_objective - alpha_penalty, {
             "risk_term": risk_term,
             "tracking_error": tracking_error,
             "transaction_cost": transaction_cost,
+            "alpha_reward": alpha_reward,
         }
 
-    return legacy_objective, {
+    return legacy_objective - alpha_penalty, {
         "target_deviation": target_deviation,
         "transaction_fee": transaction_fee,
         "turnover_penalty": turnover_penalty,
         "slippage_penalty": slippage_penalty,
+        "alpha_reward": alpha_reward,
     }

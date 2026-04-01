@@ -221,3 +221,40 @@ def test_augment_mode_objective_decomposition_has_seven_components_and_shares_su
     share_sum = sum(float(payload["share_abs_weighted"]) for payload in decomposition["components"].values())
     assert decomposition["abs_weighted_sum"] > 0.0
     assert share_sum == pytest.approx(1.0, abs=1e-12)
+
+
+def test_legacy_mode_objective_decomposition_includes_alpha_reward_when_weighted(
+    sample_context: dict,
+    monkeypatch,
+) -> None:
+    result = _solve_with_mocked_objective(
+        monkeypatch=monkeypatch,
+        sample_context=sample_context,
+        risk_enabled=False,
+        component_values={
+            "target_deviation": 1.0,
+            "transaction_fee": 2.0,
+            "turnover_penalty": 3.0,
+            "slippage_penalty": 4.0,
+            "alpha_reward": 5.0,
+        },
+        objective_value=9.9,
+        weight_overrides={
+            "alpha_weight": 3.0,
+            "target_deviation": 2.0,
+            "transaction_fee": 4.0,
+            "turnover_penalty": 0.5,
+            "slippage_penalty": 1.5,
+        },
+    )
+
+    decomposition = result.objective_decomposition
+    assert set(decomposition["components"].keys()) == {
+        "alpha_reward",
+        "target_deviation",
+        "transaction_fee",
+        "turnover_penalty",
+        "slippage_penalty",
+    }
+    assert decomposition["components"]["alpha_reward"]["weight"] == pytest.approx(3.0)
+    assert decomposition["components"]["alpha_reward"]["weighted_value"] == pytest.approx(-15.0)

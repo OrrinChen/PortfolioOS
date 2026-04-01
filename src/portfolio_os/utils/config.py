@@ -62,6 +62,7 @@ class ObjectiveWeights(BaseModel):
     risk_term: float = 1.0
     tracking_error: float = 1.0
     transaction_cost: float = 1.0
+    alpha_weight: float = 0.0
 
     # Legacy objective fields retained for backward compatibility.
     target_deviation: float | None = None

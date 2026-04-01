@@ -161,9 +161,10 @@ def _component_names_for_mode(config: AppConfig) -> tuple[str, ...]:
                 "transaction_fee",
                 "turnover_penalty",
                 "slippage_penalty",
+                "alpha_reward",
             )
-        return ("risk_term", "tracking_error", "transaction_cost")
-    return ("target_deviation", "transaction_fee", "turnover_penalty", "slippage_penalty")
+        return ("risk_term", "tracking_error", "transaction_cost", "alpha_reward")
+    return ("target_deviation", "transaction_fee", "turnover_penalty", "slippage_penalty", "alpha_reward")
 
 
 def _component_weight(config: AppConfig, component_name: str) -> float:
@@ -184,6 +185,8 @@ def _component_weight(config: AppConfig, component_name: str) -> float:
         return float(weights.turnover_penalty or 0.0)
     if component_name == "slippage_penalty":
         return float(weights.slippage_penalty or 0.0)
+    if component_name == "alpha_reward":
+        return float(weights.alpha_weight or 0.0)
     return 0.0
 
 
@@ -203,6 +206,8 @@ def _build_objective_decomposition(
         raw_value = _safe_scalar(getattr(expression, "value", None) if expression is not None else None)
         weight = _component_weight(config, component_name)
         weighted_value = raw_value * weight
+        if component_name == "alpha_reward":
+            weighted_value = -weighted_value
         abs_weighted_sum += abs(weighted_value)
         component_payload[component_name] = {
             "raw_value": raw_value,

@@ -254,6 +254,33 @@ def test_load_backtest_manifest_reads_monthly_us_expanded_sample(project_root: P
     assert manifest.market_snapshot.exists()
 
 
+def test_load_backtest_manifest_reads_optional_alpha_model_block(tmp_path: Path) -> None:
+    manifest_path = _write_backtest_fixture(tmp_path)
+    manifest_payload = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
+    manifest_payload["alpha_model"] = {
+        "enabled": True,
+        "recipe_name": "alt_momentum_4_1",
+        "quantiles": 5,
+        "forward_horizon_days": 5,
+        "min_evaluation_dates": 20,
+        "zscore_winsor_limit": 3.0,
+        "t_stat_full_confidence": 3.0,
+        "max_abs_expected_return": 0.30,
+        "write_alpha_panel": True,
+        "add_alpha_only_baseline": True,
+    }
+    manifest_path.write_text(
+        yaml.safe_dump(manifest_payload, sort_keys=False, allow_unicode=False),
+        encoding="utf-8",
+    )
+
+    manifest = load_backtest_manifest(manifest_path)
+
+    assert manifest.alpha_model is not None
+    assert manifest.alpha_model.enabled is True
+    assert manifest.alpha_model.recipe_name == "alt_momentum_4_1"
+
+
 def test_run_backtest_produces_optimizer_naive_and_buy_hold_nav(tmp_path: Path) -> None:
     manifest_path = _write_backtest_fixture(tmp_path)
 

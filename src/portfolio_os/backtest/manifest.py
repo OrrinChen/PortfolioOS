@@ -18,6 +18,21 @@ class BacktestRebalanceConfig(BaseModel):
     frequency: Literal["monthly"] = "monthly"
 
 
+class BacktestAlphaModelConfig(BaseModel):
+    """Optional alpha-model research controls for walk-forward backtests."""
+
+    enabled: bool = False
+    recipe_name: str
+    quantiles: int = Field(default=5, gt=1)
+    forward_horizon_days: int = Field(default=5, gt=0)
+    min_evaluation_dates: int = Field(default=20, gt=0)
+    zscore_winsor_limit: float = Field(default=3.0, gt=0.0)
+    t_stat_full_confidence: float = Field(default=3.0, gt=0.0)
+    max_abs_expected_return: float = Field(default=0.30, gt=0.0)
+    write_alpha_panel: bool = True
+    add_alpha_only_baseline: bool = True
+
+
 class BacktestManifest(BaseModel):
     """Serialized backtest manifest."""
 
@@ -34,6 +49,7 @@ class BacktestManifest(BaseModel):
     execution_profile: str
     baselines: list[str] = Field(default_factory=lambda: ["naive_pro_rata", "buy_and_hold"])
     rebalance: BacktestRebalanceConfig = Field(default_factory=BacktestRebalanceConfig)
+    alpha_model: BacktestAlphaModelConfig | None = None
 
 
 @dataclass
@@ -54,6 +70,7 @@ class LoadedBacktestManifest:
     execution_profile: Path
     baselines: list[str]
     rebalance: BacktestRebalanceConfig
+    alpha_model: BacktestAlphaModelConfig | None
 
 
 def _resolve_manifest_path(raw_path: str, *, manifest_dir: Path, cwd: Path) -> Path:
@@ -96,4 +113,5 @@ def load_backtest_manifest(path: str | Path) -> LoadedBacktestManifest:
         execution_profile=_resolve_manifest_path(manifest.execution_profile, manifest_dir=manifest_dir, cwd=cwd),
         baselines=list(manifest.baselines),
         rebalance=manifest.rebalance,
+        alpha_model=manifest.alpha_model,
     )
