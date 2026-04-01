@@ -1,0 +1,33 @@
+# expanded US universe - default impact_aware mode
+name: execution_request_us_06
+description: Simulate intraday execution for expanded US sample_us_06
+artifact_dir: outputs/single_us_06
+input_orders: orders_oms.csv
+audit: audit.json
+market: data/universe/us_universe_market_2026-03-27.csv
+portfolio_state: data/samples/us/sample_us_06/portfolio_state.yaml
+execution_profile: config/execution/conservative.yaml
+calibration_profile: config/calibration_profiles/balanced_day.yaml
+market_curve:
+  buckets:
+    - label: open
+      volume_share: 0.25
+      slippage_multiplier: 1.2
+    - label: mid_morning
+      volume_share: 0.2
+      slippage_multiplier: 1.0
+    - label: midday
+      volume_share: 0.1
+      slippage_multiplier: 0.9
+    - label: afternoon
+      volume_share: 0.2
+      slippage_multiplier: 1.0
+    - label: close
+      volume_share: 0.25
+      slippage_multiplier: 1.15
+simulation:
+  mode: impact_aware
+  bucket_count: 5
+  allow_partial_fill: true
+  force_completion: false
+  max_bucket_participation_override:

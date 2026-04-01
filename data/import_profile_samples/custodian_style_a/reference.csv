@@ -1,0 +1,8 @@
+security_code,sector_name,buy_restricted,sell_restricted,benchmark_weight_pct,peer_manager_qty,issuer_total_shares
+600519,Consumer,N,N,7,0,0
+300750,Industrials,N,N,8,0,0
+601318,Financials,N,N,5,0,0
+000333,Industrials,N,N,4,7500,100000
+600276,Healthcare,N,N,2,0,0
+000858,Consumer,N,N,3,0,0
+601012,Industrials,Y,N,3,0,0

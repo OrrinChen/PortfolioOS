@@ -1,0 +1,41 @@
+# US pilot template: keep risk controls, disable CN-specific double-ten signaling.
+single_name_max_weight: 0.12
+industry_bounds:
+  Technology:
+    min: 0.00
+    max: 0.45
+  Consumer Cyclical:
+    min: 0.00
+    max: 0.35
+  Financial Services:
+    min: 0.00
+    max: 0.30
+  Healthcare:
+    min: 0.00
+    max: 0.25
+max_turnover: 0.45
+min_order_notional: 5000.0
+participation_limit: 0.10
+cash_non_negative: true
+double_ten:
+  enabled: false
+  single_fund_limit: null
+  manager_aggregate_limit: null
+  remediation_days: 0
+single_name_guardrail:
+  enabled: true
+  buffer_lot_multiplier: 1.0
+  buffer_min_weight: 0.0005
+severity_policy:
+  blocked_trade: BREACH
+  unresolved_risk: BREACH
+  manager_aggregate: INFO
+  remediation_note: INFO
+report_labels:
+  mandate_type: us_pilot
+  audience: pm_compliance_trading
+  strategy_tag: US_REBALANCE
+blocked_trade_policy:
+  treat_as_blocking: true
+  cleared_if_removed: true
+  export_requires_blocking_checks_cleared: true

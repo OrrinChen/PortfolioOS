@@ -1,0 +1,10 @@
+requests:
+  - sample_id: sample_us_01
+    request_path: outputs/pilot_validation_20260326_034043/samples/sample_us_01/inputs/execution_request.yaml
+    notes: us_large_cap_core static execution sample
+  - sample_id: sample_us_02
+    request_path: outputs/pilot_validation_20260326_034043/samples/sample_us_02/inputs/execution_request.yaml
+    notes: us_single_name_pressure static execution sample
+  - sample_id: sample_us_03
+    request_path: outputs/pilot_validation_20260326_034043/samples/sample_us_03/inputs/execution_request.yaml
+    notes: us_low_liquidity_mix static execution sample

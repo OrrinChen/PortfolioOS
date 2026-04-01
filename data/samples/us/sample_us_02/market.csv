@@ -1,0 +1,6 @@
+ticker,close,vwap,adv_shares,tradable,upper_limit_hit,lower_limit_hit
+AAPL,196.8,196.5,62000000,true,false,false
+NVDA,891.7,889.8,37000000,true,false,false
+MSFT,421.3,421.1,28000000,true,false,false
+META,492.6,492.1,19000000,true,false,false
+TSLA,216.4,215.9,65000000,true,false,false

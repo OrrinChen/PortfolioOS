@@ -1,0 +1,25 @@
+{
+  "generated_at": "2026-03-24T23:31:54",
+  "market": "cn",
+  "ticker_count": 7,
+  "tickers": [
+    "000333",
+    "000858",
+    "300750",
+    "600276",
+    "600519",
+    "601012",
+    "601318"
+  ],
+  "lookback_days": 252,
+  "actual_trading_days": 251,
+  "date_range": [
+    "2025-01-17",
+    "2026-01-29"
+  ],
+  "tickers_excluded_high_nan": [],
+  "failed_tickers": [],
+  "data_source": "tushare",
+  "returns_long_rows": 1757,
+  "factor_exposure_rows": 42
+}

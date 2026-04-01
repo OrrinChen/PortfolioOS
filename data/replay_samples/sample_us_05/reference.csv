@@ -1,0 +1,7 @@
+ticker,industry,blacklist_buy,blacklist_sell,benchmark_weight,manager_aggregate_qty,issuer_total_shares
+AAPL,Consumer Electronics,false,false,0.290886,0.000000,14681140000.000000
+MSFT,Software - Infrastructure,false,false,0.214848,0.000000,7425629076.000000
+NVDA,Semiconductors,false,false,0.323921,0.000000,24300000000.000000
+AVGO,Semiconductors,false,false,0.111591,0.000000,4734668184.000000
+ORCL,Software - Infrastructure,false,false,0.031964,0.000000,2876046000.000000
+PLTR,Software - Infrastructure,false,false,0.026790,0.000000,2291470751.000000

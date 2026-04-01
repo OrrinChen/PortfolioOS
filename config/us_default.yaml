@@ -1,0 +1,38 @@
+project:
+  name: PortfolioOS
+  disclaimer: "Auxiliary decision-support tool only. Not investment advice."
+
+trading:
+  market: us
+  lot_size: 1
+  allow_fractional_shares_in_optimizer: true
+
+fees:
+  commission_rate: 0.0003
+  transfer_fee_rate: 0.0
+  stamp_duty_rate: 0.0
+
+slippage:
+  k: 0.015
+
+objective_weights:
+  target_deviation: 100000.0
+  transaction_fee: 1.0
+  turnover_penalty: 0.03
+  slippage_penalty: 1.0
+
+risk_model:
+  enabled: false
+  integration_mode: replace
+
+solver:
+  name: CLARABEL
+  max_iters: 5000
+  eps: 0.0001
+
+reporting:
+  top_weight_changes: 5
+  top_findings: 10
+
+simulation:
+  mode: impact_aware

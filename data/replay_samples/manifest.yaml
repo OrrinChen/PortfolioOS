@@ -1,0 +1,9 @@
+name: demo_replay_suite
+description: Static snapshot replay suite for benchmark comparison
+samples:
+  - sample_01
+  - sample_02
+  - sample_03
+  - sample_04
+  - sample_05
+

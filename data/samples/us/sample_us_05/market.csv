@@ -1,0 +1,7 @@
+ticker,close,vwap,adv_shares,tradable,upper_limit_hit,lower_limit_hit
+AAPL,248.800003,248.800003,40546695.000000,true,false,false
+MSFT,356.769989,356.769989,32756360.000000,true,false,false
+NVDA,167.520004,167.520004,180721205.000000,true,false,false
+AVGO,300.679993,300.679993,29606305.000000,true,false,false
+ORCL,139.660004,139.660004,28821560.000000,true,false,false
+PLTR,143.059998,143.059998,48390440.000000,true,false,false

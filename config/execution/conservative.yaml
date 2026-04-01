@@ -1,0 +1,5 @@
+urgency: low
+slice_ratio: 0.25
+max_child_orders: 4
+backtest_fixed_half_spread_bps: 5.0
+default_calibration_profile: config/calibration_profiles/balanced_day.yaml

@@ -1,0 +1,45 @@
+# Public fund template: stricter weight, turnover, and compliance signaling.
+single_name_max_weight: 0.12
+industry_bounds:
+  Consumer:
+    min: 0.00
+    max: 0.40
+  Industrials:
+    min: 0.05
+    max: 0.40
+  Financials:
+    min: 0.00
+    max: 0.25
+  Healthcare:
+    min: 0.00
+    max: 0.10
+max_turnover: 0.45
+min_order_notional: 5000.0
+participation_limit: 0.10
+cash_non_negative: true
+double_ten:
+  enabled: true
+  single_fund_limit: 0.10
+  manager_aggregate_limit: 0.10
+  remediation_days: 10
+single_name_guardrail:
+  enabled: true
+  buffer_lot_multiplier: 1.0
+  buffer_min_weight: 0.0005
+factor_bounds: {}
+no_trade_zone:
+  enabled: false
+  weight_threshold: 0.003
+severity_policy:
+  blocked_trade: BREACH
+  unresolved_risk: BREACH
+  manager_aggregate: INFO
+  remediation_note: INFO
+report_labels:
+  mandate_type: public_fund
+  audience: pm_compliance_trading
+  strategy_tag: PUBLIC_FUND_REBALANCE
+blocked_trade_policy:
+  treat_as_blocking: true
+  cleared_if_removed: true
+  export_requires_blocking_checks_cleared: true

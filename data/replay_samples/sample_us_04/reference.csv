@@ -1,0 +1,34 @@
+ticker,industry,blacklist_buy,blacklist_sell,benchmark_weight,manager_aggregate_qty,issuer_total_shares
+AAPL,Consumer Electronics,false,false,0.131089,0.000000,14681140000.000000
+MSFT,Software - Infrastructure,false,false,0.096822,0.000000,7425629076.000000
+NVDA,Semiconductors,false,false,0.145976,0.000000,24300000000.000000
+LLY,Drug Manufacturers - General,false,false,0.028950,0.000000,893357420.000000
+UNH,Healthcare Plans,false,false,0.008558,0.000000,907675839.000000
+JNJ,Drug Manufacturers - General,false,false,0.021186,0.000000,2408613219.000000
+ABBV,Drug Manufacturers - General,false,false,0.013632,0.000000,1768762377.000000
+VRTX,Biotechnology,false,false,0.004053,0.000000,254000000.000000
+JPM,Banks - Diversified,false,false,0.027848,0.000000,2697032375.000000
+BAC,Banks - Diversified,false,false,0.012283,0.000000,7145709181.000000
+GS,Capital Markets,false,false,0.008691,0.000000,294993942.000000
+AMZN,Internet Retail,false,false,0.078410,0.000000,10734920870.000000
+TSLA,Auto Manufacturers,false,false,0.048595,0.000000,3752431984.000000
+HD,Home Improvement Retail,false,false,0.011705,0.000000,996011466.000000
+MCD,Restaurants,false,false,0.008017,0.000000,712154350.000000
+GOOGL,Internet Content & Information,false,false,0.120012,0.000000,5822000000.000000
+META,Internet Content & Information,false,false,0.049103,0.000000,2187177748.000000
+NFLX,Entertainment,false,false,0.014334,0.000000,4237323340.000000
+UBER,Software - Application,false,false,0.005189,0.000000,2036824858.000000
+GE,Aerospace & Defense,false,false,0.010450,0.000000,1044829602.000000
+CAT,Farm & Heavy Construction Machinery,false,false,0.011323,0.000000,465287332.000000
+RTX,Aerospace & Defense,false,false,0.009120,0.000000,1345974220.000000
+LIN,Specialty Chemicals,false,false,0.008394,0.000000,463394156.000000
+FCX,Copper,false,false,0.002846,0.000000,1437201606.000000
+XOM,Oil & Gas Integrated,false,false,0.026047,0.000000,4166763453.000000
+CVX,Oil & Gas Integrated,false,false,0.015341,0.000000,1981217539.000000
+NEE,Utilities - Regulated Electric,false,false,0.006963,0.000000,2083521964.000000
+SO,Utilities - Regulated Electric,false,false,0.003951,0.000000,1119391291.000000
+WMT,Discount Stores,false,false,0.035746,0.000000,7972402501.000000
+COST,Discount Stores,false,false,0.016107,0.000000,443652540.000000
+KO,Beverages - Non-Alcoholic,false,false,0.011986,0.000000,4304152877.000000
+AMT,REIT - Specialty,false,false,0.002915,0.000000,466084820.000000
+PLD,REIT - Industrial,false,false,0.004359,0.000000,932230676.000000

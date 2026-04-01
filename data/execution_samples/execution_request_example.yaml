@@ -1,0 +1,31 @@
+# Baseline sample: keeps participation_twap explicit for A/B comparison against the default impact_aware mode.
+name: demo_execution_request
+description: Simulate intraday execution for a frozen final basket
+artifact_dir: outputs/approval_demo
+input_orders: final_orders_oms.csv
+portfolio_state: data/sample/portfolio_state_example.yaml
+execution_profile: config/execution/conservative.yaml
+calibration_profile: config/calibration_profiles/balanced_day.yaml
+market_curve:
+  buckets:
+    - label: open
+      volume_share: 0.25
+      slippage_multiplier: 1.2
+    - label: mid_morning
+      volume_share: 0.2
+      slippage_multiplier: 1.0
+    - label: midday
+      volume_share: 0.1
+      slippage_multiplier: 0.9
+    - label: afternoon
+      volume_share: 0.2
+      slippage_multiplier: 1.0
+    - label: close
+      volume_share: 0.25
+      slippage_multiplier: 1.15
+simulation:
+  mode: participation_twap
+  bucket_count: 5
+  allow_partial_fill: true
+  force_completion: false
+  max_bucket_participation_override:

@@ -1,0 +1,22 @@
+{
+  "provider": "mock",
+  "provider_token_source": null,
+  "as_of_date": "2026-03-23",
+  "request_parameters": {
+    "tickers_file": "data\\sample\\tickers.txt",
+    "tickers_count": 7
+  },
+  "output_path": "data\\generated\\snapshot_mock\\market.csv",
+  "output_sha256": "c4c80b339089637cbaf396b6fa3ce265cda72b571027e628d5b9cd800261e2b4",
+  "row_count": 7,
+  "generated_at": "2026-03-24T02:52:39.849627+00:00",
+  "approximation_notes": [
+    "Mock provider uses fixed local sample values."
+  ],
+  "provider_capability_status": "available",
+  "fallback_notes": [],
+  "permission_notes": [],
+  "recommended_alternative_path": null,
+  "build_status": "success",
+  "error_message": null
+}

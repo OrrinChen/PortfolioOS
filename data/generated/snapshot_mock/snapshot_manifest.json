@@ -1,0 +1,105 @@
+{
+  "provider": "mock",
+  "provider_token_source": null,
+  "as_of_date": "2026-03-23",
+  "tickers_input_path": "data\\sample\\tickers.txt",
+  "index_code": "000300.SH",
+  "overlay_path": "data\\sample\\reference_overlay_example.csv",
+  "generated_at": "2026-03-24T02:52:39.862153+00:00",
+  "build_status": "success",
+  "provider_capability_status": "available",
+  "fallback_notes": [],
+  "permission_notes": [],
+  "recommended_alternative_path": null,
+  "steps": {
+    "market": {
+      "build_status": "success",
+      "provider_capability_status": "available",
+      "fallback_notes": [],
+      "permission_notes": [],
+      "recommended_alternative_path": null,
+      "manifest": {
+        "path": "data\\generated\\snapshot_mock\\market_manifest.json",
+        "size": 706,
+        "sha256": "e0bcaa9e4c2331e851d2fb30e7a40fc115dbf68b466f8917fca5dccee5abb365"
+      },
+      "output": {
+        "path": "data\\generated\\snapshot_mock\\market.csv",
+        "size": 392,
+        "sha256": "c4c80b339089637cbaf396b6fa3ce265cda72b571027e628d5b9cd800261e2b4"
+      }
+    },
+    "reference": {
+      "build_status": "success",
+      "provider_capability_status": "available",
+      "fallback_notes": [],
+      "permission_notes": [],
+      "recommended_alternative_path": null,
+      "manifest": {
+        "path": "data\\generated\\snapshot_mock\\reference_manifest.json",
+        "size": 752,
+        "sha256": "50e1b32039f45363e4126d7f3731a178794cdd281fbcbdcfb0338f4383edfb08"
+      },
+      "output": {
+        "path": "data\\generated\\snapshot_mock\\reference.csv",
+        "size": 475,
+        "sha256": "381c85ed8fc6a431d47aadd86807ad582ee852643c2eaa75ba2ef1790ec32732"
+      }
+    },
+    "target": {
+      "build_status": "success",
+      "provider_capability_status": "available",
+      "fallback_notes": [],
+      "permission_notes": [],
+      "recommended_alternative_path": null,
+      "manifest": {
+        "path": "data\\generated\\snapshot_mock\\target_manifest.json",
+        "size": 855,
+        "sha256": "f27344dc1e46322586bacd94c0725e4b57706287f0307e8869c424b92b873527"
+      },
+      "output": {
+        "path": "data\\generated\\snapshot_mock\\target.csv",
+        "size": 113,
+        "sha256": "8db361f494ca3376a843c1217b0fcb444c5bce74ded2b1d44e9113dd61598b03"
+      }
+    }
+  },
+  "child_manifests": {
+    "market": {
+      "path": "data\\generated\\snapshot_mock\\market_manifest.json",
+      "size": 706,
+      "sha256": "e0bcaa9e4c2331e851d2fb30e7a40fc115dbf68b466f8917fca5dccee5abb365"
+    },
+    "reference": {
+      "path": "data\\generated\\snapshot_mock\\reference_manifest.json",
+      "size": 752,
+      "sha256": "50e1b32039f45363e4126d7f3731a178794cdd281fbcbdcfb0338f4383edfb08"
+    },
+    "target": {
+      "path": "data\\generated\\snapshot_mock\\target_manifest.json",
+      "size": 855,
+      "sha256": "f27344dc1e46322586bacd94c0725e4b57706287f0307e8869c424b92b873527"
+    }
+  },
+  "output_files": {
+    "market": {
+      "path": "data\\generated\\snapshot_mock\\market.csv",
+      "size": 392,
+      "sha256": "c4c80b339089637cbaf396b6fa3ce265cda72b571027e628d5b9cd800261e2b4"
+    },
+    "reference": {
+      "path": "data\\generated\\snapshot_mock\\reference.csv",
+      "size": 475,
+      "sha256": "381c85ed8fc6a431d47aadd86807ad582ee852643c2eaa75ba2ef1790ec32732"
+    },
+    "target": {
+      "path": "data\\generated\\snapshot_mock\\target.csv",
+      "size": 113,
+      "sha256": "8db361f494ca3376a843c1217b0fcb444c5bce74ded2b1d44e9113dd61598b03"
+    }
+  },
+  "notes": [
+    "Snapshot bundle locks a static cross-sectional input set for downstream PortfolioOS workflows.",
+    "Provider token values are never written; only provider_token_source is recorded."
+  ]
+}

@@ -1,0 +1,16 @@
+name: us_expanded_monthly_tca_calibrated
+description: "Expanded US monthly backtest what-if with low-participation calibrated TCA slippage k"
+returns_file: data/risk_inputs_us_expanded/returns_long.csv
+market_snapshot: data/universe/us_universe_market_2026-03-27.csv
+initial_holdings: data/samples/us/sample_us_04/holdings.csv
+target_weights: data/samples/us/sample_us_04/target.csv
+reference: data/samples/us/sample_us_04/reference.csv
+portfolio_state: data/samples/us/sample_us_04/portfolio_state.yaml
+config: config/us_expanded_tca_calibrated.yaml
+constraints: config/constraints/us_public_fund.yaml
+execution_profile: config/execution/conservative.yaml
+rebalance:
+  frequency: monthly
+baselines:
+  - naive_pro_rata
+  - buy_and_hold

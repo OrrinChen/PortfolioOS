@@ -1,0 +1,71 @@
+name: custodian_style_a
+description: Example pilot mapping for a custodian-style export with alternate headers and percentage weights
+holdings:
+  required_fields:
+    - ticker
+    - quantity
+  columns:
+    ticker: security_code
+    quantity: position_qty
+    avg_cost: avg_cost_cny
+target:
+  required_fields:
+    - ticker
+    - target_weight
+  columns:
+    ticker: security_code
+    target_weight: target_weight_pct
+  numeric_scales:
+    target_weight: 0.01
+market:
+  required_fields:
+    - ticker
+    - close
+    - adv_shares
+    - tradable
+    - upper_limit_hit
+    - lower_limit_hit
+  columns:
+    ticker: security_code
+    close: last_px
+    vwap: day_vwap
+    adv_shares: avg_daily_volume
+    tradable: is_tradable
+    upper_limit_hit: up_limit_flag
+    lower_limit_hit: down_limit_flag
+  boolean_values:
+    tradable:
+      y: true
+      n: false
+    upper_limit_hit:
+      y: true
+      n: false
+    lower_limit_hit:
+      y: true
+      n: false
+reference:
+  required_fields:
+    - ticker
+    - industry
+    - blacklist_buy
+    - blacklist_sell
+  columns:
+    ticker: security_code
+    industry: sector_name
+    blacklist_buy: buy_restricted
+    blacklist_sell: sell_restricted
+    benchmark_weight: benchmark_weight_pct
+    manager_aggregate_qty: peer_manager_qty
+    issuer_total_shares: issuer_total_shares
+  defaults:
+    blacklist_buy: false
+    blacklist_sell: false
+  boolean_values:
+    blacklist_buy:
+      y: true
+      n: false
+    blacklist_sell:
+      y: true
+      n: false
+  numeric_scales:
+    benchmark_weight: 0.01

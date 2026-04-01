@@ -1,0 +1,8 @@
+security_code,last_px,day_vwap,avg_daily_volume,is_tradable,up_limit_flag,down_limit_flag
+600519,1680,1675,150000,Y,N,N
+300750,220,219,2500000,Y,N,N
+601318,50,50.2,8000000,Y,N,N
+000333,60,59.8,6000000,Y,N,N
+600276,40,39.8,1200000,N,N,N
+000858,130,129.5,900000,Y,Y,N
+601012,25,25.1,7000000,Y,N,N

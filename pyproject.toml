@@ -1,0 +1,49 @@
+[tool.poetry]
+name = "portfolioos"
+version = "0.1.0"
+description = "Compliance-aware portfolio rebalancing and execution CLI for A-share and US-equity MVP demos."
+authors = ["OpenAI Codex <codex@openai.com>"]
+readme = "README.md"
+packages = [{ include = "portfolio_os", from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pydantic = "^2.11.0"
+pandas = "^2.2.0"
+numpy = "^2.0.0"
+cvxpy = "^1.6.0"
+pyyaml = "^6.0.0"
+typer = "^0.16.0"
+akshare = "^1.17.50"
+alpaca-py = "^0.38.0"
+yfinance = "^0.2.66"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.0"
+
+[tool.poetry.scripts]
+portfolio-os = "portfolio_os.api.cli:app"
+portfolio-os-alpha-research = "portfolio_os.api.cli:alpha_research_app"
+portfolio-os-backtest = "portfolio_os.api.cli:backtest_app"
+portfolio-os-backtest-sweep = "portfolio_os.api.cli:backtest_sweep_app"
+portfolio-os-risk-sweep = "portfolio_os.api.cli:risk_sweep_app"
+portfolio-os-replay = "portfolio_os.api.cli:replay_app"
+portfolio-os-scenarios = "portfolio_os.api.cli:scenario_app"
+portfolio-os-approve = "portfolio_os.api.cli:approval_app"
+portfolio-os-execute = "portfolio_os.api.cli:execution_app"
+portfolio-os-build-market = "portfolio_os.api.cli:build_market_app"
+portfolio-os-build-reference = "portfolio_os.api.cli:build_reference_app"
+portfolio-os-build-target = "portfolio_os.api.cli:build_target_app"
+portfolio-os-build-snapshot = "portfolio_os.api.cli:build_snapshot_app"
+portfolio-os-validate-pilot = "portfolio_os.simulation.pilot_validation:main"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+markers = [
+  "integration: tests that call external services such as Alpaca paper trading APIs.",
+]
+
+[build-system]
+requires = ["poetry-core>=1.9.0"]
+build-backend = "poetry.core.masonry.api"

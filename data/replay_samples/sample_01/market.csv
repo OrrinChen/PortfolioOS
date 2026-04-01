@@ -1,0 +1,9 @@
+ticker,close,vwap,adv_shares,tradable,upper_limit_hit,lower_limit_hit
+600519,1690,1684,150000,yes,false,false
+300750,218,217.5,3000000,yes,false,false
+601318,49,49.1,9000000,yes,false,false
+000333,61,60.7,6500000,yes,false,false
+600276,41,40.8,1600000,yes,false,false
+000858,132,131.2,1200000,yes,false,false
+601012,26,25.9,7500000,yes,false,false
+

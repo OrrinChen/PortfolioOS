@@ -1,0 +1,45 @@
+# Private fund template: wider limits with still-visible risk and tradability controls.
+single_name_max_weight: 0.20
+industry_bounds:
+  Consumer:
+    min: 0.00
+    max: 0.50
+  Industrials:
+    min: 0.00
+    max: 0.50
+  Financials:
+    min: 0.00
+    max: 0.35
+  Healthcare:
+    min: 0.00
+    max: 0.20
+max_turnover: 0.70
+min_order_notional: 3000.0
+participation_limit: 0.20
+cash_non_negative: true
+double_ten:
+  enabled: true
+  single_fund_limit: 0.10
+  manager_aggregate_limit: 0.10
+  remediation_days: 10
+single_name_guardrail:
+  enabled: true
+  buffer_lot_multiplier: 1.0
+  buffer_min_weight: 0.0005
+factor_bounds: {}
+no_trade_zone:
+  enabled: false
+  weight_threshold: 0.003
+severity_policy:
+  blocked_trade: WARNING
+  unresolved_risk: BREACH
+  manager_aggregate: INFO
+  remediation_note: INFO
+report_labels:
+  mandate_type: private_fund
+  audience: pm_risk_trading
+  strategy_tag: PRIVATE_FUND_REBALANCE
+blocked_trade_policy:
+  treat_as_blocking: true
+  cleared_if_removed: true
+  export_requires_blocking_checks_cleared: true

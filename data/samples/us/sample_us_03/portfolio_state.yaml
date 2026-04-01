@@ -1,0 +1,5 @@
+account_id: us_sample_03
+as_of_date: "2026-03-23"
+available_cash: 120000.0
+min_cash_buffer: 30000.0
+account_type: us_pilot

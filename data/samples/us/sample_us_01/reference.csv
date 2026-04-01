@@ -1,0 +1,6 @@
+ticker,industry,blacklist_buy,blacklist_sell,benchmark_weight,manager_aggregate_qty,issuer_total_shares
+AAPL,Technology,false,false,0.07,0,15450000000
+MSFT,Technology,false,false,0.07,0,7430000000
+GOOGL,Technology,false,false,0.05,0,12200000000
+AMZN,Consumer Cyclical,false,false,0.05,0,10400000000
+NVDA,Technology,false,false,0.06,0,2460000000

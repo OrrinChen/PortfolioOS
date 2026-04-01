@@ -1,0 +1,551 @@
+ticker,factor,exposure
+AAPL,Basic Materials,0.000000
+AAPL,Communication Services,0.000000
+AAPL,Consumer Cyclical,0.000000
+AAPL,Consumer Defensive,0.000000
+AAPL,Energy,0.000000
+AAPL,Financial Services,0.000000
+AAPL,Healthcare,0.000000
+AAPL,Industrials,0.000000
+AAPL,Real Estate,0.000000
+AAPL,Technology,1.000000
+AAPL,Utilities,0.000000
+ABBV,Basic Materials,0.000000
+ABBV,Communication Services,0.000000
+ABBV,Consumer Cyclical,0.000000
+ABBV,Consumer Defensive,0.000000
+ABBV,Energy,0.000000
+ABBV,Financial Services,0.000000
+ABBV,Healthcare,1.000000
+ABBV,Industrials,0.000000
+ABBV,Real Estate,0.000000
+ABBV,Technology,0.000000
+ABBV,Utilities,0.000000
+AES,Basic Materials,0.000000
+AES,Communication Services,0.000000
+AES,Consumer Cyclical,0.000000
+AES,Consumer Defensive,0.000000
+AES,Energy,0.000000
+AES,Financial Services,0.000000
+AES,Healthcare,0.000000
+AES,Industrials,0.000000
+AES,Real Estate,0.000000
+AES,Technology,0.000000
+AES,Utilities,1.000000
+AFRM,Basic Materials,0.000000
+AFRM,Communication Services,0.000000
+AFRM,Consumer Cyclical,0.000000
+AFRM,Consumer Defensive,0.000000
+AFRM,Energy,0.000000
+AFRM,Financial Services,1.000000
+AFRM,Healthcare,0.000000
+AFRM,Industrials,0.000000
+AFRM,Real Estate,0.000000
+AFRM,Technology,0.000000
+AFRM,Utilities,0.000000
+AMT,Basic Materials,0.000000
+AMT,Communication Services,0.000000
+AMT,Consumer Cyclical,0.000000
+AMT,Consumer Defensive,0.000000
+AMT,Energy,0.000000
+AMT,Financial Services,0.000000
+AMT,Healthcare,0.000000
+AMT,Industrials,0.000000
+AMT,Real Estate,1.000000
+AMT,Technology,0.000000
+AMT,Utilities,0.000000
+AMZN,Basic Materials,0.000000
+AMZN,Communication Services,0.000000
+AMZN,Consumer Cyclical,1.000000
+AMZN,Consumer Defensive,0.000000
+AMZN,Energy,0.000000
+AMZN,Financial Services,0.000000
+AMZN,Healthcare,0.000000
+AMZN,Industrials,0.000000
+AMZN,Real Estate,0.000000
+AMZN,Technology,0.000000
+AMZN,Utilities,0.000000
+APA,Basic Materials,0.000000
+APA,Communication Services,0.000000
+APA,Consumer Cyclical,0.000000
+APA,Consumer Defensive,0.000000
+APA,Energy,1.000000
+APA,Financial Services,0.000000
+APA,Healthcare,0.000000
+APA,Industrials,0.000000
+APA,Real Estate,0.000000
+APA,Technology,0.000000
+APA,Utilities,0.000000
+AVGO,Basic Materials,0.000000
+AVGO,Communication Services,0.000000
+AVGO,Consumer Cyclical,0.000000
+AVGO,Consumer Defensive,0.000000
+AVGO,Energy,0.000000
+AVGO,Financial Services,0.000000
+AVGO,Healthcare,0.000000
+AVGO,Industrials,0.000000
+AVGO,Real Estate,0.000000
+AVGO,Technology,1.000000
+AVGO,Utilities,0.000000
+BAC,Basic Materials,0.000000
+BAC,Communication Services,0.000000
+BAC,Consumer Cyclical,0.000000
+BAC,Consumer Defensive,0.000000
+BAC,Energy,0.000000
+BAC,Financial Services,1.000000
+BAC,Healthcare,0.000000
+BAC,Industrials,0.000000
+BAC,Real Estate,0.000000
+BAC,Technology,0.000000
+BAC,Utilities,0.000000
+CAT,Basic Materials,0.000000
+CAT,Communication Services,0.000000
+CAT,Consumer Cyclical,0.000000
+CAT,Consumer Defensive,0.000000
+CAT,Energy,0.000000
+CAT,Financial Services,0.000000
+CAT,Healthcare,0.000000
+CAT,Industrials,1.000000
+CAT,Real Estate,0.000000
+CAT,Technology,0.000000
+CAT,Utilities,0.000000
+CELH,Basic Materials,0.000000
+CELH,Communication Services,0.000000
+CELH,Consumer Cyclical,0.000000
+CELH,Consumer Defensive,1.000000
+CELH,Energy,0.000000
+CELH,Financial Services,0.000000
+CELH,Healthcare,0.000000
+CELH,Industrials,0.000000
+CELH,Real Estate,0.000000
+CELH,Technology,0.000000
+CELH,Utilities,0.000000
+COST,Basic Materials,0.000000
+COST,Communication Services,0.000000
+COST,Consumer Cyclical,0.000000
+COST,Consumer Defensive,1.000000
+COST,Energy,0.000000
+COST,Financial Services,0.000000
+COST,Healthcare,0.000000
+COST,Industrials,0.000000
+COST,Real Estate,0.000000
+COST,Technology,0.000000
+COST,Utilities,0.000000
+CVX,Basic Materials,0.000000
+CVX,Communication Services,0.000000
+CVX,Consumer Cyclical,0.000000
+CVX,Consumer Defensive,0.000000
+CVX,Energy,1.000000
+CVX,Financial Services,0.000000
+CVX,Healthcare,0.000000
+CVX,Industrials,0.000000
+CVX,Real Estate,0.000000
+CVX,Technology,0.000000
+CVX,Utilities,0.000000
+FCX,Basic Materials,1.000000
+FCX,Communication Services,0.000000
+FCX,Consumer Cyclical,0.000000
+FCX,Consumer Defensive,0.000000
+FCX,Energy,0.000000
+FCX,Financial Services,0.000000
+FCX,Healthcare,0.000000
+FCX,Industrials,0.000000
+FCX,Real Estate,0.000000
+FCX,Technology,0.000000
+FCX,Utilities,0.000000
+GE,Basic Materials,0.000000
+GE,Communication Services,0.000000
+GE,Consumer Cyclical,0.000000
+GE,Consumer Defensive,0.000000
+GE,Energy,0.000000
+GE,Financial Services,0.000000
+GE,Healthcare,0.000000
+GE,Industrials,1.000000
+GE,Real Estate,0.000000
+GE,Technology,0.000000
+GE,Utilities,0.000000
+GOOGL,Basic Materials,0.000000
+GOOGL,Communication Services,1.000000
+GOOGL,Consumer Cyclical,0.000000
+GOOGL,Consumer Defensive,0.000000
+GOOGL,Energy,0.000000
+GOOGL,Financial Services,0.000000
+GOOGL,Healthcare,0.000000
+GOOGL,Industrials,0.000000
+GOOGL,Real Estate,0.000000
+GOOGL,Technology,0.000000
+GOOGL,Utilities,0.000000
+GS,Basic Materials,0.000000
+GS,Communication Services,0.000000
+GS,Consumer Cyclical,0.000000
+GS,Consumer Defensive,0.000000
+GS,Energy,0.000000
+GS,Financial Services,1.000000
+GS,Healthcare,0.000000
+GS,Industrials,0.000000
+GS,Real Estate,0.000000
+GS,Technology,0.000000
+GS,Utilities,0.000000
+HD,Basic Materials,0.000000
+HD,Communication Services,0.000000
+HD,Consumer Cyclical,1.000000
+HD,Consumer Defensive,0.000000
+HD,Energy,0.000000
+HD,Financial Services,0.000000
+HD,Healthcare,0.000000
+HD,Industrials,0.000000
+HD,Real Estate,0.000000
+HD,Technology,0.000000
+HD,Utilities,0.000000
+JNJ,Basic Materials,0.000000
+JNJ,Communication Services,0.000000
+JNJ,Consumer Cyclical,0.000000
+JNJ,Consumer Defensive,0.000000
+JNJ,Energy,0.000000
+JNJ,Financial Services,0.000000
+JNJ,Healthcare,1.000000
+JNJ,Industrials,0.000000
+JNJ,Real Estate,0.000000
+JNJ,Technology,0.000000
+JNJ,Utilities,0.000000
+JPM,Basic Materials,0.000000
+JPM,Communication Services,0.000000
+JPM,Consumer Cyclical,0.000000
+JPM,Consumer Defensive,0.000000
+JPM,Energy,0.000000
+JPM,Financial Services,1.000000
+JPM,Healthcare,0.000000
+JPM,Industrials,0.000000
+JPM,Real Estate,0.000000
+JPM,Technology,0.000000
+JPM,Utilities,0.000000
+KO,Basic Materials,0.000000
+KO,Communication Services,0.000000
+KO,Consumer Cyclical,0.000000
+KO,Consumer Defensive,1.000000
+KO,Energy,0.000000
+KO,Financial Services,0.000000
+KO,Healthcare,0.000000
+KO,Industrials,0.000000
+KO,Real Estate,0.000000
+KO,Technology,0.000000
+KO,Utilities,0.000000
+LIN,Basic Materials,1.000000
+LIN,Communication Services,0.000000
+LIN,Consumer Cyclical,0.000000
+LIN,Consumer Defensive,0.000000
+LIN,Energy,0.000000
+LIN,Financial Services,0.000000
+LIN,Healthcare,0.000000
+LIN,Industrials,0.000000
+LIN,Real Estate,0.000000
+LIN,Technology,0.000000
+LIN,Utilities,0.000000
+LLY,Basic Materials,0.000000
+LLY,Communication Services,0.000000
+LLY,Consumer Cyclical,0.000000
+LLY,Consumer Defensive,0.000000
+LLY,Energy,0.000000
+LLY,Financial Services,0.000000
+LLY,Healthcare,1.000000
+LLY,Industrials,0.000000
+LLY,Real Estate,0.000000
+LLY,Technology,0.000000
+LLY,Utilities,0.000000
+MCD,Basic Materials,0.000000
+MCD,Communication Services,0.000000
+MCD,Consumer Cyclical,1.000000
+MCD,Consumer Defensive,0.000000
+MCD,Energy,0.000000
+MCD,Financial Services,0.000000
+MCD,Healthcare,0.000000
+MCD,Industrials,0.000000
+MCD,Real Estate,0.000000
+MCD,Technology,0.000000
+MCD,Utilities,0.000000
+META,Basic Materials,0.000000
+META,Communication Services,1.000000
+META,Consumer Cyclical,0.000000
+META,Consumer Defensive,0.000000
+META,Energy,0.000000
+META,Financial Services,0.000000
+META,Healthcare,0.000000
+META,Industrials,0.000000
+META,Real Estate,0.000000
+META,Technology,0.000000
+META,Utilities,0.000000
+MP,Basic Materials,1.000000
+MP,Communication Services,0.000000
+MP,Consumer Cyclical,0.000000
+MP,Consumer Defensive,0.000000
+MP,Energy,0.000000
+MP,Financial Services,0.000000
+MP,Healthcare,0.000000
+MP,Industrials,0.000000
+MP,Real Estate,0.000000
+MP,Technology,0.000000
+MP,Utilities,0.000000
+MRNA,Basic Materials,0.000000
+MRNA,Communication Services,0.000000
+MRNA,Consumer Cyclical,0.000000
+MRNA,Consumer Defensive,0.000000
+MRNA,Energy,0.000000
+MRNA,Financial Services,0.000000
+MRNA,Healthcare,1.000000
+MRNA,Industrials,0.000000
+MRNA,Real Estate,0.000000
+MRNA,Technology,0.000000
+MRNA,Utilities,0.000000
+MSFT,Basic Materials,0.000000
+MSFT,Communication Services,0.000000
+MSFT,Consumer Cyclical,0.000000
+MSFT,Consumer Defensive,0.000000
+MSFT,Energy,0.000000
+MSFT,Financial Services,0.000000
+MSFT,Healthcare,0.000000
+MSFT,Industrials,0.000000
+MSFT,Real Estate,0.000000
+MSFT,Technology,1.000000
+MSFT,Utilities,0.000000
+NEE,Basic Materials,0.000000
+NEE,Communication Services,0.000000
+NEE,Consumer Cyclical,0.000000
+NEE,Consumer Defensive,0.000000
+NEE,Energy,0.000000
+NEE,Financial Services,0.000000
+NEE,Healthcare,0.000000
+NEE,Industrials,0.000000
+NEE,Real Estate,0.000000
+NEE,Technology,0.000000
+NEE,Utilities,1.000000
+NEM,Basic Materials,1.000000
+NEM,Communication Services,0.000000
+NEM,Consumer Cyclical,0.000000
+NEM,Consumer Defensive,0.000000
+NEM,Energy,0.000000
+NEM,Financial Services,0.000000
+NEM,Healthcare,0.000000
+NEM,Industrials,0.000000
+NEM,Real Estate,0.000000
+NEM,Technology,0.000000
+NEM,Utilities,0.000000
+NFLX,Basic Materials,0.000000
+NFLX,Communication Services,1.000000
+NFLX,Consumer Cyclical,0.000000
+NFLX,Consumer Defensive,0.000000
+NFLX,Energy,0.000000
+NFLX,Financial Services,0.000000
+NFLX,Healthcare,0.000000
+NFLX,Industrials,0.000000
+NFLX,Real Estate,0.000000
+NFLX,Technology,0.000000
+NFLX,Utilities,0.000000
+NVDA,Basic Materials,0.000000
+NVDA,Communication Services,0.000000
+NVDA,Consumer Cyclical,0.000000
+NVDA,Consumer Defensive,0.000000
+NVDA,Energy,0.000000
+NVDA,Financial Services,0.000000
+NVDA,Healthcare,0.000000
+NVDA,Industrials,0.000000
+NVDA,Real Estate,0.000000
+NVDA,Technology,1.000000
+NVDA,Utilities,0.000000
+ORCL,Basic Materials,0.000000
+ORCL,Communication Services,0.000000
+ORCL,Consumer Cyclical,0.000000
+ORCL,Consumer Defensive,0.000000
+ORCL,Energy,0.000000
+ORCL,Financial Services,0.000000
+ORCL,Healthcare,0.000000
+ORCL,Industrials,0.000000
+ORCL,Real Estate,0.000000
+ORCL,Technology,1.000000
+ORCL,Utilities,0.000000
+PLD,Basic Materials,0.000000
+PLD,Communication Services,0.000000
+PLD,Consumer Cyclical,0.000000
+PLD,Consumer Defensive,0.000000
+PLD,Energy,0.000000
+PLD,Financial Services,0.000000
+PLD,Healthcare,0.000000
+PLD,Industrials,0.000000
+PLD,Real Estate,1.000000
+PLD,Technology,0.000000
+PLD,Utilities,0.000000
+PLTR,Basic Materials,0.000000
+PLTR,Communication Services,0.000000
+PLTR,Consumer Cyclical,0.000000
+PLTR,Consumer Defensive,0.000000
+PLTR,Energy,0.000000
+PLTR,Financial Services,0.000000
+PLTR,Healthcare,0.000000
+PLTR,Industrials,0.000000
+PLTR,Real Estate,0.000000
+PLTR,Technology,1.000000
+PLTR,Utilities,0.000000
+RIVN,Basic Materials,0.000000
+RIVN,Communication Services,0.000000
+RIVN,Consumer Cyclical,1.000000
+RIVN,Consumer Defensive,0.000000
+RIVN,Energy,0.000000
+RIVN,Financial Services,0.000000
+RIVN,Healthcare,0.000000
+RIVN,Industrials,0.000000
+RIVN,Real Estate,0.000000
+RIVN,Technology,0.000000
+RIVN,Utilities,0.000000
+RKLB,Basic Materials,0.000000
+RKLB,Communication Services,0.000000
+RKLB,Consumer Cyclical,0.000000
+RKLB,Consumer Defensive,0.000000
+RKLB,Energy,0.000000
+RKLB,Financial Services,0.000000
+RKLB,Healthcare,0.000000
+RKLB,Industrials,1.000000
+RKLB,Real Estate,0.000000
+RKLB,Technology,0.000000
+RKLB,Utilities,0.000000
+ROKU,Basic Materials,0.000000
+ROKU,Communication Services,1.000000
+ROKU,Consumer Cyclical,0.000000
+ROKU,Consumer Defensive,0.000000
+ROKU,Energy,0.000000
+ROKU,Financial Services,0.000000
+ROKU,Healthcare,0.000000
+ROKU,Industrials,0.000000
+ROKU,Real Estate,0.000000
+ROKU,Technology,0.000000
+ROKU,Utilities,0.000000
+RTX,Basic Materials,0.000000
+RTX,Communication Services,0.000000
+RTX,Consumer Cyclical,0.000000
+RTX,Consumer Defensive,0.000000
+RTX,Energy,0.000000
+RTX,Financial Services,0.000000
+RTX,Healthcare,0.000000
+RTX,Industrials,1.000000
+RTX,Real Estate,0.000000
+RTX,Technology,0.000000
+RTX,Utilities,0.000000
+SBAC,Basic Materials,0.000000
+SBAC,Communication Services,0.000000
+SBAC,Consumer Cyclical,0.000000
+SBAC,Consumer Defensive,0.000000
+SBAC,Energy,0.000000
+SBAC,Financial Services,0.000000
+SBAC,Healthcare,0.000000
+SBAC,Industrials,0.000000
+SBAC,Real Estate,1.000000
+SBAC,Technology,0.000000
+SBAC,Utilities,0.000000
+SNAP,Basic Materials,0.000000
+SNAP,Communication Services,1.000000
+SNAP,Consumer Cyclical,0.000000
+SNAP,Consumer Defensive,0.000000
+SNAP,Energy,0.000000
+SNAP,Financial Services,0.000000
+SNAP,Healthcare,0.000000
+SNAP,Industrials,0.000000
+SNAP,Real Estate,0.000000
+SNAP,Technology,0.000000
+SNAP,Utilities,0.000000
+SO,Basic Materials,0.000000
+SO,Communication Services,0.000000
+SO,Consumer Cyclical,0.000000
+SO,Consumer Defensive,0.000000
+SO,Energy,0.000000
+SO,Financial Services,0.000000
+SO,Healthcare,0.000000
+SO,Industrials,0.000000
+SO,Real Estate,0.000000
+SO,Technology,0.000000
+SO,Utilities,1.000000
+SOFI,Basic Materials,0.000000
+SOFI,Communication Services,0.000000
+SOFI,Consumer Cyclical,0.000000
+SOFI,Consumer Defensive,0.000000
+SOFI,Energy,0.000000
+SOFI,Financial Services,1.000000
+SOFI,Healthcare,0.000000
+SOFI,Industrials,0.000000
+SOFI,Real Estate,0.000000
+SOFI,Technology,0.000000
+SOFI,Utilities,0.000000
+TSLA,Basic Materials,0.000000
+TSLA,Communication Services,0.000000
+TSLA,Consumer Cyclical,1.000000
+TSLA,Consumer Defensive,0.000000
+TSLA,Energy,0.000000
+TSLA,Financial Services,0.000000
+TSLA,Healthcare,0.000000
+TSLA,Industrials,0.000000
+TSLA,Real Estate,0.000000
+TSLA,Technology,0.000000
+TSLA,Utilities,0.000000
+UBER,Basic Materials,0.000000
+UBER,Communication Services,0.000000
+UBER,Consumer Cyclical,0.000000
+UBER,Consumer Defensive,0.000000
+UBER,Energy,0.000000
+UBER,Financial Services,0.000000
+UBER,Healthcare,0.000000
+UBER,Industrials,0.000000
+UBER,Real Estate,0.000000
+UBER,Technology,1.000000
+UBER,Utilities,0.000000
+UNH,Basic Materials,0.000000
+UNH,Communication Services,0.000000
+UNH,Consumer Cyclical,0.000000
+UNH,Consumer Defensive,0.000000
+UNH,Energy,0.000000
+UNH,Financial Services,0.000000
+UNH,Healthcare,1.000000
+UNH,Industrials,0.000000
+UNH,Real Estate,0.000000
+UNH,Technology,0.000000
+UNH,Utilities,0.000000
+UPST,Basic Materials,0.000000
+UPST,Communication Services,0.000000
+UPST,Consumer Cyclical,0.000000
+UPST,Consumer Defensive,0.000000
+UPST,Energy,0.000000
+UPST,Financial Services,1.000000
+UPST,Healthcare,0.000000
+UPST,Industrials,0.000000
+UPST,Real Estate,0.000000
+UPST,Technology,0.000000
+UPST,Utilities,0.000000
+VRTX,Basic Materials,0.000000
+VRTX,Communication Services,0.000000
+VRTX,Consumer Cyclical,0.000000
+VRTX,Consumer Defensive,0.000000
+VRTX,Energy,0.000000
+VRTX,Financial Services,0.000000
+VRTX,Healthcare,1.000000
+VRTX,Industrials,0.000000
+VRTX,Real Estate,0.000000
+VRTX,Technology,0.000000
+VRTX,Utilities,0.000000
+WMT,Basic Materials,0.000000
+WMT,Communication Services,0.000000
+WMT,Consumer Cyclical,0.000000
+WMT,Consumer Defensive,1.000000
+WMT,Energy,0.000000
+WMT,Financial Services,0.000000
+WMT,Healthcare,0.000000
+WMT,Industrials,0.000000
+WMT,Real Estate,0.000000
+WMT,Technology,0.000000
+WMT,Utilities,0.000000
+XOM,Basic Materials,0.000000
+XOM,Communication Services,0.000000
+XOM,Consumer Cyclical,0.000000
+XOM,Consumer Defensive,0.000000
+XOM,Energy,1.000000
+XOM,Financial Services,0.000000
+XOM,Healthcare,0.000000
+XOM,Industrials,0.000000
+XOM,Real Estate,0.000000
+XOM,Technology,0.000000
+XOM,Utilities,0.000000

@@ -1,0 +1,10 @@
+# Baseline sample: keeps participation_twap explicit for A/B comparison against the default impact_aware mode.
+name: calibrated_execution_request
+description: Simulate intraday execution using an external calibration profile
+artifact_dir: outputs/approval_demo
+input_orders: final_orders_oms.csv
+portfolio_state: data/sample/portfolio_state_example.yaml
+execution_profile: config/execution/conservative.yaml
+simulation:
+  mode: participation_twap
+  bucket_count: 5

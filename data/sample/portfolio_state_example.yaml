@@ -1,0 +1,6 @@
+account_id: demo_public_fund_a1
+as_of_date: "2026-03-21"
+available_cash: 1300000.0
+min_cash_buffer: 50000.0
+account_type: public_fund
+

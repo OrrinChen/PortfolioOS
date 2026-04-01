@@ -1,0 +1,6 @@
+name: us_expanded_replay_suite
+description: Static snapshot replay suite for expanded US universe validation
+samples:
+  - sample_us_04
+  - sample_us_05
+  - sample_us_06

@@ -1,0 +1,3 @@
+ticker,blacklist_buy,blacklist_sell,manager_aggregate_qty
+601012,true,false,0
+000333,false,false,7500

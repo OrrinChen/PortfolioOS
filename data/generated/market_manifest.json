@@ -1,0 +1,16 @@
+{
+  "provider": "mock",
+  "provider_token_source": null,
+  "as_of_date": "2026-03-23",
+  "request_parameters": {
+    "tickers_file": "data\\sample\\tickers.txt",
+    "tickers_count": 7
+  },
+  "output_path": "data\\generated\\market.csv",
+  "output_sha256": "c4c80b339089637cbaf396b6fa3ce265cda72b571027e628d5b9cd800261e2b4",
+  "row_count": 7,
+  "generated_at": "2026-03-23T23:26:21.665918+00:00",
+  "approximation_notes": [
+    "Mock provider uses fixed local sample values."
+  ]
+}

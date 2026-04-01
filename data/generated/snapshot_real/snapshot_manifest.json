@@ -1,0 +1,118 @@
+{
+  "provider": "tushare",
+  "provider_token_source": "cli",
+  "as_of_date": "2026-03-23",
+  "tickers_input_path": "data\\sample\\tickers.txt",
+  "index_code": "000300.SH",
+  "overlay_path": "data\\sample\\reference_overlay_example.csv",
+  "generated_at": "2026-03-24T02:55:52.549170+00:00",
+  "build_status": "failed_permission",
+  "provider_capability_status": "unavailable",
+  "fallback_notes": [
+    "stk_limit_unavailable_used_price_band_approximation",
+    "stock_basic_unavailable_used_bak_basic",
+    "daily_basic_unavailable_used_bak_basic_or_blank_total_share"
+  ],
+  "permission_notes": [
+    "stk_limit_permission_missing_or_rate_limited",
+    "stock_basic_permission_missing_or_rate_limited",
+    "daily_basic_permission_missing_or_rate_limited",
+    "index_weight_permission_missing"
+  ],
+  "recommended_alternative_path": "provide_target_csv_and_continue",
+  "steps": {
+    "market": {
+      "build_status": "success_with_degradation",
+      "provider_capability_status": "degraded",
+      "fallback_notes": [
+        "stk_limit_unavailable_used_price_band_approximation"
+      ],
+      "permission_notes": [
+        "stk_limit_permission_missing_or_rate_limited"
+      ],
+      "recommended_alternative_path": "run_market_and_reference_builders_only",
+      "manifest": {
+        "path": "data\\generated\\snapshot_real\\market_manifest.json",
+        "size": 1298,
+        "sha256": "f736f1c2a8cd1749f71f8bf7f853375729f2823b9680792c536988e93a1b6c78"
+      },
+      "output": {
+        "path": "data\\generated\\snapshot_real\\market.csv",
+        "size": 502,
+        "sha256": "47a416b29d33cf84000fcd5c73d7e974b3433d8617e39f0719311677f57e832f"
+      }
+    },
+    "reference": {
+      "build_status": "success_with_degradation",
+      "provider_capability_status": "degraded",
+      "fallback_notes": [
+        "stock_basic_unavailable_used_bak_basic",
+        "daily_basic_unavailable_used_bak_basic_or_blank_total_share"
+      ],
+      "permission_notes": [
+        "stock_basic_permission_missing_or_rate_limited",
+        "daily_basic_permission_missing_or_rate_limited"
+      ],
+      "recommended_alternative_path": "run_market_and_reference_builders_only",
+      "manifest": {
+        "path": "data\\generated\\snapshot_real\\reference_manifest.json",
+        "size": 1476,
+        "sha256": "6fa8f8a134cc9ff33149d101f743395f4467e3cfefcdd08d3e76bb262ecde6c9"
+      },
+      "output": {
+        "path": "data\\generated\\snapshot_real\\reference.csv",
+        "size": 447,
+        "sha256": "aabe57bf85285ed188d5cde76c402c68014c3b84f3294ef32f5d8242a098da13"
+      }
+    },
+    "target": {
+      "build_status": "failed_permission",
+      "provider_capability_status": "unavailable",
+      "fallback_notes": [],
+      "permission_notes": [
+        "index_weight_permission_missing"
+      ],
+      "recommended_alternative_path": "provide_target_csv_and_continue",
+      "error_message": "Tushare index_weight access is unavailable for this account. You can continue with client-provided target.csv.",
+      "manifest": {
+        "path": "data\\generated\\snapshot_real\\target_manifest.json",
+        "size": 1175,
+        "sha256": "0a5ba24679492a72ac861565bca190e4152b6d0e7e41257c73b22e147f7070df"
+      },
+      "output": null
+    }
+  },
+  "child_manifests": {
+    "market": {
+      "path": "data\\generated\\snapshot_real\\market_manifest.json",
+      "size": 1298,
+      "sha256": "f736f1c2a8cd1749f71f8bf7f853375729f2823b9680792c536988e93a1b6c78"
+    },
+    "reference": {
+      "path": "data\\generated\\snapshot_real\\reference_manifest.json",
+      "size": 1476,
+      "sha256": "6fa8f8a134cc9ff33149d101f743395f4467e3cfefcdd08d3e76bb262ecde6c9"
+    },
+    "target": {
+      "path": "data\\generated\\snapshot_real\\target_manifest.json",
+      "size": 1175,
+      "sha256": "0a5ba24679492a72ac861565bca190e4152b6d0e7e41257c73b22e147f7070df"
+    }
+  },
+  "output_files": {
+    "market": {
+      "path": "data\\generated\\snapshot_real\\market.csv",
+      "size": 502,
+      "sha256": "47a416b29d33cf84000fcd5c73d7e974b3433d8617e39f0719311677f57e832f"
+    },
+    "reference": {
+      "path": "data\\generated\\snapshot_real\\reference.csv",
+      "size": 447,
+      "sha256": "aabe57bf85285ed188d5cde76c402c68014c3b84f3294ef32f5d8242a098da13"
+    }
+  },
+  "notes": [
+    "Snapshot bundle locks a static cross-sectional input set for downstream PortfolioOS workflows.",
+    "Provider token values are never written; only provider_token_source is recorded."
+  ]
+}

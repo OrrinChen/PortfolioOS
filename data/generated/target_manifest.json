@@ -1,0 +1,21 @@
+{
+  "provider": "mock",
+  "provider_token_source": null,
+  "as_of_date": "2026-03-23",
+  "request_parameters": {
+    "index_code": "000300.SH",
+    "normalization_tolerance": 0.02
+  },
+  "output_path": "data\\generated\\target.csv",
+  "output_sha256": "8db361f494ca3376a843c1217b0fcb444c5bce74ded2b1d44e9113dd61598b03",
+  "row_count": 7,
+  "generated_at": "2026-03-23T23:26:21.372745+00:00",
+  "approximation_notes": [
+    "Mock provider uses fixed local sample index weights."
+  ],
+  "index_code": "000300.SH",
+  "input_weight_sum": 1.0,
+  "output_weight_sum": 1.0,
+  "normalized": false,
+  "normalization_tolerance": 0.02
+}
