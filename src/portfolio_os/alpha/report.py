@@ -87,3 +87,65 @@ def render_alpha_research_report(
         )
     lines.append("")
     return "\n".join(lines)
+
+
+def render_alpha_acceptance_note(
+    decision_payload: dict[str, object],
+    *,
+    summary_frame: pd.DataFrame,
+) -> str:
+    """Render one markdown closeout note for the Phase 1 alpha acceptance gate."""
+
+    holdout_frame = (
+        summary_frame.loc[summary_frame["slice_name"] == "holdout"].copy()
+        if not summary_frame.empty and "slice_name" in summary_frame.columns
+        else pd.DataFrame()
+    )
+    lines = [
+        "# Phase 1 Alpha Acceptance Note",
+        "",
+        f"- Final status: `{decision_payload['status']}`",
+        f"- Acceptance mode: `{decision_payload.get('acceptance_mode')}`",
+        f"- Accepted recipe: `{decision_payload.get('accepted_recipe_name')}`",
+        f"- Baseline recipe: `{decision_payload.get('baseline_recipe_name')}`",
+        f"- Stop reason: `{decision_payload.get('stop_reason')}`",
+        f"- Next recommended action: `{decision_payload.get('next_recommended_action')}`",
+        "",
+    ]
+    accepted_metrics = decision_payload.get("accepted_holdout_metrics")
+    if isinstance(accepted_metrics, dict):
+        lines.extend(
+            [
+                "## Accepted Holdout Metrics",
+                f"- Mean IC: {_fmt_float(float(accepted_metrics['mean_ic']))}",
+                f"- Mean Rank IC: {_fmt_float(float(accepted_metrics['mean_rank_ic']))}",
+                f"- Positive Rank IC Ratio: {_fmt_pct(float(accepted_metrics['positive_rank_ic_ratio']))}",
+                f"- Mean Top-Bottom Spread: {_fmt_pct(float(accepted_metrics['mean_top_bottom_spread']))}",
+                f"- Evaluation Dates: {int(accepted_metrics['evaluation_date_count'])}",
+                f"- Mean Monthly Factor Turnover: {_fmt_float(float(accepted_metrics['mean_monthly_factor_turnover']))}",
+                "",
+            ]
+        )
+    if not holdout_frame.empty:
+        lines.extend(
+            [
+                "## Holdout Leaderboard",
+                "",
+                "| Round | Recipe | Baseline | Mean Rank IC | Positive Rank IC Ratio | Mean Top-Bottom Spread | Turnover |",
+                "| --- | --- | --- | ---: | ---: | ---: | ---: |",
+            ]
+        )
+        ordered = holdout_frame.sort_values(
+            by=["round_number", "mean_rank_ic", "positive_rank_ic_ratio", "mean_top_bottom_spread", "recipe_name"],
+            ascending=[True, False, False, False, True],
+        )
+        for row in ordered.to_dict(orient="records"):
+            turnover = float(row["mean_monthly_factor_turnover"])
+            turnover_text = "n/a" if pd.isna(turnover) else _fmt_float(turnover)
+            lines.append(
+                f"| {int(row['round_number'])} | {row['recipe_name']} | {str(bool(row['is_baseline'])).lower()} | "
+                f"{_fmt_float(float(row['mean_rank_ic']))} | {_fmt_pct(float(row['positive_rank_ic_ratio']))} | "
+                f"{_fmt_pct(float(row['mean_top_bottom_spread']))} | {turnover_text} |"
+            )
+        lines.append("")
+    return "\n".join(lines)

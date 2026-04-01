@@ -55,6 +55,12 @@ def _load_returns_panel(path: str | Path) -> pd.DataFrame:
     return panel
 
 
+def load_alpha_returns_panel(path: str | Path) -> pd.DataFrame:
+    """Public wrapper that loads a date x ticker returns panel for alpha workflows."""
+
+    return _load_returns_panel(path)
+
+
 def _rolling_compound(returns_panel: pd.DataFrame, lookback_days: int) -> pd.DataFrame:
     """Compound simple returns across one trailing window."""
 
@@ -214,9 +220,9 @@ def build_alpha_ic_frame(
                     ),
                 }
             )
-    ic_frame = pd.DataFrame(rows).sort_values("date").reset_index(drop=True)
-    if ic_frame.empty:
+    if not rows:
         raise InputValidationError("No alpha evaluation dates survived the minimum asset threshold.")
+    ic_frame = pd.DataFrame(rows).sort_values("date").reset_index(drop=True)
     return ic_frame
 
 
