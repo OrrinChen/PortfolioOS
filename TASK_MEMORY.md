@@ -17,7 +17,7 @@ Current high-level state:
 
 Latest full regression on this machine:
 
-- `python -m pytest -q` -> `296 passed, 28 warnings`
+- `python -m pytest -q` -> `307 passed, 38 warnings`
 
 ## Stable Platform Conclusions
 
@@ -167,7 +167,7 @@ Interpretation:
   - builds deterministic reversal and momentum signals
   - computes forward-return labels
   - emits signal panel, IC diagnostics, gate summary JSON, and markdown reports
-- Alpha is still not connected into portfolio construction.
+- Alpha is now connected into the historical backtest stack only.
 
 ### Phase 1 Closeout Result
 
@@ -197,6 +197,62 @@ Interpretation:
   - `momentum_weight = 1.0`
 - The old equal-weight reversal/momentum blend should not be the starting point for optimizer integration.
 
+## Phase 1.5 Alpha Integration State
+
+### Implemented Scope
+
+- Phase 1.5 alpha integration is now implemented in the backtest stack.
+- Added capabilities:
+  - objective-level `alpha_weight`
+  - walk-forward expected-return bridge from `alt_momentum_4_1`
+  - `alpha_only_top_quintile` baseline
+  - `alpha_panel.csv` audit artifact
+  - optimizer-vs-naive, optimizer-vs-alpha-only, and alpha-only-vs-naive reporting
+- Dedicated research inputs:
+  - `config/us_expanded_alpha_phase_1_5.yaml`
+  - `data/backtest_samples/manifest_us_expanded_alpha_phase_1_5.yaml`
+
+### Research Outcome
+
+- Canonical runtime output:
+  - `outputs/phase1_5_alpha_us_expanded`
+- Supporting sensitivity probe:
+  - `outputs/phase1_5_alpha_weight_probe/alpha_weight_probe_summary.csv`
+
+Main Phase 1.5 conclusion:
+
+- engineering integration succeeded
+- research gate failed
+
+Important machine-readable outcome from the main run:
+
+- `optimizer` annualized return: `6.37%`
+- `optimizer` Sharpe: `0.78`
+- `optimizer` turnover: `0.0`
+- `naive_pro_rata` annualized return: `14.47%`
+- `naive_pro_rata` Sharpe: `1.24`
+- `alpha_only_top_quintile` annualized return: `0.10%`
+- `alpha_only_top_quintile` Sharpe: `0.06`
+- `rebalance_dates_with_alpha_signal = 6`
+- `rebalance_dates_without_alpha_signal = 6`
+- effective nonzero expected-return dates: `2 / 12`
+
+### Structural Interpretation
+
+- The alpha channel is wired correctly, but it did not change optimizer behavior on the frozen expanded-US sample.
+- `optimizer` matched the no-trade `buy_and_hold` path exactly in the main run.
+- The ad hoc alpha-weight probe over `0, 1, 10, 100, 1000, 10000` produced identical optimizer results, so the current failure is not just a small-weight tuning issue.
+- The accepted Phase 1 signal becomes too sparse after walk-forward shrinkage:
+  - half the rebalance dates are cold-start
+  - most remaining dates still shrink to zero expected return
+- The alpha-only benchmark was much worse than naive, which means the accepted recipe is not yet strong enough for direct portfolio construction under realistic costs.
+
+### Decision Boundary
+
+- Do not promote alpha into `config/us_expanded.yaml`.
+- Keep Phase 1.5 as infrastructure-complete but research-negative.
+- The next research bottleneck is signal robustness and signal translation, not more optimizer plumbing.
+
 ## Current Mainline Documents
 
 Use these first when picking work back up:
@@ -205,26 +261,29 @@ Use these first when picking work back up:
 - `docs/cost_model_decision_note.md`
 - `docs/platform_ml_rl_roadmap.md`
 - `docs/phase_1_alpha_closeout_note.md`
+- `docs/phase_1_5_alpha_decision_note.md`
 - `docs/superpowers/specs/2026-04-01-phase-1-us-alpha-core-design.md`
 - `docs/superpowers/specs/2026-04-01-phase-1-alpha-acceptance-gate-design.md`
+- `docs/superpowers/specs/2026-04-01-phase-1-5-alpha-integration-design.md`
 - `docs/superpowers/plans/2026-04-01-phase-1-us-alpha-core.md`
 - `docs/superpowers/plans/2026-04-01-phase-1-alpha-acceptance-gate.md`
+- `docs/superpowers/plans/2026-04-01-phase-1-5-alpha-integration.md`
 
 ## Recommended Next Steps
 
 Priority order:
 
-1. Treat Phase 1 as closed and move to Phase 1.5 expected-return integration.
-2. Use `alt_momentum_4_1` as the accepted seed alpha for any optimizer-facing work.
+1. Treat Phase 1 and Phase 1.5 as closed.
+2. Keep `alt_momentum_4_1` as the accepted seed alpha for research, but not as a promoted production signal.
 3. Treat the current TCA overlay as valid only for `0-0.1% participation`.
 4. Do not promote calibrated `k = 3.498400399110418` into default config until the estimator and optimizer story both improve.
-5. Keep the risk-sweep and TCA tooling in place, but prioritize alpha-aware portfolio construction over more objective tinkering.
+5. Treat signal robustness and signal-translation quality as the next bottleneck, ahead of more optimizer tuning.
 
 Concrete next research step:
 
-- map `alt_momentum_4_1` scores into an optimizer-consumable expected-return input
-- run a controlled Phase 1.5 backtest against the current naive target-tracking path
-- measure whether accepted alpha improves portfolio construction once costs and risk are both present
+- revisit the signal layer on a longer or broader US sample
+- diagnose why walk-forward expected returns are nonzero on only a small subset of rebalance dates
+- only return to optimizer-promotion work after the alpha layer survives realistic costed backtests
 
 ## Simplified Historical Summary
 
@@ -237,7 +296,8 @@ Older work is intentionally compressed here.
 - Expanded-US research infrastructure, manifests, and samples are already in place and validated.
 - TCA fill collection, calibration, and readiness gating have been closed for the low-participation regime.
 - Cost-model and risk-aversion research both concluded that better alpha information was the highest-value bottleneck.
-- Phase 1 alpha research and acceptance are now closed, with `alt_momentum_4_1` accepted as the seed signal for the next stage.
+- Phase 1 alpha research and acceptance are now closed, with `alt_momentum_4_1` accepted as a provisional seed signal.
+- Phase 1.5 alpha integration is now implemented and closed with a negative research result: the optimizer did not beat naive and the alpha-only benchmark was weak.
 
 ## Workflow Notes
 
