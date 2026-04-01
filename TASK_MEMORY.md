@@ -1534,3 +1534,53 @@ Only optional follow-on work remains, for example:
     - improve feature definitions
     - add neutralization / standardization where appropriate
     - compare alternative blends before connecting alpha into the optimizer
+
+## 2026-04-01 Phase 1 Alpha Component Diagnostics Extension
+
+- Phase 1 alpha research now evaluates signal components side-by-side instead of only reporting the final blended score.
+- Research workflow changes:
+  - `run_alpha_research(...)` now computes per-date diagnostics for:
+    - `reversal_only`
+    - `momentum_only`
+    - `blended_alpha`
+  - the result object now carries:
+    - `signal_summary_frame`
+  - the workflow now writes one additional artifact:
+    - `alpha_signal_summary.csv`
+- Reporting changes:
+  - `alpha_research_summary.json` now includes:
+    - `primary_signal_name`
+    - `best_signal_name`
+    - `best_signal_mean_rank_ic`
+    - `signal_summaries`
+  - `alpha_research_report.md` now includes a `Signal Leaderboard` section before the per-date IC table
+  - the per-date IC table remains focused on the primary signal:
+    - `blended_alpha`
+- Code surface touched:
+  - `src/portfolio_os/alpha/research.py`
+  - `src/portfolio_os/alpha/report.py`
+  - `src/portfolio_os/api/cli.py`
+  - `tests/test_alpha_research.py`
+- Focused verification after the change:
+  - `python -m pytest tests/test_alpha_research.py -q` -> `6 passed`
+  - `python -m pytest tests/test_alpha_research.py tests/test_backtest.py -q` -> `17 passed, 26 warnings`
+- Real-data smoke run completed on the frozen expanded-US returns set:
+  - output root:
+    - `outputs/alpha_research_us_expanded_component_diagnostics`
+  - leaderboard result on current default parameters:
+    - `momentum_only`:
+      - `mean_rank_ic = 0.0169594237695078`
+      - `mean_top_bottom_spread = 0.004812966103636091`
+    - `blended_alpha`:
+      - `mean_rank_ic = 0.0023249785139220847`
+      - `mean_top_bottom_spread = -0.0052516018996480365`
+    - `reversal_only`:
+      - `mean_rank_ic = -0.011141416566626648`
+      - `mean_top_bottom_spread = -0.0048010166983345395`
+- Immediate interpretation:
+  - on the current frozen expanded-US sample, `momentum_only` is the strongest of the three evaluated signals
+  - the current equal-weight blend is worse than pure momentum
+  - the current reversal component is directionally harmful on average in this sample
+- Recommended next Phase 1 step:
+  - iterate the signal recipe around the momentum leg first
+  - either reduce or remove the reversal weight before expanding into broader parameter sweeps or optimizer integration

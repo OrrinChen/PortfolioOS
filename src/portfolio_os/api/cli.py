@@ -224,6 +224,7 @@ def main(
         )
         typer.echo(f"alpha_signal_panel.csv: {result.output_dir / 'alpha_signal_panel.csv'}")
         typer.echo(f"alpha_ic_by_date.csv: {result.output_dir / 'alpha_ic_by_date.csv'}")
+        typer.echo(f"alpha_signal_summary.csv: {result.output_dir / 'alpha_signal_summary.csv'}")
         typer.echo(f"alpha_research_summary.json: {result.output_dir / 'alpha_research_summary.json'}")
         typer.echo(f"alpha_research_report.md: {result.output_dir / 'alpha_research_report.md'}")
     except PortfolioOSError as exc:

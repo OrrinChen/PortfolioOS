@@ -60,6 +60,11 @@ def test_run_alpha_research_builds_signal_panel_with_expected_columns(tmp_path: 
         "alpha_score",
         "forward_return",
     } <= set(result.signal_frame.columns)
+    assert set(result.signal_summary_frame["signal_name"]) == {
+        "reversal_only",
+        "momentum_only",
+        "blended_alpha",
+    }
     assert list(result.signal_frame["date"]) == sorted(result.signal_frame["date"].tolist())
     assert result.signal_frame["alpha_score"].notna().all()
     assert result.signal_frame["forward_return"].notna().all()
@@ -109,7 +114,38 @@ def test_run_alpha_research_reports_positive_rank_ic_on_trending_fixture(tmp_pat
     assert result.summary_payload["evaluation_date_count"] > 0
     assert result.summary_payload["mean_rank_ic"] > 0.0
     assert result.summary_payload["mean_top_bottom_spread"] > 0.0
+    assert result.summary_payload["best_signal_name"] in {"momentum_only", "blended_alpha"}
     assert "rank_ic" in result.ic_frame.columns
+    assert "signal_name" in result.ic_frame.columns
+
+
+def test_run_alpha_research_compares_component_signals_in_summary(tmp_path: Path) -> None:
+    returns_path = _write_returns_fixture(tmp_path)
+    output_dir = tmp_path / "alpha_output"
+
+    result = run_alpha_research(
+        returns_file=returns_path,
+        output_dir=output_dir,
+        reversal_lookback_days=2,
+        momentum_lookback_days=3,
+        momentum_skip_days=1,
+        forward_horizon_days=2,
+        reversal_weight=0.0,
+        momentum_weight=1.0,
+        min_assets_per_date=4,
+        quantiles=2,
+    )
+
+    signal_summary = result.signal_summary_frame.set_index("signal_name")
+
+    assert float(signal_summary.loc["momentum_only", "mean_rank_ic"]) > float(
+        signal_summary.loc["reversal_only", "mean_rank_ic"]
+    )
+    assert float(signal_summary.loc["blended_alpha", "mean_rank_ic"]) == float(
+        signal_summary.loc["momentum_only", "mean_rank_ic"]
+    )
+    assert result.summary_payload["primary_signal_name"] == "blended_alpha"
+    assert len(result.summary_payload["signal_summaries"]) == 3
 
 
 def test_run_alpha_research_writes_expected_artifacts(tmp_path: Path) -> None:
@@ -131,6 +167,7 @@ def test_run_alpha_research_writes_expected_artifacts(tmp_path: Path) -> None:
 
     assert (output_dir / "alpha_signal_panel.csv").exists()
     assert (output_dir / "alpha_ic_by_date.csv").exists()
+    assert (output_dir / "alpha_signal_summary.csv").exists()
     assert (output_dir / "alpha_research_summary.json").exists()
     assert (output_dir / "alpha_research_report.md").exists()
 
@@ -138,7 +175,10 @@ def test_run_alpha_research_writes_expected_artifacts(tmp_path: Path) -> None:
     report_text = (output_dir / "alpha_research_report.md").read_text(encoding="utf-8")
 
     assert summary_payload["ticker_count"] == 4
+    assert summary_payload["primary_signal_name"] == "blended_alpha"
+    assert len(summary_payload["signal_summaries"]) == 3
     assert "# Alpha Research Report" in report_text
+    assert "## Signal Leaderboard" in report_text
 
 
 def test_alpha_research_cli_writes_outputs(tmp_path: Path) -> None:
@@ -175,5 +215,6 @@ def test_alpha_research_cli_writes_outputs(tmp_path: Path) -> None:
     assert result.exit_code == 0, result.output
     assert (output_dir / "alpha_signal_panel.csv").exists()
     assert (output_dir / "alpha_ic_by_date.csv").exists()
+    assert (output_dir / "alpha_signal_summary.csv").exists()
     assert (output_dir / "alpha_research_summary.json").exists()
     assert (output_dir / "alpha_research_report.md").exists()

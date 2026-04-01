@@ -13,6 +13,13 @@ from portfolio_os.data.loaders import ensure_columns, normalize_ticker, read_csv
 from portfolio_os.domain.errors import InputValidationError
 from portfolio_os.storage.snapshots import write_json, write_text
 
+_PRIMARY_SIGNAL_NAME = "blended_alpha"
+_SIGNAL_COLUMNS = {
+    "reversal_only": "reversal_rank",
+    "momentum_only": "momentum_rank",
+    _PRIMARY_SIGNAL_NAME: "alpha_score",
+}
+
 
 @dataclass
 class AlphaResearchResult:
@@ -22,6 +29,7 @@ class AlphaResearchResult:
     output_dir: Path
     signal_frame: pd.DataFrame
     ic_frame: pd.DataFrame
+    signal_summary_frame: pd.DataFrame
     summary_payload: dict[str, object]
     report_markdown: str
 
@@ -156,12 +164,18 @@ def _safe_correlation(left: pd.Series, right: pd.Series, method: str) -> float:
     return float(correlation)
 
 
-def _top_bottom_spread(frame: pd.DataFrame, quantiles: int) -> float:
-    """Compute top-minus-bottom forward return spread from alpha-score buckets."""
+def _signal_quantile_buckets(frame: pd.DataFrame, *, score_column: str, quantiles: int) -> pd.Series:
+    """Bucket one score column into quantiles using cross-sectional ranks."""
+
+    return np.ceil(frame[score_column].rank(method="first", pct=True) * quantiles).clip(1, quantiles)
+
+
+def _top_bottom_spread(frame: pd.DataFrame, *, score_column: str, quantiles: int) -> float:
+    """Compute top-minus-bottom forward return spread from score buckets."""
 
     if len(frame) < quantiles:
         return 0.0
-    rank_bucket = np.ceil(frame["alpha_score"].rank(method="first", pct=True) * quantiles).clip(1, quantiles)
+    rank_bucket = _signal_quantile_buckets(frame, score_column=score_column, quantiles=quantiles)
     top_forward = frame.loc[rank_bucket == quantiles, "forward_return"].mean()
     bottom_forward = frame.loc[rank_bucket == 1, "forward_return"].mean()
     if pd.isna(top_forward) or pd.isna(bottom_forward):
@@ -179,43 +193,61 @@ def build_alpha_ic_frame(
 
     rows: list[dict[str, object]] = []
     for date_value, date_frame in signal_frame.groupby("date", sort=True):
-        clean = date_frame.dropna(subset=["alpha_score", "forward_return"]).copy()
-        if len(clean) < int(min_assets_per_date):
-            continue
-        rows.append(
-            {
-                "date": str(date_value),
-                "observation_count": int(len(clean)),
-                "ic": _safe_correlation(clean["alpha_score"], clean["forward_return"], method="pearson"),
-                "rank_ic": _safe_correlation(clean["alpha_score"], clean["forward_return"], method="spearman"),
-                "top_bottom_spread": _top_bottom_spread(clean, quantiles),
-                "top_forward_return": float(
-                    clean.loc[
-                        np.ceil(clean["alpha_score"].rank(method="first", pct=True) * quantiles).clip(1, quantiles)
-                        == quantiles,
-                        "forward_return",
-                    ].mean()
-                    or 0.0
-                ),
-                "bottom_forward_return": float(
-                    clean.loc[
-                        np.ceil(clean["alpha_score"].rank(method="first", pct=True) * quantiles).clip(1, quantiles)
-                        == 1,
-                        "forward_return",
-                    ].mean()
-                    or 0.0
-                ),
-            }
-        )
+        for signal_name, score_column in _SIGNAL_COLUMNS.items():
+            clean = date_frame.dropna(subset=[score_column, "forward_return"]).copy()
+            if len(clean) < int(min_assets_per_date):
+                continue
+            rank_bucket = _signal_quantile_buckets(clean, score_column=score_column, quantiles=quantiles)
+            rows.append(
+                {
+                    "date": str(date_value),
+                    "signal_name": signal_name,
+                    "observation_count": int(len(clean)),
+                    "ic": _safe_correlation(clean[score_column], clean["forward_return"], method="pearson"),
+                    "rank_ic": _safe_correlation(clean[score_column], clean["forward_return"], method="spearman"),
+                    "top_bottom_spread": _top_bottom_spread(clean, score_column=score_column, quantiles=quantiles),
+                    "top_forward_return": float(
+                        clean.loc[rank_bucket == quantiles, "forward_return"].mean() or 0.0
+                    ),
+                    "bottom_forward_return": float(
+                        clean.loc[rank_bucket == 1, "forward_return"].mean() or 0.0
+                    ),
+                }
+            )
     ic_frame = pd.DataFrame(rows).sort_values("date").reset_index(drop=True)
     if ic_frame.empty:
         raise InputValidationError("No alpha evaluation dates survived the minimum asset threshold.")
     return ic_frame
 
 
+def build_alpha_signal_summary_frame(ic_frame: pd.DataFrame) -> pd.DataFrame:
+    """Aggregate per-date diagnostics into one row per evaluated signal."""
+
+    rows: list[dict[str, object]] = []
+    for signal_name, signal_ic_frame in ic_frame.groupby("signal_name", sort=False):
+        best_rank_ic_row = signal_ic_frame.loc[signal_ic_frame["rank_ic"].idxmax()]
+        worst_rank_ic_row = signal_ic_frame.loc[signal_ic_frame["rank_ic"].idxmin()]
+        rows.append(
+            {
+                "signal_name": str(signal_name),
+                "evaluation_date_count": int(len(signal_ic_frame)),
+                "mean_ic": float(signal_ic_frame["ic"].mean()),
+                "mean_rank_ic": float(signal_ic_frame["rank_ic"].mean()),
+                "positive_rank_ic_ratio": float((signal_ic_frame["rank_ic"] > 0.0).mean()),
+                "mean_top_bottom_spread": float(signal_ic_frame["top_bottom_spread"].mean()),
+                "best_rank_ic_date": str(best_rank_ic_row["date"]),
+                "best_rank_ic": float(best_rank_ic_row["rank_ic"]),
+                "worst_rank_ic_date": str(worst_rank_ic_row["date"]),
+                "worst_rank_ic": float(worst_rank_ic_row["rank_ic"]),
+            }
+        )
+    return pd.DataFrame(rows).sort_values(["mean_rank_ic", "signal_name"], ascending=[False, True]).reset_index(drop=True)
+
+
 def build_alpha_summary_payload(
     signal_frame: pd.DataFrame,
     ic_frame: pd.DataFrame,
+    signal_summary_frame: pd.DataFrame,
     *,
     returns_file: Path,
     reversal_lookback_days: int,
@@ -229,8 +261,11 @@ def build_alpha_summary_payload(
 ) -> dict[str, object]:
     """Build one compact JSON-serializable alpha research summary."""
 
-    best_rank_ic_row = ic_frame.loc[ic_frame["rank_ic"].idxmax()]
-    worst_rank_ic_row = ic_frame.loc[ic_frame["rank_ic"].idxmin()]
+    signal_summary_lookup = signal_summary_frame.set_index("signal_name")
+    if _PRIMARY_SIGNAL_NAME not in signal_summary_lookup.index:
+        raise InputValidationError("Primary blended alpha diagnostics are missing from the evaluation summary.")
+    primary_signal_row = signal_summary_lookup.loc[_PRIMARY_SIGNAL_NAME]
+    best_signal_row = signal_summary_frame.loc[signal_summary_frame["mean_rank_ic"].idxmax()]
     return {
         "returns_file": str(returns_file),
         "date_range": {
@@ -239,15 +274,19 @@ def build_alpha_summary_payload(
         },
         "ticker_count": int(signal_frame["ticker"].nunique()),
         "signal_row_count": int(len(signal_frame)),
-        "evaluation_date_count": int(len(ic_frame)),
-        "mean_ic": float(ic_frame["ic"].mean()),
-        "mean_rank_ic": float(ic_frame["rank_ic"].mean()),
-        "positive_rank_ic_ratio": float((ic_frame["rank_ic"] > 0.0).mean()),
-        "mean_top_bottom_spread": float(ic_frame["top_bottom_spread"].mean()),
-        "best_rank_ic_date": str(best_rank_ic_row["date"]),
-        "best_rank_ic": float(best_rank_ic_row["rank_ic"]),
-        "worst_rank_ic_date": str(worst_rank_ic_row["date"]),
-        "worst_rank_ic": float(worst_rank_ic_row["rank_ic"]),
+        "evaluation_date_count": int(primary_signal_row["evaluation_date_count"]),
+        "mean_ic": float(primary_signal_row["mean_ic"]),
+        "mean_rank_ic": float(primary_signal_row["mean_rank_ic"]),
+        "positive_rank_ic_ratio": float(primary_signal_row["positive_rank_ic_ratio"]),
+        "mean_top_bottom_spread": float(primary_signal_row["mean_top_bottom_spread"]),
+        "best_rank_ic_date": str(primary_signal_row["best_rank_ic_date"]),
+        "best_rank_ic": float(primary_signal_row["best_rank_ic"]),
+        "worst_rank_ic_date": str(primary_signal_row["worst_rank_ic_date"]),
+        "worst_rank_ic": float(primary_signal_row["worst_rank_ic"]),
+        "primary_signal_name": _PRIMARY_SIGNAL_NAME,
+        "best_signal_name": str(best_signal_row["signal_name"]),
+        "best_signal_mean_rank_ic": float(best_signal_row["mean_rank_ic"]),
+        "signal_summaries": signal_summary_frame.to_dict(orient="records"),
         "parameters": {
             "reversal_lookback_days": int(reversal_lookback_days),
             "momentum_lookback_days": int(momentum_lookback_days),
@@ -295,9 +334,11 @@ def run_alpha_research(
         min_assets_per_date=min_assets_per_date,
         quantiles=quantiles,
     )
+    signal_summary_frame = build_alpha_signal_summary_frame(ic_frame)
     summary_payload = build_alpha_summary_payload(
         signal_frame,
         ic_frame,
+        signal_summary_frame,
         returns_file=returns_path,
         reversal_lookback_days=reversal_lookback_days,
         momentum_lookback_days=momentum_lookback_days,
@@ -308,10 +349,15 @@ def run_alpha_research(
         min_assets_per_date=min_assets_per_date,
         quantiles=quantiles,
     )
-    report_markdown = render_alpha_research_report(summary_payload, ic_frame=ic_frame)
+    report_markdown = render_alpha_research_report(
+        summary_payload,
+        ic_frame=ic_frame,
+        signal_summary_frame=signal_summary_frame,
+    )
 
     signal_frame.to_csv(output_root / "alpha_signal_panel.csv", index=False)
     ic_frame.to_csv(output_root / "alpha_ic_by_date.csv", index=False)
+    signal_summary_frame.to_csv(output_root / "alpha_signal_summary.csv", index=False)
     write_json(output_root / "alpha_research_summary.json", summary_payload)
     write_text(output_root / "alpha_research_report.md", report_markdown)
 
@@ -320,6 +366,7 @@ def run_alpha_research(
         output_dir=output_root,
         signal_frame=signal_frame,
         ic_frame=ic_frame,
+        signal_summary_frame=signal_summary_frame,
         summary_payload=summary_payload,
         report_markdown=report_markdown,
     )
