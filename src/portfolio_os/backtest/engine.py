@@ -8,8 +8,9 @@ from typing import Any
 
 import pandas as pd
 
+from portfolio_os.alpha.backtest_bridge import AlphaRebalanceSnapshot, build_alpha_snapshot_for_rebalance
 from portfolio_os.backtest.attribution import build_backtest_summary, build_period_attribution_frame
-from portfolio_os.backtest.baseline import SUPPORTED_BASELINES, run_naive_pro_rata
+from portfolio_os.backtest.baseline import SUPPORTED_BASELINES, run_alpha_only_top_quintile, run_naive_pro_rata
 from portfolio_os.backtest.manifest import load_backtest_manifest
 from portfolio_os.backtest.report import render_backtest_report
 from portfolio_os.compliance.pretrade import collect_data_quality_findings
@@ -205,6 +206,21 @@ def _record_nav_rows(states: dict[str, _StrategyState], price_row: pd.Series) ->
     return rows
 
 
+def _inject_expected_returns(
+    universe: pd.DataFrame,
+    *,
+    alpha_snapshot: AlphaRebalanceSnapshot | None,
+) -> pd.DataFrame:
+    """Attach walk-forward expected returns when an alpha snapshot is available."""
+
+    if alpha_snapshot is None:
+        return universe
+    expected_return_frame = alpha_snapshot.current_cross_section.loc[:, ["ticker", "expected_return"]].copy()
+    merged = universe.merge(expected_return_frame, on="ticker", how="left")
+    merged["expected_return"] = merged["expected_return"].fillna(0.0).astype(float)
+    return merged
+
+
 def _build_summary(
     *,
     states: dict[str, _StrategyState],
@@ -296,6 +312,10 @@ def run_backtest(manifest_path: str | Path) -> BacktestResult:
         raise InputValidationError(
             "Unsupported backtest baseline(s): " + ", ".join(unknown_baselines)
         )
+    if "alpha_only_top_quintile" in manifest.baselines and not (
+        manifest.alpha_model is not None and manifest.alpha_model.enabled
+    ):
+        raise InputValidationError("alpha_only_top_quintile baseline requires alpha_model.enabled = true.")
 
     holdings = load_holdings(manifest.initial_holdings)
     targets = load_target_weights(manifest.target_weights)
@@ -326,7 +346,14 @@ def run_backtest(manifest_path: str | Path) -> BacktestResult:
         portfolio_frame.set_index("ticker")["quantity"].reindex(required_tickers).fillna(0).astype(int)
     )
 
+    alpha_only_enabled = bool(
+        manifest.alpha_model is not None
+        and manifest.alpha_model.enabled
+        and manifest.alpha_model.add_alpha_only_baseline
+    )
     strategy_order = ["optimizer", *manifest.baselines]
+    if alpha_only_enabled and "alpha_only_top_quintile" not in strategy_order:
+        strategy_order.append("alpha_only_top_quintile")
     states: dict[str, _StrategyState] = {
         "optimizer": _StrategyState(
             name="optimizer",
@@ -343,6 +370,12 @@ def run_backtest(manifest_path: str | Path) -> BacktestResult:
     if "buy_and_hold" in manifest.baselines:
         states["buy_and_hold"] = _StrategyState(
             name="buy_and_hold",
+            quantities=initial_quantities.copy(),
+            cash=float(initial_state.available_cash),
+        )
+    if "alpha_only_top_quintile" in strategy_order:
+        states["alpha_only_top_quintile"] = _StrategyState(
+            name="alpha_only_top_quintile",
             quantities=initial_quantities.copy(),
             cash=float(initial_state.available_cash),
         )
@@ -376,6 +409,21 @@ def run_backtest(manifest_path: str | Path) -> BacktestResult:
         period_end_date = schedule[schedule_position + 1] if schedule_position + 1 < len(schedule) else dates[-1]
         fill_price_row = price_panel.loc[next_date]
         end_price_row = price_panel.loc[period_end_date]
+        alpha_snapshot = None
+        if manifest.alpha_model is not None and manifest.alpha_model.enabled:
+            try:
+                alpha_snapshot = build_alpha_snapshot_for_rebalance(
+                    returns_file=manifest.returns_file,
+                    rebalance_date=current_date,
+                    quantiles=manifest.alpha_model.quantiles,
+                    min_evaluation_dates=manifest.alpha_model.min_evaluation_dates,
+                    zscore_winsor_limit=manifest.alpha_model.zscore_winsor_limit,
+                    t_stat_full_confidence=manifest.alpha_model.t_stat_full_confidence,
+                    max_abs_expected_return=manifest.alpha_model.max_abs_expected_return,
+                )
+            except InputValidationError:
+                # Early rebalance dates can legitimately lack enough history for the accepted recipe.
+                alpha_snapshot = None
 
         optimizer_start_quantities = states["optimizer"].quantities.copy()
         optimizer_start_cash = float(states["optimizer"].cash)
@@ -388,6 +436,10 @@ def run_backtest(manifest_path: str | Path) -> BacktestResult:
             base_reference_frame=base_reference_frame,
             price_row=price_row,
             app_config_template=app_config,
+        )
+        optimizer_universe = _inject_expected_returns(
+            optimizer_universe,
+            alpha_snapshot=alpha_snapshot,
         )
         optimizer_findings = collect_data_quality_findings(optimizer_universe, optimizer_config)
         optimizer_run = run_rebalance(
@@ -500,6 +552,58 @@ def run_backtest(manifest_path: str | Path) -> BacktestResult:
                     half_spread_bps=half_spread_bps,
                 )
             )
+
+        if "alpha_only_top_quintile" in states and alpha_snapshot is not None:
+            alpha_start_quantities = states["alpha_only_top_quintile"].quantities.copy()
+            alpha_start_cash = float(states["alpha_only_top_quintile"].cash)
+            alpha_universe, alpha_config = _build_strategy_universe(
+                current_date=current_date,
+                quantities=alpha_start_quantities,
+                cash=alpha_start_cash,
+                targets=targets,
+                base_market_frame=base_market_frame,
+                base_reference_frame=base_reference_frame,
+                price_row=price_row,
+                app_config_template=app_config,
+            )
+            alpha_findings = collect_data_quality_findings(alpha_universe, alpha_config)
+            alpha_run = run_alpha_only_top_quintile(
+                alpha_universe,
+                alpha_config,
+                alpha_target_weights=alpha_snapshot.alpha_only_target_weights,
+                input_findings=alpha_findings,
+            )
+            states["alpha_only_top_quintile"].rebalance_count += 1
+            states["alpha_only_top_quintile"].total_turnover += (
+                alpha_run.basket.gross_traded_notional / alpha_run.pre_trade_nav
+                if alpha_run.pre_trade_nav
+                else 0.0
+            )
+            period_rows.append(
+                _build_period_attribution_row(
+                    strategy_name="alpha_only_top_quintile",
+                    period_index=period_index,
+                    start_date=current_date,
+                    fill_date=next_date,
+                    end_date=period_end_date,
+                    start_quantities=alpha_start_quantities,
+                    start_cash=alpha_start_cash,
+                    start_price_row=price_row,
+                    fill_price_row=fill_price_row,
+                    end_price_row=end_price_row,
+                    orders=list(alpha_run.orders),
+                    gross_traded_notional=float(alpha_run.basket.gross_traded_notional),
+                    turnover=(
+                        alpha_run.basket.gross_traded_notional / alpha_run.pre_trade_nav
+                        if alpha_run.pre_trade_nav
+                        else 0.0
+                    ),
+                    commission_rate=commission_rate,
+                    half_spread_bps=half_spread_bps,
+                )
+            )
+            states["alpha_only_top_quintile"].pending_orders = list(alpha_run.orders)
+            states["alpha_only_top_quintile"].pending_fill_date = next_date
 
     nav_series = pd.DataFrame(nav_rows)
     nav_series["strategy"] = pd.Categorical(

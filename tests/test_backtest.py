@@ -244,6 +244,225 @@ def _write_risk_enabled_backtest_fixture(tmp_path: Path) -> Path:
     return manifest_path
 
 
+def _write_alpha_enabled_backtest_fixture(
+    tmp_path: Path,
+    *,
+    alpha_weight: float = 1.0,
+    include_alpha_model: bool = True,
+) -> Path:
+    base_dir = tmp_path / "alpha_backtest_fixture"
+    base_dir.mkdir(parents=True, exist_ok=True)
+
+    returns_path = base_dir / "returns_long.csv"
+    market_path = base_dir / "market_snapshot.csv"
+    holdings_path = base_dir / "initial_holdings.csv"
+    target_path = base_dir / "target_weights.csv"
+    reference_path = base_dir / "reference.csv"
+    portfolio_state_path = base_dir / "portfolio_state.yaml"
+    config_path = base_dir / "config.yaml"
+    constraints_path = base_dir / "constraints.yaml"
+    execution_profile_path = base_dir / "execution_profile.yaml"
+    manifest_path = base_dir / "manifest.yaml"
+
+    dates = pd.date_range("2025-01-02", periods=180, freq="B")
+    tickers = [f"T{index:02d}" for index in range(25)]
+    returns_rows: list[dict[str, object]] = []
+    for ticker_index, ticker in enumerate(tickers):
+        strength = 0.0025 - 0.0001 * ticker_index
+        for day_index, date_value in enumerate(dates):
+            seasonal = ((day_index % 10) - 5) * 0.0001
+            returns_rows.append(
+                {
+                    "date": date_value.strftime("%Y-%m-%d"),
+                    "ticker": ticker,
+                    "return": float(strength + seasonal),
+                }
+            )
+    pd.DataFrame(returns_rows).to_csv(returns_path, index=False)
+
+    pd.DataFrame(
+        [
+            {
+                "ticker": ticker,
+                "close": 20.0 + float(index),
+                "vwap": 20.0 + float(index),
+                "adv_shares": 1_000_000,
+                "tradable": True,
+                "upper_limit_hit": False,
+                "lower_limit_hit": False,
+            }
+            for index, ticker in enumerate(tickers)
+        ]
+    ).to_csv(market_path, index=False)
+
+    pd.DataFrame(
+        [
+            {"ticker": ticker, "quantity": (100 if index < 5 else 0)}
+            for index, ticker in enumerate(tickers)
+        ]
+    ).to_csv(holdings_path, index=False)
+
+    target_weight = 1.0 / float(len(tickers))
+    pd.DataFrame(
+        [
+            {"ticker": ticker, "target_weight": target_weight}
+            for ticker in tickers
+        ]
+    ).to_csv(target_path, index=False)
+
+    pd.DataFrame(
+        [
+            {
+                "ticker": ticker,
+                "industry": ("Technology" if index % 2 == 0 else "Healthcare"),
+                "blacklist_buy": False,
+                "blacklist_sell": False,
+            }
+            for index, ticker in enumerate(tickers)
+        ]
+    ).to_csv(reference_path, index=False)
+
+    portfolio_state_path.write_text(
+        "\n".join(
+            [
+                "account_id: test_alpha_backtest",
+                "as_of_date: '2025-01-02'",
+                "available_cash: 25000.0",
+                "min_cash_buffer: 0.0",
+                "account_type: us_pilot",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    config_path.write_text(
+        "\n".join(
+            [
+                "project:",
+                "  name: PortfolioOS",
+                '  disclaimer: "Auxiliary decision-support tool only. Not investment advice."',
+                "trading:",
+                "  market: us",
+                "  lot_size: 1",
+                "  allow_fractional_shares_in_optimizer: true",
+                "fees:",
+                "  commission_rate: 0.0003",
+                "  transfer_fee_rate: 0.0",
+                "  stamp_duty_rate: 0.0",
+                "slippage:",
+                "  k: 0.015",
+                "objective_weights:",
+                "  risk_term: 1.0",
+                "  tracking_error: 1.0",
+                "  transaction_cost: 1.0",
+                f"  alpha_weight: {float(alpha_weight)}",
+                "  target_deviation: 100000.0",
+                "  transaction_fee: 1.0",
+                "  turnover_penalty: 0.03",
+                "  slippage_penalty: 1.0",
+                "risk_model:",
+                "  enabled: false",
+                "solver:",
+                "  name: CLARABEL",
+                "  max_iters: 5000",
+                "  eps: 0.0001",
+                "reporting:",
+                "  top_weight_changes: 5",
+                "  top_findings: 10",
+                "simulation:",
+                "  mode: impact_aware",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    constraints_path.write_text(
+        "\n".join(
+            [
+                "single_name_max_weight: 0.2",
+                "industry_bounds: {}",
+                "max_turnover: 1.0",
+                "min_order_notional: 1.0",
+                "participation_limit: 1.0",
+                "cash_non_negative: true",
+                "double_ten:",
+                "  enabled: false",
+                "single_name_guardrail:",
+                "  enabled: false",
+                "factor_bounds: {}",
+                "no_trade_zone:",
+                "  enabled: false",
+                "severity_policy:",
+                "  blocked_trade: BREACH",
+                "  unresolved_risk: BREACH",
+                "  manager_aggregate: INFO",
+                "  remediation_note: INFO",
+                "report_labels:",
+                "  mandate_type: us_backtest",
+                "  audience: pm",
+                "  strategy_tag: US_BACKTEST",
+                "blocked_trade_policy:",
+                "  treat_as_blocking: true",
+                "  cleared_if_removed: true",
+                "  export_requires_blocking_checks_cleared: true",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    execution_profile_path.write_text(
+        "\n".join(
+            [
+                "urgency: low",
+                "slice_ratio: 0.25",
+                "max_child_orders: 4",
+                "backtest_fixed_half_spread_bps: 5.0",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    manifest_lines = [
+        "name: test_monthly_alpha_backtest",
+        "description: synthetic alpha-enabled monthly backtest fixture",
+        f"returns_file: {returns_path}",
+        f"market_snapshot: {market_path}",
+        f"initial_holdings: {holdings_path}",
+        f"target_weights: {target_path}",
+        f"reference: {reference_path}",
+        f"portfolio_state: {portfolio_state_path}",
+        f"config: {config_path}",
+        f"constraints: {constraints_path}",
+        f"execution_profile: {execution_profile_path}",
+        "rebalance:",
+        "  frequency: monthly",
+        "baselines:",
+        "  - naive_pro_rata",
+        "  - buy_and_hold",
+    ]
+    if include_alpha_model:
+        manifest_lines.extend(
+            [
+                "alpha_model:",
+                "  enabled: true",
+                "  recipe_name: alt_momentum_4_1",
+                "  quantiles: 5",
+                "  forward_horizon_days: 5",
+                "  min_evaluation_dates: 20",
+                "  zscore_winsor_limit: 3.0",
+                "  t_stat_full_confidence: 3.0",
+                "  max_abs_expected_return: 0.30",
+                "  write_alpha_panel: true",
+                "  add_alpha_only_baseline: true",
+            ]
+        )
+    manifest_path.write_text(
+        "\n".join(manifest_lines) + "\n",
+        encoding="utf-8",
+    )
+    return manifest_path
+
+
 def test_load_backtest_manifest_reads_monthly_us_expanded_sample(project_root: Path) -> None:
     manifest = load_backtest_manifest(
         project_root / "data" / "backtest_samples" / "manifest_us_expanded.yaml"
@@ -320,6 +539,41 @@ def test_run_backtest_produces_optimizer_naive_and_buy_hold_nav(tmp_path: Path) 
     assert (buy_and_hold_rows["active_trading_pnl"].abs() < 1e-8).all()
     assert (buy_and_hold_rows["trading_cost_pnl"].abs() < 1e-8).all()
     assert "# Backtest Report" in result.report_markdown
+
+
+def test_run_backtest_alpha_manifest_adds_alpha_only_strategy(tmp_path: Path) -> None:
+    manifest_path = _write_alpha_enabled_backtest_fixture(tmp_path)
+
+    result = run_backtest(manifest_path)
+
+    assert {"optimizer", "naive_pro_rata", "buy_and_hold", "alpha_only_top_quintile"} <= set(result.nav_series["strategy"])
+    assert "alpha_only_top_quintile" in set(result.period_attribution["strategy"])
+    assert "alpha_only_top_quintile" in result.summary["strategies"]
+
+
+def test_alpha_enabled_manifest_with_zero_alpha_weight_matches_baseline_optimizer(tmp_path: Path) -> None:
+    baseline_manifest = _write_alpha_enabled_backtest_fixture(
+        tmp_path / "baseline",
+        alpha_weight=0.0,
+        include_alpha_model=False,
+    )
+    alpha_manifest = _write_alpha_enabled_backtest_fixture(
+        tmp_path / "alpha",
+        alpha_weight=0.0,
+        include_alpha_model=True,
+    )
+
+    baseline_result = run_backtest(baseline_manifest)
+    alpha_result = run_backtest(alpha_manifest)
+
+    baseline_optimizer = baseline_result.nav_series.loc[
+        baseline_result.nav_series["strategy"] == "optimizer", "nav"
+    ].reset_index(drop=True)
+    alpha_optimizer = alpha_result.nav_series.loc[
+        alpha_result.nav_series["strategy"] == "optimizer", "nav"
+    ].reset_index(drop=True)
+
+    pd.testing.assert_series_equal(alpha_optimizer, baseline_optimizer, check_names=False)
 
 
 def test_backtest_cli_writes_json_and_nav_series(tmp_path: Path) -> None:
