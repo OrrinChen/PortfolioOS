@@ -17,7 +17,7 @@ Current high-level state:
 
 Latest full regression on this machine:
 
-- `python -m pytest -q` -> `288 passed, 28 warnings`
+- `python -m pytest -q` -> `296 passed, 28 warnings`
 
 ## Stable Platform Conclusions
 
@@ -157,48 +157,45 @@ Interpretation:
   - `src/portfolio_os/alpha/`
 - Public workflow:
   - `run_alpha_research(...)`
+- Acceptance workflow:
+  - `run_alpha_acceptance_gate(...)`
 - CLI:
   - `portfolio-os-alpha-research`
+  - `portfolio-os-alpha-acceptance`
 - Current scope is intentionally research-only:
   - consumes `returns_long.csv`
   - builds deterministic reversal and momentum signals
   - computes forward-return labels
-  - emits signal panel, IC diagnostics, summary JSON, and markdown report
-- Alpha is not yet connected into portfolio construction.
+  - emits signal panel, IC diagnostics, gate summary JSON, and markdown reports
+- Alpha is still not connected into portfolio construction.
 
-### Current Best Research Reading
+### Phase 1 Closeout Result
 
-- Alpha component diagnostics now compare:
-  - `reversal_only`
-  - `momentum_only`
-  - `blended_alpha`
-- The workflow now writes:
-  - `alpha_signal_summary.csv`
-- Latest real-data smoke output:
-  - `outputs/alpha_research_us_expanded_component_diagnostics`
-
-Current frozen expanded-US result:
-
-- `momentum_only` is the strongest of the three signals.
-- The current equal-weight `blended_alpha` is materially worse than pure momentum.
-- The current reversal component is harmful on average in this sample.
-
-Important numbers from the latest smoke run:
-
-- `momentum_only`:
-  - `mean_rank_ic = 0.0169594237695078`
-  - `mean_top_bottom_spread = 0.004812966103636091`
-- `blended_alpha`:
-  - `mean_rank_ic = 0.0023249785139220847`
-  - `mean_top_bottom_spread = -0.0052516018996480365`
-- `reversal_only`:
-  - `mean_rank_ic = -0.011141416566626648`
-  - `mean_top_bottom_spread = -0.0048010166983345395`
+- The Phase 1 alpha acceptance gate is now implemented and closed on the frozen expanded-US snapshot.
+- Canonical runtime output:
+  - `outputs/phase1_alpha_acceptance_us_expanded`
+- Final machine-readable decision:
+  - `status = accepted`
+  - `acceptance_mode = accepted_by_relative_and_absolute_gates`
+  - `accepted_recipe_name = alt_momentum_4_1`
+  - `baseline_recipe_name = equal_weight_momentum_6_1`
+  - `completed_round_count = 1`
+- Accepted holdout metrics:
+  - `mean_rank_ic = 0.10630492196878749`
+  - `positive_rank_ic_ratio = 0.775`
+  - `mean_top_bottom_spread = 0.012255149986753346`
+  - `evaluation_date_count = 40`
+  - `mean_monthly_factor_turnover = 0.35`
 
 Interpretation:
 
-- The next alpha iteration should be momentum-first.
-- The reversal leg should be reduced, redesigned, or removed before broader sweeps or optimizer integration.
+- Phase 1 closed with a momentum-first winner.
+- The accepted recipe is shorter-lookback pure momentum:
+  - `momentum_lookback_days = 84`
+  - `momentum_skip_days = 21`
+  - `reversal_weight = 0.0`
+  - `momentum_weight = 1.0`
+- The old equal-weight reversal/momentum blend should not be the starting point for optimizer integration.
 
 ## Current Mainline Documents
 
@@ -207,24 +204,27 @@ Use these first when picking work back up:
 - `docs/execution_mode_decision_note.md`
 - `docs/cost_model_decision_note.md`
 - `docs/platform_ml_rl_roadmap.md`
+- `docs/phase_1_alpha_closeout_note.md`
 - `docs/superpowers/specs/2026-04-01-phase-1-us-alpha-core-design.md`
+- `docs/superpowers/specs/2026-04-01-phase-1-alpha-acceptance-gate-design.md`
 - `docs/superpowers/plans/2026-04-01-phase-1-us-alpha-core.md`
+- `docs/superpowers/plans/2026-04-01-phase-1-alpha-acceptance-gate.md`
 
 ## Recommended Next Steps
 
 Priority order:
 
-1. Continue Phase 1 alpha iteration, not optimizer surgery.
-2. Rework the alpha recipe around the momentum leg first.
-3. After a better alpha candidate exists, revisit alpha-aware portfolio construction.
-4. Treat the current TCA overlay as valid only for `0-0.1% participation`.
-5. Do not promote calibrated `k = 3.498400399110418` into default config until the estimator and optimizer story both improve.
+1. Treat Phase 1 as closed and move to Phase 1.5 expected-return integration.
+2. Use `alt_momentum_4_1` as the accepted seed alpha for any optimizer-facing work.
+3. Treat the current TCA overlay as valid only for `0-0.1% participation`.
+4. Do not promote calibrated `k = 3.498400399110418` into default config until the estimator and optimizer story both improve.
+5. Keep the risk-sweep and TCA tooling in place, but prioritize alpha-aware portfolio construction over more objective tinkering.
 
 Concrete next research step:
 
-- add one or two momentum-first alpha variants
-- compare them with the existing baseline on the same expanded-US sample
-- only then decide whether Phase 1.5 should connect expected returns into the optimizer
+- map `alt_momentum_4_1` scores into an optimizer-consumable expected-return input
+- run a controlled Phase 1.5 backtest against the current naive target-tracking path
+- measure whether accepted alpha improves portfolio construction once costs and risk are both present
 
 ## Simplified Historical Summary
 
@@ -236,7 +236,8 @@ Older work is intentionally compressed here.
 - Multi-period impact-aware execution infrastructure is complete and is the default simulation mode.
 - Expanded-US research infrastructure, manifests, and samples are already in place and validated.
 - TCA fill collection, calibration, and readiness gating have been closed for the low-participation regime.
-- Cost-model and risk-aversion research both concluded that better alpha information is now the highest-value bottleneck.
+- Cost-model and risk-aversion research both concluded that better alpha information was the highest-value bottleneck.
+- Phase 1 alpha research and acceptance are now closed, with `alt_momentum_4_1` accepted as the seed signal for the next stage.
 
 ## Workflow Notes
 
