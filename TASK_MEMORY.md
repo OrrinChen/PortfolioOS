@@ -702,6 +702,44 @@ Important machine-readable outcome from the main run:
   - it failed because the current `21d` / monthly-style carry formulation is a poor fit for sparse earnings-call events
   - if transcript research resumes, it should reopen as an explicitly event-driven branch rather than as another near-identical monthly LightGBM retry
 
+### Phase 3.8 42d Horizon Promotion Check
+
+- Phase 3.8 was implemented in the same isolated Qlib worktree and stopped at Gate A by design.
+- Canonical Phase 3.8 output root:
+  - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha\outputs\phase3_8_42d_event_alpha`
+- Main implementation artifacts:
+  - `scripts/run_phase3_8_nonoverlap_42d.py`
+  - `scripts/build_phase3_8_event_panel.py`
+  - `scripts/run_phase3_8_event_alpha.py`
+- Main machine-readable artifacts:
+  - `nonoverlap_42d_baseline_sweep.json`
+  - `phase3_8_gate_summary.json`
+  - `phase3_8_gate_report.md`
+- Gate A design:
+  - non-overlapping `42-trading-day` forward windows
+  - evaluated on `top_500_liquid_dynamic` and `top_300_liquid_dynamic`
+  - tested deterministic candidates instead of reopening a new ML branch prematurely
+- Candidate sweep result:
+  - `mom_84_21`:
+    - `top_500 mean_rank_ic = -0.018248642461049007`
+    - `top_500 rank_ic_tstat = -0.5556388229961094`
+  - `book_to_price`:
+    - `top_500 mean_rank_ic = 0.020757686076202854`
+    - `top_500 rank_ic_tstat = 0.712796150509914`
+  - `multifactor_equal`:
+    - `top_500 mean_rank_ic = -0.005315871182602591`
+    - `top_500 rank_ic_tstat = -0.16973935125799197`
+- Stable Phase 3.8 outcome:
+  - `outcome = 42d_not_promoted`
+  - `reason = nonoverlap_42d_failed_on_all_deterministic_candidates`
+  - `best_candidate = book_to_price`
+  - `event_branch_run = false`
+- Interpretation:
+  - the earlier overlapping-window `42d` pocket was real enough to justify investigation but did **not** survive as a promotion-worthy deterministic default under non-overlapping evaluation
+  - the current research stack should therefore **not** switch its default horizon from `21d` to `42d`
+  - because Gate A failed, the Phase 3.8 event-driven transcript / grades branch was correctly **not** opened
+  - any future event-driven branch should be treated as a new hypothesis, not as an automatic continuation of a failed `42d` horizon promotion
+
 ## Current Mainline Documents
 
 Use these first when picking work back up:
@@ -740,19 +778,24 @@ Priority order:
    - transcript V1 did not rescue the structured ML branch
    - the improved transcript diagnostics showed real event information, but not in a form suitable for the current monthly carry formulation
    - transcript research should only resume as a new event-driven branch
-9. If alpha research resumes, either:
+9. Treat Phase 3.8 as closed:
+   - non-overlapping `42d` parity did **not** confirm a strong enough deterministic baseline
+   - `42d` is therefore not promoted as the new default research horizon
+   - the event-driven transcript / grades branch did not open because Gate A failed
+10. If alpha research resumes, either:
    - stay with deterministic baseline as the working alpha path, or
    - open a clearly new ML branch with materially different feature / label design and an objectively defined large-cap / liquid universe
 
 Concrete next research step:
 
 - keep the canonical 300-name list as a continuity control, but treat `expanded_liquid_core` as the primary research universe
-- treat `42d` as the stronger current research horizon candidate than `21d`, but validate it with a non-overlapping parity / backtest check before treating it as the new default
+- keep `21d` as the default research horizon until a future branch shows a stronger non-overlapping case for another horizon
 - do not run another near-identical LightGBM retry on the same compact-feature setup or the same neutralized broad-training setup
 - only reopen ML if there is a new hypothesis strong enough to justify a new branch
 - if ML is reopened, prefer an objective `top-N liquid large-cap` research universe over a canonical-300-specific scope
 - if ML is reopened, treat `top_500-only` style training as the more defensible reference branch than broad-sample training under the current feature family
 - do not spend time on a PIT analyst-revision alpha unless a true historical estimate snapshot source exists; the current frozen FMP analyst-estimate payloads are not sufficient for clean revision-history research
+- only reopen transcript or grades research as explicitly event-driven hypotheses with fresh gates, not as automatic follow-ons from the failed Phase 3.8 horizon check
 - only return to PortfolioOS alpha integration once a new signal passes the primary-universe Layer 1 gate
 - do not resume optimizer-promotion or RL-execution work until the alpha layer is signal-ready again
 
@@ -777,7 +820,8 @@ Older work is intentionally compressed here.
 - Phase 3.6 then ran a neutralized regime-aware retry with sector/size residualization, supplementary cap/liquidity regime features, and balanced cap-bucket weights; it improved robustness and continuity but still closed as `retry_reject` because the real `top_500` deployment slice did not clear the promotion gate and broad-sample training did not beat the `top_500-only` shadow benchmark.
 - Phase 3.7 then added transcript features and a horizon audit, but the transcript branch closed as `transcript_inconclusive`: weak usage, weak complementarity, and no Layer 2 promotion.
 - Phase 3.7x then repaired transcript uncertainty and added carry-window / univariate diagnostics, showing that transcripts likely contain some event information but are misframed by the current monthly carry setup.
-- The strongest late-stage research finding so far is that `42d` looks materially better than `21d` on the large-cap / liquid deployment slices, so future research should treat horizon choice itself as a first-order design decision.
+- Phase 3.8 then ran a non-overlapping `42d` promotion check and found that none of the tested deterministic candidates cleared the Gate A threshold, so `42d` was **not** promoted and the event-driven branch did not open.
+- Horizon choice remains a first-order design decision, but `42d` is no longer an open promotion candidate under the current deterministic stack.
 
 ## Workflow Notes
 
