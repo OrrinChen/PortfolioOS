@@ -1068,6 +1068,91 @@ Interpretation:
   - the free SEC 13F branch is now a validated data asset, but not a validated alpha source under the current `21d non-overlapping + quarterly carry` framing
   - if institutional-flow research resumes later, it should reopen as a clearly new branch with materially different factor construction rather than as a direct continuation of Phase 4E
 
+## Phase 5 RL Execution Sandbox
+
+Scope:
+
+- spec: `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha\docs\superpowers\specs\2026-04-05-phase5a-5b-rl-execution-sandbox-design.md`
+- model freeze note: `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha\docs\superpowers\notes\2026-04-05-phase5-model-freeze.md`
+- main runners:
+  - `scripts/build_phase5_execution_simulator.py`
+  - `scripts/run_phase5_execution_benchmarks.py`
+  - `scripts/train_phase5_bc_policy.py`
+  - `scripts/train_phase5_ppo_execution.py`
+  - `scripts/evaluate_phase5_execution_policies.py`
+  - `scripts/export_phase5_offline_rl_dataset.py`
+- outputs:
+  - `outputs/phase5_rl_execution/`
+
+Stable implementation details:
+
+- GPU path is active in the worktree venv:
+  - `torch = 2.11.0+cu128`
+  - `torch.cuda.is_available() = true`
+  - device = `NVIDIA GeForce RTX 3090`
+- current framing is explicitly `execution sandbox`, not promoted mainline execution research
+- the correct boundary is:
+  - `offline-from-simulator`
+  - not market-validated offline RL
+- simulator v1 acceptance currently passes:
+  - volume-profile calibration MAE is around `0.006`
+  - benchmark ordering is sensible:
+    - `impact_aware < vwap < twap`
+- the first minimal PPO sandbox uncovered two real design bugs that are now fixed:
+  - reward-scale bug:
+    - unfinished inventory penalty was originally too weak relative to dollar-denominated execution costs
+    - reward is now normalized in target-notional bps space so no-trade is no longer spuriously advantaged
+  - target-size bug:
+    - the original `target_qty = 100` let `action = 1.0` clear the whole order in one bucket because synthetic bucket liquidity was much larger
+    - target quantity is now derived from episode liquidity via `derive_target_qty(...)`, forcing multi-bucket execution
+- behavior-cloning setup now exists:
+  - mixed expert dataset:
+    - `impact_aware = 70%`
+    - `twap = 15%`
+    - `vwap = 15%`
+  - BC checkpoint can be copied into PPO actor initialization
+- evaluation harness now reports:
+  - PPO-from-random
+  - PPO-from-BC
+  - heuristic rewards on the same env-reward scale
+  - simulator benchmark costs as a supplemental diagnostic
+- offline dataset export now exists:
+  - `offline_transitions.csv`
+  - `offline_episode_manifest.csv`
+  - `offline_rl_readiness_report.json`
+  - policy tags currently exported:
+    - `impact_aware`
+    - `twap`
+    - `vwap`
+    - `ppo_random`
+    - `ppo_bc`
+
+Stable result:
+
+- sandbox dependency and implementation tests currently pass:
+  - focused suite = `15 / 15`
+- latest real `offline-from-simulator` export:
+  - `transition_count = 287`
+  - `episode_count = 40`
+  - `offline_ready = true`
+- current sandbox conclusion:
+  - the RL branch is now infrastructurally real
+  - the simulator, reward, and export stack are good enough for PPO/BC/offline experiments
+  - but PPO-vs-BC superiority is **not yet a stable conclusion** under the more realistic reward and target sizing
+  - BC warm start no longer shows the earlier clean dominance once the degenerate one-step environment bug is removed
+
+Interpretation:
+
+- Phase 5 is now unblocked as an execution-sandbox branch
+- the highest-value next work is:
+  - simulator fidelity
+  - reward shaping
+  - state design
+  - evaluation depth
+  - then offline-from-simulator RL
+- do **not** yet treat PPO, BC warm start, or offline RL as promoted execution-policy research results
+- treat the current sandbox as a credible engineering foundation, not as a final execution alpha story
+
 ## Current Mainline Documents
 
 Use these first when picking work back up:
