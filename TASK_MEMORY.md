@@ -59,6 +59,8 @@ Latest full regression on this machine:
 - Important FMP caveats:
   - SEC filings endpoints were largely unavailable in this account regime (`stable` returned `400` requiring unsupported query shape; `api/v3` returned legacy `403`)
   - ESG endpoint was unavailable (`stable` `404`, `api/v3` legacy `403`)
+  - the frozen `analyst_estimates_quarterly.json` payloads expose forward estimate levels by fiscal date, but do **not** include historical snapshot metadata such as `snapshot_date`, `as_of_date`, or `updated_at`
+  - therefore the current FMP freeze cannot support a clean PIT analyst-revision alpha by itself; using the frozen estimate levels as if they were historical revision snapshots would introduce lookahead
   - if US fundamentals/transcript research resumes, use the frozen FMP workspace rather than re-probing `yfinance`
 - Latest external fundamentals spike on `2026-04-03` lives under:
   - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\fundamentals_spike`
@@ -575,6 +577,21 @@ Important machine-readable outcome from the main run:
 - Horizon-audit result:
   - no short-horizon override was triggered
   - Phase 3.7 training stayed on `21d`
+  - however, the audit itself showed that the stronger deterministic/structured signal pocket was actually slower-moving:
+    - `top_500_liquid_dynamic`:
+      - `21d mean_rank_ic = 0.014595761703939556`
+      - `21d rank_ic_tstat = 2.358474141532583`
+      - `42d mean_rank_ic = 0.023127802236678506`
+      - `42d rank_ic_tstat = 3.8264956615270203`
+    - `top_300_liquid_dynamic`:
+      - `21d mean_rank_ic = 0.013829830168416572`
+      - `21d rank_ic_tstat = 2.2237850549044698`
+      - `42d mean_rank_ic = 0.025651046832987676`
+      - `42d rank_ic_tstat = 4.236620424907249`
+  - stable interpretation of the horizon audit:
+    - the current research stack likely underestimates slower-moving value / quality style signal at `21d`
+    - `42d` is a stronger research candidate horizon than `21d`
+    - but this should still be treated as a research finding, not an automatic production-default change, until a non-overlapping parity / backtest check is run
 - Transcript pipeline actually used:
   - PIT mapping used transcript `call_date -> next trading day`
   - event carry used `120` calendar-day staleness
@@ -626,6 +643,65 @@ Important machine-readable outcome from the main run:
   - the transcript branch was also highly correlated with the structured baseline and did not provide meaningful structured-weak-period relief
   - therefore, the current transcript V1 branch should not be promoted and should not be used to justify optimizer promotion, RL execution, or live-paper alpha handoff
 
+### Phase 3.7x Transcript Diagnostic Improvement Pass
+
+- A focused transcript-diagnostics follow-up was run to answer whether the Phase 3.7 failure was mainly due to a broken text feature, excessive carry smoothing, or a deeper information ceiling.
+- Canonical Phase 3.7x output root:
+  - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha\outputs\phase3_7x_transcript_diagnostics`
+- Main artifacts:
+  - `improvement_manifest.json`
+  - `enhanced_transcript_event_manifest.json`
+  - `transcript_daily_feature_comparison.json`
+  - `transcript_univariate_diagnostics.json`
+- What changed in the diagnostic pass:
+  - `uncertainty_tone_score` was repaired from an all-zero placeholder into a real lexicon-based uncertainty feature
+  - transcript section-structure diagnostics were added:
+    - `management_sentence_count`
+    - `qa_sentence_count`
+    - `qa_question_count`
+    - `qa_share_of_words`
+  - transcript daily features were rebuilt across carry windows:
+    - `10`
+    - `21`
+    - `60`
+    - `120`
+- Event-level improvement read:
+  - baseline transcript rows = `12761`
+  - enhanced transcript rows = `28143`
+  - section-detection success rate improved from `0.5431` to `0.5923`
+  - uncertainty non-zero rate improved from `0.0` to `0.7356`
+  - enhanced average QA question count = `15.38`
+- Carry-window diagnosis:
+  - baseline active row rate under the old Phase 3.7 pipeline = `0.2119`
+  - rebuilt carry windows:
+    - `10d active_row_rate = 0.0589`
+    - `21d active_row_rate = 0.1218`
+    - `60d active_row_rate = 0.3212`
+    - `120d active_row_rate = 0.4830`
+  - on `top_500_liquid_dynamic`, transcript-active coverage rises sharply with longer carry:
+    - `10d = 0.1224`
+    - `21d = 0.2575`
+    - `60d = 0.6561`
+    - `120d = 0.9734`
+- Stable interpretation of the carry diagnosis:
+  - short carry windows preserve event freshness but are sparse
+  - long carry windows provide broad coverage but strongly risk smearing event information into a slow factor-like proxy
+  - this supports the view that transcript alpha is more naturally an event-driven problem than a monthly cross-sectional carry problem
+- Univariate transcript diagnostics:
+  - several transcript and structure features showed non-zero pockets, especially at longer horizons
+  - on `top_500_liquid_dynamic` and `42d`, positive pockets appeared in:
+    - `management_sentiment_mean`
+    - `transcript_sentiment_delta_vs_prev_call`
+    - `uncertainty_tone_score`
+  - negative pockets also appeared in:
+    - `transcript_word_count`
+    - `qa_question_count`
+    - `qa_sentence_count`
+- Stable conclusion from Phase 3.7x:
+  - transcript V1 did **not** fail purely because "text has no information"
+  - it failed because the current `21d` / monthly-style carry formulation is a poor fit for sparse earnings-call events
+  - if transcript research resumes, it should reopen as an explicitly event-driven branch rather than as another near-identical monthly LightGBM retry
+
 ## Current Mainline Documents
 
 Use these first when picking work back up:
@@ -660,17 +736,23 @@ Priority order:
    - `top_300` and continuity slices turned acceptable
    - the actual `top_500` promotion slice still failed
    - full-sample training did not justify itself versus the `top_500-only` shadow benchmark
-8. If alpha research resumes, either:
+8. Treat Phase 3.7 and Phase 3.7x as closed:
+   - transcript V1 did not rescue the structured ML branch
+   - the improved transcript diagnostics showed real event information, but not in a form suitable for the current monthly carry formulation
+   - transcript research should only resume as a new event-driven branch
+9. If alpha research resumes, either:
    - stay with deterministic baseline as the working alpha path, or
    - open a clearly new ML branch with materially different feature / label design and an objectively defined large-cap / liquid universe
 
 Concrete next research step:
 
 - keep the canonical 300-name list as a continuity control, but treat `expanded_liquid_core` as the primary research universe
+- treat `42d` as the stronger current research horizon candidate than `21d`, but validate it with a non-overlapping parity / backtest check before treating it as the new default
 - do not run another near-identical LightGBM retry on the same compact-feature setup or the same neutralized broad-training setup
 - only reopen ML if there is a new hypothesis strong enough to justify a new branch
 - if ML is reopened, prefer an objective `top-N liquid large-cap` research universe over a canonical-300-specific scope
 - if ML is reopened, treat `top_500-only` style training as the more defensible reference branch than broad-sample training under the current feature family
+- do not spend time on a PIT analyst-revision alpha unless a true historical estimate snapshot source exists; the current frozen FMP analyst-estimate payloads are not sufficient for clean revision-history research
 - only return to PortfolioOS alpha integration once a new signal passes the primary-universe Layer 1 gate
 - do not resume optimizer-promotion or RL-execution work until the alpha layer is signal-ready again
 
@@ -693,6 +775,9 @@ Older work is intentionally compressed here.
 - Phase 3.5 then diagnosed and fixed a real `lambdarank` pipeline bug, reran one targeted retry on `top_500_liquid_dynamic`, and still closed the ML branch as `retry_reject`: improved and weakly positive, but not strong enough for promotion and not additive enough for the ensemble branch.
 - A later universe-split diagnostic showed that the `300 vs 500` divergence is better interpreted as a weak large-cap / upper-universe effect than as a clean canonical-300 selection-bias artifact.
 - Phase 3.6 then ran a neutralized regime-aware retry with sector/size residualization, supplementary cap/liquidity regime features, and balanced cap-bucket weights; it improved robustness and continuity but still closed as `retry_reject` because the real `top_500` deployment slice did not clear the promotion gate and broad-sample training did not beat the `top_500-only` shadow benchmark.
+- Phase 3.7 then added transcript features and a horizon audit, but the transcript branch closed as `transcript_inconclusive`: weak usage, weak complementarity, and no Layer 2 promotion.
+- Phase 3.7x then repaired transcript uncertainty and added carry-window / univariate diagnostics, showing that transcripts likely contain some event information but are misframed by the current monthly carry setup.
+- The strongest late-stage research finding so far is that `42d` looks materially better than `21d` on the large-cap / liquid deployment slices, so future research should treat horizon choice itself as a first-order design decision.
 
 ## Workflow Notes
 
