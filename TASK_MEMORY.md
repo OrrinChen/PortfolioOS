@@ -796,6 +796,92 @@ Interpretation:
 - the raw headline rank IC looked interesting, but the dense-date slice shows that the apparent strength was largely a sparse-event artifact rather than a robust large-cap cross-sectional signal
 - because SUE is also highly correlated with the existing momentum baseline on the event dates that do score, it does not currently open a strong new ensemble branch
 
+## Phase 4A Mid-Cap Momentum Universe Test
+
+Scope:
+
+- worktree: `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha`
+- runner: `scripts/run_phase4a_midcap_momentum.py`
+- outputs: `outputs/phase4a_midcap_momentum/`
+- data source:
+  - `C:\Users\14574\Quant\fmp_data_freeze\fundamentals\`
+  - `C:\Users\14574\Quant\fmp_data_freeze\fundamentals_small_cap\`
+- signal: `mom_84_21`
+- horizon: `21d non-overlapping`
+- ranking mode: static freeze-date `profile.json.marketCap`
+- slices:
+  - `top_300`
+  - `top_500`
+  - `rank_500_1500` defined as static ranks `501-1500`
+
+Stable result:
+
+- full freeze daily panel coverage:
+  - `3193` tickers in evaluation panel
+  - `254` non-overlapping evaluation dates in the raw panel
+- `top_300`:
+  - `mean_rank_ic = -0.008344924323776556`
+  - `rank_ic_tstat = -0.6810990862686463`
+  - `alpha_only_vs_naive_tstat = 1.0609002348740775`
+- `top_500`:
+  - `mean_rank_ic = -0.009184677509241831`
+  - `rank_ic_tstat = -0.800945066047217`
+  - `alpha_only_vs_naive_tstat = 1.0198177579247052`
+- `rank_500_1500`:
+  - `mean_rank_ic = 0.01187808824967314`
+  - `rank_ic_tstat = 0.92466329374959`
+  - `alpha_only_vs_naive_mean = 0.005038817822073995`
+  - `alpha_only_vs_naive_tstat = 2.296564716654677`
+
+Interpretation:
+
+- moving the universe down-cap **did** help relative to the large-cap slices
+- however, the improvement showed up more clearly in `alpha_only_vs_naive` than in monotonic rank IC
+- this supports the idea that universe choice matters, but does **not** yet establish a clean strong mid-cap ranker
+- practical read:
+  - US large-cap remains an especially hostile research battleground
+  - mid-cap / lower-efficiency slices are more promising than `top_500`
+  - but the current deterministic momentum factor still does not become a clearly promotion-worthy standalone signal just by moving to `501-1500`
+
+## Phase 4B SEC 13F Dataset Pipeline
+
+Scope:
+
+- runner: `scripts/run_phase4b_edgar_13f_pipeline.py`
+- outputs: `outputs/phase4b_edgar_13f/`
+- source:
+  - `https://www.sec.gov/data-research/sec-markets-data/form-13f-data-sets`
+- implementation choice:
+  - use the official quarterly SEC `Form 13F Data Sets`
+  - do **not** scrape raw EDGAR full-index / XML in v1
+
+Stable result:
+
+- official dataset discovery worked:
+  - `dataset_link_count = 52`
+- latest parsed dataset:
+  - `01dec2025-28feb2026_form13f.zip`
+- row counts from the latest dataset:
+  - `submission_count = 11372`
+  - `coverpage_count = 11372`
+  - `infotable_count = 3473209`
+  - `sample_holdings_count = 10000`
+- emitted artifacts:
+  - raw quarterly ZIP under `outputs/phase4b_edgar_13f/raw/`
+  - `filings_manifest.csv`
+  - `sample_holdings.csv`
+  - `pipeline_summary.json`
+
+Interpretation:
+
+- a free institutional-ownership data path is now real and working
+- the official SEC quarterly 13F data sets are a better v1 source than raw EDGAR full-index scraping because they already flatten holdings into `SUBMISSION / COVERPAGE / INFOTABLE` tables
+- next research step, if resumed, is not more ingestion work; it is factor construction:
+  - holder-count change
+  - institutional-ownership change
+  - later, filer-quality weighting if desired
+- the main missing piece before direct alpha use is identifier normalization / ticker mapping from 13F holdings rows into the research universe
+
 ## Current Mainline Documents
 
 Use these first when picking work back up:
@@ -842,7 +928,14 @@ Priority order:
    - quasi-PIT SUE was feasible on the freeze but failed to clear the `top_500` gate
    - the apparent headline IC was materially diluted by sparse-event cross sections
    - the dense-date slice was negative, so SUE is not promoted as the missing incremental large-cap alpha
-11. If alpha research resumes, either:
+11. Treat Phase 4A as an informative universe diagnostic rather than a promotion result:
+   - moving from `top_500` to `rank_500_1500` improved the deterministic momentum result materially
+   - the improvement was strongest in alpha-only spread, not in monotonic rank IC
+   - this is evidence that universe efficiency matters, but not yet enough to declare a clean new default universe
+12. Treat Phase 4B as a successful data-layer extension:
+   - free SEC 13F ingestion now exists via the official quarterly data sets
+   - identifier normalization and factor construction are the next open tasks, not raw ingestion
+13. If alpha research resumes, either:
    - stay with deterministic baseline as the working alpha path, or
    - open a clearly new ML branch with materially different feature / label design and an objectively defined large-cap / liquid universe
 
@@ -856,6 +949,8 @@ Concrete next research step:
 - if ML is reopened, treat `top_500-only` style training as the more defensible reference branch than broad-sample training under the current feature family
 - do not spend time on a PIT analyst-revision alpha unless a true historical estimate snapshot source exists; the current frozen FMP analyst-estimate payloads are not sufficient for clean revision-history research
 - do not treat quasi-PIT SUE as a rescued large-cap alpha path under the current `21d non-overlapping` setup; the dense-date slice evidence is too weak
+- if US research continues, prefer exploring lower-efficiency / mid-cap slices over spending more time on top-500 large-cap structured signals
+- if a new institutional-flow branch is opened, use the SEC 13F official quarterly data sets as the starting point rather than rebuilding raw EDGAR filing ingestion first
 - only reopen transcript or grades research as explicitly event-driven hypotheses with fresh gates, not as automatic follow-ons from the failed Phase 3.8 horizon check
 - only return to PortfolioOS alpha integration once a new signal passes the primary-universe Layer 1 gate
 - do not resume optimizer-promotion or RL-execution work until the alpha layer is signal-ready again
@@ -883,6 +978,8 @@ Older work is intentionally compressed here.
 - Phase 3.7x then repaired transcript uncertainty and added carry-window / univariate diagnostics, showing that transcripts likely contain some event information but are misframed by the current monthly carry setup.
 - Phase 3.8 then ran a non-overlapping `42d` promotion check and found that none of the tested deterministic candidates cleared the Gate A threshold, so `42d` was **not** promoted and the event-driven branch did not open.
 - Phase 3.9 then tested a quasi-PIT earnings-surprise signal using `acceptedDate > filingDate > date` and `epsDiluted` actuals, but the top-500 result failed to clear the research gate and was revealed by dense-date diagnostics to be largely a sparse-event artifact rather than a robust new alpha source.
+- Phase 4A then expanded the deterministic momentum test to the full FMP freeze with a static market-cap `501-1500` slice and showed that moving down-cap helps materially versus top-500 large-cap, especially in alpha-only spread, but still did not produce a clean strong rank-IC winner.
+- Phase 4B then established a working free SEC 13F data path by ingesting the official quarterly `Form 13F Data Sets`, avoiding raw full-index scraping and making future institutional-flow factor work feasible.
 - Horizon choice remains a first-order design decision, but `42d` is no longer an open promotion candidate under the current deterministic stack.
 
 ## Workflow Notes
