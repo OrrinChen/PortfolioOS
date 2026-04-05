@@ -948,6 +948,55 @@ Interpretation:
     - evaluating `ownership_pct_change` first
     - optionally adding filer-quality weighting or additional quarters before promoting `holder_count_change`
 
+## Phase 4D SEC 13F History Backfill
+
+Scope:
+
+- spec: `docs/superpowers/specs/2026-04-05-phase4d-13f-history-backfill-design.md`
+- plan: `docs/superpowers/plans/2026-04-05-phase4d-13f-history-backfill.md`
+- runner: `scripts/run_phase4d_13f_history_backfill.py`
+- outputs: `outputs/phase4d_13f_history_backfill/`
+
+Stable implementation details:
+
+- selected SEC quarterly ZIPs across a widened candidate window, then filtered by actual `report_quarter`
+- earliest vs latest dataset schema smoke now passes
+- shared SEC ZIP loader was hardened to support archives where required TSVs live under a directory prefix, not only at ZIP root
+- PIT handling for historical institutional-flow signals now explicitly drops late amendments from quarterly history construction:
+  - first filter to the target `report_quarter` range
+  - then keep only filings within a `60` calendar-day timely window after `report_quarter`
+  - then dedupe latest filing per `(CIK, CUSIP9, report_quarter)`
+- this prevents very late `13F-HR/A` amendments from rewriting historical availability dates or holdings totals with future information
+
+Stable result:
+
+- selected SEC dataset count: `14`
+- selected files cover:
+  - `2022q4_form13f.zip`
+  - through `01dec2025-28feb2026_form13f.zip`
+- actual report quarters backfilled:
+  - `2022-12-31` through `2025-12-31`
+- holdings-by-ticker-quarter rows: `37760`
+- factor rows: `34662`
+- unique tickers: `3098`
+- quarter coverage increased steadily from:
+  - `2022-12-31: 2794`
+  - to `2025-12-31: 3040`
+- `ownership_pct_non_null_count = 25915`
+- schema smoke pass: `true`
+- timely filing window: `60` days
+
+Interpretation:
+
+- the free SEC 13F branch is now backfilled deeply enough to support an actual multi-quarter alpha evaluation
+- there are now `13` report quarters in the holdings history and `12` quarter-to-quarter factor transitions available for later testing
+- the data-layer blocker for an institutional-flow spike is now closed
+- the next step, if resumed, should be a true `ownership_pct_change` / `holder_count_change` evaluation branch on:
+  - `rank_500_1500` primary slice
+  - `top_500` control slice
+  - `21d non-overlapping`
+  - filing-date-based PIT anchor with quarterly carry
+
 ## Current Mainline Documents
 
 Use these first when picking work back up:
