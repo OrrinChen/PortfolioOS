@@ -997,6 +997,77 @@ Interpretation:
   - `21d non-overlapping`
   - filing-date-based PIT anchor with quarterly carry
 
+## Phase 4E SEC 13F Alpha Evaluation
+
+Scope:
+
+- spec: `docs/superpowers/specs/2026-04-05-phase4e-13f-alpha-evaluation-design.md`
+- plan: `docs/superpowers/plans/2026-04-05-phase4e-13f-alpha-evaluation.md`
+- runner: `scripts/run_phase4e_13f_alpha.py`
+- outputs: `outputs/phase4e_13f_alpha/`
+
+Stable implementation details:
+
+- primary slice:
+  - `rank_500_1500_dynamic`
+- control slice:
+  - `top_500_dynamic`
+- horizon:
+  - `21d non-overlapping`
+- dynamic universe membership:
+  - recomputed by evaluation date using `close * latest quarter-end shares proxy`
+  - more realistic than static ranking, but still not a perfect PIT market-cap history
+- two evaluation modes are now reported for each factor:
+  - `full_carry`
+    - quarterly factor values carried forward until the next quarterly update
+  - `first_eval_only`
+    - only the first non-overlapping evaluation date on or after the quarter's latest cross-sectional availability date
+- factors evaluated:
+  - `ownership_pct_change`
+  - `holder_count_change`
+
+Stable result:
+
+- evaluation dates on the `21d` grid: `246`
+- independent quarterly first-eval dates: `11`
+- primary gate factor remained `ownership_pct_change`
+- `ownership_pct_change` on `rank_500_1500_dynamic`:
+  - `full_carry mean_rank_ic = -0.00548`
+  - `full_carry rank_ic_tstat = -0.7093`
+  - `full_carry alpha_only_vs_naive_tstat = 0.2299`
+  - `first_eval_only mean_rank_ic = -0.00847`
+  - `first_eval_only rank_ic_tstat = -0.7387`
+  - `first_eval_only alpha_only_vs_naive_tstat = 0.2143`
+  - `first_eval_only factor_momentum_corr = 0.0671`
+- `holder_count_change` on `rank_500_1500_dynamic`:
+  - `full_carry mean_rank_ic = 0.01229`
+  - `full_carry rank_ic_tstat = 0.9818`
+  - `full_carry alpha_only_vs_naive_tstat = 1.7685`
+  - `first_eval_only mean_rank_ic = 0.03138`
+  - `first_eval_only rank_ic_tstat = 1.4053`
+  - `first_eval_only alpha_only_vs_naive_tstat = 1.7259`
+  - `first_eval_only factor_momentum_corr = 0.1917`
+- `ownership_pct_change` on `top_500_dynamic` was also not compelling:
+  - `full_carry rank_ic_tstat = -1.5189`
+  - `first_eval_only rank_ic_tstat = 0.3302`
+- final gate:
+  - `outcome = close_13f_branch`
+  - `direction_consistent = true`
+  - `carry_warning = null`
+
+Interpretation:
+
+- the initially promising free SEC 13F branch does **not** currently produce a promotable institutional-flow alpha on the primary `rank_500_1500_dynamic` slice
+- `ownership_pct_change` stayed weak-to-negative in both `full_carry` and `first_eval_only`, so this is **not** a carry-style illusion
+- the low momentum correlation on `ownership_pct_change` confirms orthogonality, but orthogonality alone was not enough to produce usable alpha
+- `holder_count_change` was directionally better than `ownership_pct_change`, especially in alpha-only spread, but:
+  - it did not clear the intended primary gate
+  - it overlaps more with momentum / popularity effects
+  - it should be treated as an auxiliary observation, not as the new main institutional-flow factor
+- practical read:
+  - the free SEC 13F branch is now a validated data asset, but not a validated alpha source under the current `21d non-overlapping + quarterly carry` framing
+  - if institutional-flow research resumes later, it should reopen as a clearly new branch with materially different factor construction rather than as a direct continuation of Phase 4E
+
 ## Current Mainline Documents
 
 Use these first when picking work back up:
@@ -1050,7 +1121,12 @@ Priority order:
 12. Treat Phase 4B as a successful data-layer extension:
    - free SEC 13F ingestion now exists via the official quarterly data sets
    - identifier normalization and factor construction are the next open tasks, not raw ingestion
-13. If alpha research resumes, either:
+13. Treat Phase 4C, 4D, and 4E together as a useful but currently non-promoted institutional-flow branch:
+   - free SEC 13F ingestion, mapping, and multi-quarter backfill are now real assets
+   - `ownership_pct_change` proved orthogonal but weak-to-negative on the primary dynamic mid-cap slice
+   - `holder_count_change` looked somewhat better but was too overlapping / borderline to justify promotion
+   - the branch should stay closed unless reopened under a materially different research framing
+14. If alpha research resumes, either:
    - stay with deterministic baseline as the working alpha path, or
    - open a clearly new ML branch with materially different feature / label design and an objectively defined large-cap / liquid universe
 
@@ -1095,6 +1171,9 @@ Older work is intentionally compressed here.
 - Phase 3.9 then tested a quasi-PIT earnings-surprise signal using `acceptedDate > filingDate > date` and `epsDiluted` actuals, but the top-500 result failed to clear the research gate and was revealed by dense-date diagnostics to be largely a sparse-event artifact rather than a robust new alpha source.
 - Phase 4A then expanded the deterministic momentum test to the full FMP freeze with a static market-cap `501-1500` slice and showed that moving down-cap helps materially versus top-500 large-cap, especially in alpha-only spread, but still did not produce a clean strong rank-IC winner.
 - Phase 4B then established a working free SEC 13F data path by ingesting the official quarterly `Form 13F Data Sets`, avoiding raw full-index scraping and making future institutional-flow factor work feasible.
+- Phase 4C then built first-pass 13F institutional-flow factors and showed that `ownership_pct_change` is much more orthogonal to momentum than `holder_count_change`.
+- Phase 4D then backfilled the official SEC 13F data sets from `2022-12-31` through `2025-12-31`, closing the data-history blocker for a real institutional-flow evaluation.
+- Phase 4E then ran the multi-quarter 13F alpha evaluation and closed the branch: `ownership_pct_change` remained weak-to-negative on the primary dynamic `rank_500_1500` slice in both `full_carry` and `first_eval_only`, while `holder_count_change` was only borderline and too overlapping to promote.
 - Horizon choice remains a first-order design decision, but `42d` is no longer an open promotion candidate under the current deterministic stack.
 
 ## Workflow Notes
