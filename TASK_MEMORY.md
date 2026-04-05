@@ -882,6 +882,72 @@ Interpretation:
   - later, filer-quality weighting if desired
 - the main missing piece before direct alpha use is identifier normalization / ticker mapping from 13F holdings rows into the research universe
 
+## Phase 4C SEC 13F Factors V1
+
+Scope:
+
+- spec: `docs/superpowers/specs/2026-04-05-phase4c-13f-factors-design.md`
+- plan: `docs/superpowers/plans/2026-04-05-phase4c-13f-factors.md`
+- runner: `scripts/run_phase4c_13f_factors.py`
+- outputs: `outputs/phase4c_13f_factors/`
+
+Implementation details:
+
+- source:
+  - latest two official SEC `Form 13F Data Sets`
+  - latest run used:
+    - `01sep2025-30nov2025_form13f.zip`
+    - `01dec2025-28feb2026_form13f.zip`
+- holdings normalization:
+  - use `SUBMISSION.tsv + INFOTABLE.tsv`
+  - dedupe amendments by keeping the latest filing per `(CIK, CUSIP9, report_quarter)`
+  - group by `REPORTCALENDAR / PERIODOFREPORT`, not by ZIP file name
+  - explicitly filter to the latest two `report_quarter` values before factor construction
+- identifier mapping:
+  - use unique FMP `profile.json.cusip` normalized to `CUSIP9 -> ticker`
+- factor definitions:
+  - `holder_count_change = log(holder_count_t / holder_count_t_minus_1)`
+  - `ownership_pct_change = shares_held_t / shares_outstanding_t - shares_held_t_minus_1 / shares_outstanding_t_minus_1`
+- denominator proxy:
+  - use `weightedAverageShsOutDil`, fallback `weightedAverageShsOut`
+  - if proxy shares outstanding changes by more than `20%` quarter-over-quarter, drop `ownership_pct_change` for that ticker-quarter
+
+Stable result:
+
+- latest two quarters used:
+  - `2025-09-30`
+  - `2025-12-31`
+- mapped ticker-quarter rows:
+  - `holdings_by_ticker_quarter_count = 6058`
+- factor rows:
+  - `row_count = 3010`
+- slice coverage:
+  - `top_500 = 487`
+  - `rank_500_1500 = 960`
+  - `ownership_pct_non_null = 2190`
+- momentum orthogonality:
+  - overall:
+    - `holder_count_change corr = 0.20819591705855975`
+    - `ownership_pct_change corr = 0.013204600933922176`
+  - `top_500`:
+    - `holder_count_change corr = 0.4728759841457169`
+    - `ownership_pct_change corr = -0.12214405781018825`
+  - `rank_500_1500`:
+    - `holder_count_change corr = 0.2157903222104423`
+    - `ownership_pct_change corr = 0.028417729178840213`
+
+Interpretation:
+
+- the free SEC 13F branch is now past ingestion and into usable factor construction
+- `ownership_pct_change` looks genuinely orthogonal to momentum on the current slices
+- `holder_count_change` is **not** cleanly orthogonal in `top_500`, and is only moderately separated in `rank_500_1500`
+- practical read:
+  - `ownership_pct_change` is the more promising v1 institutional-flow factor
+  - `holder_count_change` likely overlaps with momentum / popularity effects, especially in large-cap
+  - next 13F research, if resumed, should prioritize:
+    - evaluating `ownership_pct_change` first
+    - optionally adding filer-quality weighting or additional quarters before promoting `holder_count_change`
+
 ## Current Mainline Documents
 
 Use these first when picking work back up:
