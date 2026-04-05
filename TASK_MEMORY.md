@@ -560,6 +560,72 @@ Important machine-readable outcome from the main run:
 - Any future ML retry should be treated as a new research branch rather than a continuation of this exact setup.
 - Do not treat the current ML stack as signal-ready for optimizer promotion, RL execution, or live-paper alpha handoff.
 
+### Phase 3.7 Horizon Audit + Transcript Alpha
+
+- Phase 3.7 was executed end-to-end in the same isolated Qlib worktree and is now closed.
+- Canonical Phase 3.7 output root:
+  - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha\outputs\phase3_7_transcript_alpha`
+- Main artifacts:
+  - `horizon_audit_summary.json`
+  - `transcript_manifest.json`
+  - `transcript_event_panel.parquet`
+  - `transcript_daily_features.parquet`
+  - `transcript_walkforward_summary.json`
+  - `phase3_7_gate_summary.json`
+- Horizon-audit result:
+  - no short-horizon override was triggered
+  - Phase 3.7 training stayed on `21d`
+- Transcript pipeline actually used:
+  - PIT mapping used transcript `call_date -> next trading day`
+  - event carry used `120` calendar-day staleness
+  - runtime was limited to the deployment-relevant whitelist (`top_500` dynamic plus `control_300_available`)
+  - transcript events were further limited to `2022-12-01` through `2026-02-27`
+  - FinBERT was used with bounded sentence sampling to keep the branch computationally tractable
+- Real transcript event coverage:
+  - whitelist size = `1024`
+  - transcript-positive tickers in whitelist = `1011`
+  - event rows = `12761`
+  - section-detection success rate = `0.5431`
+- Daily transcript feature coverage:
+  - row count = `3569102`
+  - active ticker count = `1011`
+  - active row rate = `0.2119`
+  - sector/size neutralization again removed almost all post-size correlation from transcript features
+- Transcript-augmented top-500 walk-forward training result:
+  - training horizon = `21`
+  - fold count = `6`
+  - transcript feature gain share = `0.0111`
+  - top transcript gain contributors were uncertainty, transcript word count, word-count delta, and mean sentiment
+- Primary deployment-slice (`top_500_liquid_dynamic`) Layer 1 result:
+  - `mean_rank_ic = -0.00016260841522979717`
+  - `rank_ic_tstat = -0.005646386437604967`
+  - `alpha_only_vs_naive_mean = 0.00763020454346959`
+  - `alpha_only_vs_naive_tstat = 1.3236458755566833`
+- Structured baseline on the same slice remained slightly stronger:
+  - structured `mean_rank_ic = 0.0018785443385658585`
+  - structured `alpha_only_vs_naive_mean = 0.00878579629508262`
+- Complementarity result was clearly negative:
+  - `rank_ic_series_correlation = 0.9923`
+  - `alpha_only_vs_naive_series_correlation = 0.9692`
+  - `prediction_series_correlation = 0.5398`
+  - structured-weak-period alpha lift = `0.0005607680575636973`
+  - complementarity gate = `false`
+- Broad-safety / continuity result:
+  - `continuity_pass = true`
+  - `broad_safety_pass = false`
+  - full expanded-core rank IC stayed negative
+- Final Phase 3.7 decision:
+  - `outcome = transcript_inconclusive`
+  - `signal_pass = false`
+  - `layer_2_ready = false`
+  - no PortfolioOS costed backtest was run
+- Stable interpretation:
+  - transcripts did not rescue the structured ML branch
+  - the text branch remained too weak on the actual `top_500` deployment slice
+  - transcript features were only lightly used by the model
+  - the transcript branch was also highly correlated with the structured baseline and did not provide meaningful structured-weak-period relief
+  - therefore, the current transcript V1 branch should not be promoted and should not be used to justify optimizer promotion, RL execution, or live-paper alpha handoff
+
 ## Current Mainline Documents
 
 Use these first when picking work back up:
