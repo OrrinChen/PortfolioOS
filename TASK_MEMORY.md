@@ -740,6 +740,62 @@ Important machine-readable outcome from the main run:
   - because Gate A failed, the Phase 3.8 event-driven transcript / grades branch was correctly **not** opened
   - any future event-driven branch should be treated as a new hypothesis, not as an automatic continuation of a failed `42d` horizon promotion
 
+## Phase 3.9 Quasi-PIT SUE Spike
+
+Scope:
+
+- worktree: `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha`
+- runner: `scripts/run_phase3_9_sue_spike.py`
+- outputs: `outputs/phase3_9_sue_spike/`
+- universe: `top_500_liquid_dynamic`
+- label: `21d` forward return with non-overlapping evaluation dates
+- PIT anchor priority: `acceptedDate > filingDate > date`
+- actual EPS choice: `epsDiluted`, fallback `eps`
+- estimate/actual join key: `(ticker, fiscal_quarter_end_date)`
+
+Feasibility findings:
+
+- `analyst_estimates_quarterly.json` remained broadly usable for a quasi-PIT surprise spike:
+  - non-empty coverage previously verified at `2497 / 2671` main-list tickers
+  - estimate/actual quarter overlap previously verified at `2494` tickers with `median overlap = 8`
+- this branch is still **not** a true estimate-snapshot study:
+  - FMP freeze lacks `snapshot_date / as_of_date / updated_at`
+  - therefore the signal is best described as `quasi-PIT SUE using frozen final consensus proxy`
+
+Stable Phase 3.9 outcome:
+
+- `outcome = fail`
+- `reason = top500_rank_ic_tstat_lt_1_5`
+- `event_count = 13324`
+- `signal_row_count = 806`
+- `top_500 mean_rank_ic = 0.21316550878628812`
+- `top_500 rank_ic_tstat = 1.4313686301552095`
+- `top_500 alpha_only_vs_naive_mean = 0.001040876667221086`
+- `top_500 alpha_only_vs_naive_tstat = 0.21648319440090733`
+- `top_300 rank_ic_tstat = 0.5868005210151751`
+- `momentum IC-series correlation = 0.8595847383380031`
+- `SUE + momentum` equal-weight composite on the same event dates also failed to clear a promotion-style bar:
+  - `composite top_500 rank_ic_tstat = 1.5693985448003813`
+
+Critical sparse-event diagnostic:
+
+- the headline `top_500` result was flattered by very thin event dates:
+  - `top_500 signal dates total = 38`
+  - `median top_500 count per date = 1`
+  - only `15` dates had at least `2` names
+  - only `9` dates had at least `5` names
+- on the denser `>= 5 names/date` slice, SUE was actually weak-to-negative:
+  - `mean_rank_ic = -0.0891685964672975`
+  - `rank_ic_tstat = -0.7772978430520316`
+  - `alpha_only_vs_naive_mean = -0.021947734679702662`
+  - `alpha_only_vs_naive_tstat = -1.5173643330053417`
+
+Interpretation:
+
+- SUE was worth testing and is technically feasible on the current freeze, but it does **not** rescue the US large-cap alpha story under the current `21d non-overlapping` event framing
+- the raw headline rank IC looked interesting, but the dense-date slice shows that the apparent strength was largely a sparse-event artifact rather than a robust large-cap cross-sectional signal
+- because SUE is also highly correlated with the existing momentum baseline on the event dates that do score, it does not currently open a strong new ensemble branch
+
 ## Current Mainline Documents
 
 Use these first when picking work back up:
@@ -782,7 +838,11 @@ Priority order:
    - non-overlapping `42d` parity did **not** confirm a strong enough deterministic baseline
    - `42d` is therefore not promoted as the new default research horizon
    - the event-driven transcript / grades branch did not open because Gate A failed
-10. If alpha research resumes, either:
+10. Treat Phase 3.9 as closed:
+   - quasi-PIT SUE was feasible on the freeze but failed to clear the `top_500` gate
+   - the apparent headline IC was materially diluted by sparse-event cross sections
+   - the dense-date slice was negative, so SUE is not promoted as the missing incremental large-cap alpha
+11. If alpha research resumes, either:
    - stay with deterministic baseline as the working alpha path, or
    - open a clearly new ML branch with materially different feature / label design and an objectively defined large-cap / liquid universe
 
@@ -795,6 +855,7 @@ Concrete next research step:
 - if ML is reopened, prefer an objective `top-N liquid large-cap` research universe over a canonical-300-specific scope
 - if ML is reopened, treat `top_500-only` style training as the more defensible reference branch than broad-sample training under the current feature family
 - do not spend time on a PIT analyst-revision alpha unless a true historical estimate snapshot source exists; the current frozen FMP analyst-estimate payloads are not sufficient for clean revision-history research
+- do not treat quasi-PIT SUE as a rescued large-cap alpha path under the current `21d non-overlapping` setup; the dense-date slice evidence is too weak
 - only reopen transcript or grades research as explicitly event-driven hypotheses with fresh gates, not as automatic follow-ons from the failed Phase 3.8 horizon check
 - only return to PortfolioOS alpha integration once a new signal passes the primary-universe Layer 1 gate
 - do not resume optimizer-promotion or RL-execution work until the alpha layer is signal-ready again
@@ -821,6 +882,7 @@ Older work is intentionally compressed here.
 - Phase 3.7 then added transcript features and a horizon audit, but the transcript branch closed as `transcript_inconclusive`: weak usage, weak complementarity, and no Layer 2 promotion.
 - Phase 3.7x then repaired transcript uncertainty and added carry-window / univariate diagnostics, showing that transcripts likely contain some event information but are misframed by the current monthly carry setup.
 - Phase 3.8 then ran a non-overlapping `42d` promotion check and found that none of the tested deterministic candidates cleared the Gate A threshold, so `42d` was **not** promoted and the event-driven branch did not open.
+- Phase 3.9 then tested a quasi-PIT earnings-surprise signal using `acceptedDate > filingDate > date` and `epsDiluted` actuals, but the top-500 result failed to clear the research gate and was revealed by dense-date diagnostics to be largely a sparse-event artifact rather than a robust new alpha source.
 - Horizon choice remains a first-order design decision, but `42d` is no longer an open promotion candidate under the current deterministic stack.
 
 ## Workflow Notes
