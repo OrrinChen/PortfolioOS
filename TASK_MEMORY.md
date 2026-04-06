@@ -1236,6 +1236,18 @@ Interpretation:
     - router improves only the one known weak bucket
     - it matches pure CQL everywhere else
     - mean router-minus-CQL across buckets is about `+0.065` reward units
+- however, a subsequent new-seed stress test materially weakened confidence in that conclusion:
+  - stress seeds `101` and `313` reproduced the earlier pattern:
+    - pure `CQL = 8 / 9` winning buckets
+    - router = `9 / 9`
+  - stress seed `211` did **not** reproduce it:
+    - pure `CQL = 0 / 9`
+    - router = `1 / 9`
+  - therefore the current offline RL result is still highly sensitive to simulator seed / generated rollout family
+  - practical implication:
+    - `CQL` remains the leading offline branch inside the sandbox
+    - but neither pure `CQL` nor the minimal router is robust enough yet for promotion-style claims
+    - simulator sensitivity is now a more important risk than dataset size in the current Phase 5 setup
 - practical read:
   - if offline RL continues, `CQL` should now be treated as the leading control branch
   - `IQL` remains a useful baseline/ablation, but not the preferred offline method under the current setup
