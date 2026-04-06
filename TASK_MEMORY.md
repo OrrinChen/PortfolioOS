@@ -1153,6 +1153,66 @@ Interpretation:
 - do **not** yet treat PPO, BC warm start, or offline RL as promoted execution-policy research results
 - treat the current sandbox as a credible engineering foundation, not as a final execution alpha story
 
+## Phase 5C Offline-From-Simulator RL
+
+Scope:
+
+- main runners:
+  - `scripts/export_phase5_offline_rl_dataset.py`
+  - `scripts/train_phase5_iql_offline.py`
+  - `scripts/train_phase5_cql_offline.py`
+- outputs:
+  - `outputs/phase5_rl_execution/offline_rl_readiness_report.json`
+  - `outputs/phase5_rl_execution/iql_policy_report.json`
+  - `outputs/phase5_rl_execution/cql_policy_report.json`
+
+Stable implementation details:
+
+- rollout dataset scaling is now parameterized by `episode_count_per_policy`
+- readiness report now includes:
+  - `mean_steps_per_episode`
+  - `min_steps_per_episode`
+  - `max_steps_per_episode`
+  - `policy_transition_share`
+- latest larger rollout run used:
+  - `episode_count_per_policy = 50`
+  - total episodes = `250`
+  - total transitions = `1802`
+- offline algorithms currently use:
+  - `d3rlpy`
+  - GPU device path = `cuda:0`
+- current comparison remains explicitly:
+  - `offline-from-simulator`
+  - not real-market logged execution learning
+
+Stable result:
+
+- expanded rollout export is now materially larger than the earlier `40`-episode toy sample:
+  - `transition_count = 1802`
+  - `episode_count = 250`
+  - `mean_steps_per_episode = 7.208`
+  - `min_steps_per_episode = 3`
+  - `max_steps_per_episode = 8`
+- offline algorithm results on the latest large-rollout run:
+  - `IQL mean_reward = -69.99`
+  - best heuristic on the same held-out evaluation = `impact_aware = -17.42`
+  - `CQL mean_reward = -10.96`
+  - best heuristic on the same held-out evaluation = `impact_aware = -17.42`
+
+Interpretation:
+
+- scaling the rollout dataset was the correct first move before evaluating offline RL
+- on the current simulator and dataset mix:
+  - `IQL` is clearly not robust enough and materially underperforms heuristics
+  - `CQL` currently looks much stronger than `IQL` and also beats the heuristic baselines on the same held-out reward scale
+- this does **not** mean offline RL is promoted:
+  - the result is still simulator-bound
+  - it is based on one synthetic environment family and one logged-policy mixture
+  - further regime breakdown and stability checks are still needed
+- practical read:
+  - if offline RL continues, `CQL` should now be treated as the leading control branch
+  - `IQL` remains a useful baseline/ablation, but not the preferred offline method under the current setup
+
 ## Current Mainline Documents
 
 Use these first when picking work back up:
