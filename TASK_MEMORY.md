@@ -1166,6 +1166,8 @@ Scope:
   - `outputs/phase5_rl_execution/iql_policy_report.json`
   - `outputs/phase5_rl_execution/cql_policy_report.json`
   - `outputs/phase5_rl_execution/offline_regime_breakdown_report.json`
+  - `outputs/phase5_rl_execution_1000eps/offline_regime_breakdown_report.json`
+  - `outputs/phase5_rl_execution_1000eps/router_summary.json`
 
 Stable implementation details:
 
@@ -1222,6 +1224,18 @@ Interpretation:
   - the result is still simulator-bound
   - it is based on one synthetic environment family and one logged-policy mixture
   - the improvement is not universal across all held-out regimes
+- scaling the offline dataset from `250 episodes / 2000 transitions` to `1000 episodes / 8000 transitions` did **not** change the held-out CQL conclusion:
+  - CQL still wins `8 / 9` buckets
+  - the same losing bucket remains `open_heavy + small`
+  - bucket-level sign pattern is unchanged (`9 / 9` same-sign buckets vs the smaller run)
+- a minimal regime router was then tested:
+  - `open_heavy + small -> VWAP`
+  - all other buckets -> `CQL`
+  - on the `1000`-episode held-out run, router moves the policy from `8 / 9` winning buckets to `9 / 9`
+  - this is a narrow but clean gain:
+    - router improves only the one known weak bucket
+    - it matches pure CQL everywhere else
+    - mean router-minus-CQL across buckets is about `+0.065` reward units
 - practical read:
   - if offline RL continues, `CQL` should now be treated as the leading control branch
   - `IQL` remains a useful baseline/ablation, but not the preferred offline method under the current setup
