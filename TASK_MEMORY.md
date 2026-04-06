@@ -1165,6 +1165,7 @@ Scope:
   - `outputs/phase5_rl_execution/offline_rl_readiness_report.json`
   - `outputs/phase5_rl_execution/iql_policy_report.json`
   - `outputs/phase5_rl_execution/cql_policy_report.json`
+  - `outputs/phase5_rl_execution/offline_regime_breakdown_report.json`
 
 Stable implementation details:
 
@@ -1177,7 +1178,7 @@ Stable implementation details:
 - latest larger rollout run used:
   - `episode_count_per_policy = 50`
   - total episodes = `250`
-  - total transitions = `1802`
+  - total transitions = `2000`
 - offline algorithms currently use:
   - `d3rlpy`
   - GPU device path = `cuda:0`
@@ -1188,30 +1189,43 @@ Stable implementation details:
 Stable result:
 
 - expanded rollout export is now materially larger than the earlier `40`-episode toy sample:
-  - `transition_count = 1802`
+  - `transition_count = 2000`
   - `episode_count = 250`
-  - `mean_steps_per_episode = 7.208`
-  - `min_steps_per_episode = 3`
+  - `mean_steps_per_episode = 8.0`
+  - `min_steps_per_episode = 8`
   - `max_steps_per_episode = 8`
 - offline algorithm results on the latest large-rollout run:
-  - `IQL mean_reward = -69.99`
+  - `IQL mean_reward = -11.92`
   - best heuristic on the same held-out evaluation = `impact_aware = -17.42`
-  - `CQL mean_reward = -10.96`
+  - `CQL mean_reward = -11.19`
   - best heuristic on the same held-out evaluation = `impact_aware = -17.42`
+- held-out regime evaluation now exists on the same `250`-episode / `2000`-transition rollout base:
+  - CQL remains better than the best heuristic in `8 / 9` held-out regime buckets
+  - the only held-out bucket where CQL loses is `open_heavy + small`, where `VWAP` remains best
+  - IQL is not a near-zero action-collapse policy under the current setup:
+    - `mean_action = 0.414`
+    - `std_action = 0.059`
+  - CQL is also not saturating the action space:
+    - `mean_action = 0.460`
+    - `std_action = 0.025`
+    - `near_zero_rate = 0.0`
+    - `near_one_rate = 0.0`
 
 Interpretation:
 
 - scaling the rollout dataset was the correct first move before evaluating offline RL
 - on the current simulator and dataset mix:
-  - `IQL` is clearly not robust enough and materially underperforms heuristics
-  - `CQL` currently looks much stronger than `IQL` and also beats the heuristic baselines on the same held-out reward scale
+  - `IQL` no longer looks like a broken implementation; the earlier extreme underperformance was not the stable takeaway after re-running on the larger rollout base
+  - `IQL` is still weaker and less expressive than `CQL`, and behaves more like a low-variance, near-constant execution-rate policy
+  - `CQL` currently looks stronger than `IQL` and beats the heuristic baselines on the same held-out reward scale in most regimes
 - this does **not** mean offline RL is promoted:
   - the result is still simulator-bound
   - it is based on one synthetic environment family and one logged-policy mixture
-  - further regime breakdown and stability checks are still needed
+  - the improvement is not universal across all held-out regimes
 - practical read:
   - if offline RL continues, `CQL` should now be treated as the leading control branch
   - `IQL` remains a useful baseline/ablation, but not the preferred offline method under the current setup
+  - the next highest-value evaluation step is deeper held-out regime analysis rather than immediate promotion
 
 ## Current Mainline Documents
 
