@@ -10,7 +10,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - Historical backtests should run through library calls, not CLI subprocess chains.
 - Default execution simulation mode: `impact_aware`.
 - `participation_twap` is intentionally preserved in sample execution requests as the baseline comparison mode.
-- Latest full regression on this machine: `python -m pytest -q` -> `313 passed, 38 warnings`.
+- Latest full regression on this machine: `python -m pytest -q` -> `310 passed, 38 warnings`.
 
 ## Active Worktree Topology
 
