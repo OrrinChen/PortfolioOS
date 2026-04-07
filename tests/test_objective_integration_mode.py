@@ -5,9 +5,11 @@ import numpy as np
 import pytest
 from pydantic import ValidationError
 
+from portfolio_os.cost.fee import estimate_fee_array
+from portfolio_os.cost.slippage import estimate_slippage_array
 from portfolio_os.optimizer.objective import build_objective
 from portfolio_os.risk.model import RiskModelContext
-from portfolio_os.utils.config import RiskModelConfig
+from portfolio_os.utils.config import ObjectiveWeights, RiskModelConfig
 
 
 def _pre_trade_nav(universe, config) -> float:
@@ -51,7 +53,14 @@ def test_replace_mode_keeps_risk_components_only(sample_context: dict) -> None:
         risk_context=_mock_risk_context(universe),
     )
 
-    assert set(components.keys()) == {"risk_term", "tracking_error", "transaction_cost", "alpha_reward"}
+    assert set(components.keys()) == {
+        "risk_term",
+        "tracking_error",
+        "transaction_cost",
+        "transaction_cost_currency",
+        "transaction_cost_fraction",
+        "alpha_reward",
+    }
     assert float(components["alpha_reward"].value) == pytest.approx(0.0)
     risk_total = (
         config.objective_weights.risk_term * float(components["risk_term"].value)
@@ -89,6 +98,8 @@ def test_augment_mode_combines_legacy_and_risk_components(sample_context: dict) 
         "risk_term",
         "tracking_error",
         "transaction_cost",
+        "transaction_cost_currency",
+        "transaction_cost_fraction",
         "target_deviation",
         "transaction_fee",
         "turnover_penalty",
@@ -173,4 +184,78 @@ def test_alpha_weight_adds_negative_alpha_reward_term(sample_context: dict) -> N
 def test_invalid_integration_mode_is_rejected_by_config_schema() -> None:
     with pytest.raises(ValidationError):
         RiskModelConfig.model_validate({"enabled": False, "integration_mode": "bad_mode"})
+
+
+def test_raw_currency_transaction_cost_mode_preserves_existing_expression(sample_context: dict) -> None:
+    universe = sample_context["universe"]
+    config = sample_context["config"].model_copy(deep=True)
+    config.risk_model.enabled = True
+    config.risk_model.integration_mode = "replace"
+    config.objective_weights.transaction_cost = 1.0
+    config.objective_weights.transaction_cost_objective_mode = "raw_currency"
+
+    trades = cp.Variable(len(universe))
+    trade_values = np.array([(-1.0) ** i * 0.5 for i in range(len(universe))], dtype=float)
+    trades.value = trade_values
+    pre_trade_nav = _pre_trade_nav(universe, config)
+    objective, components = build_objective(
+        trades,
+        universe,
+        config,
+        pre_trade_nav,
+        risk_context=_mock_risk_context(universe),
+    )
+
+    prices = universe["estimated_price"].to_numpy(dtype=float)
+    adv_shares = universe["adv_shares"].to_numpy(dtype=float)
+    expected_currency_cost = float(
+        estimate_fee_array(trade_values, prices, config.fees).sum()
+        + estimate_slippage_array(trade_values, prices, adv_shares, config.slippage).sum()
+    )
+
+    assert float(components["transaction_cost_currency"].value) == pytest.approx(expected_currency_cost)
+    assert float(components["transaction_cost_fraction"].value) == pytest.approx(expected_currency_cost / pre_trade_nav)
+    assert float(components["transaction_cost"].value) == pytest.approx(expected_currency_cost)
+    assert float(objective.value) >= float(components["transaction_cost"].value)
+
+
+def test_nav_fraction_transaction_cost_mode_normalizes_by_pre_trade_nav(sample_context: dict) -> None:
+    universe = sample_context["universe"]
+    config = sample_context["config"].model_copy(deep=True)
+    config.risk_model.enabled = True
+    config.risk_model.integration_mode = "replace"
+    config.objective_weights.risk_term = 0.0
+    config.objective_weights.tracking_error = 0.0
+    config.objective_weights.transaction_cost = 1.0
+    config.objective_weights.transaction_cost_objective_mode = "nav_fraction"
+
+    trades = cp.Variable(len(universe))
+    trade_values = np.array([(-1.0) ** i * 0.5 for i in range(len(universe))], dtype=float)
+    trades.value = trade_values
+    pre_trade_nav = _pre_trade_nav(universe, config)
+    objective, components = build_objective(
+        trades,
+        universe,
+        config,
+        pre_trade_nav,
+        risk_context=_mock_risk_context(universe),
+    )
+
+    prices = universe["estimated_price"].to_numpy(dtype=float)
+    adv_shares = universe["adv_shares"].to_numpy(dtype=float)
+    expected_currency_cost = float(
+        estimate_fee_array(trade_values, prices, config.fees).sum()
+        + estimate_slippage_array(trade_values, prices, adv_shares, config.slippage).sum()
+    )
+    expected_fraction_cost = expected_currency_cost / pre_trade_nav
+
+    assert float(components["transaction_cost_currency"].value) == pytest.approx(expected_currency_cost)
+    assert float(components["transaction_cost_fraction"].value) == pytest.approx(expected_fraction_cost)
+    assert float(components["transaction_cost"].value) == pytest.approx(expected_fraction_cost)
+    assert float(objective.value) == pytest.approx(expected_fraction_cost, abs=1e-10)
+
+
+def test_invalid_transaction_cost_objective_mode_is_rejected_by_schema() -> None:
+    with pytest.raises(ValidationError):
+        ObjectiveWeights.model_validate({"transaction_cost_objective_mode": "bad_mode"})
 

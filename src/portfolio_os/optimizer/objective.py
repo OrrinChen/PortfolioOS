@@ -39,7 +39,14 @@ def build_objective(
     transaction_fee = fee_expression(trades, prices, config.fees)
     turnover_penalty = turnover_penalty_expression(trades, prices, pre_trade_nav)
     slippage_penalty = slippage_expression(trades, prices, adv_shares, config.slippage)
-    transaction_cost = transaction_fee + slippage_penalty
+    transaction_cost_currency = transaction_fee + slippage_penalty
+    transaction_cost_fraction = transaction_cost_currency / pre_trade_nav
+    transaction_cost_mode = str(config.objective_weights.transaction_cost_objective_mode).strip().lower()
+    transaction_cost = (
+        transaction_cost_fraction
+        if transaction_cost_mode == "nav_fraction"
+        else transaction_cost_currency
+    )
     alpha_reward = (
         cp.sum(cp.multiply(expected_return, post_trade_weights))
         if expected_return is not None
@@ -71,6 +78,8 @@ def build_objective(
                 "risk_term": risk_term,
                 "tracking_error": tracking_error,
                 "transaction_cost": transaction_cost,
+                "transaction_cost_currency": transaction_cost_currency,
+                "transaction_cost_fraction": transaction_cost_fraction,
                 "target_deviation": target_deviation,
                 "transaction_fee": transaction_fee,
                 "turnover_penalty": turnover_penalty,
@@ -81,6 +90,8 @@ def build_objective(
             "risk_term": risk_term,
             "tracking_error": tracking_error,
             "transaction_cost": transaction_cost,
+            "transaction_cost_currency": transaction_cost_currency,
+            "transaction_cost_fraction": transaction_cost_fraction,
             "alpha_reward": alpha_reward,
         }
 
