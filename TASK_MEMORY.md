@@ -401,6 +401,37 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     - A5 should no longer be treated as an open tuning branch
     - the meaningful conclusion has already been extracted
     - further `k` sweeps or intra-A5 objective retunes are low ROI unless a later alpha branch materially changes the signal surface
+- A5 boundary-mapping follow-up clarified the concentrated-path lower-side behavior:
+  - rerun outputs with richer translation diagnostics:
+    - `outputs/ashare_a5_target_concentration_topk30_navfraction_full/`
+    - `outputs/ashare_a5_target_concentration_topk50_navfraction_full_rerun/`
+  - `top_k_30_long_only`:
+    - `rebalance_count = 90`
+    - `tradeable_rebalance_share = 1.0`
+    - `fallback_count = 0`
+    - `mean_continuous_turnover ~ 0.300`
+    - `mean_surviving_turnover ~ 0.149`
+    - repair reduction vs continuous intent `~50.1%`
+    - `mean_lot_rounding_share ~ 0.860`
+    - `repair_reason_distribution = {"lot_rounding": 90}`
+  - `top_k_50_long_only` rerun under the same schema:
+    - `rebalance_count = 90`
+    - `tradeable_rebalance_share = 1.0`
+    - `fallback_count = 0`
+    - `mean_continuous_turnover ~ 0.300`
+    - `mean_surviving_turnover ~ 0.154`
+    - repair reduction vs continuous intent `~48.7%`
+    - `mean_lot_rounding_share ~ 0.863`
+    - `repair_reason_distribution = {"lot_rounding": 90}`
+  - practical read:
+    - `lot_rounding` is not a new `top_k_30` cliff
+    - it is a stable concentrated-path feature under current A-share board-lot mechanics
+    - the lower-bound yellow flag on `k = 30` should be downgraded to a cautious green
+    - concentrated-path behavior is still execution-realistic, but the repair layer remains economically important because it removes roughly half of the solver's continuous turnover intent
+  - immediate control runs justified by this read:
+    - `top_k_75_long_only` full history
+    - `top_k_100_long_only` full history under the richer schema
+    - `top_k_50_long_only` with tighter sector band stress (`sector_band_buffer = 0.02`, i.e. about `±2%` vs current `±5%`)
 
 ## Recommended Next Steps
 
@@ -420,7 +451,11 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
    - practical next control comparisons should start from:
       - `top_k_50_long_only`
       - `top_k_100_long_only`
+      - then add `top_k_75_long_only` and a tighter-band `top_k_50_long_only` sector stress at about `±2%`
    - treat dense full-history runs as secondary diagnostics, not the main validation path
+   - current boundary read:
+     - `k = 30` and `k = 50` both remain `90 / 90` tradeable with zero fallbacks
+     - the main remaining execution friction is stable `lot_rounding`, not a newly emerging lower-`k` failure cliff
 5. The next distinct research branch to open after A5 closeout is US Phase 3.0:
    - universe:
      - `expanded_liquid_core`
