@@ -1,1368 +1,591 @@
 # TASK_MEMORY
 
-This file is the concise handoff note for continuing PortfolioOS. It keeps only the current mainline state, stable conclusions, and the next useful steps.
+This file is the short handoff note for continuing PortfolioOS. It keeps only the current state, stable conclusions, and the next useful branch. Detailed artifacts remain in `docs/`, `outputs/`, and the external research workspaces.
 
-## Project Snapshot
+## Current Snapshot
 
-PortfolioOS is now a compliance-aware portfolio rebalance, scenario, approval, execution-simulation, backtest, TCA, and research CLI platform.
+- PortfolioOS is a compliance-aware portfolio rebalance, scenario, approval, execution-simulation, backtest, TCA, and research CLI platform.
+- Core platform buildout through Phase 12 is implemented and stable.
+- Canonical orchestration path: `src/portfolio_os/workflow/single_run.py`.
+- Historical backtests should run through library calls, not CLI subprocess chains.
+- Default execution simulation mode: `impact_aware`.
+- `participation_twap` is intentionally preserved in sample execution requests as the baseline comparison mode.
+- Latest full regression on this machine: `python -m pytest -q` -> `313 passed, 38 warnings`.
 
-Current high-level state:
+## Active Worktree Topology
 
-- Core platform buildout through Phase 12 is complete.
-- Historical backtest, replay, scenario, approval/freeze, execution simulation, import profiles, data builders, and snapshot bundles are all implemented and stable.
-- The runtime default execution simulation mode is `impact_aware`.
-- `participation_twap` remains intentionally preserved in sample execution requests as the baseline comparison mode.
-- A frozen expanded US research stack exists alongside the original A-share-oriented MVP.
-- The repo is now a git repository on `main`; future edits should be committed.
+- `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha` = the only active WRDS / US research line.
+- `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\ashare-a1` = the only active A-share research line.
+- `C:\Users\14574\Quant\PortfolioOS` main repo = shared platform changes only; do not leave branch-local research copies here.
 
-Latest full regression on this machine:
+## Stable Platform State
 
-- `python -m pytest -q` -> `307 passed, 38 warnings`
+### Data And Inputs
 
-## Stable Platform Conclusions
-
-### Workflow And Backtest Foundation
-
-- The canonical single-run orchestration path is `src/portfolio_os/workflow/single_run.py`.
-- Historical backtests are intended to run via library calls, not CLI subprocess chains.
-- Shared workflow extraction is complete and is the correct integration point for further research features.
-
-### Data, Providers, And Research Inputs
-
-- Provider and builder infrastructure is complete for standard `market.csv`, `reference.csv`, `target.csv`, and snapshot bundles.
+- Provider/builder infrastructure for `market.csv`, `reference.csv`, `target.csv`, and snapshot bundles is complete.
 - Tushare permission-aware fallbacks are implemented.
-- Full live snapshot generation is still limited by current Tushare `index_weight` permissions, so client-provided `target.csv` remains the official fallback path when needed.
-- The expanded US research universe is frozen at 50 names and lives under:
+- Because current Tushare `index_weight` access is still limited, client-provided `target.csv` remains the official fallback when live snapshot generation is incomplete.
+- Frozen expanded-US research assets are the canonical US fundamentals workspace:
   - `data/universe/us_equity_expanded_tickers.txt`
   - `data/universe/us_universe_reference.csv`
   - `data/universe/us_universe_market_2026-03-27.csv`
-- Expanded US risk inputs live under:
-  - `data/risk_inputs_us_expanded/returns_long.csv`
-  - `data/risk_inputs_us_expanded/factor_exposure.csv`
-  - `data/risk_inputs_us_expanded/risk_inputs_manifest.json`
-- An external FMP Ultimate freeze now exists under:
+  - `data/risk_inputs_us_expanded/`
   - `C:\Users\14574\Quant\fmp_data_freeze`
-- Canonical FMP freeze summary lives at:
-  - `C:\Users\14574\Quant\fmp_data_freeze\summary\fmp_coverage_summary.json`
-- Stable FMP freeze snapshot on `2026-04-03`:
-  - primary universe = `2671`
-  - supplement universe = `607`
-  - `blocked = false`
-  - total stored size estimate = `23.416 GB`
-- Stable FMP coverage conclusions:
-  - main-list `has_all_core_quarterly_rate = 98.99%`
-  - main-list `min_12_quarters_all_core_rate = 93.82%`
-  - main-list `min_20_quarters_all_core_rate = 89.74%`
-  - supplement `min_12_quarters_all_core_rate = 88.47%`
-  - transcript backfill is complete and main-list `median_transcript_count = 48`
-  - transcript-positive main tickers = `2322 / 2671`
-- Important FMP caveats:
-  - SEC filings endpoints were largely unavailable in this account regime (`stable` returned `400` requiring unsupported query shape; `api/v3` returned legacy `403`)
-  - ESG endpoint was unavailable (`stable` `404`, `api/v3` legacy `403`)
-  - the frozen `analyst_estimates_quarterly.json` payloads expose forward estimate levels by fiscal date, but do **not** include historical snapshot metadata such as `snapshot_date`, `as_of_date`, or `updated_at`
-  - therefore the current FMP freeze cannot support a clean PIT analyst-revision alpha by itself; using the frozen estimate levels as if they were historical revision snapshots would introduce lookahead
-  - if US fundamentals/transcript research resumes, use the frozen FMP workspace rather than re-probing `yfinance`
-- Latest external fundamentals spike on `2026-04-03` lives under:
-  - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\fundamentals_spike`
-  - canonical machine-readable outputs:
-    - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\fundamentals_spike\coverage_check.json`
-    - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\fundamentals_spike\fundamentals_spike_summary.json`
-    - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\fundamentals_spike\alpha_only_vs_naive_summary.json`
-- Stable fundamentals-spike conclusions:
-  - the canonical `us_liquid_mid_large_300_2026-03-27` universe did **not** fully intersect the US-only FMP freeze
-  - `covered_ticker_count = 254 / 300`
-  - `covered_rate = 84.67%`
-  - the missing set is mostly non-US registrants and dotted share classes inside the canonical 300-name list, so this is a dataset-scope mismatch, not a probe bug
-  - despite the coverage miss, all `36` canonical rebalance dates evaluated successfully on the covered subset
-  - composite signal density stayed strong on the covered subset:
-    - `mean_scored_ticker_count = 253.69`
-    - `signal_ready_rate = 1.0`
-    - dates with coverage below `80%` = `0`
-  - best single fundamentals factor was `book_to_price`
-    - `mean_rank_ic = 0.02189`
-    - `rank_ic_tstat = 0.8510`
-    - `alpha_only_vs_naive_mean = 0.00529`
-    - `alpha_only_vs_naive_tstat = 1.4613`
-  - equal-weight composite was positive but weak
-    - `mean_rank_ic = 0.01895`
-    - `rank_ic_tstat = 0.7148`
-    - `alpha_only_vs_naive_mean = 0.00207`
-    - `alpha_only_vs_naive_tstat = 0.5541`
-  - Phase 2.6 deterministic momentum baseline remains stronger:
-    - `alpha_only_vs_naive_mean = 0.02156`
-    - `alpha_only_vs_naive_tstat = 2.1261`
-  - final probe decision:
-    - `decision_branch = fundamentals_complementary`
-    - `next_recommended_step = do momentum + fundamentals multi-factor`
-  - do **not** treat standalone fundamentals as a superior replacement for deterministic momentum on current evidence
+- Use the frozen FMP workspace for resumed US fundamentals or transcript work; do not reopen the old `yfinance` path.
+- Important FMP caveat: frozen analyst-estimate payloads are not PIT-safe for analyst-revision research because they do not include historical snapshot metadata.
+- WRDS bootstrap research infrastructure is now live in the external workspace under:
+  - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha\run_w1.py`
+  - `...\scripts\wrds_ibes_w3.py`
+  - `...\scripts\wrds_eval_adapter.py`
+  - `...\outputs\wrds_bootstrap\`
+- Stable WRDS research notes:
+  - `W1` dynamic universes were validated cleanly: `top_500_dynamic` stays at exactly `500` names and `rank_500_1500_dynamic` stays at exactly `1000`
+  - `wrds.iclink` is not available on this account; the working IBES-CRSP link uses local `ibes.idsum` CUSIP matching with `sdates`-aware validity handling
+  - for analyst and event research, WRDS is now the canonical PIT source; do not use the old FMP estimate history as a substitute
 
-### Execution And Expanded-US Validation
+### Execution, TCA, And Costs
 
-- Expanded-US replay, single-run, and execution validation for `sample_us_04`, `sample_us_05`, and `sample_us_06` has already been completed successfully.
-- The expanded US replay/sample stack is healthy enough to support further research work without first revisiting infrastructure.
-
-## TCA And Cost Model State
-
-### Fill Collection Infrastructure
-
-- The fill-collection pipeline preserves `reference_price` end-to-end for calibration.
-- Windows BOM-tolerant JSON handling is required for some calibration and broker-state artifacts.
-- The constrained fill batch generator exists and supports:
-  - sell-side inventory constraints via `--broker-positions-file`
-  - buy-side total notional constraints via `--buying-power`
-  - audit fields in `fill_collection_batch_manifest.json`
-
-### Key Physical Constraint
-
-- The ADV reachability check on the frozen 50-name US universe showed that high participation buckets are not physically reachable at the current account scale.
-- For the current account + universe regime, realistic participation is effectively `0-0.1%`.
-- This means the old "cover broad participation buckets and then promote" TCA path is not the right mainline.
-
-### Current Calibration Regime
-
-- A low-participation overlay sufficiency path now exists.
-- `overlay_readiness = sufficient` can now trigger in the current production regime when:
-  - `fit_eligible_count >= 30`
-  - fit-eligible coverage includes both `buy` and `sell`
-  - observed fit participation stays within `0-0.1%`
-  - the existing signal-quality and model-improvement checks still pass
-- This path is intentionally limited:
-  - it supports paper-overlay readiness
-  - it does not justify broad extrapolation
-  - it does not justify default promotion
-
-### Latest Closed TCA Result
-
-- Low-participation live-fill closure has already been reached.
-- Latest important machine-readable outcome:
-  - `fit_eligible_count = 32`
-  - `bidirectional_fit_coverage = true`
-  - `sufficient_low_participation_coverage = true`
+- Expanded-US replay/sample validation for `sample_us_04` to `sample_us_06` is already complete; the stack is healthy enough for further research work.
+- Fill collection preserves `reference_price` end to end.
+- BOM-tolerant JSON handling is required for some calibration and broker-state artifacts.
+- The constrained fill batch generator already supports broker positions, buying-power limits, and audit manifests.
+- Current account scale only supports realistic participation around `0-0.1%` on the frozen 50-name US universe.
+- Low-participation TCA closure is done:
   - `overlay_readiness = sufficient`
-  - `next_recommended_action = apply_as_paper_overlay`
-  - `recommendation = provisional_only`
-  - `recommendation_reason = low_participation_overlay_only`
   - `candidate_k = 3.498400399110418`
-- Applicability boundary:
-  - calibration is validated only for `0-0.1% participation`
-  - do not extrapolate above that regime
+  - scope = paper overlay only
+- Do not extrapolate the calibration above `0.1%` participation.
+- Do not promote calibrated `k` into `config/us_expanded.yaml` yet.
+- Calibrated research config exists at `config/us_expanded_tca_calibrated.yaml`.
+- The main estimator follow-up is to include negative-signal eligible fills; useful, but not blocking the current low-participation closure.
 
-### Methodological Caveat
+### Optimizer And Risk Conclusions
 
-- The current `k` fit still uses `positive_signal` observations only.
-- That likely biases the fitted `k` upward.
-- Including negative-signal eligible fills in the estimator remains an important follow-up, but it is not blocking the low-participation sufficiency closure.
+- Cost-model sweeps show a structural problem, not just `k` tuning:
+  - without a real alpha / expected-return term, the optimizer mainly differentiates itself by suppressing trades
+  - under realistic costs, that suppression gives up more holding return than it saves
+- Risk-aversion tooling is implemented (`portfolio-os-risk-sweep`), but no Sharpe-improving sweet spot was found.
+- Conclusion: better alpha is the main bottleneck, not more optimizer tuning or a risk-aware default objective.
 
-## Cost Model And Optimizer Research Conclusions
+## US Research State
 
-### Calibrated Cost Model Decision
+### Closed Positive Result
 
-- A calibrated research config exists:
-  - `config/us_expanded_tca_calibrated.yaml`
-- Calibrated `k` should not be promoted into `config/us_expanded.yaml` yet.
-- The decision rationale is recorded in:
-  - `docs/cost_model_decision_note.md`
+- Phase 1 alpha research closed with `alt_momentum_4_1` accepted as the seed signal.
+- Practical interpretation: the best current US seed is shorter-lookback pure momentum (`84d` lookback, `21d` skip), not the old reversal/momentum blend.
 
-### Core Research Finding
+### Closed Negative / Non-Promotion Results
 
-- Across the `k = 0.015`, `k = 1.4457`, and `k = 3.4984` sweep rounds, the efficient frontier shifts downward as the cost model becomes more realistic.
-- The problem is not just cost-multiplier tuning.
-- The deeper issue is structural:
-  - without an explicit alpha / expected-return term, the current optimizer mostly differentiates itself from naive via trade suppression
-  - with more realistic costs, trade suppression sacrifices more holding return than it saves in cost
+- Phase 1.5 alpha integration is engineering-complete but research-negative:
+  - the alpha path was wired correctly
+  - the optimizer effectively matched no-trade / buy-and-hold on the frozen sample
+  - the accepted Phase 1 signal became too sparse after walk-forward translation
+- Deterministic fundamentals work was informative but not promotion-worthy:
+  - standalone fundamentals looked complementary, not stronger than momentum
+  - `momentum + book_to_price` was promising only on the covered subset, with an unresolved `254 / 300` coverage mismatch versus the US-only FMP freeze
+- The Qlib / LightGBM branch is closed as non-promoted:
+  - the original `lambdarank` pipeline bug was fixed
+  - targeted retries, neutralization, transcript features, horizon checks, and quasi-PIT SUE follow-ups still did not produce a primary-universe signal strong enough for promotion
+- Phase 4A to 4E are informative diagnostics, not promotion results:
+  - moving down-cap helped deterministic signals relative to top-500 large-cap
+  - regime context matters
+  - free SEC 13F ingestion/backfill is now a real asset
+  - institutional-flow factors stayed too weak or too overlapping to promote
 
-## Risk-Aversion Research State
+### Current WRDS US Research State
 
-- Risk-aversion sweep tooling is now implemented and exposed via:
-  - `portfolio-os-risk-sweep`
-- Both augment-mode and replace-mode research have already been run on real expanded-US data.
+- The WRDS data-quality hypothesis is now confirmed, not speculative:
+  - FMP analyst-based results were materially understating true signal quality
+  - switching to WRDS turned IBES-based SUE from a weak/negative FMP result into a clearly positive signal
+- The active usable US research slice is no longer top-500 large-cap; it is dynamic mid-cap `rank_500_1500_dynamic`.
+- Large-cap/top-500 remains weak across the new WRDS analyst, fundamentals, and event diagnostics.
+- Best current reproducible US signal is still the WRDS mid-cap analyst blend:
+  - `SUE + FY1 revision` on `rank_500_1500_dynamic`
+  - roughly `rank_ic_t ~ 3.0-3.3`
+  - annualized gross alpha remains only low-single-digits (`~2-3%`), so this is informative but not yet promotion-ready for PortfolioOS Layer 2
+- Additional IBES summary factors were checked and are not the unlock:
+  - `breadth` has some signal but is largely redundant with `FY1 revision`
+  - `coverage_change` is mostly orthogonal but too weak
+  - `dispersion_change` was not helpful in the current framework
+- WRDS Compustat factor refresh materially improved diagnostics relative to FMP, but not enough to clear promotion:
+  - `gross_profitability` is the only clearly live new Compustat factor in dynamic mid-cap (`rank_ic_t ~ 3.0`)
+  - `book_to_price` improved versus the FMP read, especially on expanded coverage, but stayed weak on the main mid-cap slice
+  - `asset_growth` stayed weak
+  - `accruals` provided only mild incremental help
+- Important combination conclusion:
+  - `gross_profitability` is real but does not fit the current top-bucket selection framework well
+  - treating it as a screen or IC-weighted blend component did not improve the mid-cap analyst composite enough to matter
+- Event-driven announcement-response work is now partially implemented on WRDS:
+  - `CAR[-1,+1]` (`car3_spy`) is available in the local W3 builder
+  - an independent event-driven evaluator now exists for announcement-anchored labels and monthly event-level aggregation
+  - the evaluator now supports separate `signal-effective` anchors, so event identity can stay tied to `announcement_date` while forward-return windows start strictly after later-observed signals like `CAR3`
+  - `SUE` on `rank_500_1500_dynamic` is dramatically stronger in the new event-driven frame than in the old `21d` carry frame:
+    - short window `[+2,+7]`: `mean_rank_ic ~ 0.136`, `rank_ic_t ~ 19.6`, `alpha_only_t ~ 10.7`
+    - medium window `[+2,+21]`: `mean_rank_ic ~ 0.122`, `rank_ic_t ~ 17.3`, `alpha_only_t ~ 9.4`
+  - this validates the new research direction: evaluation-horizon mismatch was materially suppressing announcement-driven signals under the old `21d` calendar-grid framework
+  - `CAR3` remains weak as a standalone event-driven mid-cap signal even with the correct non-overlapping post-signal window:
+    - short window `[+3,+8]`: `rank_ic_t ~ 0.79`, `alpha_only_t ~ -0.29`
+    - medium window `[+3,+22]`: `rank_ic_t ~ 0.80`, `alpha_only_t ~ 0.20`
+  - same-event `SUE × CAR3` interaction is more nuanced than the old carry read:
+    - waiting for `CAR3` observation materially weakens pure `SUE`
+    - simple same-event `z(SUE) + z(CAR3)` blend does not help
+    - a confirmation-style interaction `z(SUE) * sign(CAR3)` is weak on the short window but does become meaningfully positive on the medium window (`alpha_only_t ~ 3.8`) even though its `rank_ic_t` stays below the pure short-window SUE result
+  - focused confirmation sweep clarifies the mechanism:
+    - announcement-timed `SUE` remains far stronger than any delayed variant even on CAR3-overlap events
+    - delaying entry to wait for observable `CAR3` cuts the event-driven edge sharply
+    - `CAR3` confirmation does add back some of that lost edge, so its value is real confirmation rather than standalone alpha, but it only partially recovers the delay loss
+    - best confirmation variants so far depend on holding window:
+      - shorter windows: hard gate `SUE * 1[CAR3 > 0]` helps the most
+      - medium windows: `z(SUE) * sign(CAR3)` is currently strongest (`alpha_only_t ~ 4.4` on `[+3,+22]`)
+      - intermediate window `[+4,+15]`: `z(SUE) * sign(CAR3)` remains the best simple winner tested so far on that tranche, but the uplift over delayed-SUE baseline is only modest (`alpha_only_t ~ 3.23` vs `~2.92`)
+    - a simple dead-zone version around small `CAR3` values did not improve on the best no-dead-zone confirmation variant
+    - important stability read:
+      - the winner does **not** appear to work by collapsing breadth; active month count and mean events per month stay essentially unchanged versus delayed SUE baseline
+      - however, the improvement is not uniformly strong across subperiods, so this remains a research-quality signal refinement, not an integration candidate
+    - closeout mini-sweep across three simple confirmation rules and three CAR3-safe windows is now complete:
+      - compared only:
+        - `z(SUE) * sign(CAR3)`
+        - `z(SUE) * 1[CAR3 > 0]`
+        - `z(SUE) * 1[z(CAR3) > 0.25]`
+      - windows:
+        - `[+3,+10]`
+        - `[+4,+15]`
+        - `[+3,+22]`
+      - result: `z(SUE) * sign(CAR3)` wins all three windows on alpha-only t-stat, so this is the final representative spec for the CAR3 confirmation line
+  - practical implication: `CAR3` still does not justify itself as a standalone next promotion candidate, but confirmation-style interactions are now a live sub-branch inside the new event-driven framework
 
-Main conclusion:
-
-- Risk aversion now clearly moves portfolio construction away from naive, but no Sharpe-improving sweet spot was found.
-- In augment mode:
-  - volatility and drawdown improve as risk aversion rises
-  - return, Sharpe, and relative performance versus naive worsen
-- In replace mode:
-  - the sweep is mostly degenerate until extreme multipliers
-  - the first materially different point is worse, not better
-
-Interpretation:
-
-- Risk-aware construction without an explicit alpha / expected-return signal behaves like drag, not like a better frontier.
-- The tooling is worth keeping.
-- Promotion of a risk-aware default objective should wait until there is a real alpha input.
-
-## Phase 1 Alpha Research State
-
-### Strategic Direction
-
-- The long-term roadmap is now documented in:
-  - `docs/platform_ml_rl_roadmap.md`
-- Direction:
-  - shared US/CN-capable research platform
-  - US-first depth
-  - ML for alpha / risk / cost prediction
-  - optimization for allocation
-  - RL for sequential execution and control
-
-### Current Implementation Scope
-
-- The first alpha research slice is implemented under:
-  - `src/portfolio_os/alpha/`
-- Public workflow:
-  - `run_alpha_research(...)`
-- Acceptance workflow:
-  - `run_alpha_acceptance_gate(...)`
-- CLI:
-  - `portfolio-os-alpha-research`
-  - `portfolio-os-alpha-acceptance`
-- Current scope is intentionally research-only:
-  - consumes `returns_long.csv`
-  - builds deterministic reversal and momentum signals
-  - computes forward-return labels
-  - emits signal panel, IC diagnostics, gate summary JSON, and markdown reports
-- Alpha is now connected into the historical backtest stack only.
-
-### Phase 1 Closeout Result
-
-- The Phase 1 alpha acceptance gate is now implemented and closed on the frozen expanded-US snapshot.
-- Canonical runtime output:
-  - `outputs/phase1_alpha_acceptance_us_expanded`
-- Final machine-readable decision:
-  - `status = accepted`
-  - `acceptance_mode = accepted_by_relative_and_absolute_gates`
-  - `accepted_recipe_name = alt_momentum_4_1`
-  - `baseline_recipe_name = equal_weight_momentum_6_1`
-  - `completed_round_count = 1`
-- Accepted holdout metrics:
-  - `mean_rank_ic = 0.10630492196878749`
-  - `positive_rank_ic_ratio = 0.775`
-  - `mean_top_bottom_spread = 0.012255149986753346`
-  - `evaluation_date_count = 40`
-  - `mean_monthly_factor_turnover = 0.35`
-
-Interpretation:
-
-- Phase 1 closed with a momentum-first winner.
-- The accepted recipe is shorter-lookback pure momentum:
-  - `momentum_lookback_days = 84`
-  - `momentum_skip_days = 21`
-  - `reversal_weight = 0.0`
-  - `momentum_weight = 1.0`
-- The old equal-weight reversal/momentum blend should not be the starting point for optimizer integration.
-
-## Phase 1.5 Alpha Integration State
-
-### Implemented Scope
-
-- Phase 1.5 alpha integration is now implemented in the backtest stack.
-- Added capabilities:
-  - objective-level `alpha_weight`
-  - walk-forward expected-return bridge from `alt_momentum_4_1`
-  - `alpha_only_top_quintile` baseline
-  - `alpha_panel.csv` audit artifact
-  - optimizer-vs-naive, optimizer-vs-alpha-only, and alpha-only-vs-naive reporting
-- Dedicated research inputs:
-  - `config/us_expanded_alpha_phase_1_5.yaml`
-  - `data/backtest_samples/manifest_us_expanded_alpha_phase_1_5.yaml`
-
-### Research Outcome
-
-- Canonical runtime output:
-  - `outputs/phase1_5_alpha_us_expanded`
-- Supporting sensitivity probe:
-  - `outputs/phase1_5_alpha_weight_probe/alpha_weight_probe_summary.csv`
-
-Main Phase 1.5 conclusion:
-
-- engineering integration succeeded
-- research gate failed
-
-Important machine-readable outcome from the main run:
-
-- `optimizer` annualized return: `6.37%`
-- `optimizer` Sharpe: `0.78`
-- `optimizer` turnover: `0.0`
-- `naive_pro_rata` annualized return: `14.47%`
-- `naive_pro_rata` Sharpe: `1.24`
-- `alpha_only_top_quintile` annualized return: `0.10%`
-- `alpha_only_top_quintile` Sharpe: `0.06`
-- `rebalance_dates_with_alpha_signal = 6`
-- `rebalance_dates_without_alpha_signal = 6`
-- effective nonzero expected-return dates: `2 / 12`
-
-### Structural Interpretation
-
-- The alpha channel is wired correctly, but it did not change optimizer behavior on the frozen expanded-US sample.
-- `optimizer` matched the no-trade `buy_and_hold` path exactly in the main run.
-- The ad hoc alpha-weight probe over `0, 1, 10, 100, 1000, 10000` produced identical optimizer results, so the current failure is not just a small-weight tuning issue.
-- The accepted Phase 1 signal becomes too sparse after walk-forward shrinkage:
-  - half the rebalance dates are cold-start
-  - most remaining dates still shrink to zero expected return
-- The alpha-only benchmark was much worse than naive, which means the accepted recipe is not yet strong enough for direct portfolio construction under realistic costs.
-
-### Decision Boundary
+### US Decision Boundary
 
 - Do not promote alpha into `config/us_expanded.yaml`.
-- Keep Phase 1.5 as infrastructure-complete but research-negative.
-- The next research bottleneck is signal robustness and signal translation, not more optimizer plumbing.
-
-## Phase 2 Multi-Factor Spike State
-
-### Implemented Scope
-
-- Ran a deterministic `momentum + book_to_price` multi-factor spike in the isolated `qlib_spikes` workspace.
-- Canonical research universe remained the frozen 300-name list, but only `254 / 300` were covered by the FMP freeze.
-- The Phase 2 multi-factor result was therefore evaluated on the `254-name` covered subset, not the full canonical 300.
-
-### Research Outcome
-
-- Canonical runtime output:
-  - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\momentum_fundamentals_multifactor_spike`
-- Final machine-readable decision:
-  - `decision_branch = multifactor_promising_but_subset_limited`
-  - `promotion_sample_incomplete = true`
-- Main subset results:
-  - `multifactor alpha_only_vs_naive_mean = 0.005664360008941142`
-  - `multifactor alpha_only_vs_naive_tstat = 1.69760258816023`
-  - `multifactor mean_rank_ic = 0.019376416809790166`
-  - `book_to_price alpha_only_vs_naive_mean = 0.005285596815864608`
-  - `book_to_price alpha_only_vs_naive_tstat = 1.4613145110787824`
-  - `momentum alpha_only_vs_naive_mean = 0.00014226385096099351`
-  - `momentum alpha_only_vs_naive_tstat = 0.042748673618950524`
-
-### Structural Interpretation
-
-- Multi-factor beat naive after costs on the covered subset, but not strongly enough for unconditional promotion.
-- Standalone momentum collapsed on the `254-name` subset relative to the earlier full-300 Phase 2.6 result, exposing universe-composition sensitivity in the prior baseline.
-- The `46-name` FMP coverage gap was therefore treated as a real interpretation caveat, not just a nuisance data issue.
-- The correct next move after Phase 2 was to move away from the small-sample deterministic-only loop and test ML on a materially larger universe.
-
-## Phase 3 Qlib ML Alpha State
-
-### Implemented Scope
-
-- Phase 3 was executed in the isolated Qlib worktree:
-  - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha`
-- Implemented components:
-  - `expanded_liquid_core` universe builder
-  - PIT-safe FMP staging layer
-  - staging-to-Qlib conversion
-  - deterministic parity baselines
-  - LightGBM walk-forward training
-  - `alpha_panel.csv` export
-  - Layer 1 signal evaluation
-- Canonical runtime output root:
-  - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha\outputs\phase3_ml_alpha`
-
-### Research Outcome
-
-- Primary universe:
-  - `expanded_liquid_core_count = 1989`
-- Continuity control:
-  - `control_300_available_count = 227`
-- Walk-forward training:
-  - `fold_count = 6`
-  - `feature_count = 167`
-  - `prediction_row_count = 1451970`
-  - `objective_requested = lambdarank`
-  - `objectives_used = [regression]`
-- Final machine-readable decision:
-  - `promotion_status = reject`
-  - `reason = ml_failed_layer_1_signal_gate`
-  - `costed_backtest.status = skipped`
-- Expanded-core ML Layer 1 results:
-  - `mean_rank_ic = -0.0010591874763032012`
-  - `rank_ic_tstat = -0.07577984751762754`
-  - `alpha_only_vs_naive_mean = -0.003677472026942384`
-  - `alpha_only_vs_naive_tstat = -1.9493232574622625`
-- Expanded-core deterministic parity reference:
-  - `multifactor mean_rank_ic = -0.014459652998030066`
-  - `multifactor alpha_only_vs_naive_mean = 0.0017845643160054384`
-- Control-universe ML Layer 1 results:
-  - `mean_rank_ic = -0.025032854721437556`
-  - `alpha_only_vs_naive_mean = -0.004126771166029848`
-
-### Phase 3.5 Diagnostics And Targeted Retry
-
-- Phase 3.5 was executed in the same isolated Qlib worktree and closed with a stable gate result.
-- Canonical Phase 3.5 output root:
-  - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha\outputs\phase3_5_ml_diagnostics`
-- First diagnosis:
-  - the original `lambdarank` failure was a real pipeline bug, not a market conclusion
-  - root cause: query-group sizes were computed before objective-specific row drops, so query counts exceeded the final training matrix length
-  - integrity outcome:
-    - `pipeline_integrity_status = invalid_fixed`
-    - `legacy_mismatch_fold_count = 6`
-    - `current_mismatch_fold_count = 0`
-- Post-mortem findings on the original Phase 3 run:
-  - early folds were mildly positive, later folds turned materially negative
-  - `Alpha158` dominated the configured feature mix:
-    - `Alpha158 = 158 / 167 features`
-    - `custom_fundamentals = 8 / 167`
-    - `custom_technical = 1 / 167`
-  - PIT/fundamental coverage on evaluation dates was not the bottleneck:
-    - `full_custom_fundamentals_rate_mean` stayed around `0.958-0.961` by fold
-  - dynamic liquidity segment diagnostics did not reveal a clean positive pocket under the original regression fallback
-- One targeted retry was then run with:
-  - true `lambdarank`
-  - primary universe = `top_500_liquid_dynamic`
-  - compact feature set = `6 technical + 8 fundamentals`
-  - control universe = `control_300_available`
-- Retry output summary:
-  - `objectives_used = [lambdarank]`
-  - `prediction_row_count = 1451958`
-  - `fold_count = 6`
-- Retry primary-universe result (`top_500_liquid_dynamic`):
-  - `mean_rank_ic = 0.00621153119435888`
-  - `rank_ic_tstat = 0.21394083528717797`
-  - `alpha_only_vs_naive_mean = 0.0069113685169759275`
-  - `alpha_only_vs_naive_tstat = 1.1464660284220172`
-- Retry control-universe result (`control_300_available`):
-  - `mean_rank_ic = 0.027207684392606478`
-  - `rank_ic_tstat = 1.0429181225747441`
-  - `alpha_only_vs_naive_mean = 0.010074155664304554`
-  - `alpha_only_vs_naive_tstat = 2.1732733742381085`
-- Ensemble branch was explicitly checked against the deterministic multifactor baseline:
-  - `rank_ic_series_correlation = -0.03507252319528281`
-  - `alpha_only_series_correlation = 0.4352095990857516`
-  - simple equal-weight ensemble did not beat both standalone signals on Layer 1 metrics
-  - outcome:
-    - `passes_ensemble_gate = false`
-- Final Phase 3.5 decision:
-  - `outcome = retry_reject`
-  - `next_recommended_step = Keep deterministic baseline as the research default and do not promote ML alpha.`
-
-### Phase 3.5 Universe-Split Diagnosis
-
-- A follow-up diagnostic was run to explain the apparent `300 vs 500` split using the targeted-retry alpha panel, PIT-safe daily `market_cap`, canonical-300 membership flags, and placebo sampling.
-- Canonical output:
-  - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha\outputs\phase3_5_ml_diagnostics\universe_split_summary.json`
-- Diagnostic sample:
-  - primary universe remained `top_500_liquid_dynamic`
-  - `primary_row_count = 17500`
-  - `primary_ticker_count = 938`
-  - `canonical_available_ticker_count = 220`
-- Market-cap quintile read:
-  - `Q1 mean_rank_ic = 0.02004185636880605`
-  - `Q2 mean_rank_ic = 0.0014792692025384366`
-  - `Q3 mean_rank_ic = 0.016913370902554528`
-  - `Q4 mean_rank_ic = 0.015924391855806373`
-  - `Q5 mean_rank_ic = -0.008023834695503579`
-- Canonical-membership read inside the same `top_500_liquid_dynamic` universe:
-  - canonical names:
-    - `mean_rank_ic = 0.01911331858563089`
-    - `alpha_only_vs_naive_mean = 0.007088411250605896`
-  - non-canonical names:
-    - `mean_rank_ic = 0.0006685522828736416`
-    - `alpha_only_vs_naive_mean = 0.0074076857029048045`
-- Placebo read:
-  - size-matched random samples from the same top-500 universe:
-    - `canonical_rank_ic_percentile_vs_placebo = 0.88`
-    - `canonical_alpha_percentile_vs_placebo = 0.59`
-  - fixed-size random 300 samples:
-    - `canonical_rank_ic_percentile_vs_placebo = 0.99`
-    - `canonical_alpha_percentile_vs_placebo = 0.69`
-- Stable interpretation:
-  - this does **not** look like a clean pure selection-bias artifact
-  - the signal is more consistent with a weak `large-cap / upper-universe alpha candidate`
-  - canonical-300 membership does improve IC versus the rest of the top-500 universe, but the size-matched placebo does not make that edge strong enough to treat canonical membership itself as the hidden signal source
-  - therefore, if ML research is reopened, the more legitimate next scope is an objectively defined large-cap / liquid universe, not another canonical-300-specific branch
-
-### Phase 3.6 Neutralized Regime-Aware Retry
-
-- Phase 3.6 was executed in the same isolated Qlib worktree with the neutralized pipeline documented in the `phase3_6` spec.
-- Canonical Phase 3.6 output root:
-  - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha\outputs\phase3_6_neutralized_retry`
-- Core pipeline changes relative to Phase 3.5:
-  - per-date cross-sectional neutralization of structured features and the forward-return label
-  - structural controls used in neutralization:
-    - `sector`
-    - `log_market_cap`
-  - supplementary regime features retained for the model:
-    - `market_cap_percentile`
-    - `liquidity_percentile`
-  - time-varying cap-bucket-balanced sample weights
-  - fair shadow benchmark:
-    - `top_500-only` training with the same neutralized feature family and evaluation folds
-- Neutralization diagnostics confirmed the intended structure removal:
-  - post-neutralization size correlations for technicals, fundamentals, and the label were effectively zero
-  - post-neutralization sector dispersion for the structured fundamentals was effectively zero
-  - cap-bucket weights were balanced by date
-- Primary neutralized retry configuration:
-  - training scope = `expanded_liquid_core` full sample
-  - primary deployment slices evaluated:
-    - `expanded_liquid_core_full`
-    - `top_500_liquid_dynamic`
-    - `top_300_liquid_dynamic`
-    - `control_300_available`
-  - walk-forward folds = `6`
-  - stitched holdout prediction rows = `1451958`
-- Final machine-readable decision:
-  - `outcome = retry_reject`
-  - `next_recommended_step = Do not promote the neutralized retry; keep deterministic baseline as default.`
-- Gate read:
-  - `expanded_liquid_core_full` safety pass = `true`
-  - `top_300_liquid_dynamic` pass = `true`
-  - `control_300_available` pass = `true`
-  - `top_500_liquid_dynamic` primary gate pass = `false`
-  - `continuity_pass = true`
-- Primary top-500 metrics:
-  - `mean_rank_ic = 0.006725852934286424`
-  - `rank_ic_tstat = 0.24265631012607727`
-  - `alpha_only_vs_naive_mean = 0.0052600910577531215`
-  - `alpha_only_vs_naive_tstat = 1.0110018794584064`
-- Primary top-300 metrics:
-  - `mean_rank_ic = 0.01239915300471979`
-  - `rank_ic_tstat = 0.4250894705022766`
-  - `alpha_only_vs_naive_mean = 0.007109039445402122`
-  - `alpha_only_vs_naive_tstat = 1.3488343701154135`
-- Primary control-300-available metrics:
-  - `mean_rank_ic = 0.013626311055886917`
-  - `rank_ic_tstat = 0.4987410637628581`
-  - `alpha_only_vs_naive_mean = 0.008200035003898534`
-  - `alpha_only_vs_naive_tstat = 1.6603171910625243`
-- Primary expanded-core full-sample metrics:
-  - `mean_rank_ic = -0.002918162210979371`
-  - `rank_ic_tstat = -0.11174811555866837`
-  - `alpha_only_vs_naive_mean = 0.020447664762589947`
-  - `alpha_only_vs_naive_tstat = 3.3943960487955356`
-- Shadow comparison on the actual deployment slice:
-  - shadow slice = `top_500_liquid_dynamic`
-  - shadow `mean_rank_ic = 0.0018785443385658585`
-  - shadow `alpha_only_vs_naive_mean = 0.00878579629508262`
-  - `primary_beats_shadow_on_top_500 = false`
-  - `delta_mean_rank_ic = 0.004847308595720566`
-  - `delta_alpha_only_vs_naive_mean = -0.0035257052373294986`
-- Stable interpretation:
-  - neutralization materially improved robustness and removed the earlier broad-universe failure mode
-  - the model no longer looked structurally dangerous on the full expanded universe
-  - continuity across `top_300` and `control_300_available` became acceptable
-  - but the actual primary deployment slice, `top_500_liquid_dynamic`, still did not pass the promotion gate
-  - broader full-sample training also failed to beat the fair `top_500-only` shadow benchmark where it mattered most
-  - therefore, Phase 3.6 closed as another non-promotable ML branch rather than a promotion-ready recovery
-
-### Decision Boundary
-
-- Do not promote `qlib_lgbm` into any mainline PortfolioOS config.
-- Do not run optimizer-promotion or RL-execution work off this Phase 3 result.
-- Costed PortfolioOS handoff was intentionally skipped because Layer 1 already failed on the primary universe; adding optimizer noise would not change the gate result.
-- The deterministic research baseline remains the current reference alpha path.
-- The raw Phase 3 regression reject should be read with the Phase 3.5 qualifier:
-  - the original negative result was contaminated by a real `lambdarank` pipeline bug
-  - after fixing the bug, ML became directionally positive but still not strong enough on the primary universe
-- The `300 vs 500` split should also be read with the universe-split qualifier:
-  - evidence leans toward a weak large-cap / upper-universe effect
-  - evidence does **not** strongly support a pure canonical-300 selection-bias story
-- The Phase 3.6 neutralized retry should be read with its own qualifier:
-  - neutralization fixed robustness and continuity issues
-  - but the main `top_500` deployment gate still failed
-  - and broad-sample training did not beat the `top_500-only` shadow benchmark on alpha-only payoff
-- Any future ML retry should be treated as a new research branch rather than a continuation of this exact setup.
-- Do not treat the current ML stack as signal-ready for optimizer promotion, RL execution, or live-paper alpha handoff.
-
-### Phase 3.7 Horizon Audit + Transcript Alpha
-
-- Phase 3.7 was executed end-to-end in the same isolated Qlib worktree and is now closed.
-- Canonical Phase 3.7 output root:
-  - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha\outputs\phase3_7_transcript_alpha`
-- Main artifacts:
-  - `horizon_audit_summary.json`
-  - `transcript_manifest.json`
-  - `transcript_event_panel.parquet`
-  - `transcript_daily_features.parquet`
-  - `transcript_walkforward_summary.json`
-  - `phase3_7_gate_summary.json`
-- Horizon-audit result:
-  - no short-horizon override was triggered
-  - Phase 3.7 training stayed on `21d`
-  - however, the audit itself showed that the stronger deterministic/structured signal pocket was actually slower-moving:
-    - `top_500_liquid_dynamic`:
-      - `21d mean_rank_ic = 0.014595761703939556`
-      - `21d rank_ic_tstat = 2.358474141532583`
-      - `42d mean_rank_ic = 0.023127802236678506`
-      - `42d rank_ic_tstat = 3.8264956615270203`
-    - `top_300_liquid_dynamic`:
-      - `21d mean_rank_ic = 0.013829830168416572`
-      - `21d rank_ic_tstat = 2.2237850549044698`
-      - `42d mean_rank_ic = 0.025651046832987676`
-      - `42d rank_ic_tstat = 4.236620424907249`
-  - stable interpretation of the horizon audit:
-    - the current research stack likely underestimates slower-moving value / quality style signal at `21d`
-    - `42d` is a stronger research candidate horizon than `21d`
-    - but this should still be treated as a research finding, not an automatic production-default change, until a non-overlapping parity / backtest check is run
-- Transcript pipeline actually used:
-  - PIT mapping used transcript `call_date -> next trading day`
-  - event carry used `120` calendar-day staleness
-  - runtime was limited to the deployment-relevant whitelist (`top_500` dynamic plus `control_300_available`)
-  - transcript events were further limited to `2022-12-01` through `2026-02-27`
-  - FinBERT was used with bounded sentence sampling to keep the branch computationally tractable
-- Real transcript event coverage:
-  - whitelist size = `1024`
-  - transcript-positive tickers in whitelist = `1011`
-  - event rows = `12761`
-  - section-detection success rate = `0.5431`
-- Daily transcript feature coverage:
-  - row count = `3569102`
-  - active ticker count = `1011`
-  - active row rate = `0.2119`
-  - sector/size neutralization again removed almost all post-size correlation from transcript features
-- Transcript-augmented top-500 walk-forward training result:
-  - training horizon = `21`
-  - fold count = `6`
-  - transcript feature gain share = `0.0111`
-  - top transcript gain contributors were uncertainty, transcript word count, word-count delta, and mean sentiment
-- Primary deployment-slice (`top_500_liquid_dynamic`) Layer 1 result:
-  - `mean_rank_ic = -0.00016260841522979717`
-  - `rank_ic_tstat = -0.005646386437604967`
-  - `alpha_only_vs_naive_mean = 0.00763020454346959`
-  - `alpha_only_vs_naive_tstat = 1.3236458755566833`
-- Structured baseline on the same slice remained slightly stronger:
-  - structured `mean_rank_ic = 0.0018785443385658585`
-  - structured `alpha_only_vs_naive_mean = 0.00878579629508262`
-- Complementarity result was clearly negative:
-  - `rank_ic_series_correlation = 0.9923`
-  - `alpha_only_vs_naive_series_correlation = 0.9692`
-  - `prediction_series_correlation = 0.5398`
-  - structured-weak-period alpha lift = `0.0005607680575636973`
-  - complementarity gate = `false`
-- Broad-safety / continuity result:
-  - `continuity_pass = true`
-  - `broad_safety_pass = false`
-  - full expanded-core rank IC stayed negative
-- Final Phase 3.7 decision:
-  - `outcome = transcript_inconclusive`
-  - `signal_pass = false`
-  - `layer_2_ready = false`
-  - no PortfolioOS costed backtest was run
-- Stable interpretation:
-  - transcripts did not rescue the structured ML branch
-  - the text branch remained too weak on the actual `top_500` deployment slice
-  - transcript features were only lightly used by the model
-  - the transcript branch was also highly correlated with the structured baseline and did not provide meaningful structured-weak-period relief
-  - therefore, the current transcript V1 branch should not be promoted and should not be used to justify optimizer promotion, RL execution, or live-paper alpha handoff
-
-### Phase 3.7x Transcript Diagnostic Improvement Pass
-
-- A focused transcript-diagnostics follow-up was run to answer whether the Phase 3.7 failure was mainly due to a broken text feature, excessive carry smoothing, or a deeper information ceiling.
-- Canonical Phase 3.7x output root:
-  - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha\outputs\phase3_7x_transcript_diagnostics`
-- Main artifacts:
-  - `improvement_manifest.json`
-  - `enhanced_transcript_event_manifest.json`
-  - `transcript_daily_feature_comparison.json`
-  - `transcript_univariate_diagnostics.json`
-- What changed in the diagnostic pass:
-  - `uncertainty_tone_score` was repaired from an all-zero placeholder into a real lexicon-based uncertainty feature
-  - transcript section-structure diagnostics were added:
-    - `management_sentence_count`
-    - `qa_sentence_count`
-    - `qa_question_count`
-    - `qa_share_of_words`
-  - transcript daily features were rebuilt across carry windows:
-    - `10`
-    - `21`
-    - `60`
-    - `120`
-- Event-level improvement read:
-  - baseline transcript rows = `12761`
-  - enhanced transcript rows = `28143`
-  - section-detection success rate improved from `0.5431` to `0.5923`
-  - uncertainty non-zero rate improved from `0.0` to `0.7356`
-  - enhanced average QA question count = `15.38`
-- Carry-window diagnosis:
-  - baseline active row rate under the old Phase 3.7 pipeline = `0.2119`
-  - rebuilt carry windows:
-    - `10d active_row_rate = 0.0589`
-    - `21d active_row_rate = 0.1218`
-    - `60d active_row_rate = 0.3212`
-    - `120d active_row_rate = 0.4830`
-  - on `top_500_liquid_dynamic`, transcript-active coverage rises sharply with longer carry:
-    - `10d = 0.1224`
-    - `21d = 0.2575`
-    - `60d = 0.6561`
-    - `120d = 0.9734`
-- Stable interpretation of the carry diagnosis:
-  - short carry windows preserve event freshness but are sparse
-  - long carry windows provide broad coverage but strongly risk smearing event information into a slow factor-like proxy
-  - this supports the view that transcript alpha is more naturally an event-driven problem than a monthly cross-sectional carry problem
-- Univariate transcript diagnostics:
-  - several transcript and structure features showed non-zero pockets, especially at longer horizons
-  - on `top_500_liquid_dynamic` and `42d`, positive pockets appeared in:
-    - `management_sentiment_mean`
-    - `transcript_sentiment_delta_vs_prev_call`
-    - `uncertainty_tone_score`
-  - negative pockets also appeared in:
-    - `transcript_word_count`
-    - `qa_question_count`
-    - `qa_sentence_count`
-- Stable conclusion from Phase 3.7x:
-  - transcript V1 did **not** fail purely because "text has no information"
-  - it failed because the current `21d` / monthly-style carry formulation is a poor fit for sparse earnings-call events
-  - if transcript research resumes, it should reopen as an explicitly event-driven branch rather than as another near-identical monthly LightGBM retry
-
-### Phase 3.8 42d Horizon Promotion Check
-
-- Phase 3.8 was implemented in the same isolated Qlib worktree and stopped at Gate A by design.
-- Canonical Phase 3.8 output root:
-  - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha\outputs\phase3_8_42d_event_alpha`
-- Main implementation artifacts:
-  - `scripts/run_phase3_8_nonoverlap_42d.py`
-  - `scripts/build_phase3_8_event_panel.py`
-  - `scripts/run_phase3_8_event_alpha.py`
-- Main machine-readable artifacts:
-  - `nonoverlap_42d_baseline_sweep.json`
-  - `phase3_8_gate_summary.json`
-  - `phase3_8_gate_report.md`
-- Gate A design:
-  - non-overlapping `42-trading-day` forward windows
-  - evaluated on `top_500_liquid_dynamic` and `top_300_liquid_dynamic`
-  - tested deterministic candidates instead of reopening a new ML branch prematurely
-- Candidate sweep result:
-  - `mom_84_21`:
-    - `top_500 mean_rank_ic = -0.018248642461049007`
-    - `top_500 rank_ic_tstat = -0.5556388229961094`
-  - `book_to_price`:
-    - `top_500 mean_rank_ic = 0.020757686076202854`
-    - `top_500 rank_ic_tstat = 0.712796150509914`
-  - `multifactor_equal`:
-    - `top_500 mean_rank_ic = -0.005315871182602591`
-    - `top_500 rank_ic_tstat = -0.16973935125799197`
-- Stable Phase 3.8 outcome:
-  - `outcome = 42d_not_promoted`
-  - `reason = nonoverlap_42d_failed_on_all_deterministic_candidates`
-  - `best_candidate = book_to_price`
-  - `event_branch_run = false`
-- Interpretation:
-  - the earlier overlapping-window `42d` pocket was real enough to justify investigation but did **not** survive as a promotion-worthy deterministic default under non-overlapping evaluation
-  - the current research stack should therefore **not** switch its default horizon from `21d` to `42d`
-  - because Gate A failed, the Phase 3.8 event-driven transcript / grades branch was correctly **not** opened
-  - any future event-driven branch should be treated as a new hypothesis, not as an automatic continuation of a failed `42d` horizon promotion
-
-## Phase 3.9 Quasi-PIT SUE Spike
-
-Scope:
-
-- worktree: `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha`
-- runner: `scripts/run_phase3_9_sue_spike.py`
-- outputs: `outputs/phase3_9_sue_spike/`
-- universe: `top_500_liquid_dynamic`
-- label: `21d` forward return with non-overlapping evaluation dates
-- PIT anchor priority: `acceptedDate > filingDate > date`
-- actual EPS choice: `epsDiluted`, fallback `eps`
-- estimate/actual join key: `(ticker, fiscal_quarter_end_date)`
-
-Feasibility findings:
-
-- `analyst_estimates_quarterly.json` remained broadly usable for a quasi-PIT surprise spike:
-  - non-empty coverage previously verified at `2497 / 2671` main-list tickers
-  - estimate/actual quarter overlap previously verified at `2494` tickers with `median overlap = 8`
-- this branch is still **not** a true estimate-snapshot study:
-  - FMP freeze lacks `snapshot_date / as_of_date / updated_at`
-  - therefore the signal is best described as `quasi-PIT SUE using frozen final consensus proxy`
-
-Stable Phase 3.9 outcome:
-
-- `outcome = fail`
-- `reason = top500_rank_ic_tstat_lt_1_5`
-- `event_count = 13324`
-- `signal_row_count = 806`
-- `top_500 mean_rank_ic = 0.21316550878628812`
-- `top_500 rank_ic_tstat = 1.4313686301552095`
-- `top_500 alpha_only_vs_naive_mean = 0.001040876667221086`
-- `top_500 alpha_only_vs_naive_tstat = 0.21648319440090733`
-- `top_300 rank_ic_tstat = 0.5868005210151751`
-- `momentum IC-series correlation = 0.8595847383380031`
-- `SUE + momentum` equal-weight composite on the same event dates also failed to clear a promotion-style bar:
-  - `composite top_500 rank_ic_tstat = 1.5693985448003813`
-
-Critical sparse-event diagnostic:
-
-- the headline `top_500` result was flattered by very thin event dates:
-  - `top_500 signal dates total = 38`
-  - `median top_500 count per date = 1`
-  - only `15` dates had at least `2` names
-  - only `9` dates had at least `5` names
-- on the denser `>= 5 names/date` slice, SUE was actually weak-to-negative:
-  - `mean_rank_ic = -0.0891685964672975`
-  - `rank_ic_tstat = -0.7772978430520316`
-  - `alpha_only_vs_naive_mean = -0.021947734679702662`
-  - `alpha_only_vs_naive_tstat = -1.5173643330053417`
-
-Interpretation:
-
-- SUE was worth testing and is technically feasible on the current freeze, but it does **not** rescue the US large-cap alpha story under the current `21d non-overlapping` event framing
-- the raw headline rank IC looked interesting, but the dense-date slice shows that the apparent strength was largely a sparse-event artifact rather than a robust large-cap cross-sectional signal
-- because SUE is also highly correlated with the existing momentum baseline on the event dates that do score, it does not currently open a strong new ensemble branch
-
-## Phase 4A Mid-Cap Momentum Universe Test
-
-Scope:
-
-- worktree: `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha`
-- runner: `scripts/run_phase4a_midcap_momentum.py`
-- outputs: `outputs/phase4a_midcap_momentum/`
-- data source:
-  - `C:\Users\14574\Quant\fmp_data_freeze\fundamentals\`
-  - `C:\Users\14574\Quant\fmp_data_freeze\fundamentals_small_cap\`
-- signal: `mom_84_21`
-- horizon: `21d non-overlapping`
-- ranking mode: static freeze-date `profile.json.marketCap`
-- slices:
-  - `top_300`
-  - `top_500`
-  - `rank_500_1500` defined as static ranks `501-1500`
-
-Stable result:
-
-- full freeze daily panel coverage:
-  - `3193` tickers in evaluation panel
-  - `254` non-overlapping evaluation dates in the raw panel
-- `top_300`:
-  - `mean_rank_ic = -0.008344924323776556`
-  - `rank_ic_tstat = -0.6810990862686463`
-  - `alpha_only_vs_naive_tstat = 1.0609002348740775`
-- `top_500`:
-  - `mean_rank_ic = -0.009184677509241831`
-  - `rank_ic_tstat = -0.800945066047217`
-  - `alpha_only_vs_naive_tstat = 1.0198177579247052`
-- `rank_500_1500`:
-  - `mean_rank_ic = 0.01187808824967314`
-  - `rank_ic_tstat = 0.92466329374959`
-  - `alpha_only_vs_naive_mean = 0.005038817822073995`
-  - `alpha_only_vs_naive_tstat = 2.296564716654677`
-
-Interpretation:
-
-- moving the universe down-cap **did** help relative to the large-cap slices
-- however, the improvement showed up more clearly in `alpha_only_vs_naive` than in monotonic rank IC
-- this supports the idea that universe choice matters, but does **not** yet establish a clean strong mid-cap ranker
-- practical read:
-  - US large-cap remains an especially hostile research battleground
-  - mid-cap / lower-efficiency slices are more promising than `top_500`
-  - but the current deterministic momentum factor still does not become a clearly promotion-worthy standalone signal just by moving to `501-1500`
-
-## Phase 4B SEC 13F Dataset Pipeline
-
-Scope:
-
-- runner: `scripts/run_phase4b_edgar_13f_pipeline.py`
-- outputs: `outputs/phase4b_edgar_13f/`
-- source:
-  - `https://www.sec.gov/data-research/sec-markets-data/form-13f-data-sets`
-- implementation choice:
-  - use the official quarterly SEC `Form 13F Data Sets`
-  - do **not** scrape raw EDGAR full-index / XML in v1
-
-Stable result:
-
-- official dataset discovery worked:
-  - `dataset_link_count = 52`
-- latest parsed dataset:
-  - `01dec2025-28feb2026_form13f.zip`
-- row counts from the latest dataset:
-  - `submission_count = 11372`
-  - `coverpage_count = 11372`
-  - `infotable_count = 3473209`
-  - `sample_holdings_count = 10000`
-- emitted artifacts:
-  - raw quarterly ZIP under `outputs/phase4b_edgar_13f/raw/`
-  - `filings_manifest.csv`
-  - `sample_holdings.csv`
-  - `pipeline_summary.json`
-
-Interpretation:
-
-- a free institutional-ownership data path is now real and working
-- the official SEC quarterly 13F data sets are a better v1 source than raw EDGAR full-index scraping because they already flatten holdings into `SUBMISSION / COVERPAGE / INFOTABLE` tables
-- next research step, if resumed, is not more ingestion work; it is factor construction:
-  - holder-count change
-  - institutional-ownership change
-  - later, filer-quality weighting if desired
-- the main missing piece before direct alpha use is identifier normalization / ticker mapping from 13F holdings rows into the research universe
-
-## Phase 4C SEC 13F Factors V1
-
-Scope:
-
-- spec: `docs/superpowers/specs/2026-04-05-phase4c-13f-factors-design.md`
-- plan: `docs/superpowers/plans/2026-04-05-phase4c-13f-factors.md`
-- runner: `scripts/run_phase4c_13f_factors.py`
-- outputs: `outputs/phase4c_13f_factors/`
-
-Implementation details:
-
-- source:
-  - latest two official SEC `Form 13F Data Sets`
-  - latest run used:
-    - `01sep2025-30nov2025_form13f.zip`
-    - `01dec2025-28feb2026_form13f.zip`
-- holdings normalization:
-  - use `SUBMISSION.tsv + INFOTABLE.tsv`
-  - dedupe amendments by keeping the latest filing per `(CIK, CUSIP9, report_quarter)`
-  - group by `REPORTCALENDAR / PERIODOFREPORT`, not by ZIP file name
-  - explicitly filter to the latest two `report_quarter` values before factor construction
-- identifier mapping:
-  - use unique FMP `profile.json.cusip` normalized to `CUSIP9 -> ticker`
-- factor definitions:
-  - `holder_count_change = log(holder_count_t / holder_count_t_minus_1)`
-  - `ownership_pct_change = shares_held_t / shares_outstanding_t - shares_held_t_minus_1 / shares_outstanding_t_minus_1`
-- denominator proxy:
-  - use `weightedAverageShsOutDil`, fallback `weightedAverageShsOut`
-  - if proxy shares outstanding changes by more than `20%` quarter-over-quarter, drop `ownership_pct_change` for that ticker-quarter
-
-Stable result:
-
-- latest two quarters used:
-  - `2025-09-30`
-  - `2025-12-31`
-- mapped ticker-quarter rows:
-  - `holdings_by_ticker_quarter_count = 6058`
-- factor rows:
-  - `row_count = 3010`
-- slice coverage:
-  - `top_500 = 487`
-  - `rank_500_1500 = 960`
-  - `ownership_pct_non_null = 2190`
-- momentum orthogonality:
-  - overall:
-    - `holder_count_change corr = 0.20819591705855975`
-    - `ownership_pct_change corr = 0.013204600933922176`
-  - `top_500`:
-    - `holder_count_change corr = 0.4728759841457169`
-    - `ownership_pct_change corr = -0.12214405781018825`
-  - `rank_500_1500`:
-    - `holder_count_change corr = 0.2157903222104423`
-    - `ownership_pct_change corr = 0.028417729178840213`
-
-Interpretation:
-
-- the free SEC 13F branch is now past ingestion and into usable factor construction
-- `ownership_pct_change` looks genuinely orthogonal to momentum on the current slices
-- `holder_count_change` is **not** cleanly orthogonal in `top_500`, and is only moderately separated in `rank_500_1500`
-- practical read:
-  - `ownership_pct_change` is the more promising v1 institutional-flow factor
-  - `holder_count_change` likely overlaps with momentum / popularity effects, especially in large-cap
-  - next 13F research, if resumed, should prioritize:
-    - evaluating `ownership_pct_change` first
-    - optionally adding filer-quality weighting or additional quarters before promoting `holder_count_change`
-
-## Phase 4D SEC 13F History Backfill
-
-Scope:
-
-- spec: `docs/superpowers/specs/2026-04-05-phase4d-13f-history-backfill-design.md`
-- plan: `docs/superpowers/plans/2026-04-05-phase4d-13f-history-backfill.md`
-- runner: `scripts/run_phase4d_13f_history_backfill.py`
-- outputs: `outputs/phase4d_13f_history_backfill/`
-
-Stable implementation details:
-
-- selected SEC quarterly ZIPs across a widened candidate window, then filtered by actual `report_quarter`
-- earliest vs latest dataset schema smoke now passes
-- shared SEC ZIP loader was hardened to support archives where required TSVs live under a directory prefix, not only at ZIP root
-- PIT handling for historical institutional-flow signals now explicitly drops late amendments from quarterly history construction:
-  - first filter to the target `report_quarter` range
-  - then keep only filings within a `60` calendar-day timely window after `report_quarter`
-  - then dedupe latest filing per `(CIK, CUSIP9, report_quarter)`
-- this prevents very late `13F-HR/A` amendments from rewriting historical availability dates or holdings totals with future information
-
-Stable result:
-
-- selected SEC dataset count: `14`
-- selected files cover:
-  - `2022q4_form13f.zip`
-  - through `01dec2025-28feb2026_form13f.zip`
-- actual report quarters backfilled:
-  - `2022-12-31` through `2025-12-31`
-- holdings-by-ticker-quarter rows: `37760`
-- factor rows: `34662`
-- unique tickers: `3098`
-- quarter coverage increased steadily from:
-  - `2022-12-31: 2794`
-  - to `2025-12-31: 3040`
-- `ownership_pct_non_null_count = 25915`
-- schema smoke pass: `true`
-- timely filing window: `60` days
-
-Interpretation:
-
-- the free SEC 13F branch is now backfilled deeply enough to support an actual multi-quarter alpha evaluation
-- there are now `13` report quarters in the holdings history and `12` quarter-to-quarter factor transitions available for later testing
-- the data-layer blocker for an institutional-flow spike is now closed
-- the next step, if resumed, should be a true `ownership_pct_change` / `holder_count_change` evaluation branch on:
-  - `rank_500_1500` primary slice
-  - `top_500` control slice
-  - `21d non-overlapping`
-  - filing-date-based PIT anchor with quarterly carry
-
-## Phase 4E SEC 13F Alpha Evaluation
-
-Scope:
-
-- spec: `docs/superpowers/specs/2026-04-05-phase4e-13f-alpha-evaluation-design.md`
-- plan: `docs/superpowers/plans/2026-04-05-phase4e-13f-alpha-evaluation.md`
-- runner: `scripts/run_phase4e_13f_alpha.py`
-- outputs: `outputs/phase4e_13f_alpha/`
-
-Stable implementation details:
-
-- primary slice:
-  - `rank_500_1500_dynamic`
-- control slice:
-  - `top_500_dynamic`
-- horizon:
-  - `21d non-overlapping`
-- dynamic universe membership:
-  - recomputed by evaluation date using `close * latest quarter-end shares proxy`
-  - more realistic than static ranking, but still not a perfect PIT market-cap history
-- two evaluation modes are now reported for each factor:
-  - `full_carry`
-    - quarterly factor values carried forward until the next quarterly update
-  - `first_eval_only`
-    - only the first non-overlapping evaluation date on or after the quarter's latest cross-sectional availability date
-- factors evaluated:
-  - `ownership_pct_change`
-  - `holder_count_change`
-
-Stable result:
-
-- evaluation dates on the `21d` grid: `246`
-- independent quarterly first-eval dates: `11`
-- primary gate factor remained `ownership_pct_change`
-- `ownership_pct_change` on `rank_500_1500_dynamic`:
-  - `full_carry mean_rank_ic = -0.00548`
-  - `full_carry rank_ic_tstat = -0.7093`
-  - `full_carry alpha_only_vs_naive_tstat = 0.2299`
-  - `first_eval_only mean_rank_ic = -0.00847`
-  - `first_eval_only rank_ic_tstat = -0.7387`
-  - `first_eval_only alpha_only_vs_naive_tstat = 0.2143`
-  - `first_eval_only factor_momentum_corr = 0.0671`
-- `holder_count_change` on `rank_500_1500_dynamic`:
-  - `full_carry mean_rank_ic = 0.01229`
-  - `full_carry rank_ic_tstat = 0.9818`
-  - `full_carry alpha_only_vs_naive_tstat = 1.7685`
-  - `first_eval_only mean_rank_ic = 0.03138`
-  - `first_eval_only rank_ic_tstat = 1.4053`
-  - `first_eval_only alpha_only_vs_naive_tstat = 1.7259`
-  - `first_eval_only factor_momentum_corr = 0.1917`
-- `ownership_pct_change` on `top_500_dynamic` was also not compelling:
-  - `full_carry rank_ic_tstat = -1.5189`
-  - `first_eval_only rank_ic_tstat = 0.3302`
-- final gate:
-  - `outcome = close_13f_branch`
-  - `direction_consistent = true`
-  - `carry_warning = null`
-
-Interpretation:
-
-- the initially promising free SEC 13F branch does **not** currently produce a promotable institutional-flow alpha on the primary `rank_500_1500_dynamic` slice
-- `ownership_pct_change` stayed weak-to-negative in both `full_carry` and `first_eval_only`, so this is **not** a carry-style illusion
-- the low momentum correlation on `ownership_pct_change` confirms orthogonality, but orthogonality alone was not enough to produce usable alpha
-- `holder_count_change` was directionally better than `ownership_pct_change`, especially in alpha-only spread, but:
-  - it did not clear the intended primary gate
-  - it overlaps more with momentum / popularity effects
-  - it should be treated as an auxiliary observation, not as the new main institutional-flow factor
-- practical read:
-  - the free SEC 13F branch is now a validated data asset, but not a validated alpha source under the current `21d non-overlapping + quarterly carry` framing
-  - if institutional-flow research resumes later, it should reopen as a clearly new branch with materially different factor construction rather than as a direct continuation of Phase 4E
-
-## Phase 5 RL Execution Sandbox
-
-Scope:
-
-- spec: `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha\docs\superpowers\specs\2026-04-05-phase5a-5b-rl-execution-sandbox-design.md`
-- model freeze note: `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha\docs\superpowers\notes\2026-04-05-phase5-model-freeze.md`
-- main runners:
-  - `scripts/build_phase5_execution_simulator.py`
-  - `scripts/run_phase5_execution_benchmarks.py`
-  - `scripts/train_phase5_bc_policy.py`
-  - `scripts/train_phase5_ppo_execution.py`
-  - `scripts/evaluate_phase5_execution_policies.py`
-  - `scripts/export_phase5_offline_rl_dataset.py`
-- outputs:
-  - `outputs/phase5_rl_execution/`
-
-Stable implementation details:
-
-- GPU path is active in the worktree venv:
-  - `torch = 2.11.0+cu128`
-  - `torch.cuda.is_available() = true`
-  - device = `NVIDIA GeForce RTX 3090`
-- current framing is explicitly `execution sandbox`, not promoted mainline execution research
-- the correct boundary is:
-  - `offline-from-simulator`
-  - not market-validated offline RL
-- simulator v1 acceptance currently passes:
-  - volume-profile calibration MAE is around `0.006`
-  - benchmark ordering is sensible:
-    - `impact_aware < vwap < twap`
-- the first minimal PPO sandbox uncovered two real design bugs that are now fixed:
-  - reward-scale bug:
-    - unfinished inventory penalty was originally too weak relative to dollar-denominated execution costs
-    - reward is now normalized in target-notional bps space so no-trade is no longer spuriously advantaged
-  - target-size bug:
-    - the original `target_qty = 100` let `action = 1.0` clear the whole order in one bucket because synthetic bucket liquidity was much larger
-    - target quantity is now derived from episode liquidity via `derive_target_qty(...)`, forcing multi-bucket execution
-- behavior-cloning setup now exists:
-  - mixed expert dataset:
-    - `impact_aware = 70%`
-    - `twap = 15%`
-    - `vwap = 15%`
-  - BC checkpoint can be copied into PPO actor initialization
-- evaluation harness now reports:
-  - PPO-from-random
-  - PPO-from-BC
-  - heuristic rewards on the same env-reward scale
-  - simulator benchmark costs as a supplemental diagnostic
-- offline dataset export now exists:
-  - `offline_transitions.csv`
-  - `offline_episode_manifest.csv`
-  - `offline_rl_readiness_report.json`
-  - policy tags currently exported:
-    - `impact_aware`
-    - `twap`
-    - `vwap`
-    - `ppo_random`
-    - `ppo_bc`
-
-Stable result:
-
-- sandbox dependency and implementation tests currently pass:
-  - focused suite = `15 / 15`
-- latest real `offline-from-simulator` export:
-  - `transition_count = 287`
-  - `episode_count = 40`
-  - `offline_ready = true`
-- current sandbox conclusion:
-  - the RL branch is now infrastructurally real
-  - the simulator, reward, and export stack are good enough for PPO/BC/offline experiments
-  - but PPO-vs-BC superiority is **not yet a stable conclusion** under the more realistic reward and target sizing
-  - BC warm start no longer shows the earlier clean dominance once the degenerate one-step environment bug is removed
-
-Interpretation:
-
-- Phase 5 is now unblocked as an execution-sandbox branch
-- the highest-value next work is:
-  - simulator fidelity
-  - reward shaping
-  - state design
-  - evaluation depth
-  - then offline-from-simulator RL
-- do **not** yet treat PPO, BC warm start, or offline RL as promoted execution-policy research results
-- treat the current sandbox as a credible engineering foundation, not as a final execution alpha story
-
-## Phase 5C Offline-From-Simulator RL
-
-Scope:
-
-- main runners:
-  - `scripts/export_phase5_offline_rl_dataset.py`
-  - `scripts/train_phase5_iql_offline.py`
-  - `scripts/train_phase5_cql_offline.py`
-- outputs:
-  - `outputs/phase5_rl_execution/offline_rl_readiness_report.json`
-  - `outputs/phase5_rl_execution/iql_policy_report.json`
-  - `outputs/phase5_rl_execution/cql_policy_report.json`
-  - `outputs/phase5_rl_execution/offline_regime_breakdown_report.json`
-  - `outputs/phase5_rl_execution_1000eps/offline_regime_breakdown_report.json`
-  - `outputs/phase5_rl_execution_1000eps/router_summary.json`
-
-Stable implementation details:
-
-- rollout dataset scaling is now parameterized by `episode_count_per_policy`
-- readiness report now includes:
-  - `mean_steps_per_episode`
-  - `min_steps_per_episode`
-  - `max_steps_per_episode`
-  - `policy_transition_share`
-- latest larger rollout run used:
-  - `episode_count_per_policy = 50`
-  - total episodes = `250`
-  - total transitions = `2000`
-- offline algorithms currently use:
-  - `d3rlpy`
-  - GPU device path = `cuda:0`
-- current comparison remains explicitly:
-  - `offline-from-simulator`
-  - not real-market logged execution learning
-
-Stable result:
-
-- expanded rollout export is now materially larger than the earlier `40`-episode toy sample:
-  - `transition_count = 2000`
-  - `episode_count = 250`
-  - `mean_steps_per_episode = 8.0`
-  - `min_steps_per_episode = 8`
-  - `max_steps_per_episode = 8`
-- offline algorithm results on the latest large-rollout run:
-  - `IQL mean_reward = -11.92`
-  - best heuristic on the same held-out evaluation = `impact_aware = -17.42`
-  - `CQL mean_reward = -11.19`
-  - best heuristic on the same held-out evaluation = `impact_aware = -17.42`
-- held-out regime evaluation now exists on the same `250`-episode / `2000`-transition rollout base:
-  - CQL remains better than the best heuristic in `8 / 9` held-out regime buckets
-  - the only held-out bucket where CQL loses is `open_heavy + small`, where `VWAP` remains best
-  - IQL is not a near-zero action-collapse policy under the current setup:
-    - `mean_action = 0.414`
-    - `std_action = 0.059`
-  - CQL is also not saturating the action space:
-    - `mean_action = 0.460`
-    - `std_action = 0.025`
-    - `near_zero_rate = 0.0`
-    - `near_one_rate = 0.0`
-
-Interpretation:
-
-- scaling the rollout dataset was the correct first move before evaluating offline RL
-- on the current simulator and dataset mix:
-  - `IQL` no longer looks like a broken implementation; the earlier extreme underperformance was not the stable takeaway after re-running on the larger rollout base
-  - `IQL` is still weaker and less expressive than `CQL`, and behaves more like a low-variance, near-constant execution-rate policy
-  - `CQL` currently looks stronger than `IQL` and beats the heuristic baselines on the same held-out reward scale in most regimes
-- this does **not** mean offline RL is promoted:
-  - the result is still simulator-bound
-  - it is based on one synthetic environment family and one logged-policy mixture
-  - the improvement is not universal across all held-out regimes
-- scaling the offline dataset from `250 episodes / 2000 transitions` to `1000 episodes / 8000 transitions` did **not** change the held-out CQL conclusion:
-  - CQL still wins `8 / 9` buckets
-  - the same losing bucket remains `open_heavy + small`
-  - bucket-level sign pattern is unchanged (`9 / 9` same-sign buckets vs the smaller run)
-- a minimal regime router was then tested:
-  - `open_heavy + small -> VWAP`
-  - all other buckets -> `CQL`
-  - on the `1000`-episode held-out run, router moves the policy from `8 / 9` winning buckets to `9 / 9`
-  - this is a narrow but clean gain:
-    - router improves only the one known weak bucket
-    - it matches pure CQL everywhere else
-    - mean router-minus-CQL across buckets is about `+0.065` reward units
-- however, a subsequent new-seed stress test materially weakened confidence in that conclusion:
-  - stress seeds `101` and `313` reproduced the earlier pattern:
-    - pure `CQL = 8 / 9` winning buckets
-    - router = `9 / 9`
-  - stress seed `211` did **not** reproduce it:
-    - pure `CQL = 0 / 9`
-    - router = `1 / 9`
-  - therefore the current offline RL result is still highly sensitive to simulator seed / generated rollout family
-  - practical implication:
-    - `CQL` remains the leading offline branch inside the sandbox
-    - but neither pure `CQL` nor the minimal router is robust enough yet for promotion-style claims
-    - simulator sensitivity is now a more important risk than dataset size in the current Phase 5 setup
-- practical read:
-  - if offline RL continues, `CQL` should now be treated as the leading control branch
-  - `IQL` remains a useful baseline/ablation, but not the preferred offline method under the current setup
-  - the next highest-value evaluation step is deeper held-out regime analysis rather than immediate promotion
-
-## Current Mainline Documents
-
-Use these first when picking work back up:
-
-- `docs/execution_mode_decision_note.md`
-- `docs/cost_model_decision_note.md`
-- `docs/platform_ml_rl_roadmap.md`
-- `docs/phase_1_alpha_closeout_note.md`
-- `docs/phase_1_5_alpha_decision_note.md`
-- `docs/superpowers/specs/2026-04-01-phase-1-us-alpha-core-design.md`
-- `docs/superpowers/specs/2026-04-01-phase-1-alpha-acceptance-gate-design.md`
-- `docs/superpowers/specs/2026-04-01-phase-1-5-alpha-integration-design.md`
-- `docs/superpowers/plans/2026-04-01-phase-1-us-alpha-core.md`
-- `docs/superpowers/plans/2026-04-01-phase-1-alpha-acceptance-gate.md`
-- `docs/superpowers/plans/2026-04-01-phase-1-5-alpha-integration.md`
+- Do not promote `qlib_lgbm`.
+- Do not reopen near-identical LightGBM retries on the same compact-feature or neutralized broad-training setups.
+- Do not treat FMP estimate history as acceptable PIT analyst data now that WRDS is available.
+- Do not adapt PortfolioOS Layer 2 / optimizer / execution stack to the `rank_500_1500_dynamic` mid-cap universe yet; gross alpha is still too thin to justify the engineering lift.
+- Do not spend more time on `gross_profitability` screens, equal-weight-vs-IC-weight blending tweaks, or `CAR3` inside the existing `21d` non-overlapping cross-sectional framework.
+- Do not judge announcement-driven signals primarily through the old `21d` calendar-grid carry evaluator anymore; use the new event-driven evaluator first.
+- Do not treat `CAR3` as a standalone event-driven alpha winner on `rank_500_1500_dynamic`; the evidence so far supports only conditional / confirmation use, not direct promotion.
+- Do not interpret `CAR3` confirmation as fully “fixing” delayed entry; announcement-timed `SUE` is still materially stronger.
+- Treat `z(SUE) * sign(CAR3)` as the final representative CAR3 overlay spec unless a genuinely new event-driven hypothesis is being tested; do not reopen broad CAR3 formula sweeps.
+- Only return to PortfolioOS alpha integration once a new signal clears the primary-universe Layer 1 gate.
+
+## A-Share Research State
+
+- A5 is now **closed** as a research-debugging stage:
+  - closed question:
+    - can the A-share optimizer be repaired from the old `transaction_cost on => no-trade` cliff into a stable cost-aware trading path?
+  - answer:
+    - yes
+    - the required fix was to move the live optimizer comparison term from raw currency-space cost to NAV-normalized objective-space cost, while keeping concentrated active targets
+  - retained limitation:
+    - this is not a high-Sharpe alpha result
+    - it is an execution / alpha-translation repair result
+    - full-history concentrated baselines are only around `Sharpe ~ 0.14-0.15`
+    - full-history cost drag is still material at about `243-276` bps on start NAV
+- The active research pivot is the A-share branch.
+- Best current A-share price factor: `anti_mom_21_5` on dynamic mid-cap (`cn_rank_500_1500_floatcap_dynamic`).
+- This signal is materially stronger than the older plain `5d reversal` framing; the A-share price story is better described as short/intermediate anti-momentum.
+- Turnover is a useful companion factor, not a substitute:
+  - higher turnover is directionally associated with subsequent underperformance
+  - it is related to `anti_mom_21_5` but not collinear enough to collapse the two into one factor
+- Turnover regime structure adds independent information:
+  - aligned low-turnover preference improves in higher-dispersion and higher-rotation regimes
+  - unlike `anti_mom_21_5`, it does **not** get a clean higher-volatility boost
+  - practical read: turnover is part of the same retail-speculation theme, but not just a duplicate proxy for the anti-momentum sleeve
+- Current best regime read:
+  - A-share `anti_mom_21_5` is strongest in higher-volatility dynamic mid-cap regimes
+  - faster sector rotation also looks supportive
+  - cross-sectional dispersion is mixed and should be described cautiously
+- Cross-market contrast worth preserving:
+  - US dynamic mid-cap favored lower-volatility momentum
+  - A-share dynamic mid-cap favors higher-volatility anti-momentum
+- A4 first-pass factor risk model is now live in the A-share worktree:
+  - dynamic estimation universe = `cn_top_1500_floatcap_dynamic`
+  - current factor set:
+    - `market`
+    - `size`
+    - `anti_mom_21_5`
+    - `turnover_value_21d`
+    - `volatility`
+  - `book_to_price` is intentionally omitted for now; it should be added only after the A-share PIT balance-sheet path is validated cleanly enough for repeated use
+  - latest live build date = `2026-04-03`
+  - latest exposure coverage = `1471` names
+  - estimated factor-return sample = `1844` daily dates
+  - first-pass factor-return signs are directionally sensible versus A1-A3:
+    - `anti_mom_21_5` positive t-stat
+    - `turnover_value_21d` negative t-stat
+    - `size` negative t-stat
+    - `volatility` positive t-stat
+  - optimizer-compatible exports now exist under:
+    - `outputs/ashare_a4_factor_risk_model/portfolioos_risk_inputs/returns_long.csv`
+    - `outputs/ashare_a4_factor_risk_model/portfolioos_risk_inputs/factor_exposure.csv`
+  - research artifacts also include:
+    - factor-return history
+    - latest EWMA factor covariance
+    - latest specific-risk estimate
+    - latest cross-sectional factor exposures
+- A4 sanity check passed cleanly enough to use in first-pass optimization:
+  - equal-weight top-1500 predicted annual volatility from the latest factor covariance and specific risk was close to realized trailing 63-day volatility
+  - practical read: the A4 scaling is usable; the next issues are portfolio-construction issues, not an obviously broken covariance matrix
+- A5 first constrained backtest is now live in the A-share worktree:
+  - alpha input = `anti_mom_21_5`
+  - benchmark = equal-weight current `cn_top_1500_floatcap_dynamic`
+  - constraints include `T+1`, price-limit lock approximation, board lot, `5%` single-name max, `30%` turnover cap, and sector bands
+  - the surprising first-pass result is that the optimizer effectively chose `no-trade` across the sample:
+    - zero realized turnover
+    - zero realized fees/slippage
+    - zero solver fallbacks
+  - this is **not** a broken market-data path, because the comparison strategies do trade:
+    - `naive_pro_rata` turns over materially
+    - `alpha_only_top_quintile` turns over heavily
+  - first-pass interpretation:
+    - under the current objective scaling, static A4 risk model, and cost assumptions, the optimizer prefers preserving the initial benchmark-like book rather than chasing the single-factor alpha
+    - this means A-share has now reached the same structural bottleneck the US branch hit later: alpha translation / objective calibration matters at least as much as factor discovery
+  - first-pass performance read:
+    - optimizer Sharpe beat naive mainly by avoiding turnover and cost drag
+    - this is informative, but it is not yet the desired “active alpha-harvesting optimizer” outcome
+  - follow-up diagnostic materially sharpened the root cause:
+    - setting optimizer objective penalties to zero (`risk_term = 0`, `tracking_error = 0`, `transaction_cost = 0`) still did **not** produce executable orders under the live A-share hard constraints
+    - the solver's continuous solution did move:
+      - example on `2022-06-02`: gross continuous traded notional was about `653k` on `10mm` NAV
+    - but the continuous trades were too small to survive A-share board-lot repair:
+      - median proposed trade size was about `15` shares
+      - maximum proposed trade size was about `53` shares
+      - repair findings were overwhelmingly `lot_rounding`
+    - practical read:
+      - the current optimizer is not primarily blocked by alpha scaling or penalty tuning
+      - it is blocked by a dense continuous active-weight solution being collapsed by the `100`-share board-lot requirement
+      - next optimizer work should focus on making trades more concentrated / executable, not just reweighting the same dense objective
+- A5 concentration-sweep follow-up is now partially closed:
+  - a research-only concentrated active-target sweep was run over `8` evenly spaced rebalance dates using the live A5 optimizer / repair / backtest stack
+  - tested target shapes:
+    - dense rank baseline
+    - top-decile long-only
+    - top-quintile long-only
+    - top-decile / bottom-decile benchmark-relative active target
+    - fixed top-`k` long-only (`k = 50 / 100 / 150`)
+  - result under the **current** live A5 objective:
+    - none of the concentrated target shapes produced stable executable trades
+    - tradeable rebalance share stayed at `0`
+    - surviving post-repair order count stayed at `0`
+    - continuous proposed trade sizes collapsed to effectively zero long before board-lot repair
+  - this sharpens the previous diagnosis:
+    - target concentration alone is **not** sufficient under the current objective scaling
+    - the problem is now clearly upstream of repair: the optimizer's continuous solution is already being suppressed
+  - decisive single-date diagnostic on `2022-06-02` using `top_k_50_long_only`:
+    - with the current objective, gross continuous traded notional was only about `0.01`, effectively zero
+    - when only the `transaction_cost` objective weight was zeroed, the same target shape produced about `3.0mm` of continuous traded notional and `171` surviving orders
+  - practical read:
+    - concentrated target shape is directionally correct and can produce executable trades
+    - but the live A5 `transaction_cost` term is dominating the objective by scale and suppressing trades before the board-lot layer can matter
+    - the next optimizer step is therefore **not** pure target-shape exploration anymore; it is re-scaling / decomposing the cost term while keeping the concentrated-target layer in place
+- A5 transaction-cost sweep is now live and gives a much sharper activation-curve read:
+  - setup:
+    - fixed concentrated targets: `top_k_50_long_only` and `top_k_100_long_only`
+    - swept `transaction_cost` objective scale over:
+      - `0`
+      - `1e-4`
+      - `3e-4`
+      - `1e-3`
+      - `3e-3`
+      - `1e-2`
+      - `3e-2`
+      - `1e-1`
+      - `0.3`
+      - `1.0`
+    - used `8` evenly spaced rebalance dates for a first-pass activation curve
+  - result:
+    - the activation curve is effectively a cliff
+    - at `tc_scale = 0`, both concentrated targets trade cleanly:
+      - tradeable rebalance share = `1.0`
+      - mean surviving order count around `190`
+      - mean realized turnover around `0.23`
+    - at `tc_scale = 1e-4`, both targets collapse back to zero surviving orders
+    - all larger scales remain fully inactive
+  - practical interpretation:
+    - this no longer looks like a mild scalar-overweight problem with a usable interior trading region
+    - it looks like a severe formulation / scale mismatch:
+      - even an almost-zero `transaction_cost` weight is enough to kill execution
+      - therefore the next step should focus on auditing and reformulating the live `transaction_cost` term, not on broad risk-aversion sweeps or deeper discrete-optimizer redesign
+  - concentrated targets are still useful:
+    - they proved the system can trade when the cost term is removed
+    - but they are not the active blocker anymore; the blocker is now clearly the cost-term formulation / scaling
+- A5 white-box transaction-cost autopsy is now complete on fixed date `2022-06-02` with target `top_k_50_long_only`:
+  - script/output path:
+    - `outputs/ashare_a5_transaction_cost_autopsy/`
+  - code-level unit audit is now explicit:
+    - `alpha_reward`, `risk_term`, and `tracking_error` are weight-space / dimensionless objective terms
+    - live `transaction_cost` is built from `transaction_fee + slippage_penalty`
+    - both `transaction_fee` and `slippage_penalty` are computed in currency / notional space
+    - `turnover_penalty` is the separate normalized term `gross_notional / pre_trade_nav`
+  - decisive marginal-trade comparison on the fixed date:
+    - a symmetric `1bp` active move (`delta_weight = 0.0001`) improved alpha by only about `4.8e-06`
+    - the same move increased live transaction cost by about `1.57` in raw currency units
+    - the normalized turnover increase for that same move was only `0.0002`
+    - practical read:
+      - the live transaction-cost term is not merely "a bit large"
+      - it is being compared inside the objective on a fundamentally different capital scale than alpha and risk
+  - refined activation boundary from the fixed-date epsilon ladder:
+    - live `transaction_cost` remains tradeable through roughly `1e-5`
+    - tradeability is already badly degraded by `3e-5`
+    - at `1e-4` the optimizer collapses to effectively no-trade
+    - a shadow normalized turnover penalty remains highly tradeable even at `1e-2`
+  - strongest current interpretation:
+    - this is primarily a **definition / normalization mismatch**, not just a scalar that needs small retuning
+    - the current live `transaction_cost` term mixes currency-space cost with weight-space alpha / variance terms
+    - next A5 work should focus on reformulating the live cost term onto the same decision horizon and capital scale as the other objective terms
+    - do **not** spend the next cycle on broader target-shape sweeps, broad risk-aversion sweeps, or discrete-optimizer rewrites until this mismatch is addressed
+- The first production-style fix for that mismatch is now live in shared optimizer code:
+  - `objective_weights.transaction_cost_objective_mode` now supports:
+    - `raw_currency`
+    - `nav_fraction`
+  - default platform behavior remains `raw_currency` for backward compatibility
+  - A-share A5 research wiring now uses:
+    - `transaction_cost_objective_mode = nav_fraction`
+    - `turnover_penalty = 0.0`
+  - practical implementation boundary:
+    - execution / TCA / reporting still keep fee and slippage in raw currency space
+    - only the optimizer objective comparison layer is normalized by `pre_trade_nav`
+- First post-fix recovery check is positive on the concentrated A5 path:
+  - research-only sample backtest:
+    - target = `top_k_50_long_only`
+    - rebalance sample = `8` evenly spaced dates
+    - output path:
+      - `outputs/ashare_a5_target_concentration_topk50_navfraction_sample8/`
+  - result:
+    - `tradeable_rebalance_share = 1.0`
+    - `mean_surviving_order_count ~ 178.9`
+    - `mean_surviving_turnover ~ 0.171`
+    - `mean_continuous_turnover ~ 0.300`
+    - `optimizer_failure_count = 0`
+    - `cost_drag_start_nav_bps ~ 25.9`
+    - `annualized_return ~ 4.19%`
+    - `sharpe ~ 0.19`
+  - interpretation:
+    - normalized live transaction cost no longer behaves like an on/off kill switch
+    - the recovered shape is the desired one:
+      - less aggressive than the old `tc = 0` reference
+      - but still stably executable
+    - this confirms the previous diagnosis:
+      - the main failure was in objective-space cost normalization, not in A4 covariance scaling
+  - updated A5 boundary:
+    - concentrated active-target construction plus NAV-normalized cost is now the correct working baseline
+    - dense expected-return surfaces may still be execution-poor, but they are no longer the right place to debug the cost cliff
+- Full-history validation of that new A5 baseline is now complete on the concentrated path:
+  - output paths:
+    - `outputs/ashare_a5_target_concentration_topk50_navfraction_full/`
+    - `outputs/ashare_a5_target_concentration_topk100_navfraction_full/`
+  - `top_k_50_long_only` full history:
+    - `rebalance_count = 90`
+    - `tradeable_rebalance_share = 1.0`
+    - `mean_surviving_order_count ~ 117.2`
+    - `mean_surviving_turnover ~ 0.154`
+    - `annualized_return ~ 3.25%`
+    - `annualized_volatility ~ 22.7%`
+    - `sharpe ~ 0.143`
+    - `cost_drag_start_nav_bps ~ 276`
+  - `top_k_100_long_only` full history control:
+    - `rebalance_count = 90`
+    - `tradeable_rebalance_share = 1.0`
+    - `mean_surviving_order_count ~ 106.5`
+    - `mean_surviving_turnover ~ 0.130`
+    - `annualized_return ~ 3.22%`
+    - `annualized_volatility ~ 22.3%`
+    - `sharpe ~ 0.145`
+    - `cost_drag_start_nav_bps ~ 243`
+  - interpretation:
+    - the post-fix recovery generalizes beyond the sample8 smoke
+    - NAV-normalized cost plus concentrated target construction produces a stable "cost-aware but still trading" shape over the full available history
+    - `top_k_50` and `top_k_100` are very close in realized performance; the `100`-name sleeve is slightly less aggressive on turnover and cost drag
+    - this is now a valid A5 research baseline, not just a local diagnostic patch
+  - stage-close read:
+    - A5 should no longer be treated as an open tuning branch
+    - the meaningful conclusion has already been extracted
+    - further `k` sweeps or intra-A5 objective retunes are low ROI unless a later alpha branch materially changes the signal surface
 
 ## Recommended Next Steps
 
-Priority order:
+1. Treat the US Phase 1 through Phase 4E arc as methodologically valuable but stage-closed on the primary deployment universe.
+2. Keep the active research pivot on A-share.
+3. Treat the core A-share single-factor stage as already informative:
+   - `anti_mom_21_5` is the primary price signal
+   - turnover is a related but distinct companion factor
+   - the main conditional contrast is high-vol anti-momentum vs non-high-vol turnover
+4. The next natural A-share stage is no longer more unconditional factor hunting; it is optimizer execution realism / alpha translation:
+   - keep the concentrated active-target layer; it is now the correct working A5 baseline
+   - keep NAV-normalized live transaction cost in the optimizer comparison layer
+   - the next A5 question is no longer "why does cost kill all trades?"
+   - it is now:
+     - how well does the concentrated + normalized-cost path hold up on broader history and more target constructions?
+     - and what light additional regularization is needed without reintroducing the old cliff?
+   - practical next control comparisons should start from:
+      - `top_k_50_long_only`
+      - `top_k_100_long_only`
+   - treat dense full-history runs as secondary diagnostics, not the main validation path
+5. The next distinct research branch to open after A5 closeout is US Phase 3.0:
+   - universe:
+     - `expanded_liquid_core`
+   - PIT rule:
+     - use `filingDate` anchored fundamentals from the FMP freeze path
+   - first milestone:
+     - build the strict PIT universe + staging + qlib-ready dataset
+     - do **not** start with ensembles, multi-horizon models, or optimizer integration
+   - kickoff status:
+      - universe-manifest step is already live
+      - latest manifest output:
+        - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\ashare-a1\outputs\phase3_0_us_universe_manifest\phase3_universe_manifest.json`
+      - current primary count:
+        - `expanded_liquid_core_count = 1989`
+      - current PIT quality read on that universe:
+        - `daily_history_min = 1250`
+        - `pit_quarter_min = 20`
+        - `pit_valid_core_quarter_median = 92`
+5. Keep deterministic signals as the working baseline; do not promote `qlib_lgbm`.
+6. Treat signal robustness and signal translation as the main bottleneck, ahead of optimizer tuning or RL execution work.
+7. Treat the current TCA overlay as valid only for `0-0.1%` participation.
+8. Do not promote calibrated `k = 3.498400399110418` into the default config.
+9. If US research is reopened, prefer a clearly new branch:
+   - lower-efficiency or mid-cap slices over more top-500 large-cap retries
+   - event-driven announcement or transcript hypotheses rather than more monthly-carry or screen-tuning retries
+   - objective liquid-universe definitions rather than canonical-300-specific framing
+10. Keep the canonical 300-name list only as a continuity control; prefer `expanded_liquid_core` as the primary US research universe when a genuinely new hypothesis exists.
+11. Do not resume optimizer-promotion or RL-execution work until alpha is signal-ready again.
+12. If the WRDS US branch is resumed next, the best immediate path is staying inside the new announcement-driven evaluator:
+   - keep the CAR3 confirmation line closed at `z(SUE) * sign(CAR3)` unless a new hypothesis clearly justifies reopening it
+   - extend announcement-timed SUE mapping / short-window PEAD variants
+   - revisit revision separately with event-aware labels rather than forcing it into the announcement-only frame
 
-1. Treat Phase 1, Phase 1.5, Phase 2, and the first Phase 3 ML attempt as closed.
-2. Keep the deterministic research baseline as the current reference signal path; do not promote `qlib_lgbm`.
-3. Treat signal robustness and signal-translation quality as the bottleneck, ahead of more optimizer tuning or RL execution work.
-4. Treat the current TCA overlay as valid only for `0-0.1% participation`.
-5. Do not promote calibrated `k = 3.498400399110418` into default config until the estimator and alpha story both improve.
-6. Treat Phase 3.5 as closed:
-   - pipeline bug fixed
-   - targeted retry executed
-   - primary-universe ML still not promotion-worthy
-7. Treat Phase 3.6 as closed:
-   - neutralization and balanced weighting improved robustness
-   - `top_300` and continuity slices turned acceptable
-   - the actual `top_500` promotion slice still failed
-   - full-sample training did not justify itself versus the `top_500-only` shadow benchmark
-8. Treat Phase 3.7 and Phase 3.7x as closed:
-   - transcript V1 did not rescue the structured ML branch
-   - the improved transcript diagnostics showed real event information, but not in a form suitable for the current monthly carry formulation
-   - transcript research should only resume as a new event-driven branch
-9. Treat Phase 3.8 as closed:
-   - non-overlapping `42d` parity did **not** confirm a strong enough deterministic baseline
-   - `42d` is therefore not promoted as the new default research horizon
-   - the event-driven transcript / grades branch did not open because Gate A failed
-10. Treat Phase 3.9 as closed:
-   - quasi-PIT SUE was feasible on the freeze but failed to clear the `top_500` gate
-   - the apparent headline IC was materially diluted by sparse-event cross sections
-   - the dense-date slice was negative, so SUE is not promoted as the missing incremental large-cap alpha
-11. Treat Phase 4A as an informative universe diagnostic rather than a promotion result:
-   - moving from `top_500` to `rank_500_1500` improved the deterministic momentum result materially
-   - the improvement was strongest in alpha-only spread, not in monotonic rank IC
-   - this is evidence that universe efficiency matters, but not yet enough to declare a clean new default universe
-12. Treat Phase 4B as a successful data-layer extension:
-   - free SEC 13F ingestion now exists via the official quarterly data sets
-   - identifier normalization and factor construction are the next open tasks, not raw ingestion
-13. Treat Phase 4C, 4D, and 4E together as a useful but currently non-promoted institutional-flow branch:
-   - free SEC 13F ingestion, mapping, and multi-quarter backfill are now real assets
-   - `ownership_pct_change` proved orthogonal but weak-to-negative on the primary dynamic mid-cap slice
-   - `holder_count_change` looked somewhat better but was too overlapping / borderline to justify promotion
-   - the branch should stay closed unless reopened under a materially different research framing
-14. If alpha research resumes, either:
-   - stay with deterministic baseline as the working alpha path, or
-   - open a clearly new ML branch with materially different feature / label design and an objectively defined large-cap / liquid universe
+### Current SUE PEAD Read
 
-Concrete next research step:
+- Announcement-timed `SUE` PEAD mapping on `rank_500_1500_dynamic` is now live across:
+  - `[+2,+2]`
+  - `[+2,+3]`
+  - `[+2,+4]`
+  - `[+2,+5]`
+  - `[+2,+7]`
+  - `[+2,+10]`
+  - `[+2,+15]`
+  - `[+2,+22]`
+- Best clean / risk-adjusted ranking window is:
+  - `[+2,+2]`
+  - `rank_ic_t ~ 22.7`
+- Best alpha-only t-stat window is:
+  - `[+2,+3]`
+  - `alpha_only_t ~ 12.3`
+- Best mean alpha-only spread window is:
+  - `[+2,+22]`
+  - `mean_alpha_only_spread ~ 1.49%`
+- Rank-IC decays as the window lengthens, but mean alpha-only spread remains economically meaningful through roughly the 2-to-3 week range:
+  - practical read: the drift is front-loaded in purity / ranking power, but not fully exhausted immediately
+- Breadth remains stable across the dense grid:
+  - active months stay around `251-252`
+  - total event count stays around `78k`
+  - mean events per month stays around `312`
+- Half-sample split stays directionally positive:
+  - the result looks real
+  - later-half t-stats are generally lower, so the strongest window numbers should be treated as strong empirical reads rather than fixed constants
+- This reinforces the current US WRDS boundary:
+  - the main edge is announcement-timed `SUE`
+  - the CAR3 overlay is secondary and should stay closed as a modest delayed-entry confirmation result
+  - the next distinct branch after SUE mapping remains event-aware `revision`
 
-- keep the canonical 300-name list as a continuity control, but treat `expanded_liquid_core` as the primary research universe
-- keep `21d` as the default research horizon until a future branch shows a stronger non-overlapping case for another horizon
-- do not run another near-identical LightGBM retry on the same compact-feature setup or the same neutralized broad-training setup
-- only reopen ML if there is a new hypothesis strong enough to justify a new branch
-- if ML is reopened, prefer an objective `top-N liquid large-cap` research universe over a canonical-300-specific scope
-- if ML is reopened, treat `top_500-only` style training as the more defensible reference branch than broad-sample training under the current feature family
-- do not spend time on a PIT analyst-revision alpha unless a true historical estimate snapshot source exists; the current frozen FMP analyst-estimate payloads are not sufficient for clean revision-history research
-- do not treat quasi-PIT SUE as a rescued large-cap alpha path under the current `21d non-overlapping` setup; the dense-date slice evidence is too weak
-- if US research continues, prefer exploring lower-efficiency / mid-cap slices over spending more time on top-500 large-cap structured signals
-- if a new institutional-flow branch is opened, use the SEC 13F official quarterly data sets as the starting point rather than rebuilding raw EDGAR filing ingestion first
-- only reopen transcript or grades research as explicitly event-driven hypotheses with fresh gates, not as automatic follow-ons from the failed Phase 3.8 horizon check
-- only return to PortfolioOS alpha integration once a new signal passes the primary-universe Layer 1 gate
-- do not resume optimizer-promotion or RL-execution work until the alpha layer is signal-ready again
+### Current Revision Event-Aware Read
 
-## Simplified Historical Summary
+- FY1 `revision_1m` now has its own narrow Phase C runner:
+  - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha\scripts\run_revision_event_mapping.py`
+- Phase C is now closed with a final representative spec:
+  - signal date = `statpers`
+  - entry = next trading day after `statpers`
+  - label = **pure `to-next-announcement`**
+  - representation = **full panel**, not latest-snapshot-per-event
+  - aggregation = monthly cross-sectional evaluation by signal month on `rank_500_1500_dynamic`
+- Final representative result:
+  - `monthly_signal_count = 250`
+  - `total_signal_count = 218,766`
+  - `mean_signals_per_month = 875.1`
+  - `mean_rank_ic ~ 0.0166`
+  - `rank_ic_t ~ 3.61`
+  - `mean_alpha_only_spread ~ 0.42%`
+  - `alpha_only_t ~ 4.03`
+- Shared-event overlap with announcement-timed `SUE` is low:
+  - using the last revision snapshot before each earnings event, pooled rank correlation with `SUE` is only `~0.11`
+  - practical read: revision is not just a noisy SUE shadow
+- Closeout interpretation:
+  - the main problem in early Phase C was **horizon misspecification**, not snapshot dilution
+  - `last snapshot per event` did not win even after the horizon was corrected:
+    - pure full panel: `rank_ic_t ~ 3.61`, `alpha_only_t ~ 4.03`
+    - pure last snapshot: `rank_ic_t ~ 2.37`, `alpha_only_t ~ 0.79`
+  - final representative spec is therefore **full-panel pure `to-next-announcement` revision**
+  - announcement-timed `SUE` remains the primary event-driven alpha benchmark, but finalized revision is strong enough to treat as a real separate branch rather than a weak afterthought
+  - if the US WRDS line continues, the next question is whether this finalized revision branch adds enough marginal value relative to announcement-timed `SUE`; Phase C itself should not be reopened
 
-Older work is intentionally compressed here.
+### Phase 3 Mainline Integration Pre-Registration
 
-- Core CLI platform, replay, scenario analysis, approval/freeze, and execution simulation are complete and stable.
-- Import profiles, provider-backed data builders, and snapshot bundles are complete and stable.
-- Permission-aware Tushare fallbacks are implemented; `target.csv` fallback remains part of the supported path.
-- Multi-period impact-aware execution infrastructure is complete and is the default simulation mode.
-- Expanded-US research infrastructure, manifests, and samples are already in place and validated.
-- TCA fill collection, calibration, and readiness gating have been closed for the low-participation regime.
-- Cost-model and risk-aversion research both concluded that better alpha information was the highest-value bottleneck.
-- Phase 1 alpha research and acceptance are now closed, with `alt_momentum_4_1` accepted as a provisional seed signal.
-- Phase 1.5 alpha integration is now implemented and closed with a negative research result: the optimizer did not beat naive and the alpha-only benchmark was weak.
-- The first standalone fundamentals spike on the canonical 300-name universe produced a `fundamentals_complementary` result rather than a momentum replacement, with an unresolved `254 / 300` data-coverage mismatch against the US-only FMP freeze.
-- The deterministic momentum-plus-fundamentals multi-factor spike closed as `multifactor_promising_but_subset_limited` on the `254-name` covered subset.
-- The first expanded-universe Qlib + LightGBM alpha attempt closed as `reject` at Layer 1 on `expanded_liquid_core`, so no ML alpha was promoted into mainline.
-- Phase 3.5 then diagnosed and fixed a real `lambdarank` pipeline bug, reran one targeted retry on `top_500_liquid_dynamic`, and still closed the ML branch as `retry_reject`: improved and weakly positive, but not strong enough for promotion and not additive enough for the ensemble branch.
-- A later universe-split diagnostic showed that the `300 vs 500` divergence is better interpreted as a weak large-cap / upper-universe effect than as a clean canonical-300 selection-bias artifact.
-- Phase 3.6 then ran a neutralized regime-aware retry with sector/size residualization, supplementary cap/liquidity regime features, and balanced cap-bucket weights; it improved robustness and continuity but still closed as `retry_reject` because the real `top_500` deployment slice did not clear the promotion gate and broad-sample training did not beat the `top_500-only` shadow benchmark.
-- Phase 3.7 then added transcript features and a horizon audit, but the transcript branch closed as `transcript_inconclusive`: weak usage, weak complementarity, and no Layer 2 promotion.
-- Phase 3.7x then repaired transcript uncertainty and added carry-window / univariate diagnostics, showing that transcripts likely contain some event information but are misframed by the current monthly carry setup.
-- Phase 3.8 then ran a non-overlapping `42d` promotion check and found that none of the tested deterministic candidates cleared the Gate A threshold, so `42d` was **not** promoted and the event-driven branch did not open.
-- Phase 3.9 then tested a quasi-PIT earnings-surprise signal using `acceptedDate > filingDate > date` and `epsDiluted` actuals, but the top-500 result failed to clear the research gate and was revealed by dense-date diagnostics to be largely a sparse-event artifact rather than a robust new alpha source.
-- Phase 4A then expanded the deterministic momentum test to the full FMP freeze with a static market-cap `501-1500` slice and showed that moving down-cap helps materially versus top-500 large-cap, especially in alpha-only spread, but still did not produce a clean strong rank-IC winner.
-- Phase 4B then established a working free SEC 13F data path by ingesting the official quarterly `Form 13F Data Sets`, avoiding raw full-index scraping and making future institutional-flow factor work feasible.
-- Phase 4C then built first-pass 13F institutional-flow factors and showed that `ownership_pct_change` is much more orthogonal to momentum than `holder_count_change`.
-- Phase 4D then backfilled the official SEC 13F data sets from `2022-12-31` through `2025-12-31`, closing the data-history blocker for a real institutional-flow evaluation.
-- Phase 4E then ran the multi-quarter 13F alpha evaluation and closed the branch: `ownership_pct_change` remained weak-to-negative on the primary dynamic `rank_500_1500` slice in both `full_carry` and `first_eval_only`, while `holder_count_change` was only borderline and too overlapping to promote.
-- Horizon choice remains a first-order design decision, but `42d` is no longer an open promotion candidate under the current deterministic stack.
+- Next cheap discriminating experiment:
+  - wire finalized revision back into the Phase 3 Qlib / LightGBM mainline as a **feature**
+  - keep the current fixed-horizon training label unchanged on the first pass
+  - run a matching simple linear baseline in the same round
+- Revision feature spec for the first-pass mainline test:
+  - use **full-panel pure `to-next-announcement` revision** as the source signal
+  - feature timestamp is still `statpers`, not `announcement_date`
+  - align to the **next trading day** before the feature becomes visible in the daily model table
+  - use **latest-value carry-forward** between revision snapshots until a newer snapshot arrives
+  - practical caveat: this repeated carry-forward makes revision look more persistent in the training table than the number of truly independent revision events; do not over-interpret raw tree split counts
+- Mainline comparison must stay locked across runs:
+  - same universe
+  - same label
+  - same train/validation split
+  - same random seeds
+  - same feature-standardization fit window
+  - same early-stopping criterion
+  - compare **delta versus baseline**, not absolute one-off scores
+- Seed discipline:
+  - run at least `3` fixed seeds for baseline and `+revision`
+  - judge the result on mean delta and dispersion, not on a single lucky seed
+- Simple baseline definition for this round:
+  - use **signal-level** cross-sectional equal-weight combination, not portfolio-level strategy ensembling
+  - standardize features by **same-day cross-sectional z-score**
+  - then average the standardized signals into one composite score
+  - this is the sanity-check baseline that should be compared directly against LightGBM's score output
+- Importance/readout discipline:
+  - if revision appears important in LightGBM, cross-check with permutation importance or SHAP-style diagnostics
+  - do not treat raw split / gain importance alone as decisive because carry-forward can overstate visual prominence
+- Pre-registered interpretation bands for the first-pass mainline test:
+  - **Clearly positive**:
+    - overall IC improves by `>= 15%`, or revision ranks stably in the top `5` features
+    - interpretation: fixed-horizon mainline is already able to absorb most of the revision edge; keep stacking validated features before touching labels
+  - **Intermediate**:
+    - overall IC improves by `5%` to `< 15%`, or revision lands in the top `10` but not stably
+    - interpretation: fixed-horizon mainline captures part of the edge; record the gain and keep label redesign as a later optimization path
+  - **Near-zero**:
+    - overall IC improves by `< 5%`
+    - interpretation: fixed-horizon labeling is likely leaving most of the revision value on the table; event-aligned label redesign becomes the next justified engineering step
+
+## Key Paths And Docs
+
+- Main docs:
+  - `docs/execution_mode_decision_note.md`
+  - `docs/cost_model_decision_note.md`
+  - `docs/platform_ml_rl_roadmap.md`
+  - `docs/phase_1_alpha_closeout_note.md`
+  - `docs/phase_1_5_alpha_decision_note.md`
+- Core alpha implementation:
+  - `src/portfolio_os/alpha/`
+- Alpha CLIs:
+  - `portfolio-os-alpha-research`
+  - `portfolio-os-alpha-acceptance`
+- Canonical US freeze summary:
+  - `C:\Users\14574\Quant\fmp_data_freeze\summary\fmp_coverage_summary.json`
+- External research workspace:
+  - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01`
+- Latest WRDS US research artifacts:
+  - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha\outputs\wrds_bootstrap\`
+  - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha\docs\superpowers\notes\2026-04-06-car3-confirmation-closeout.md`
+  - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha\docs\superpowers\notes\2026-04-06-sue-pead-mapping-closeout.md`
+  - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha\docs\superpowers\notes\2026-04-07-revision-event-aware-initial.md`
+  - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha\docs\superpowers\notes\2026-04-07-revision-event-aware-closeout.md`
 
 ## Workflow Notes
 
 - Commit every substantive change.
-- Use `python -m pytest -q` as the default full-regression command on this machine.
-- Generated runtime artifacts under `outputs/` remain out of version control.
+- Default full regression on this machine: `python -m pytest -q`.
+- Generated artifacts under `outputs/` stay out of version control.
