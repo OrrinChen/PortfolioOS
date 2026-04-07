@@ -164,7 +164,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - Do not spend more time on `gross_profitability` screens, equal-weight-vs-IC-weight blending tweaks, or `CAR3` inside the existing `21d` non-overlapping cross-sectional framework.
 - Do not judge announcement-driven signals primarily through the old `21d` calendar-grid carry evaluator anymore; use the new event-driven evaluator first.
 - Do not treat `CAR3` as a standalone event-driven alpha winner on `rank_500_1500_dynamic`; the evidence so far supports only conditional / confirmation use, not direct promotion.
-- Do not interpret `CAR3` confirmation as fully “fixing” delayed entry; announcement-timed `SUE` is still materially stronger.
+- Do not interpret `CAR3` confirmation as fully “fixing�?delayed entry; announcement-timed `SUE` is still materially stronger.
 - Treat `z(SUE) * sign(CAR3)` as the final representative CAR3 overlay spec unless a genuinely new event-driven hypothesis is being tested; do not reopen broad CAR3 formula sweeps.
 - Only return to PortfolioOS alpha integration once a new signal clears the primary-universe Layer 1 gate.
 
@@ -184,6 +184,44 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - The active research pivot is the A-share branch.
 - Best current A-share price factor: `anti_mom_21_5` on dynamic mid-cap (`cn_rank_500_1500_floatcap_dynamic`).
 - This signal is materially stronger than the older plain `5d reversal` framing; the A-share price story is better described as short/intermediate anti-momentum.
+- `anti_mom_21_5` audit is now complete under a stricter hard-gate spec:
+  - output path:
+    - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\ashare-a1\outputs\ashare_antimom_audit\`
+  - bucket:
+    - `partially_real`
+    - passed `4 / 5` pre-registered checks
+  - neutralization ladder:
+    - raw:
+      - `mean_rank_ic ~ 0.0481`
+      - `rank_ic_t ~ 3.55`
+      - `rank_ic_ir ~ 0.381`
+    - fully residualized (`size -> industry -> turnover -> volatility`):
+      - `mean_rank_ic ~ 0.0199`
+      - `rank_ic_t ~ 2.30`
+      - `rank_ic_ir ~ 0.246`
+    - practical read:
+      - the edge compresses materially after stripping shared A-share retail-speculation exposures
+      - but it does **not** disappear
+      - residual IR retention is still about `65%` of raw
+  - walk-forward read:
+    - raw second-half IR stays positive but weaker (`~0.306` vs `~0.467` first half)
+    - fully residualized second-half IR weakens more sharply (`~0.163` vs `~0.344`)
+    - this stability miss is the main reason the audit did not clear `clearly_real`
+  - pre-registered regime read:
+    - `market_volatility` kept the directionally correct holdout result
+    - raw holdout high-vol still beat low-vol on both `mean_rank_ic` and `alpha_only_vs_naive_mean`
+    - fully residualized high-vol also stayed directionally higher, but only weakly
+    - other regime axes should now be described cautiously unless re-validated
+  - turnover independence read:
+    - oriented turnover companion remains related but not collinear
+    - `mean_rank_correlation ~ 0.167`
+    - `top_decile_overlap_mean ~ 4.7%`
+  - null-model read:
+    - both raw and fully residualized signals landed at the extreme tail of the date-wise permutation null
+    - observed percentile was `1.0` for both under `100` permutations
+  - hard-gate conclusion:
+    - `anti_mom_21_5` is the current A-share lead signal, not yet a fully validated production alpha
+    - do not reopen broad A4 / A5 / new-factor work without choosing the next step explicitly off this audit result
 - Turnover is a useful companion factor, not a substitute:
   - higher turnover is directionally associated with subsequent underperformance
   - it is related to `anti_mom_21_5` but not collinear enough to collapse the two into one factor
@@ -242,7 +280,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     - this means A-share has now reached the same structural bottleneck the US branch hit later: alpha translation / objective calibration matters at least as much as factor discovery
   - first-pass performance read:
     - optimizer Sharpe beat naive mainly by avoiding turnover and cost drag
-    - this is informative, but it is not yet the desired “active alpha-harvesting optimizer” outcome
+    - this is informative, but it is not yet the desired “active alpha-harvesting optimizer�?outcome
   - follow-up diagnostic materially sharpened the root cause:
     - setting optimizer objective penalties to zero (`risk_term = 0`, `tracking_error = 0`, `transaction_cost = 0`) still did **not** produce executable orders under the live A-share hard constraints
     - the solver's continuous solution did move:
@@ -429,7 +467,6 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     - the lower-bound yellow flag on `k = 30` should be downgraded to a cautious green
     - concentrated-path behavior is still execution-realistic, but the repair layer remains economically important because it removes roughly half of the solver's continuous turnover intent
   - immediate control runs justified by this read:
-    - `top_k_75_long_only` full history
     - `top_k_100_long_only` full history under the richer schema
     - `top_k_50_long_only` with tighter sector band stress (`sector_band_buffer = 0.02`, i.e. about `±2%` vs current `±5%`)
 
@@ -441,21 +478,17 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
    - `anti_mom_21_5` is the primary price signal
    - turnover is a related but distinct companion factor
    - the main conditional contrast is high-vol anti-momentum vs non-high-vol turnover
-4. The next natural A-share stage is no longer more unconditional factor hunting; it is optimizer execution realism / alpha translation:
-   - keep the concentrated active-target layer; it is now the correct working A5 baseline
-   - keep NAV-normalized live transaction cost in the optimizer comparison layer
-   - the next A5 question is no longer "why does cost kill all trades?"
-   - it is now:
-     - how well does the concentrated + normalized-cost path hold up on broader history and more target constructions?
-     - and what light additional regularization is needed without reintroducing the old cliff?
-   - practical next control comparisons should start from:
-      - `top_k_50_long_only`
-      - `top_k_100_long_only`
-      - then add `top_k_75_long_only` and a tighter-band `top_k_50_long_only` sector stress at about `±2%`
-   - treat dense full-history runs as secondary diagnostics, not the main validation path
-   - current boundary read:
-     - `k = 30` and `k = 50` both remain `90 / 90` tradeable with zero fallbacks
-     - the main remaining execution friction is stable `lot_rounding`, not a newly emerging lower-`k` failure cliff
+4. The next natural A-share stage is now explicitly gated by the `anti_mom_21_5` audit:
+   - the signal is strong enough to keep
+   - but it is only `partially_real`, not clean enough to justify open-ended A4 / A5 tuning on top of it
+   - immediate next work should stay diagnostic and discipline-preserving:
+     - synthetic-alpha toy translation tests for the repaired A5 path
+     - A4 out-of-sample factor-risk-model validation
+   - freeze for now:
+     - more A5 config sweeps
+     - more optimizer retuning around the real signal
+     - new A-share factor branches
+     - `book_to_price` / PIT expansion work
 5. The next distinct research branch to open after A5 closeout is US Phase 3.0:
    - universe:
      - `expanded_liquid_core`
