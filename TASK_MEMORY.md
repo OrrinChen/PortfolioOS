@@ -1,4 +1,4 @@
-# TASK_MEMORY
+﻿# TASK_MEMORY
 
 This file is the short handoff note for continuing PortfolioOS. It keeps only the current state, stable conclusions, and the next useful branch. Detailed artifacts remain in `docs/`, `outputs/`, and the external research workspaces.
 
@@ -126,7 +126,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - `CAR3` remains weak as a standalone event-driven mid-cap signal even with the correct non-overlapping post-signal window:
     - short window `[+3,+8]`: `rank_ic_t ~ 0.79`, `alpha_only_t ~ -0.29`
     - medium window `[+3,+22]`: `rank_ic_t ~ 0.80`, `alpha_only_t ~ 0.20`
-  - same-event `SUE × CAR3` interaction is more nuanced than the old carry read:
+  - same-event `SUE 脳 CAR3` interaction is more nuanced than the old carry read:
     - waiting for `CAR3` observation materially weakens pure `SUE`
     - simple same-event `z(SUE) + z(CAR3)` blend does not help
     - a confirmation-style interaction `z(SUE) * sign(CAR3)` is weak on the short window but does become meaningfully positive on the medium window (`alpha_only_t ~ 3.8`) even though its `rank_ic_t` stays below the pure short-window SUE result
@@ -164,7 +164,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - Do not spend more time on `gross_profitability` screens, equal-weight-vs-IC-weight blending tweaks, or `CAR3` inside the existing `21d` non-overlapping cross-sectional framework.
 - Do not judge announcement-driven signals primarily through the old `21d` calendar-grid carry evaluator anymore; use the new event-driven evaluator first.
 - Do not treat `CAR3` as a standalone event-driven alpha winner on `rank_500_1500_dynamic`; the evidence so far supports only conditional / confirmation use, not direct promotion.
-- Do not interpret `CAR3` confirmation as fully “fixing�?delayed entry; announcement-timed `SUE` is still materially stronger.
+- Do not interpret `CAR3` confirmation as fully 鈥渇ixing鈥?delayed entry; announcement-timed `SUE` is still materially stronger.
 - Treat `z(SUE) * sign(CAR3)` as the final representative CAR3 overlay spec unless a genuinely new event-driven hypothesis is being tested; do not reopen broad CAR3 formula sweeps.
 - Only return to PortfolioOS alpha integration once a new signal clears the primary-universe Layer 1 gate.
 
@@ -217,11 +217,41 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     - `mean_rank_correlation ~ 0.167`
     - `top_decile_overlap_mean ~ 4.7%`
   - null-model read:
-    - both raw and fully residualized signals landed at the extreme tail of the date-wise permutation null
-    - observed percentile was `1.0` for both under `100` permutations
+    - the audit pipeline is now Monte Carlo-hardened:
+      - date-wise permutation count = `1000`
+      - walk-forward IR now reports block-bootstrap `95%` confidence intervals
+    - both raw and fully residualized signals stayed at the extreme tail of the date-wise permutation null:
+      - observed percentile = `1.0`
+      - empirical p-value = `~0.0010`
+    - practical read:
+      - the signal is not surviving on a thin statistical technicality
+      - the main remaining risk is temporal decay, not null-model insignificance
+  - refreshed walk-forward uncertainty read:
+    - raw full-sample IR CI:
+      - `[~0.228, ~0.604]`
+    - raw first-half IR CI:
+      - `[~0.241, ~0.741]`
+    - raw second-half IR CI:
+      - `[~0.114, ~0.700]`
+    - practical read:
+      - the later-half decay concern still matters
+      - but the audit should now be described as a stability-risk result, not as a weak-significance result
   - hard-gate conclusion:
     - `anti_mom_21_5` is the current A-share lead signal, not yet a fully validated production alpha
     - do not reopen broad A4 / A5 / new-factor work without choosing the next step explicitly off this audit result
+- A-share research operating mode has now changed from single-signal extension to hypothesis-portfolio discipline:
+  - roadmap path:
+    - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\ashare-a1\docs\ashare_alpha_roadmap.md`
+  - inventory rule:
+    - maintain `>= 6` live hypotheses at all times
+    - if live inventory drops below `4`, pause new audits and replenish the ledger first
+  - current selected next Stage 0 branch:
+    - `Unlock Selling Pressure`
+    - note path:
+      - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\ashare-a1\docs\superpowers\notes\2026-04-07-unlock-selling-pressure-stage0.md`
+  - practical read:
+    - `anti_mom_21_5` should now be treated as an audited reference point, not as the only signal worthy of further experimentation
+    - the next A-share learning should come from running a second hypothesis through the same audit discipline, not from reopening parameter work on the first one
 - Turnover is a useful companion factor, not a substitute:
   - higher turnover is directionally associated with subsequent underperformance
   - it is related to `anti_mom_21_5` but not collinear enough to collapse the two into one factor
@@ -280,7 +310,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     - this means A-share has now reached the same structural bottleneck the US branch hit later: alpha translation / objective calibration matters at least as much as factor discovery
   - first-pass performance read:
     - optimizer Sharpe beat naive mainly by avoiding turnover and cost drag
-    - this is informative, but it is not yet the desired “active alpha-harvesting optimizer�?outcome
+    - this is informative, but it is not yet the desired 鈥渁ctive alpha-harvesting optimizer鈥?outcome
   - follow-up diagnostic materially sharpened the root cause:
     - setting optimizer objective penalties to zero (`risk_term = 0`, `tracking_error = 0`, `transaction_cost = 0`) still did **not** produce executable orders under the live A-share hard constraints
     - the solver's continuous solution did move:
@@ -468,7 +498,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     - concentrated-path behavior is still execution-realistic, but the repair layer remains economically important because it removes roughly half of the solver's continuous turnover intent
   - immediate control runs justified by this read:
     - `top_k_100_long_only` full history under the richer schema
-    - `top_k_50_long_only` with tighter sector band stress (`sector_band_buffer = 0.02`, i.e. about `±2%` vs current `±5%`)
+    - `top_k_50_long_only` with tighter sector band stress (`sector_band_buffer = 0.02`, i.e. about `卤2%` vs current `卤5%`)
 
 ## Recommended Next Steps
 
@@ -482,12 +512,12 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
    - the signal is strong enough to keep
    - but it is only `partially_real`, not clean enough to justify open-ended A4 / A5 tuning on top of it
    - immediate next work should stay diagnostic and discipline-preserving:
+     - Monte Carlo-hardening of the audit pipeline
+     - Stage 0 / Stage 1 progression on the next ledger-selected hypothesis
      - synthetic-alpha toy translation tests for the repaired A5 path
-     - A4 out-of-sample factor-risk-model validation
    - freeze for now:
-     - more A5 config sweeps
-     - more optimizer retuning around the real signal
-     - new A-share factor branches
+     - more anti-momentum subperiod / regime / lookback retuning
+     - more A5 config sweeps around the real signal
      - `book_to_price` / PIT expansion work
 5. The next distinct research branch to open after A5 closeout is US Phase 3.0:
    - universe:
