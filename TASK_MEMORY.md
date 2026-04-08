@@ -97,6 +97,9 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - The WRDS data-quality hypothesis is now confirmed, not speculative:
   - FMP analyst-based results were materially understating true signal quality
   - switching to WRDS turned IBES-based SUE from a weak/negative FMP result into a clearly positive signal
+- The US WRDS line now has an explicit closeout / restart roadmap:
+  - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha\docs\us_wrds_alpha_roadmap.md`
+  - default state is **closed unless a restart trigger is met**
 - The active usable US research slice is no longer top-500 large-cap; it is dynamic mid-cap `rank_500_1500_dynamic`.
 - Large-cap/top-500 remains weak across the new WRDS analyst, fundamentals, and event diagnostics.
 - Best current reproducible US signal is still the WRDS mid-cap analyst blend:
@@ -166,6 +169,10 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - Do not treat `CAR3` as a standalone event-driven alpha winner on `rank_500_1500_dynamic`; the evidence so far supports only conditional / confirmation use, not direct promotion.
 - Do not interpret `CAR3` confirmation as fully 鈥渇ixing鈥?delayed entry; announcement-timed `SUE` is still materially stronger.
 - Treat `z(SUE) * sign(CAR3)` as the final representative CAR3 overlay spec unless a genuinely new event-driven hypothesis is being tested; do not reopen broad CAR3 formula sweeps.
+- Do not reopen the US WRDS line casually; if it restarts, it should restart only through the roadmap's explicit branches:
+  - event-aligned / hybrid mainline label redesign
+  - deeper announcement-timed `SUE` exploitation
+  - later `SUE + revision` event-aware joint modeling
 - Only return to PortfolioOS alpha integration once a new signal clears the primary-universe Layer 1 gate.
 
 ## A-Share Research State
@@ -245,13 +252,23 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - inventory rule:
     - maintain `>= 6` live hypotheses at all times
     - if live inventory drops below `4`, pause new audits and replenish the ledger first
-  - current selected next Stage 0 branch:
-    - `Unlock Selling Pressure`
-    - note path:
-      - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\ashare-a1\docs\superpowers\notes\2026-04-07-unlock-selling-pressure-stage0.md`
+  - first post-roadmap hypothesis result:
+    - `Unlock Selling Pressure` Stage 0 and Stage 1 quick look are now complete
+    - Stage 1 raw quick look on `cn_rank_500_1500_floatcap_dynamic` was directionally consistent but too weak to promote:
+      - `event_count = 3982`
+      - `evaluation_date_count = 1042`
+      - `mean_rank_ic ~ 0.0329`
+      - `rank_ic_t ~ 1.35`
+      - `alpha_only_t ~ 0.73`
+    - roadmap disposition:
+      - `killed at Stage 1`
+      - do not rescue with interaction terms or return-definition rewrites in-place
+    - closeout note path:
+      - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\ashare-a1\docs\superpowers\notes\2026-04-07-unlock-selling-pressure-quicklook-closeout.md`
   - practical read:
     - `anti_mom_21_5` should now be treated as an audited reference point, not as the only signal worthy of further experimentation
     - the next A-share learning should come from running a second hypothesis through the same audit discipline, not from reopening parameter work on the first one
+    - the next branch should come from the ledger rather than from rescuing `Unlock Selling Pressure`
 - Turnover is a useful companion factor, not a substitute:
   - higher turnover is directionally associated with subsequent underperformance
   - it is related to `anti_mom_21_5` but not collinear enough to collapse the two into one factor
@@ -647,16 +664,64 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - Importance/readout discipline:
   - if revision appears important in LightGBM, cross-check with permutation importance or SHAP-style diagnostics
   - do not treat raw split / gain importance alone as decisive because carry-forward can overstate visual prominence
-- Pre-registered interpretation bands for the first-pass mainline test:
-  - **Clearly positive**:
-    - overall IC improves by `>= 15%`, or revision ranks stably in the top `5` features
-    - interpretation: fixed-horizon mainline is already able to absorb most of the revision edge; keep stacking validated features before touching labels
+  - Pre-registered interpretation bands for the first-pass mainline test:
+    - **Clearly positive**:
+      - overall IC improves by `>= 15%`, or revision ranks stably in the top `5` features
+      - interpretation: fixed-horizon mainline is already able to absorb most of the revision edge; keep stacking validated features before touching labels
   - **Intermediate**:
     - overall IC improves by `5%` to `< 15%`, or revision lands in the top `10` but not stably
     - interpretation: fixed-horizon mainline captures part of the edge; record the gain and keep label redesign as a later optimization path
-  - **Near-zero**:
-    - overall IC improves by `< 5%`
-    - interpretation: fixed-horizon labeling is likely leaving most of the revision value on the table; event-aligned label redesign becomes the next justified engineering step
+    - **Near-zero**:
+      - overall IC improves by `< 5%`
+      - interpretation: fixed-horizon labeling is likely leaving most of the revision value on the table; event-aligned label redesign becomes the next justified engineering step
+
+### Phase 3 Mainline Integration First-Pass Result
+
+- The cheap discriminating integration test is now partially complete:
+  - finalized WRDS revision was wired into the external Phase 3 Qlib mainline as `revision_1m_wrds`
+  - implementation lives in:
+    - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha\scripts\staging_to_qlib.py`
+    - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha\scripts\run_qlib_lgbm_walkforward.py`
+  - feature contract used:
+    - source = finalized full-panel FY1 `revision_1m`
+    - feature timestamp = `statpers`
+    - visibility = next trading day
+    - daily representation = latest-value carry-forward
+- Fixed-horizon mainline read on `expanded_liquid_core`:
+  - baseline seeds were all weak/negative:
+    - seed `7`: `mean_rank_ic ~ 0.0010`, `rank_ic_t ~ 0.07`, `alpha_only_t ~ -1.42`
+    - seed `17`: `mean_rank_ic ~ -0.0011`, `rank_ic_t ~ -0.08`, `alpha_only_t ~ -1.86`
+    - seed `29`: `mean_rank_ic ~ -0.0015`, `rank_ic_t ~ -0.11`, `alpha_only_t ~ -2.48`
+  - `+revision` seed `7` improved slightly but remained economically weak:
+    - `mean_rank_ic ~ 0.0021`
+    - `rank_ic_t ~ 0.15`
+    - `alpha_only_t ~ -1.22`
+  - practical read:
+    - fixed-horizon Qlib does appear to ingest **some** revision information
+    - but the realized lift is tiny relative to the size of the event-aware revision edge
+    - this did **not** turn the mainline model into a live signal
+- Simple linear sanity check reached the same conclusion:
+  - same-day cross-sectional z-score equal-weight custom-feature composite without revision:
+    - `rank_ic_t ~ -0.46`
+    - `alpha_only_t ~ 0.57`
+  - with revision added:
+    - `rank_ic_t ~ -0.46`
+    - `alpha_only_t ~ 0.60`
+  - practical read:
+    - adding revision helps only trivially in the fixed-horizon signal-level baseline too
+- Important model-usage nuance:
+  - on the completed `+revision` seed `7` run, `REVISION_1M_WRDS` ranked very high in raw tree usage:
+    - gain rank = `2`
+    - split rank = `1`
+  - do **not** over-read that as proof the mainline solved revision
+  - the carry-forward representation makes revision visually prominent in tree splits, but the realized holdout lift stayed small
+- Updated decision boundary:
+  - do **not** reopen a broad multi-seed fixed-horizon mainline sweep just for revision
+  - do **not** promote the fixed-horizon Phase 3 Qlib branch on the back of this result
+  - current best interpretation is:
+    - fixed-horizon mainline absorbs a little of revision
+    - most of the value remains tied to event-aware labeling
+  - if the US WRDS line returns to mainline model work, the justified next step is **event-aligned or hybrid label design**, not more feature-only stacking on the old fixed-horizon target
 
 ## Key Paths And Docs
 
