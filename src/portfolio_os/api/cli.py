@@ -50,6 +50,7 @@ from portfolio_os.explain.handoff import (
 )
 from portfolio_os.explain.summary import build_summary, render_summary_markdown
 from portfolio_os.execution.adapters.csv_export import export_basket_csv, export_basket_oms_csv
+from portfolio_os.execution.alpaca_adapter import AlpacaAdapter
 from portfolio_os.execution.reporting import (
     build_execution_child_orders_frame,
     build_execution_fills_frame,
@@ -81,6 +82,10 @@ from portfolio_os.workflow.approval import (
     build_approval_summary_markdown,
     evaluate_approval_request,
     freeze_selected_scenario,
+)
+from portfolio_os.workflow.paper_calibration import (
+    run_paper_calibration_dry_run,
+    run_paper_calibration_paper,
 )
 from portfolio_os.workflow.single_run import run_single_rebalance
 
@@ -196,6 +201,50 @@ def main(
         typer.echo(f"backtest_report.md: {backtest_report_path}")
         if alpha_panel_path is not None:
             typer.echo(f"alpha_panel.csv: {alpha_panel_path}")
+    except PortfolioOSError as exc:
+        logger.error("%s", exc)
+        raise typer.Exit(code=1) from exc
+
+
+@app.command("paper-calibration")
+def paper_calibration(
+    ticker: str = typer.Option("SPY"),
+    output_dir: Path = typer.Option(...),
+    quantity: float = typer.Option(1.0, help="Fixed share quantity for the neutral paper order."),
+    gross_target_weight: float = typer.Option(1.0, help="Target weight used for dry-run target generation."),
+    perturbation_bps: float = typer.Option(0.0, help="Optional tiny deterministic perturbation for target generation."),
+    perturbation_seed: int | None = typer.Option(None),
+    submit_paper: bool = typer.Option(
+        False,
+        help="If set, submit the neutral order through the Alpaca paper adapter. Defaults to dry-run only.",
+    ),
+) -> None:
+    """Run the paper calibration sprint in dry-run or neutral paper mode."""
+
+    logger = configure_logging()
+    expected_assumptions = {"participation_limit": 0.05, "slippage_model": "baseline"}
+    try:
+        if submit_paper:
+            result = run_paper_calibration_paper(
+                output_dir=output_dir,
+                tickers=[ticker],
+                quantity=quantity,
+                expected_assumptions=expected_assumptions,
+                adapter=AlpacaAdapter(),
+            )
+        else:
+            result = run_paper_calibration_dry_run(
+                output_dir=output_dir,
+                tickers=[ticker],
+                gross_target_weight=gross_target_weight,
+                perturbation_bps=perturbation_bps,
+                perturbation_seed=perturbation_seed,
+                expected_assumptions=expected_assumptions,
+            )
+        typer.echo(f"target.csv: {result.target_path}")
+        typer.echo(f"paper_calibration_manifest.json: {result.manifest_path}")
+        typer.echo(f"paper_calibration_payload.json: {result.payload_path}")
+        typer.echo(f"paper_calibration_report.md: {result.report_path}")
     except PortfolioOSError as exc:
         logger.error("%s", exc)
         raise typer.Exit(code=1) from exc
@@ -564,15 +613,16 @@ def main(
         raise typer.Exit(code=1) from exc
 
 
-@app.command()
+@app.callback(invoke_without_command=True)
 def main(
-    holdings: Path = typer.Option(..., exists=True, file_okay=True, dir_okay=False),
-    target: Path = typer.Option(..., exists=True, file_okay=True, dir_okay=False),
-    market: Path = typer.Option(..., exists=True, file_okay=True, dir_okay=False),
-    reference: Path = typer.Option(..., exists=True, file_okay=True, dir_okay=False),
-    portfolio_state: Path = typer.Option(..., exists=True, file_okay=True, dir_okay=False),
-    constraints: Path = typer.Option(..., exists=True, file_okay=True, dir_okay=False),
-    output_dir: Path = typer.Option(...),
+    ctx: typer.Context,
+    holdings: Path | None = typer.Option(None, exists=True, file_okay=True, dir_okay=False),
+    target: Path | None = typer.Option(None, exists=True, file_okay=True, dir_okay=False),
+    market: Path | None = typer.Option(None, exists=True, file_okay=True, dir_okay=False),
+    reference: Path | None = typer.Option(None, exists=True, file_okay=True, dir_okay=False),
+    portfolio_state: Path | None = typer.Option(None, exists=True, file_okay=True, dir_okay=False),
+    constraints: Path | None = typer.Option(None, exists=True, file_okay=True, dir_okay=False),
+    output_dir: Path | None = typer.Option(None),
     config: Path = typer.Option(Path("config/default.yaml"), exists=True, file_okay=True, dir_okay=False),
     execution_profile: Path = typer.Option(
         Path("config/execution/conservative.yaml"),
@@ -593,6 +643,23 @@ def main(
     ),
 ) -> None:
     """Run the full PortfolioOS MVP pipeline."""
+
+    if ctx.invoked_subcommand is not None:
+        return
+    if holdings is None:
+        raise typer.BadParameter("Missing required option.", param_hint="--holdings")
+    if target is None:
+        raise typer.BadParameter("Missing required option.", param_hint="--target")
+    if market is None:
+        raise typer.BadParameter("Missing required option.", param_hint="--market")
+    if reference is None:
+        raise typer.BadParameter("Missing required option.", param_hint="--reference")
+    if portfolio_state is None:
+        raise typer.BadParameter("Missing required option.", param_hint="--portfolio-state")
+    if constraints is None:
+        raise typer.BadParameter("Missing required option.", param_hint="--constraints")
+    if output_dir is None:
+        raise typer.BadParameter("Missing required option.", param_hint="--output-dir")
 
     logger = configure_logging()
     try:

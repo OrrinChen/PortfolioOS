@@ -220,6 +220,28 @@ def test_cli_supports_import_profile(project_root, tmp_path) -> None:
     assert manifest["import_profile"]
 
 
+def test_paper_calibration_cli_produces_expected_artifacts(tmp_path) -> None:
+    runner = CliRunner()
+    output_dir = tmp_path / "paper_calibration_cli"
+
+    result = runner.invoke(
+        app,
+        [
+            "paper-calibration",
+            "--ticker",
+            "SPY",
+            "--output-dir",
+            str(output_dir),
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert (output_dir / "target.csv").exists()
+    assert (output_dir / "paper_calibration_manifest.json").exists()
+    assert (output_dir / "paper_calibration_payload.json").exists()
+    assert (output_dir / "paper_calibration_report.md").exists()
+
+
 def test_replay_cli_produces_suite_outputs(project_root, replay_manifest_path, tmp_path) -> None:
     runner = CliRunner()
     output_dir = tmp_path / "replay_demo"

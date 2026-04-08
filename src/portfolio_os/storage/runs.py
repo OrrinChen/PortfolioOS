@@ -9,6 +9,7 @@ from uuid import uuid4
 from portfolio_os.domain.models import (
     ApprovalArtifacts,
     ExecutionArtifacts,
+    PaperCalibrationArtifacts,
     ReplayArtifacts,
     RunArtifacts,
     ScenarioArtifacts,
@@ -117,5 +118,23 @@ def prepare_execution_artifacts(output_dir: str | Path) -> ExecutionArtifacts:
         execution_child_orders_path=str(output_path / "execution_child_orders.csv"),
         handoff_checklist_path=str(output_path / "handoff_checklist.md"),
         manifest_path=str(output_path / "run_manifest.json"),
+        created_at=created_at,
+    )
+
+
+def prepare_paper_calibration_artifacts(output_dir: str | Path) -> PaperCalibrationArtifacts:
+    """Create the paper-calibration output directory and return artifact paths."""
+
+    output_path = Path(output_dir)
+    output_path.mkdir(parents=True, exist_ok=True)
+    created_at = datetime.now(timezone.utc).isoformat()
+    run_id = f"paper_calibration_{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S')}_{uuid4().hex[:8]}"
+    return PaperCalibrationArtifacts(
+        run_id=run_id,
+        output_dir=str(output_path),
+        target_path=str(output_path / "target.csv"),
+        manifest_path=str(output_path / "paper_calibration_manifest.json"),
+        payload_path=str(output_path / "paper_calibration_payload.json"),
+        report_path=str(output_path / "paper_calibration_report.md"),
         created_at=created_at,
     )

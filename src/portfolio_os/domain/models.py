@@ -259,6 +259,18 @@ class ExecutionArtifacts(BaseModel):
     created_at: str
 
 
+class PaperCalibrationArtifacts(BaseModel):
+    """Files produced by one paper-calibration run."""
+
+    run_id: str
+    output_dir: str
+    target_path: str
+    manifest_path: str
+    payload_path: str
+    report_path: str
+    created_at: str
+
+
 class ScenarioMetrics(BaseModel):
     """Unified scenario metrics for decision-pack comparison."""
 
