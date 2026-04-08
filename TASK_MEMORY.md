@@ -6,6 +6,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 
 - PortfolioOS is a compliance-aware portfolio rebalance, scenario, approval, execution-simulation, backtest, TCA, and research CLI platform.
 - Core platform buildout through Phase 12 is implemented and stable.
+- The current project-wide meta stage is `research convergence + promotion contract`, not repo merge.
 - Canonical orchestration path: `src/portfolio_os/workflow/single_run.py`.
 - Historical backtests should run through library calls, not CLI subprocess chains.
 - Default execution simulation mode: `impact_aware`.
@@ -108,6 +109,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - `pivot 1a` is already triggered
   - A5 is closed as an execution / alpha-translation repair result, not as an alpha winner
   - the current A-share line is sequencing-driven, with multiple honest negatives, several inconclusives, and no nearby-family reopen path
+  - the current tranche has now exported its first promotion-contract example bundle instead of trying to merge research code into PortfolioOS
 - Current active branch:
   - none
 - Next decision node:
@@ -119,13 +121,14 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 
 ## Recommended Next Steps
 
-1. Treat the US Phase 1 through Phase 4E arc as methodologically valuable but stage-closed on the primary deployment universe.
-2. Keep the active research pivot on A-share.
-3. Treat the core A-share single-factor stage as already informative:
+1. Keep the project in `research convergence + promotion contract` mode until at least one line actually clears a Stage 4 gate.
+2. Treat the US Phase 1 through Phase 4E arc as methodologically valuable but stage-closed on the primary deployment universe.
+3. Keep the active research pivot on A-share.
+4. Treat the core A-share single-factor stage as already informative:
    - `anti_mom_21_5` is the primary price signal
    - turnover is a related but distinct companion factor
    - the main conditional contrast is high-vol anti-momentum vs non-high-vol turnover
-4. The next natural A-share stage is now explicitly gated by the `anti_mom_21_5` audit:
+5. The next natural A-share stage is now explicitly gated by the `anti_mom_21_5` audit:
    - the signal is strong enough to keep
    - but it is only `partially_real`, not clean enough to justify open-ended A4 / A5 tuning on top of it
    - immediate next work should stay diagnostic and discipline-preserving:
@@ -136,7 +139,9 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
      - more anti-momentum subperiod / regime / lookback retuning
      - more A5 config sweeps around the real signal
      - `book_to_price` / PIT expansion work
-5. The next distinct research branch to open after A5 closeout is US Phase 3.0:
+6. Do not merge Qlib / external research code into PortfolioOS yet; use the promotion contract documented in:
+   - `docs/research_promotion_contract.md`
+7. The next distinct research branch to open after A5 closeout is US Phase 3.0:
    - universe:
      - `expanded_liquid_core`
    - PIT rule:
@@ -154,17 +159,17 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
         - `daily_history_min = 1250`
         - `pit_quarter_min = 20`
         - `pit_valid_core_quarter_median = 92`
-5. Keep deterministic signals as the working baseline; do not promote `qlib_lgbm`.
-6. Treat signal robustness and signal translation as the main bottleneck, ahead of optimizer tuning or RL execution work.
-7. Treat the current TCA overlay as valid only for `0-0.1%` participation.
-8. Do not promote calibrated `k = 3.498400399110418` into the default config.
-9. If US research is reopened, prefer a clearly new branch:
+8. Keep deterministic signals as the working baseline; do not promote `qlib_lgbm`.
+9. Treat signal robustness and signal translation as the main bottleneck, ahead of optimizer tuning or RL execution work.
+10. Treat the current TCA overlay as valid only for `0-0.1%` participation.
+11. Do not promote calibrated `k = 3.498400399110418` into the default config.
+12. If US research is reopened, prefer a clearly new branch:
    - lower-efficiency or mid-cap slices over more top-500 large-cap retries
    - event-driven announcement or transcript hypotheses rather than more monthly-carry or screen-tuning retries
    - objective liquid-universe definitions rather than canonical-300-specific framing
-10. Keep the canonical 300-name list only as a continuity control; prefer `expanded_liquid_core` as the primary US research universe when a genuinely new hypothesis exists.
-11. Do not resume optimizer-promotion or RL-execution work until alpha is signal-ready again.
-12. If the WRDS US branch is resumed next, the best immediate path is staying inside the new announcement-driven evaluator:
+13. Keep the canonical 300-name list only as a continuity control; prefer `expanded_liquid_core` as the primary US research universe when a genuinely new hypothesis exists.
+14. Do not resume optimizer-promotion or RL-execution work until alpha is signal-ready again.
+15. If the WRDS US branch is resumed next, the best immediate path is staying inside the new announcement-driven evaluator:
    - keep the CAR3 confirmation line closed at `z(SUE) * sign(CAR3)` unless a new hypothesis clearly justifies reopening it
    - extend announcement-timed SUE mapping / short-window PEAD variants
    - revisit revision separately with event-aware labels rather than forcing it into the announcement-only frame
