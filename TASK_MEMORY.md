@@ -265,10 +265,32 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
       - do not rescue with interaction terms or return-definition rewrites in-place
     - closeout note path:
       - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\ashare-a1\docs\superpowers\notes\2026-04-07-unlock-selling-pressure-quicklook-closeout.md`
+  - second post-roadmap hypothesis result:
+    - `T+1 Overnight / Intraday Asymmetry` Stage 0 and Stage 1 quick look are now complete
+    - decomposed Stage 1 raw quick look on `cn_rank_500_1500_floatcap_dynamic` failed cleanly on both legs:
+      - `anti_overnight_gap`:
+        - `mean_rank_ic ~ -0.0004`
+        - `rank_ic_t ~ -0.05`
+        - `alpha_only_t ~ 0.90`
+      - `anti_intraday_return`:
+        - `mean_rank_ic ~ 0.0064`
+        - `rank_ic_t ~ 0.51`
+        - `alpha_only_t ~ -0.32`
+    - roadmap disposition:
+      - `killed at Stage 1`
+      - do not rescue with richer decomposition or alternate windows
+    - closeout note path:
+      - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\ashare-a1\docs\superpowers\notes\2026-04-07-t1-overnight-intraday-asymmetry-quicklook-closeout.md`
+  - deferred executable branch:
+    - `Northbound Flow Dislocation` remains live in the ledger but is currently `deferred before Stage 1`
+    - reason:
+      - Tushare `hk_hold` is real but too expensive to harvest naively under the current `2 calls / minute` rate limit and row-capped multi-day fetch shape
+    - defer note path:
+      - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\ashare-a1\docs\superpowers\notes\2026-04-07-northbound-flow-dislocation-feasibility-defer.md`
   - practical read:
     - `anti_mom_21_5` should now be treated as an audited reference point, not as the only signal worthy of further experimentation
-    - the next A-share learning should come from running a second hypothesis through the same audit discipline, not from reopening parameter work on the first one
-    - the next branch should come from the ledger rather than from rescuing `Unlock Selling Pressure`
+    - the next A-share learning should come from running the next executable ledger hypothesis through the same discipline, not from reopening parameter work on the first one
+    - the next branch should come from the ledger rather than from rescuing the two completed Stage 1 negatives
 - Turnover is a useful companion factor, not a substitute:
   - higher turnover is directionally associated with subsequent underperformance
   - it is related to `anti_mom_21_5` but not collinear enough to collapse the two into one factor
