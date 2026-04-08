@@ -14,7 +14,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 
 ## Active Worktree Topology
 
-- `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha` = the only active WRDS / US research line.
+- `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha` = closed US WRDS method-asset workspace; do not treat as an active discovery line unless a roadmap restart trigger is explicitly chosen.
 - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\ashare-a1` = the only active A-share research line.
 - `C:\Users\14574\Quant\PortfolioOS` main repo = shared platform changes only; do not leave branch-local research copies here.
 
@@ -100,6 +100,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - The US WRDS line now has an explicit closeout / restart roadmap:
   - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha\docs\us_wrds_alpha_roadmap.md`
   - default state is **closed unless a restart trigger is met**
+  - as of `2026-04-08`, the line should be read as a completed methods chapter, not an active research queue
 - A minimal Branch-A restart proof-of-concept is now complete inside the existing Qlib mainline runner:
   - fixed-horizon feature-only ingestion remained weak
   - but a minimal custom event-label path using finalized full-panel `revision_1m` plus pure `to-next-announcement` labels was strongly positive on the first completed seed
@@ -187,6 +188,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - Do not over-read the minimal Branch-A proof-of-concept as a finished production integration:
   - it is event-label-aligned and directionally validating
   - it is not yet a drop-in replacement for the existing daily mainline objective
+- Default next action for US WRDS is now: **no action**. Only reopen through a new explicit roadmap trigger or a separate generality-check decision.
 - Only return to PortfolioOS alpha integration once a new signal clears the primary-universe Layer 1 gate.
 
 ## A-Share Research State
@@ -370,6 +372,51 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     - only proceed to Stage 1 if the data path shows clean PIT boundaries and enough effective observations to land in the `10k+` range rather than the sparse `H10/H12` regime
   - fourth:
     - keep the A-share main-repo sync on decision nodes rather than every branch; the next expected sync node is after the null-calibration / H8-feasibility round closes
+- The post-pivot diagnostic debt has now been paid down on the two newest archived branches:
+  - output path:
+    - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\ashare-a1\outputs\ashare_stage1_branch_null_calibration\`
+  - `H5_overnight_5d`:
+    - observed `rank_ic_t ~ -3.18`
+    - calibrated `|null t| p95 ~ 1.91`
+    - calibrated `|null t| p99 ~ 2.67`
+    - empirical left-tail `p ~ 0.0010`
+    - empirical two-sided `p ~ 0.0040`
+    - practical read:
+      - the short-horizon overnight leg is now a genuinely wrong-signed result, not just a weak non-promotion
+  - `H5_intraday_5d`:
+    - observed `rank_ic_t ~ 1.09`
+    - calibrated `|null t| p95 ~ 2.01`
+    - empirical two-sided `p ~ 0.283`
+    - practical read:
+      - the intraday leg remains inside the null and should be read as "no edge," not as a near miss
+  - `H14_discrete_action`:
+    - observed `rank_ic_t ~ -0.39`
+    - calibrated `|null t| p95 ~ 1.97`
+    - empirical two-sided `p ~ 0.691`
+    - practical read:
+      - this is a clean null-consistent non-promotion with enough actionable rows to be informative
+- `H5` sign-flip handling is now explicitly frozen:
+  - the opposite sign implied by the `-3.18` overnight result is **not** being promoted into a hidden `H5b`
+  - current ruling:
+    - treat it as an incidental finding unless a new economic mechanism can be written independently of the observed result and then tested on a separate holdout path
+- `H8 Major Shareholder Reduction Overhang` feasibility lift is now complete:
+  - the closest AKShare bulk path (`stock_ggcg_em`) remains unstable under full-history pull
+  - the cleanest per-symbol fallback (`stock_shareholder_change_ths`) returned `0 / 30` non-empty current dynamic mid-cap sample panels in the first feasibility check
+  - the CNInfo capital-change endpoint is semantically the wrong object for this hypothesis
+  - practical read:
+    - `H8` does **not** pass the current data-feasibility gate
+    - keep it `deferred before Stage 1`
+- Updated practical state after the null-calibration / H8-feasibility round:
+  - the A-share line now has:
+    - one audited `partially_real` lead signal (`anti_mom_21_5`)
+    - several archived Stage 1 negatives
+    - several proxy-constrained inconclusives
+    - but **no** cleanly executable next branch in the current live ledger without either:
+      - better data access for a deferred branch
+      - or a post-pivot ledger regeneration
+  - practical consequence:
+    - the next honest move is no longer "run the next obvious hypothesis"
+    - it is "regenerate or lift the executable hypothesis inventory after the pivot-1a trigger"
     - the next branch should come from the ledger rather than from rescuing the two completed Stage 1 negatives
     - with `Northbound` and `Limit-Up Failure` both deferred on interface cost, the next clearly executable live candidate should come from the remaining lower-cost ledger branches
   - third post-roadmap hypothesis result:
