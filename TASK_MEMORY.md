@@ -69,7 +69,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 
 ## US Research State
 
-- Status: closed US WRDS methods chapter; do not treat as an active discovery queue.
+- Status: active narrow US roadmap-first Phase 1 restart branch; still not an open discovery queue.
 - Last sync: `2026-04-08`
 - Branch-local references:
   - roadmap = `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\docs\us_wrds_alpha_roadmap.md`
@@ -79,11 +79,14 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - `announcement-timed SUE` is the main US event alpha
   - finalized event-aware `revision` is real, but fixed-horizon mainline ingestion does not recover most of its edge
   - naive hybrid-v1 fallback is already rejected
-- Current active branch: none
+- Current active branch:
+  - roadmap-first Phase 1 restart
+  - order = orthogonality audit -> simple package baseline -> redesigned event-aligned mainline
 - Next decision node:
-  - if US is explicitly restarted, first gate is `SUE x revision` orthogonality audit for event-driven package qualification
-  - otherwise default action is `no action`
-- Do not reopen broad fixed-horizon retries, standalone `CAR3`, old `21d` carry evaluation, or optimizer / integration work from this state.
+  - `SUE x revision` orthogonality audit for package qualification
+  - if that passes, benchmark `SUE + revision` versus pure `SUE`
+  - only if that passes, run redesigned event-aligned mainline delta
+- Do not reopen broad fixed-horizon retries, standalone `CAR3`, old `21d` carry evaluation, or paper/execution work from this state.
 
 ## A-Share Research State
 
