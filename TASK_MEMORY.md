@@ -298,6 +298,26 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     - the next A-share learning should come from running the next executable ledger hypothesis through the same discipline, not from reopening parameter work on the first one
     - the next branch should come from the ledger rather than from rescuing the two completed Stage 1 negatives
     - with `Northbound` and `Limit-Up Failure` both deferred on interface cost, the next clearly executable live candidate should come from the remaining lower-cost ledger branches
+  - third post-roadmap hypothesis result:
+    - `ST / Distress Lottery Preference` Stage 0 and Stage 1 quick look are now complete
+    - the persistent-state distress proxy failed cleanly on `cn_rank_500_1500_floatcap_dynamic`:
+      - `mean_rank_ic ~ -0.0065`
+      - `rank_ic_t ~ -1.35`
+      - `alpha_only_t ~ -1.11`
+      - `mean_distressed_ticker_count ~ 24.4`
+    - roadmap disposition:
+      - `killed at Stage 1`
+      - do not rescue with richer severity scales or by reopening the same state-proxy framing
+    - closeout note path:
+      - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\ashare-a1\docs\superpowers\notes\2026-04-07-st-distress-lottery-preference-quicklook-closeout.md`
+  - inventory maintenance:
+    - after the H6 kill, the ledger was explicitly replenished with new live proposals so the hypothesis inventory stays above the roadmap minimum
+    - added live branches:
+      - `Earnings Preannouncement Drift`
+      - `Major Shareholder Reduction Overhang`
+      - `Share Pledge Stress Overhang`
+    - current next executable branch:
+      - `Dragon-Tiger / Extreme Attention Overreaction`
 - Turnover is a useful companion factor, not a substitute:
   - higher turnover is directionally associated with subsequent underperformance
   - it is related to `anti_mom_21_5` but not collinear enough to collapse the two into one factor
