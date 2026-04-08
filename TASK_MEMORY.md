@@ -354,25 +354,15 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     - `H11 Margin Crowding / Financing Overhang`
     - `H14 Analyst Upgrade / First-Coverage Surprise`
     - `H5 T+1 Overnight / Intraday Asymmetry` short-horizon reformulation
+    - `H16 Cash Dividend Ex-Date Rebound`
   - current inconclusive set:
     - `H10 Repurchase Support Signaling`
     - `H12 Analyst Rating Drift / Underreaction`
     - `H15 IPO Lockup Expiry Selling Pressure`
   - practical read:
     - the event/state/analyst/microstructure Stage 1 hit rate is now low enough that the problem is no longer "keep adding nearby hypotheses"
-    - the next step must be diagnostic and sequencing-oriented, not more rescue-variant search
-- Immediate next-step queue after the pivot-1a trigger:
-  - first:
-    - finish branch-specific null calibration for the newly archived negatives (`H5` short-horizon and `H14`) so their closeouts move from borrowed-threshold rejects to empirical-p-value rejects
-  - second:
-    - write a short self-audit on the `H5` sign-flip observation
-    - do **not** treat the opposite sign as a new hypothesis unless it can be justified independently of the observed `-3.18` result and moved onto a separate holdout path
-  - third:
-    - time-box `H8 Major Shareholder Reduction Overhang` to a feasibility-lift report before any Stage 1 execution
-    - only proceed to Stage 1 if the data path shows clean PIT boundaries and enough effective observations to land in the `10k+` range rather than the sparse `H10/H12` regime
-  - fourth:
-    - keep the A-share main-repo sync on decision nodes rather than every branch; the next expected sync node is after the null-calibration / H8-feasibility round closes
-- The post-pivot diagnostic debt has now been paid down on the two newest archived branches:
+    - the next step must stay sequencing-oriented, not turn into nearby-family rescue search
+- The post-pivot diagnostic debt has now been paid down on the archived branches that most needed calibration:
   - output path:
     - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\ashare-a1\outputs\ashare_stage1_branch_null_calibration\`
   - `H5_overnight_5d`:
@@ -395,6 +385,21 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     - empirical two-sided `p ~ 0.691`
     - practical read:
       - this is a clean null-consistent non-promotion with enough actionable rows to be informative
+- The cleaner post-pivot mechanical-calendar dividend branch is now also closed:
+  - output path:
+    - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\ashare-a1\outputs\ashare_cash_dividend_exdate_quicklook\`
+  - `H16 Cash Dividend Ex-Date Rebound`:
+    - bulk dividend rows: `27,474`
+    - normalized implemented cash-only events: `23,239`
+    - triggered mid-cap event rows: `5,452`
+    - observed `rank_ic_t ~ -0.277`
+    - `alpha_only_t ~ -0.897`
+    - branch-specific null calibration:
+      - calibrated `|null t| p95 ~ 0.974`
+      - calibrated `|null t| p99 ~ 1.198`
+      - empirical two-sided `p ~ 0.814`
+    - practical read:
+      - this is a clean null-consistent non-promotion with enough event density to count as an honest Stage 1 negative
 - `H5` sign-flip handling is now explicitly frozen:
   - the opposite sign implied by the `-3.18` overnight result is **not** being promoted into a hidden `H5b`
   - current ruling:
@@ -416,8 +421,8 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
       - or a post-pivot ledger regeneration
   - practical consequence:
     - the next honest move is no longer "run the next obvious hypothesis"
-    - it is "regenerate or lift the executable hypothesis inventory after the pivot-1a trigger"
-    - the next branch should come from the ledger rather than from rescuing the two completed Stage 1 negatives
+    - it is "lift one deferred path or regenerate the executable hypothesis inventory after the pivot-1a trigger"
+    - the next branch should come from the refreshed ledger rather than from rescuing any of the completed Stage 1 negatives
     - with `Northbound` and `Limit-Up Failure` both deferred on interface cost, the next clearly executable live candidate should come from the remaining lower-cost ledger branches
   - third post-roadmap hypothesis result:
     - `ST / Distress Lottery Preference` Stage 0 and Stage 1 quick look are now complete
