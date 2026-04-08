@@ -9,6 +9,9 @@ from portfolio_os.workflow.paper_calibration import run_paper_calibration_dry_ru
 
 
 class _FakePaperAdapter:
+    def connect(self) -> bool:
+        return True
+
     def submit_orders_with_telemetry(self, orders_df: pd.DataFrame) -> ExecutionResult:
         _ = orders_df
         return ExecutionResult(
@@ -29,6 +32,45 @@ class _FakePaperAdapter:
             unfilled_count=0,
             rejected_count=0,
             timeout_cancelled_count=0,
+        )
+
+    def query_account(self) -> dict:
+        return {"account_number": "paper-demo", "cash": "100000.00"}
+
+    def query_positions(self) -> pd.DataFrame:
+        return pd.DataFrame(
+            [
+                {
+                    "ticker": "SPY",
+                    "quantity": 3.0,
+                    "market_value": 1500.0,
+                    "avg_entry_price": 500.0,
+                    "current_price": 500.0,
+                    "unrealized_pnl": 0.0,
+                }
+            ]
+        )
+
+    def reconcile(self, expected_positions: pd.DataFrame):
+        from portfolio_os.execution.models import ReconciliationDetail, ReconciliationReport
+
+        _ = expected_positions
+        return ReconciliationReport(
+            matched_count=1,
+            mismatched_count=0,
+            missing_in_broker=[],
+            missing_in_system=[],
+            details=[
+                ReconciliationDetail(
+                    ticker="SPY",
+                    expected_quantity=3.0,
+                    actual_quantity=3.0,
+                    quantity_diff=0.0,
+                    expected_value=1500.0,
+                    actual_value=1500.0,
+                    value_diff=0.0,
+                )
+            ],
         )
 
 
@@ -67,6 +109,9 @@ def test_paper_calibration_paper_writes_realized_payload_and_report(tmp_path: Pa
     assert Path(result.manifest_path).exists()
     assert Path(result.payload_path).exists()
     assert Path(result.report_path).exists()
+    assert Path(result.fill_manifest_path).exists()
+    assert Path(result.fill_orders_path).exists()
+    assert Path(result.reconciliation_report_path).exists()
 
     payload = pd.read_json(result.payload_path, typ="series")
     assert payload["strategy_name"] == "neutral_buy_and_hold"
