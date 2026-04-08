@@ -310,6 +310,66 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - practical read:
     - `anti_mom_21_5` should now be treated as an audited reference point, not as the only signal worthy of further experimentation
     - the next A-share learning should come from running the next executable ledger hypothesis through the same discipline, not from reopening parameter work on the first one
+- The Stage 1 event-diagnostic retrofit is now complete and should be treated as a permanent part of the A-share research stack:
+  - output path:
+    - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\ashare-a1\outputs\ashare_stage1_event_diagnostic\`
+  - practical result:
+    - `0 / 4` rescue rate on the first retrofit basket (`H9/H10/H11/H12`)
+    - this largely ruled out the simple "event hypotheses were being systemically diluted by the old evaluator" explanation
+  - proxy-quality split:
+    - `H9 Share Pledge Stress Overhang` and `H11 Margin Crowding / Financing Overhang` are now the two cleanest `honest Stage 1 negatives`
+    - `H10 Repurchase Support Signaling` and `H12 Analyst Rating Drift / Underreaction` remain `inconclusive under current proxy stack`, not clean negatives
+  - calibration read:
+    - pooled event-stage `1000x` date-wise permutation gave a practical `p=0.05` threshold around `rank_ic_t ~ 1.63`
+- Additional Stage 1 branch work after the retrofit has materially changed the A-share inventory map:
+  - `H15 IPO Lockup Expiry Selling Pressure`:
+    - already quick-looked under the event-conditioned monthly evaluator
+    - current read = `inconclusive under current Stage 1 power`
+    - not a clean negative, and not a promotable branch
+  - `H5 T+1 Overnight / Intraday Asymmetry` short-horizon reformulation:
+    - archived `21d` framing stayed dead
+    - standalone `5d` reformulation also failed
+    - `anti_overnight_gap` became significantly wrong-signed:
+      - `rank_ic_t ~ -3.18`
+      - `alpha_only_t ~ -2.42`
+    - `anti_intraday_return` remained sub-gate:
+      - `rank_ic_t ~ 1.09`
+      - `alpha_only_t ~ 0.40`
+    - practical read:
+      - this is now a stronger archived negative than the original H5 closeout, not a near-miss
+  - `H14 Analyst Upgrade / First-Coverage Surprise`:
+    - discrete analyst-action proxy now tested separately from the failed `H12` target-price-premium level proxy
+    - live result remained weak / wrong-way:
+      - `actionable_event_count = 1786`
+      - `rank_ic_t ~ -0.39`
+      - `alpha_only_t ~ -0.63`
+    - practical read:
+      - the analyst family now has one proxy-constrained inconclusive (`H12`) and one clean Stage 1 negative (`H14`)
+- Portfolio-accounting implication:
+  - `pivot 1a` is now triggered on the A-share line
+  - current honest-negative set:
+    - `H9 Share Pledge Stress Overhang`
+    - `H11 Margin Crowding / Financing Overhang`
+    - `H14 Analyst Upgrade / First-Coverage Surprise`
+    - `H5 T+1 Overnight / Intraday Asymmetry` short-horizon reformulation
+  - current inconclusive set:
+    - `H10 Repurchase Support Signaling`
+    - `H12 Analyst Rating Drift / Underreaction`
+    - `H15 IPO Lockup Expiry Selling Pressure`
+  - practical read:
+    - the event/state/analyst/microstructure Stage 1 hit rate is now low enough that the problem is no longer "keep adding nearby hypotheses"
+    - the next step must be diagnostic and sequencing-oriented, not more rescue-variant search
+- Immediate next-step queue after the pivot-1a trigger:
+  - first:
+    - finish branch-specific null calibration for the newly archived negatives (`H5` short-horizon and `H14`) so their closeouts move from borrowed-threshold rejects to empirical-p-value rejects
+  - second:
+    - write a short self-audit on the `H5` sign-flip observation
+    - do **not** treat the opposite sign as a new hypothesis unless it can be justified independently of the observed `-3.18` result and moved onto a separate holdout path
+  - third:
+    - time-box `H8 Major Shareholder Reduction Overhang` to a feasibility-lift report before any Stage 1 execution
+    - only proceed to Stage 1 if the data path shows clean PIT boundaries and enough effective observations to land in the `10k+` range rather than the sparse `H10/H12` regime
+  - fourth:
+    - keep the A-share main-repo sync on decision nodes rather than every branch; the next expected sync node is after the null-calibration / H8-feasibility round closes
     - the next branch should come from the ledger rather than from rescuing the two completed Stage 1 negatives
     - with `Northbound` and `Limit-Up Failure` both deferred on interface cost, the next clearly executable live candidate should come from the remaining lower-cost ledger branches
   - third post-roadmap hypothesis result:
