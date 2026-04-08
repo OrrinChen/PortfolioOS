@@ -100,6 +100,15 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - The US WRDS line now has an explicit closeout / restart roadmap:
   - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha\docs\us_wrds_alpha_roadmap.md`
   - default state is **closed unless a restart trigger is met**
+- A minimal Branch-A restart proof-of-concept is now complete inside the existing Qlib mainline runner:
+  - fixed-horizon feature-only ingestion remained weak
+  - but a minimal custom event-label path using finalized full-panel `revision_1m` plus pure `to-next-announcement` labels was strongly positive on the first completed seed
+  - read this as validation of the **label-alignment direction**, not as a production-ready replacement for the daily mainline
+- The next simplest Branch-A step has now also been tested and closed:
+  - naive hybrid v1 = event label primary + fixed-horizon fallback + single-label training target
+  - this restored full fold coverage and removed skipped folds
+  - but it did **not** preserve the event edge; the event-labeled slice inside hybrid stayed negative
+  - interpretation: Branch A remains a real restart direction, but simple fallback replacement is not enough
 - The active usable US research slice is no longer top-500 large-cap; it is dynamic mid-cap `rank_500_1500_dynamic`.
 - Large-cap/top-500 remains weak across the new WRDS analyst, fundamentals, and event diagnostics.
 - Best current reproducible US signal is still the WRDS mid-cap analyst blend:
@@ -173,6 +182,11 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - event-aligned / hybrid mainline label redesign
   - deeper announcement-timed `SUE` exploitation
   - later `SUE + revision` event-aware joint modeling
+- If the line is reopened through Branch A, start from the validated minimal custom-label path rather than repeating fixed-horizon feature-only retries.
+- If Branch A is resumed, do not start from naive hybrid-v1 fallback; that variant has already been tested and rejected as insufficient.
+- Do not over-read the minimal Branch-A proof-of-concept as a finished production integration:
+  - it is event-label-aligned and directionally validating
+  - it is not yet a drop-in replacement for the existing daily mainline objective
 - Only return to PortfolioOS alpha integration once a new signal clears the primary-universe Layer 1 gate.
 
 ## A-Share Research State
