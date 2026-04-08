@@ -287,10 +287,17 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
       - Tushare `hk_hold` is real but too expensive to harvest naively under the current `2 calls / minute` rate limit and row-capped multi-day fetch shape
     - defer note path:
       - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\ashare-a1\docs\superpowers\notes\2026-04-07-northbound-flow-dislocation-feasibility-defer.md`
+  - additional executable-branch update:
+    - `Limit-Up Failure Attention Reversal` remains live in the ledger but is also currently `deferred before Stage 1`
+    - reason:
+      - Tushare `limit_list_d` is visible on this account, but the current effective rate shape is `1 call / hour`, which makes an honest full-history Stage 1 quick look too expensive for the present low-budget falsification path
+    - defer note path:
+      - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\ashare-a1\docs\superpowers\notes\2026-04-07-limitup-failure-attention-reversal-feasibility-defer.md`
   - practical read:
     - `anti_mom_21_5` should now be treated as an audited reference point, not as the only signal worthy of further experimentation
     - the next A-share learning should come from running the next executable ledger hypothesis through the same discipline, not from reopening parameter work on the first one
     - the next branch should come from the ledger rather than from rescuing the two completed Stage 1 negatives
+    - with `Northbound` and `Limit-Up Failure` both deferred on interface cost, the next clearly executable live candidate should come from the remaining lower-cost ledger branches
 - Turnover is a useful companion factor, not a substitute:
   - higher turnover is directionally associated with subsequent underperformance
   - it is related to `anti_mom_21_5` but not collinear enough to collapse the two into one factor
