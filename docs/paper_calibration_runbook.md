@@ -58,6 +58,36 @@ Expected outputs:
 - `execution_result.csv`
 - `alpaca_fill_summary.md`
 
+### 3. Repeated Neutral Tranche
+
+Use this when you want a small repeated sample of neutral paper runs without introducing a scheduler.
+
+```powershell
+python -m portfolio_os.api.cli paper-calibration --ticker SPY --quantity 1 --submit-paper --output-dir C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_live_batch --repeat 8 --interval-seconds 1800
+```
+
+Behavior:
+
+- repeat count `1` keeps the historical single-run behavior
+- repeat count `> 1` writes each run into a separate child directory:
+  - `run_001`
+  - `run_002`
+  - ...
+- this command is intentionally a thin loop, not a scheduler
+
+### 4. Drift Aggregation
+
+Use this after you have accumulated a tranche of live paper runs and want one compact drift readout.
+
+```powershell
+python -m portfolio_os.api.cli paper-calibration-aggregate --input-root C:\Users\14574\Quant\PortfolioOS\outputs --output-dir C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_drift_aggregate
+```
+
+Expected outputs:
+
+- `drift_observations.csv`
+- `drift_summary.md`
+
 ## What To Check
 
 After a paper run, inspect these first:
@@ -88,6 +118,7 @@ Good uses:
 - checking timeout/partial-fill frequency
 - validating order lifecycle assumptions
 - comparing simulator assumptions with real paper outcomes
+- building a small repeated-sample estimate of the paper venue noise floor
 
 Bad uses:
 
@@ -146,5 +177,6 @@ Likely fix area:
 
 - Start with `SPY`
 - Keep quantity small for initial runs
+- Prefer a small repeated tranche over ad hoc one-off runs when investigating drift
 - Do not attach alpha logic to this line until the calibration path is trusted
 - Treat this runbook as a platform-validation tool, not a research shortcut

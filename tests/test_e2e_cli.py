@@ -242,6 +242,126 @@ def test_paper_calibration_cli_produces_expected_artifacts(tmp_path) -> None:
     assert (output_dir / "paper_calibration_report.md").exists()
 
 
+def test_paper_calibration_cli_repeat_uses_separate_run_directories(tmp_path, monkeypatch) -> None:
+    runner = CliRunner()
+    output_dir = tmp_path / "paper_calibration_repeat_cli"
+    called_output_dirs: list[str] = []
+
+    def _fake_dry_run(**kwargs):
+        target_dir = kwargs["output_dir"]
+        called_output_dirs.append(str(target_dir))
+        target_dir.mkdir(parents=True, exist_ok=True)
+        for name in [
+            "target.csv",
+            "paper_calibration_manifest.json",
+            "paper_calibration_payload.json",
+            "paper_calibration_report.md",
+        ]:
+            (target_dir / name).write_text("demo", encoding="utf-8")
+
+        class _Result:
+            target_path = str(target_dir / "target.csv")
+            manifest_path = str(target_dir / "paper_calibration_manifest.json")
+            payload_path = str(target_dir / "paper_calibration_payload.json")
+            report_path = str(target_dir / "paper_calibration_report.md")
+
+        return _Result()
+
+    monkeypatch.setattr("portfolio_os.api.cli.run_paper_calibration_dry_run", _fake_dry_run)
+    monkeypatch.setattr("portfolio_os.api.cli.time.sleep", lambda _seconds: None)
+
+    result = runner.invoke(
+        app,
+        [
+            "paper-calibration",
+            "--ticker",
+            "SPY",
+            "--output-dir",
+            str(output_dir),
+            "--repeat",
+            "3",
+            "--interval-seconds",
+            "0",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert called_output_dirs == [
+        str(output_dir / "run_001"),
+        str(output_dir / "run_002"),
+        str(output_dir / "run_003"),
+    ]
+
+
+def test_paper_calibration_aggregate_cli_produces_summary(tmp_path) -> None:
+    runner = CliRunner()
+    input_root = tmp_path / "aggregate_inputs"
+    output_dir = tmp_path / "aggregate_outputs"
+
+    run_dir = input_root / "paper_calibration_live_2026-04-16" / "run_001"
+    run_dir.mkdir(parents=True, exist_ok=True)
+    pd.DataFrame(
+        [
+            {
+                "ticker": "SPY",
+                "captured_at_utc": "2026-04-16T14:30:00+00:00",
+                "latest_trade_price": 500.0,
+                "latest_trade_at_utc": "2026-04-16T14:29:59+00:00",
+                "bid_price": 499.95,
+                "ask_price": 500.05,
+                "mid_price": 500.0,
+                "spread_bps": 2.0,
+                "reference_price": 500.0,
+                "reference_price_source": "mid_price",
+            }
+        ]
+    ).to_csv(run_dir / "pretrade_reference_snapshot.csv", index=False)
+    pd.DataFrame(
+        [
+            {
+                "sample_id": "run_001",
+                "ticker": "SPY",
+                "direction": "buy",
+                "requested_qty": 1.0,
+                "filled_qty": 1.0,
+                "avg_fill_price": 500.05,
+                "reference_price": 500.0,
+                "estimated_price": 500.0,
+                "requested_notional": 500.0,
+                "filled_notional": 500.05,
+                "fill_ratio": 1.0,
+                "status": "filled",
+                "reject_reason": "",
+                "broker_order_id": "order-1",
+                "submitted_at_utc": "2026-04-16T14:30:04+00:00",
+                "terminal_at_utc": "2026-04-16T14:30:04+00:00",
+                "latency_seconds": 0.0,
+                "poll_count": 1,
+                "timeout_cancelled": False,
+                "cancel_requested": False,
+                "cancel_acknowledged": False,
+                "avg_fill_price_fallback_used": False,
+                "status_history": "[]",
+            }
+        ]
+    ).to_csv(run_dir / "alpaca_fill_orders.csv", index=False)
+
+    result = runner.invoke(
+        app,
+        [
+            "paper-calibration-aggregate",
+            "--input-root",
+            str(input_root),
+            "--output-dir",
+            str(output_dir),
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert (output_dir / "drift_observations.csv").exists()
+    assert (output_dir / "drift_summary.md").exists()
+
+
 def test_replay_cli_produces_suite_outputs(project_root, replay_manifest_path, tmp_path) -> None:
     runner = CliRunner()
     output_dir = tmp_path / "replay_demo"

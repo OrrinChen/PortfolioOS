@@ -84,3 +84,10 @@ The goal is to observe whether:
 - partial fills/rejections remain rare
 - reference-to-fill drift remains small and stable under repeated live runs
 - simulator assumptions remain directionally reasonable under repeated live runs
+
+Implementation support for that next step now exists:
+
+- repeated runner:
+  - `python -m portfolio_os.api.cli paper-calibration --ticker SPY --quantity 1 --submit-paper --output-dir C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_live_batch --repeat 8 --interval-seconds 1800`
+- offline aggregation:
+  - `python -m portfolio_os.api.cli paper-calibration-aggregate --input-root C:\Users\14574\Quant\PortfolioOS\outputs --output-dir C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_drift_aggregate`

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 from pathlib import Path
+import time
 
 import pandas as pd
 import typer
@@ -87,6 +88,7 @@ from portfolio_os.workflow.paper_calibration import (
     run_paper_calibration_dry_run,
     run_paper_calibration_paper,
 )
+from portfolio_os.workflow.paper_calibration_aggregate import run_paper_calibration_aggregate
 from portfolio_os.workflow.single_run import run_single_rebalance
 
 app = typer.Typer(add_completion=False, help="PortfolioOS compliance-aware rebalance CLI.")
@@ -214,6 +216,8 @@ def paper_calibration(
     gross_target_weight: float = typer.Option(1.0, help="Target weight used for dry-run target generation."),
     perturbation_bps: float = typer.Option(0.0, help="Optional tiny deterministic perturbation for target generation."),
     perturbation_seed: int | None = typer.Option(None),
+    repeat: int = typer.Option(1, min=1, help="Repeat the same paper-calibration run N times."),
+    interval_seconds: float = typer.Option(0.0, min=0.0, help="Sleep between repeated runs."),
     submit_paper: bool = typer.Option(
         False,
         help="If set, submit the neutral order through the Alpaca paper adapter. Defaults to dry-run only.",
@@ -224,27 +228,49 @@ def paper_calibration(
     logger = configure_logging()
     expected_assumptions = {"participation_limit": 0.05, "slippage_model": "baseline"}
     try:
-        if submit_paper:
-            result = run_paper_calibration_paper(
-                output_dir=output_dir,
-                tickers=[ticker],
-                quantity=quantity,
-                expected_assumptions=expected_assumptions,
-                adapter=AlpacaAdapter(),
-            )
-        else:
-            result = run_paper_calibration_dry_run(
-                output_dir=output_dir,
-                tickers=[ticker],
-                gross_target_weight=gross_target_weight,
-                perturbation_bps=perturbation_bps,
-                perturbation_seed=perturbation_seed,
-                expected_assumptions=expected_assumptions,
-            )
-        typer.echo(f"target.csv: {result.target_path}")
-        typer.echo(f"paper_calibration_manifest.json: {result.manifest_path}")
-        typer.echo(f"paper_calibration_payload.json: {result.payload_path}")
-        typer.echo(f"paper_calibration_report.md: {result.report_path}")
+        for run_index in range(1, int(repeat) + 1):
+            run_output_dir = output_dir if int(repeat) == 1 else output_dir / f"run_{run_index:03d}"
+            if submit_paper:
+                result = run_paper_calibration_paper(
+                    output_dir=run_output_dir,
+                    tickers=[ticker],
+                    quantity=quantity,
+                    expected_assumptions=expected_assumptions,
+                    adapter=AlpacaAdapter(),
+                )
+            else:
+                result = run_paper_calibration_dry_run(
+                    output_dir=run_output_dir,
+                    tickers=[ticker],
+                    gross_target_weight=gross_target_weight,
+                    perturbation_bps=perturbation_bps,
+                    perturbation_seed=perturbation_seed,
+                    expected_assumptions=expected_assumptions,
+                )
+            prefix = "" if int(repeat) == 1 else f"run_{run_index:03d} "
+            typer.echo(f"{prefix}target.csv: {result.target_path}")
+            typer.echo(f"{prefix}paper_calibration_manifest.json: {result.manifest_path}")
+            typer.echo(f"{prefix}paper_calibration_payload.json: {result.payload_path}")
+            typer.echo(f"{prefix}paper_calibration_report.md: {result.report_path}")
+            if run_index < int(repeat) and float(interval_seconds) > 0.0:
+                time.sleep(float(interval_seconds))
+    except PortfolioOSError as exc:
+        logger.error("%s", exc)
+        raise typer.Exit(code=1) from exc
+
+
+@app.command("paper-calibration-aggregate")
+def paper_calibration_aggregate(
+    input_root: Path = typer.Option(..., exists=True, file_okay=False, dir_okay=True),
+    output_dir: Path = typer.Option(...),
+) -> None:
+    """Aggregate repeated paper-calibration artifacts into drift observations and a summary note."""
+
+    logger = configure_logging()
+    try:
+        result = run_paper_calibration_aggregate(input_root=input_root, output_dir=output_dir)
+        typer.echo(f"drift_observations.csv: {result.observations_path}")
+        typer.echo(f"drift_summary.md: {result.summary_path}")
     except PortfolioOSError as exc:
         logger.error("%s", exc)
         raise typer.Exit(code=1) from exc

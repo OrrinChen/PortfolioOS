@@ -70,6 +70,16 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - important scope rule:
     - treat this as platform calibration, not alpha validation
     - current sample is still tiny and not yet a stress / slippage distribution sample
+  - repeated-sampling tooling now exists:
+    - `paper-calibration --repeat N --interval-seconds X`
+    - `paper-calibration-aggregate --input-root ... --output-dir ...`
+  - current recommended next step on this lane:
+    - collect a small repeated `SPY x 1 share` tranche (`~30-50` runs)
+    - aggregate drift, half-spread scaling, latency slope, and time-of-day buckets
+    - then decide whether the result is:
+      - systematic staleness bias
+      - microstructure noise floor
+      - or paper-venue-specific quirk
 - Low-participation TCA closure is done:
   - `overlay_readiness = sufficient`
   - `candidate_k = 3.498400399110418`
