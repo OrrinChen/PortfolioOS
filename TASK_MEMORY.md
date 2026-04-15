@@ -53,6 +53,17 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - BOM-tolerant JSON handling is required for some calibration and broker-state artifacts.
 - The constrained fill batch generator already supports broker positions, buying-power limits, and audit manifests.
 - Current account scale only supports realistic participation around `0-0.1%` on the frozen 50-name US universe.
+- Paper calibration sprint is now live as a platform-validation lane:
+  - dry-run contract path is implemented via `portfolio_os.api.cli paper-calibration`
+  - first neutral Alpaca paper run completed on `2026-04-15`
+  - canonical live calibration read is:
+    - `C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_live_2026-04-15_v2`
+    - `fill_rate = 100%`, `partial_count = 0`, `rejected_count = 0`
+    - `requested_notional = 696.95`
+    - `reconciliation matched_count = 12`, `mismatched_count = 0`
+  - important scope rule:
+    - treat this as platform calibration, not alpha validation
+    - current sample is still tiny and not yet a stress / slippage distribution sample
 - Low-participation TCA closure is done:
   - `overlay_readiness = sufficient`
   - `candidate_k = 3.498400399110418`
@@ -292,6 +303,8 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - `docs/platform_ml_rl_roadmap.md`
   - `docs/phase_1_alpha_closeout_note.md`
   - `docs/phase_1_5_alpha_decision_note.md`
+  - `docs/paper_calibration_runbook.md`
+  - `docs/paper_calibration_live_2026_04_15.md`
 - Core alpha implementation:
   - `src/portfolio_os/alpha/`
 - Alpha CLIs:
