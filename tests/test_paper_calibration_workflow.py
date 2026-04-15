@@ -14,6 +14,7 @@ class _FakePaperAdapter:
 
     def submit_orders_with_telemetry(self, orders_df: pd.DataFrame) -> ExecutionResult:
         _ = orders_df
+        self._submitted = True
         return ExecutionResult(
             orders=[
                 OrderExecutionRecord(
@@ -38,8 +39,29 @@ class _FakePaperAdapter:
         return {"account_number": "paper-demo", "cash": "100000.00"}
 
     def query_positions(self) -> pd.DataFrame:
+        if not hasattr(self, "_submitted"):
+            return pd.DataFrame(
+                [
+                    {
+                        "ticker": "AAPL",
+                        "quantity": 2.0,
+                        "market_value": 400.0,
+                        "avg_entry_price": 190.0,
+                        "current_price": 200.0,
+                        "unrealized_pnl": 20.0,
+                    }
+                ]
+            )
         return pd.DataFrame(
             [
+                {
+                    "ticker": "AAPL",
+                    "quantity": 2.0,
+                    "market_value": 400.0,
+                    "avg_entry_price": 190.0,
+                    "current_price": 200.0,
+                    "unrealized_pnl": 20.0,
+                },
                 {
                     "ticker": "SPY",
                     "quantity": 3.0,
@@ -47,29 +69,30 @@ class _FakePaperAdapter:
                     "avg_entry_price": 500.0,
                     "current_price": 500.0,
                     "unrealized_pnl": 0.0,
-                }
+                },
             ]
         )
 
     def reconcile(self, expected_positions: pd.DataFrame):
         from portfolio_os.execution.models import ReconciliationDetail, ReconciliationReport
 
-        _ = expected_positions
+        expected = expected_positions.sort_values("ticker").reset_index(drop=True)
         return ReconciliationReport(
-            matched_count=1,
+            matched_count=len(expected),
             mismatched_count=0,
             missing_in_broker=[],
             missing_in_system=[],
             details=[
                 ReconciliationDetail(
-                    ticker="SPY",
-                    expected_quantity=3.0,
-                    actual_quantity=3.0,
+                    ticker=str(row["ticker"]),
+                    expected_quantity=float(row["expected_quantity"]),
+                    actual_quantity=float(row["expected_quantity"]),
                     quantity_diff=0.0,
-                    expected_value=1500.0,
-                    actual_value=1500.0,
+                    expected_value=float(row["expected_value"]),
+                    actual_value=float(row["expected_value"]),
                     value_diff=0.0,
                 )
+                for row in expected.to_dict(orient="records")
             ],
         )
 
@@ -115,3 +138,10 @@ def test_paper_calibration_paper_writes_realized_payload_and_report(tmp_path: Pa
 
     payload = pd.read_json(result.payload_path, typ="series")
     assert payload["strategy_name"] == "neutral_buy_and_hold"
+
+    fill_manifest = pd.read_json(result.fill_manifest_path, typ="series")
+    assert float(fill_manifest["total_requested_notional"]) > 0.0
+
+    reconciliation = pd.read_json(result.reconciliation_report_path, typ="series")
+    assert reconciliation["mismatched_count"] == 0
+    assert reconciliation["missing_in_system"] == []

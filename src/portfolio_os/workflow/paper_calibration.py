@@ -43,12 +43,50 @@ class PaperCalibrationPaperResult:
 
 
 def _requested_orders_frame(order_frame: pd.DataFrame, *, sample_id: str) -> pd.DataFrame:
+    return _requested_orders_frame_with_prices(order_frame, sample_id=sample_id, price_lookup={})
+
+
+def _price_lookup(
+    *,
+    tickers: list[str],
+    positions_before: pd.DataFrame,
+    positions_after: pd.DataFrame,
+    execution_result: ExecutionResult,
+) -> dict[str, float]:
+    lookup: dict[str, float] = {}
+    for frame in (positions_before, positions_after):
+        if frame is None or frame.empty:
+            continue
+        work = frame.copy()
+        if "ticker" not in work.columns:
+            continue
+        work["ticker"] = work["ticker"].astype(str).str.strip().str.upper()
+        current_price = pd.to_numeric(work.get("current_price"), errors="coerce")
+        for ticker, price in zip(work["ticker"], current_price):
+            if pd.notna(price) and ticker not in lookup:
+                lookup[str(ticker)] = float(price)
+    for order in execution_result.orders:
+        ticker = str(order.ticker).strip().upper()
+        if ticker not in lookup and order.avg_fill_price is not None:
+            lookup[ticker] = float(order.avg_fill_price)
+    return {ticker: lookup[ticker] for ticker in tickers if ticker in lookup}
+
+
+def _requested_orders_frame_with_prices(
+    order_frame: pd.DataFrame,
+    *,
+    sample_id: str,
+    price_lookup: dict[str, float],
+) -> pd.DataFrame:
     requested = order_frame.copy()
     requested["sample_id"] = sample_id
+    requested["ticker"] = requested["ticker"].astype(str).str.strip().str.upper()
     requested["requested_qty"] = pd.to_numeric(requested["quantity"], errors="coerce").fillna(0.0)
-    requested["reference_price"] = pd.NA
-    requested["estimated_price"] = pd.NA
-    requested["requested_notional"] = pd.NA
+    requested["reference_price"] = requested["ticker"].map(price_lookup)
+    requested["estimated_price"] = requested["ticker"].map(price_lookup)
+    requested["requested_notional"] = requested["requested_qty"] * pd.to_numeric(
+        requested["estimated_price"], errors="coerce"
+    )
     return requested[
         [
             "sample_id",
@@ -63,8 +101,23 @@ def _requested_orders_frame(order_frame: pd.DataFrame, *, sample_id: str) -> pd.
 
 
 def _filled_order_rows(execution_result: ExecutionResult, *, sample_id: str) -> list[dict[str, Any]]:
+    return _filled_order_rows_with_prices(execution_result, sample_id=sample_id, price_lookup={})
+
+
+def _filled_order_rows_with_prices(
+    execution_result: ExecutionResult,
+    *,
+    sample_id: str,
+    price_lookup: dict[str, float],
+) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for order in execution_result.orders:
+        reference_price = price_lookup.get(str(order.ticker).strip().upper())
+        submitted_ts = pd.Timestamp(order.submitted_at_utc) if order.submitted_at_utc else None
+        terminal_ts = pd.Timestamp(order.terminal_at_utc) if order.terminal_at_utc else None
+        latency_seconds = None
+        if submitted_ts is not None and terminal_ts is not None:
+            latency_seconds = float((terminal_ts - submitted_ts).total_seconds())
         filled_notional = (
             float(order.filled_qty) * float(order.avg_fill_price)
             if order.avg_fill_price is not None
@@ -79,9 +132,11 @@ def _filled_order_rows(execution_result: ExecutionResult, *, sample_id: str) -> 
                 "requested_qty": float(order.requested_qty),
                 "filled_qty": float(order.filled_qty),
                 "avg_fill_price": order.avg_fill_price,
-                "reference_price": None,
-                "estimated_price": None,
-                "requested_notional": None,
+                "reference_price": reference_price,
+                "estimated_price": reference_price,
+                "requested_notional": (
+                    float(order.requested_qty) * float(reference_price) if reference_price is not None else None
+                ),
                 "filled_notional": filled_notional,
                 "fill_ratio": fill_ratio,
                 "status": order.status,
@@ -89,7 +144,7 @@ def _filled_order_rows(execution_result: ExecutionResult, *, sample_id: str) -> 
                 "broker_order_id": order.broker_order_id or order.order_id,
                 "submitted_at_utc": order.submitted_at_utc,
                 "terminal_at_utc": order.terminal_at_utc,
-                "latency_seconds": None,
+                "latency_seconds": latency_seconds,
                 "poll_count": int(order.poll_count),
                 "timeout_cancelled": bool(order.timeout_cancelled),
                 "cancel_requested": bool(order.cancel_requested),
@@ -99,6 +154,66 @@ def _filled_order_rows(execution_result: ExecutionResult, *, sample_id: str) -> 
             }
         )
     return rows
+
+
+def _expected_positions_frame(
+    *,
+    positions_before: pd.DataFrame,
+    positions_after: pd.DataFrame,
+    execution_result: ExecutionResult,
+) -> pd.DataFrame:
+    before = positions_before.copy()
+    after = positions_after.copy()
+    if before.empty:
+        before = pd.DataFrame(columns=["ticker", "quantity", "current_price", "market_value"])
+    if after.empty:
+        after = pd.DataFrame(columns=["ticker", "quantity", "current_price", "market_value"])
+
+    for frame in (before, after):
+        if "ticker" not in frame.columns:
+            frame["ticker"] = pd.Series(dtype=str)
+        frame["ticker"] = frame["ticker"].astype(str).str.strip().str.upper()
+        frame["quantity"] = pd.to_numeric(frame.get("quantity"), errors="coerce").fillna(0.0)
+        frame["current_price"] = pd.to_numeric(frame.get("current_price"), errors="coerce")
+        frame["market_value"] = pd.to_numeric(frame.get("market_value"), errors="coerce")
+
+    deltas: dict[str, float] = {}
+    fill_price_lookup: dict[str, float] = {}
+    for order in execution_result.orders:
+        ticker = str(order.ticker).strip().upper()
+        signed_qty = float(order.filled_qty) if str(order.direction).strip().lower() == "buy" else -float(order.filled_qty)
+        deltas[ticker] = deltas.get(ticker, 0.0) + signed_qty
+        if order.avg_fill_price is not None:
+            fill_price_lookup[ticker] = float(order.avg_fill_price)
+
+    before_qty = {row["ticker"]: float(row["quantity"]) for row in before.to_dict(orient="records")}
+    before_price = {
+        row["ticker"]: float(row["current_price"])
+        for row in before.to_dict(orient="records")
+        if pd.notna(row.get("current_price"))
+    }
+    after_price = {
+        row["ticker"]: float(row["current_price"])
+        for row in after.to_dict(orient="records")
+        if pd.notna(row.get("current_price"))
+    }
+
+    tickers = sorted(set(before_qty) | set(deltas))
+    rows: list[dict[str, Any]] = []
+    for ticker in tickers:
+        expected_quantity = before_qty.get(ticker, 0.0) + deltas.get(ticker, 0.0)
+        if abs(expected_quantity) < 1e-9:
+            continue
+        current_price = after_price.get(ticker, before_price.get(ticker, fill_price_lookup.get(ticker)))
+        expected_value = float(expected_quantity * current_price) if current_price is not None else None
+        rows.append(
+            {
+                "ticker": ticker,
+                "expected_quantity": float(expected_quantity),
+                "expected_value": expected_value,
+            }
+        )
+    return pd.DataFrame(rows, columns=["ticker", "expected_quantity", "expected_value"])
 
 
 def run_paper_calibration_dry_run(
@@ -180,13 +295,25 @@ def run_paper_calibration_paper(
     execution_result: ExecutionResult = adapter.submit_orders_with_telemetry(order_frame)
     account_after = adapter.query_account()
     positions_after = adapter.query_positions()
-    expected_positions = order_frame.rename(columns={"quantity": "expected_quantity"})[
-        ["ticker", "expected_quantity"]
-    ].copy()
+    price_lookup = _price_lookup(
+        tickers=[str(ticker).strip().upper() for ticker in order_frame["ticker"].tolist()],
+        positions_before=positions_before,
+        positions_after=positions_after,
+        execution_result=execution_result,
+    )
+    expected_positions = _expected_positions_frame(
+        positions_before=positions_before,
+        positions_after=positions_after,
+        execution_result=execution_result,
+    )
     reconciliation_report = adapter.reconcile(expected_positions)
 
-    requested_frame = _requested_orders_frame(order_frame, sample_id=artifacts.run_id)
-    filled_rows = _filled_order_rows(execution_result, sample_id=artifacts.run_id)
+    requested_frame = _requested_orders_frame_with_prices(order_frame, sample_id=artifacts.run_id, price_lookup=price_lookup)
+    filled_rows = _filled_order_rows_with_prices(
+        execution_result,
+        sample_id=artifacts.run_id,
+        price_lookup=price_lookup,
+    )
     filled_frame = fill_collection.build_fill_orders_frame(filled_rows)
     event_frame = fill_collection.build_fill_events_frame(filled_rows)
     latency_values = [
