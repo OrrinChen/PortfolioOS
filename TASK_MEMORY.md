@@ -57,9 +57,15 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - dry-run contract path is implemented via `portfolio_os.api.cli paper-calibration`
   - first neutral Alpaca paper run completed on `2026-04-15`
   - canonical live calibration read is:
-    - `C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_live_2026-04-15_v2`
+    - `C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_live_2026-04-15_v3`
     - `fill_rate = 100%`, `partial_count = 0`, `rejected_count = 0`
-    - `requested_notional = 696.95`
+    - dedicated pre-trade reference snapshot is now captured:
+      - `captured_ticker_count = 1`
+      - `fallback_reference_count = 0`
+      - `quoted_mid_price = 697.33`
+      - `quoted_spread_bps = 0.86`
+    - `requested_notional = 697.33`
+    - `filled_notional = 697.36`
     - `reconciliation matched_count = 12`, `mismatched_count = 0`
   - important scope rule:
     - treat this as platform calibration, not alpha validation

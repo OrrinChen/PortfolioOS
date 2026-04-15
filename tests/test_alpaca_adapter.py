@@ -195,6 +195,49 @@ class _MarketOrderRequest:
             setattr(self, key, value)
 
 
+class _LatestTradeRequest:
+    def __init__(self, **kwargs) -> None:
+        self.symbol_or_symbols = kwargs.get("symbol_or_symbols")
+
+
+class _LatestQuoteRequest:
+    def __init__(self, **kwargs) -> None:
+        self.symbol_or_symbols = kwargs.get("symbol_or_symbols")
+
+
+class _FakeStockDataClient:
+    def __init__(self, *args, **kwargs) -> None:
+        _ = args
+        _ = kwargs
+
+    def get_stock_latest_trade(self, request_params):
+        symbols = request_params.symbol_or_symbols
+        if isinstance(symbols, str):
+            symbols = [symbols]
+        return {
+            str(symbol).strip().upper(): SimpleNamespace(
+                symbol=str(symbol).strip().upper(),
+                timestamp="2026-04-15T14:29:59+00:00",
+                price=500.10,
+            )
+            for symbol in symbols
+        }
+
+    def get_stock_latest_quote(self, request_params):
+        symbols = request_params.symbol_or_symbols
+        if isinstance(symbols, str):
+            symbols = [symbols]
+        return {
+            str(symbol).strip().upper(): SimpleNamespace(
+                symbol=str(symbol).strip().upper(),
+                timestamp="2026-04-15T14:30:00+00:00",
+                bid_price=500.00,
+                ask_price=500.20,
+            )
+            for symbol in symbols
+        }
+
+
 def _build_adapter(monkeypatch):
     monkeypatch.setenv("ALPACA_API_KEY", "demo_key")
     monkeypatch.setenv("ALPACA_SECRET_KEY", "demo_secret")
@@ -207,6 +250,24 @@ def _build_adapter(monkeypatch):
         "MarketOrderRequest": _MarketOrderRequest,
     }
     return adapter
+
+
+def test_alpaca_adapter_query_reference_prices_uses_latest_trade_and_quote(monkeypatch) -> None:
+    adapter = _build_adapter(monkeypatch)
+    adapter._alpaca_data_classes = {
+        "StockHistoricalDataClient": _FakeStockDataClient,
+        "StockLatestTradeRequest": _LatestTradeRequest,
+        "StockLatestQuoteRequest": _LatestQuoteRequest,
+    }
+
+    frame = adapter.query_reference_prices([" spy "])
+
+    assert frame["ticker"].tolist() == ["SPY"]
+    assert float(frame.loc[0, "latest_trade_price"]) == pytest.approx(500.10)
+    assert float(frame.loc[0, "mid_price"]) == pytest.approx(500.10)
+    assert float(frame.loc[0, "reference_price"]) == pytest.approx(500.10)
+    assert float(frame.loc[0, "spread_bps"]) == pytest.approx((0.20 / 500.10) * 10000.0)
+    assert frame.loc[0, "reference_price_source"] == "mid_price"
 
 
 def test_alpaca_adapter_submit_orders_and_reconcile(monkeypatch) -> None:

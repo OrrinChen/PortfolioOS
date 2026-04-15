@@ -40,10 +40,88 @@ class PaperCalibrationPaperResult:
     fill_manifest_path: str
     fill_orders_path: str
     reconciliation_report_path: str
+    reference_snapshot_path: str
 
 
 def _requested_orders_frame(order_frame: pd.DataFrame, *, sample_id: str) -> pd.DataFrame:
     return _requested_orders_frame_with_prices(order_frame, sample_id=sample_id, price_lookup={})
+
+
+def _empty_reference_snapshot_frame() -> pd.DataFrame:
+    return pd.DataFrame(
+        columns=[
+            "ticker",
+            "captured_at_utc",
+            "latest_trade_price",
+            "latest_trade_at_utc",
+            "bid_price",
+            "ask_price",
+            "mid_price",
+            "spread_bps",
+            "reference_price",
+            "reference_price_source",
+        ]
+    )
+
+
+def _query_reference_snapshot(*, adapter: Any, tickers: list[str]) -> pd.DataFrame:
+    query_method = getattr(adapter, "query_reference_prices", None)
+    if not callable(query_method):
+        return _empty_reference_snapshot_frame()
+    snapshot = query_method(tickers)
+    if snapshot is None or snapshot.empty:
+        return _empty_reference_snapshot_frame()
+    work = snapshot.copy()
+    for column in _empty_reference_snapshot_frame().columns:
+        if column not in work.columns:
+            work[column] = pd.NA
+    work["ticker"] = work["ticker"].astype(str).str.strip().str.upper()
+    for column in [
+        "latest_trade_price",
+        "bid_price",
+        "ask_price",
+        "mid_price",
+        "spread_bps",
+        "reference_price",
+    ]:
+        work[column] = pd.to_numeric(work[column], errors="coerce")
+    work["captured_at_utc"] = work["captured_at_utc"].astype(str)
+    work["latest_trade_at_utc"] = work["latest_trade_at_utc"].astype(str)
+    work["reference_price_source"] = work["reference_price_source"].astype(str)
+    return work[_empty_reference_snapshot_frame().columns].drop_duplicates(subset=["ticker"], keep="last").reset_index(drop=True)
+
+
+def _reference_snapshot_summary(
+    *,
+    reference_snapshot: pd.DataFrame,
+    requested_frame: pd.DataFrame,
+) -> dict[str, Any]:
+    captured_ticker_count = int(len(reference_snapshot))
+    with_reference_price_count = (
+        int(pd.to_numeric(reference_snapshot.get("reference_price"), errors="coerce").notna().sum())
+        if not reference_snapshot.empty
+        else 0
+    )
+    with_mid_price_count = (
+        int(pd.to_numeric(reference_snapshot.get("mid_price"), errors="coerce").notna().sum())
+        if not reference_snapshot.empty
+        else 0
+    )
+    fallback_reference_count = 0
+    if not requested_frame.empty:
+        fallback_reference_count = int(
+            (
+                requested_frame.get("reference_price_source", pd.Series(dtype=object))
+                .astype(str)
+                .str.contains("fallback", case=False, na=False)
+            ).sum()
+        )
+    return {
+        "captured_ticker_count": captured_ticker_count,
+        "with_reference_price_count": with_reference_price_count,
+        "with_mid_price_count": with_mid_price_count,
+        "fallback_reference_count": fallback_reference_count,
+    }
 
 
 def _price_lookup(
@@ -77,6 +155,7 @@ def _requested_orders_frame_with_prices(
     *,
     sample_id: str,
     price_lookup: dict[str, float],
+    price_source_lookup: dict[str, str] | None = None,
 ) -> pd.DataFrame:
     requested = order_frame.copy()
     requested["sample_id"] = sample_id
@@ -84,6 +163,7 @@ def _requested_orders_frame_with_prices(
     requested["requested_qty"] = pd.to_numeric(requested["quantity"], errors="coerce").fillna(0.0)
     requested["reference_price"] = requested["ticker"].map(price_lookup)
     requested["estimated_price"] = requested["ticker"].map(price_lookup)
+    requested["reference_price_source"] = requested["ticker"].map(price_source_lookup or {})
     requested["requested_notional"] = requested["requested_qty"] * pd.to_numeric(
         requested["estimated_price"], errors="coerce"
     )
@@ -94,8 +174,9 @@ def _requested_orders_frame_with_prices(
             "direction",
             "requested_qty",
             "reference_price",
-            "estimated_price",
-            "requested_notional",
+                "estimated_price",
+                "reference_price_source",
+                "requested_notional",
         ]
     ].copy()
 
@@ -292,15 +373,34 @@ def run_paper_calibration_paper(
     adapter.connect()
     account_before = adapter.query_account()
     positions_before = adapter.query_positions()
+    reference_snapshot = _query_reference_snapshot(
+        adapter=adapter,
+        tickers=[str(ticker).strip().upper() for ticker in order_frame["ticker"].tolist()],
+    )
     execution_result: ExecutionResult = adapter.submit_orders_with_telemetry(order_frame)
     account_after = adapter.query_account()
     positions_after = adapter.query_positions()
-    price_lookup = _price_lookup(
+    fallback_price_lookup = _price_lookup(
         tickers=[str(ticker).strip().upper() for ticker in order_frame["ticker"].tolist()],
         positions_before=positions_before,
         positions_after=positions_after,
         execution_result=execution_result,
     )
+    price_lookup = dict(fallback_price_lookup)
+    price_source_lookup = {ticker: "fallback_post_trade_or_position" for ticker in fallback_price_lookup}
+    if not reference_snapshot.empty:
+        dedicated_lookup = {
+            str(row["ticker"]).strip().upper(): float(row["reference_price"])
+            for row in reference_snapshot.to_dict(orient="records")
+            if pd.notna(row.get("reference_price"))
+        }
+        dedicated_source_lookup = {
+            str(row["ticker"]).strip().upper(): str(row.get("reference_price_source") or "dedicated_snapshot")
+            for row in reference_snapshot.to_dict(orient="records")
+            if pd.notna(row.get("reference_price"))
+        }
+        price_lookup.update(dedicated_lookup)
+        price_source_lookup.update(dedicated_source_lookup)
     expected_positions = _expected_positions_frame(
         positions_before=positions_before,
         positions_after=positions_after,
@@ -308,7 +408,12 @@ def run_paper_calibration_paper(
     )
     reconciliation_report = adapter.reconcile(expected_positions)
 
-    requested_frame = _requested_orders_frame_with_prices(order_frame, sample_id=artifacts.run_id, price_lookup=price_lookup)
+    requested_frame = _requested_orders_frame_with_prices(
+        order_frame,
+        sample_id=artifacts.run_id,
+        price_lookup=price_lookup,
+        price_source_lookup=price_source_lookup,
+    )
     filled_rows = _filled_order_rows_with_prices(
         execution_result,
         sample_id=artifacts.run_id,
@@ -339,10 +444,15 @@ def run_paper_calibration_paper(
         target_manifest={**manifest, "mode": "paper", "order_count": int(len(order_frame))},
         execution_result=execution_result,
         expected_assumptions=expected_assumptions,
+        reference_snapshot_summary=_reference_snapshot_summary(
+            reference_snapshot=reference_snapshot,
+            requested_frame=requested_frame,
+        ),
     )
 
     Path(artifacts.target_path).parent.mkdir(parents=True, exist_ok=True)
     target_frame.to_csv(artifacts.target_path, index=False)
+    reference_snapshot.to_csv(artifacts.reference_snapshot_path, index=False)
     write_json(artifacts.manifest_path, {**manifest, "mode": "paper", "order_count": int(len(order_frame))})
     write_json(artifacts.payload_path, payload)
     report_markdown = render_paper_calibration_report_markdown(payload)
@@ -370,4 +480,5 @@ def run_paper_calibration_paper(
         fill_manifest_path=str(fill_artifacts["alpaca_fill_manifest"]),
         fill_orders_path=str(fill_artifacts["alpaca_fill_orders"]),
         reconciliation_report_path=str(fill_artifacts["reconciliation_report"]),
+        reference_snapshot_path=artifacts.reference_snapshot_path,
     )

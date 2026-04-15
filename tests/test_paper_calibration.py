@@ -37,12 +37,19 @@ class PaperCalibrationReportTests(unittest.TestCase):
             target_manifest={"selected_tickers": ["SPY"], "selected_count": 1},
             execution_result=self._result(),
             expected_assumptions={"participation_limit": 0.05, "slippage_model": "baseline"},
+            reference_snapshot_summary={
+                "captured_ticker_count": 1,
+                "with_reference_price_count": 1,
+                "with_mid_price_count": 1,
+                "fallback_reference_count": 0,
+            },
         )
 
         self.assertEqual(payload["strategy_name"], "neutral_buy_and_hold")
         self.assertIn("realized_summary", payload)
         self.assertIn("expected_assumptions", payload)
         self.assertIn("deviation_summary", payload)
+        self.assertIn("reference_snapshot_summary", payload)
 
     def test_render_report_mentions_fill_rate_and_slippage(self) -> None:
         payload = build_paper_calibration_payload(
@@ -50,12 +57,19 @@ class PaperCalibrationReportTests(unittest.TestCase):
             target_manifest={"selected_tickers": ["SPY"], "selected_count": 1},
             execution_result=self._result(),
             expected_assumptions={"participation_limit": 0.05, "slippage_model": "baseline"},
+            reference_snapshot_summary={
+                "captured_ticker_count": 1,
+                "with_reference_price_count": 1,
+                "with_mid_price_count": 1,
+                "fallback_reference_count": 0,
+            },
         )
 
         report = render_paper_calibration_report_markdown(payload)
         self.assertIn("fill rate", report.lower())
         self.assertIn("slippage", report.lower())
         self.assertIn("neutral_buy_and_hold", report)
+        self.assertIn("reference snapshot", report.lower())
 
 
 if __name__ == "__main__":

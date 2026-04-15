@@ -13,6 +13,7 @@ def build_paper_calibration_payload(
     target_manifest: dict[str, Any],
     execution_result: ExecutionResult,
     expected_assumptions: dict[str, Any],
+    reference_snapshot_summary: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build a compact simulator-vs-paper calibration payload."""
 
@@ -31,6 +32,7 @@ def build_paper_calibration_payload(
         "strategy_name": str(strategy_name),
         "target_manifest": target_manifest,
         "expected_assumptions": expected_assumptions,
+        "reference_snapshot_summary": dict(reference_snapshot_summary or {}),
         "realized_summary": {
             "submitted_count": submitted_count,
             "filled_count": int(execution_result.filled_count),
@@ -55,6 +57,7 @@ def render_paper_calibration_report_markdown(payload: dict[str, Any]) -> str:
     """Render a Markdown calibration report."""
 
     realized = payload["realized_summary"]
+    reference_summary = payload.get("reference_snapshot_summary", {})
     return "\n".join(
         [
             "# Paper Calibration Report",
@@ -62,6 +65,12 @@ def render_paper_calibration_report_markdown(payload: dict[str, Any]) -> str:
             "## Strategy",
             f"- Name: {payload['strategy_name']}",
             f"- Selected tickers: {payload['target_manifest'].get('selected_tickers', [])}",
+            "",
+            "## Reference Snapshot",
+            f"- Captured ticker count: {reference_summary.get('captured_ticker_count', 0)}",
+            f"- With dedicated reference price: {reference_summary.get('with_reference_price_count', 0)}",
+            f"- With mid-price quote: {reference_summary.get('with_mid_price_count', 0)}",
+            f"- Fallback reference count: {reference_summary.get('fallback_reference_count', 0)}",
             "",
             "## Realized Execution",
             f"- Fill rate: {realized['fill_rate']:.1%}",

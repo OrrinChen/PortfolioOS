@@ -45,6 +45,7 @@ Required environment variables:
 Expected outputs:
 
 - all dry-run artifacts
+- `pretrade_reference_snapshot.csv`
 - `alpaca_fill_manifest.json`
 - `alpaca_fill_orders.csv`
 - `alpaca_fill_events.csv`
@@ -62,13 +63,15 @@ Expected outputs:
 After a paper run, inspect these first:
 
 1. `paper_calibration_report.md`
-2. `alpaca_fill_manifest.json`
-3. `reconciliation_report.json`
-4. `alpaca_fill_orders.csv`
-5. `alpaca_fill_events.csv`
+2. `pretrade_reference_snapshot.csv`
+3. `alpaca_fill_manifest.json`
+4. `reconciliation_report.json`
+5. `alpaca_fill_orders.csv`
+6. `alpaca_fill_events.csv`
 
 The first review questions are:
 
+- Did the run capture a dedicated pre-trade reference snapshot?
 - Did orders submit successfully?
 - Were fills complete, partial, or rejected?
 - Did the broker lifecycle look normal?
@@ -81,6 +84,7 @@ Use the artifacts to answer execution questions, not alpha questions.
 Good uses:
 
 - estimating fill rate realism
+- measuring reference-to-fill drift from a dedicated pre-trade snapshot
 - checking timeout/partial-fill frequency
 - validating order lifecycle assumptions
 - comparing simulator assumptions with real paper outcomes

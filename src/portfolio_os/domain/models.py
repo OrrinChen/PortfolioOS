@@ -268,6 +268,7 @@ class PaperCalibrationArtifacts(BaseModel):
     manifest_path: str
     payload_path: str
     report_path: str
+    reference_snapshot_path: str
     created_at: str
 
 

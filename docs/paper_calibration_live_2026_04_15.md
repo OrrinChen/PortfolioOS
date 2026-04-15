@@ -15,16 +15,19 @@ First neutral Alpaca paper calibration run for the PortfolioOS paper calibration
   - `C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_live_2026-04-15`
 - Corrected rerun after workflow fixes:
   - `C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_live_2026-04-15_v2`
+- Reference-snapshot rerun after dedicated pre-trade capture:
+  - `C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_live_2026-04-15_v3`
 
-Use the `_v2` run as the canonical read.
+Use the `_v3` run as the canonical read.
 
-## Canonical Read (`_v2`)
+## Canonical Read (`_v3`)
 
 From:
 
-- [alpaca_fill_manifest.json](/C:/Users/14574/Quant/PortfolioOS/outputs/paper_calibration_live_2026-04-15_v2/alpaca_fill_manifest.json)
-- [reconciliation_report.json](/C:/Users/14574/Quant/PortfolioOS/outputs/paper_calibration_live_2026-04-15_v2/reconciliation_report.json)
-- [paper_calibration_report.md](/C:/Users/14574/Quant/PortfolioOS/outputs/paper_calibration_live_2026-04-15_v2/paper_calibration_report.md)
+- [pretrade_reference_snapshot.csv](/C:/Users/14574/Quant/PortfolioOS/outputs/paper_calibration_live_2026-04-15_v3/pretrade_reference_snapshot.csv)
+- [alpaca_fill_manifest.json](/C:/Users/14574/Quant/PortfolioOS/outputs/paper_calibration_live_2026-04-15_v3/alpaca_fill_manifest.json)
+- [reconciliation_report.json](/C:/Users/14574/Quant/PortfolioOS/outputs/paper_calibration_live_2026-04-15_v3/reconciliation_report.json)
+- [paper_calibration_report.md](/C:/Users/14574/Quant/PortfolioOS/outputs/paper_calibration_live_2026-04-15_v3/paper_calibration_report.md)
 
 Observed:
 
@@ -34,9 +37,13 @@ Observed:
 - partial fills: `0`
 - rejections: `0`
 - timeout cancels: `0`
-- requested notional: `696.95`
-- filled notional: `696.95`
-- average fill price: `696.95`
+- dedicated reference snapshot: `captured_ticker_count = 1`, `fallback_reference_count = 0`
+- latest trade price: `697.36`
+- quoted mid price: `697.33`
+- quoted spread: `0.86 bps`
+- requested notional: `697.33`
+- filled notional: `697.36`
+- average fill price: `697.36`
 - reconciliation: `matched_count = 12`, `mismatched_count = 0`
 
 ## What This Validated
@@ -51,14 +58,16 @@ Observed:
   - execution result
 - The workflow fix to carry forward existing broker positions into expected post-trade reconciliation worked.
 - Requested notional is no longer silently zero for neutral paper runs.
+- The workflow now captures a dedicated pre-trade market snapshot before order submission.
+- Requested notional now uses the dedicated reference price instead of inferring everything from post-trade position state.
 
 ## Remaining Limitations
 
-- `reference_price` and `estimated_price` are currently inferred from the available position/fill state, not from a dedicated pre-trade market snapshot.
 - Report-level deviation language is still coarse:
   - good enough for platform validation
   - not yet a full simulator-vs-paper slippage attribution pack
 - The run is too small to say anything about partial-fill behavior or stress execution.
+- The current calibration read still uses a single-name trivial basket and only one observation of quoted spread/slippage.
 
 ## Next Useful Step
 
@@ -69,7 +78,9 @@ Run a second neutral paper tranche with slightly broader coverage, still without
 
 The goal is to observe whether:
 
+- dedicated reference snapshots remain complete
 - fill rate stays near `100%`
 - latency remains stable
 - partial fills/rejections remain rare
+- reference-to-fill drift remains small and stable under repeated live runs
 - simulator assumptions remain directionally reasonable under repeated live runs

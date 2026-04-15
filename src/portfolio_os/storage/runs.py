@@ -136,5 +136,6 @@ def prepare_paper_calibration_artifacts(output_dir: str | Path) -> PaperCalibrat
         manifest_path=str(output_path / "paper_calibration_manifest.json"),
         payload_path=str(output_path / "paper_calibration_payload.json"),
         report_path=str(output_path / "paper_calibration_report.md"),
+        reference_snapshot_path=str(output_path / "pretrade_reference_snapshot.csv"),
         created_at=created_at,
     )

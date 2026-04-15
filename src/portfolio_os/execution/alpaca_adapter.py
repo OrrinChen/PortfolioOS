@@ -73,7 +73,9 @@ class AlpacaAdapter(BrokerAdapter):
         self._poll_interval_seconds = max(0.2, float(poll_interval_seconds))
         self._timeout_seconds = max(1.0, float(timeout_seconds))
         self._client = None
+        self._stock_data_client = None
         self._alpaca_classes: dict[str, Any] | None = None
+        self._alpaca_data_classes: dict[str, Any] | None = None
 
     def _load_alpaca_classes(self) -> dict[str, Any]:
         if self._alpaca_classes is not None:
@@ -106,6 +108,32 @@ class AlpacaAdapter(BrokerAdapter):
                 paper=self._paper,
             )
         return self._client
+
+    def _load_alpaca_data_classes(self) -> dict[str, Any]:
+        if self._alpaca_data_classes is not None:
+            return self._alpaca_data_classes
+        try:
+            from alpaca.data.historical import StockHistoricalDataClient  # type: ignore
+            from alpaca.data.requests import StockLatestQuoteRequest, StockLatestTradeRequest  # type: ignore
+        except ImportError as exc:
+            raise ProviderRuntimeError(
+                "alpaca-py market-data classes are required for Alpaca reference snapshots."
+            ) from exc
+        self._alpaca_data_classes = {
+            "StockHistoricalDataClient": StockHistoricalDataClient,
+            "StockLatestTradeRequest": StockLatestTradeRequest,
+            "StockLatestQuoteRequest": StockLatestQuoteRequest,
+        }
+        return self._alpaca_data_classes
+
+    def _stock_data_client_instance(self):
+        if self._stock_data_client is None:
+            classes = self._load_alpaca_data_classes()
+            self._stock_data_client = classes["StockHistoricalDataClient"](
+                api_key=self._api_key,
+                secret_key=self._secret_key,
+            )
+        return self._stock_data_client
 
     def connect(self) -> bool:
         """Validate connectivity by fetching account metadata."""
@@ -455,6 +483,67 @@ class AlpacaAdapter(BrokerAdapter):
                 "unrealized_pnl",
             ],
         )
+
+    def query_reference_prices(self, tickers: list[str]) -> pd.DataFrame:
+        """Query the latest trade/quote snapshot for a ticker list."""
+
+        normalized = sorted({str(item).strip().upper() for item in tickers if str(item).strip()})
+        columns = [
+            "ticker",
+            "captured_at_utc",
+            "latest_trade_price",
+            "latest_trade_at_utc",
+            "bid_price",
+            "ask_price",
+            "mid_price",
+            "spread_bps",
+            "reference_price",
+            "reference_price_source",
+        ]
+        if not normalized:
+            return pd.DataFrame(columns=columns)
+
+        classes = self._load_alpaca_data_classes()
+        stock_client = self._stock_data_client_instance()
+        trade_request = classes["StockLatestTradeRequest"](symbol_or_symbols=normalized)
+        quote_request = classes["StockLatestQuoteRequest"](symbol_or_symbols=normalized)
+        raw_trades = stock_client.get_stock_latest_trade(trade_request) or {}
+        raw_quotes = stock_client.get_stock_latest_quote(quote_request) or {}
+
+        rows: list[dict[str, Any]] = []
+        captured_at_utc = _utc_now_iso()
+        for ticker in normalized:
+            trade = raw_trades.get(ticker)
+            quote = raw_quotes.get(ticker)
+            latest_trade_price = pd.to_numeric(getattr(trade, "price", None), errors="coerce")
+            bid_price = pd.to_numeric(getattr(quote, "bid_price", None), errors="coerce")
+            ask_price = pd.to_numeric(getattr(quote, "ask_price", None), errors="coerce")
+            mid_price = None
+            if pd.notna(bid_price) and pd.notna(ask_price):
+                mid_price = float((float(bid_price) + float(ask_price)) / 2.0)
+            reference_price = mid_price
+            reference_price_source = "mid_price" if reference_price is not None else None
+            if reference_price is None and pd.notna(latest_trade_price):
+                reference_price = float(latest_trade_price)
+                reference_price_source = "latest_trade_price"
+            spread_bps = None
+            if mid_price is not None and mid_price > 0 and pd.notna(bid_price) and pd.notna(ask_price):
+                spread_bps = float((float(ask_price) - float(bid_price)) / mid_price * 10000.0)
+            rows.append(
+                {
+                    "ticker": ticker,
+                    "captured_at_utc": captured_at_utc,
+                    "latest_trade_price": float(latest_trade_price) if pd.notna(latest_trade_price) else None,
+                    "latest_trade_at_utc": _timestamp_to_utc_iso(getattr(trade, "timestamp", None)),
+                    "bid_price": float(bid_price) if pd.notna(bid_price) else None,
+                    "ask_price": float(ask_price) if pd.notna(ask_price) else None,
+                    "mid_price": mid_price,
+                    "spread_bps": spread_bps,
+                    "reference_price": reference_price,
+                    "reference_price_source": reference_price_source,
+                }
+            )
+        return pd.DataFrame(rows, columns=columns)
 
     def query_open_orders(self) -> pd.DataFrame:
         """Query Alpaca open orders and return a normalized DataFrame."""
