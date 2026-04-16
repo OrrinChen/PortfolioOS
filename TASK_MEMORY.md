@@ -352,13 +352,16 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     - the eight-candidate field is frozen with exact formulas, direction, cadence, and PIT assumptions
     - the qualification artifact bundle is frozen so Week 2-3 can run under one report shape
 - Current active branch:
-  - US factor-layer restart has entered Week 2 on Family A under a new platform-native qualification engine:
+  - US factor-layer restart has entered Week 2 under a new platform-native qualification engine:
     - implementation path:
       - `C:\Users\14574\Quant\PortfolioOS\.worktrees\codex-us-alpha-week1-freeze\src\portfolio_os\alpha\qualification.py`
     - first-pass Family A artifacts now exist under:
       - `C:\Users\14574\Quant\PortfolioOS\.worktrees\codex-us-alpha-week1-freeze\outputs\us_alpha_core_restart\A1\2026-04-16\`
       - `C:\Users\14574\Quant\PortfolioOS\.worktrees\codex-us-alpha-week1-freeze\outputs\us_alpha_core_restart\A2\2026-04-16\`
       - `C:\Users\14574\Quant\PortfolioOS\.worktrees\codex-us-alpha-week1-freeze\outputs\us_alpha_core_restart\A3\2026-04-16\`
+    - first-pass Family C artifacts now also exist under:
+      - `C:\Users\14574\Quant\PortfolioOS\.worktrees\codex-us-alpha-week1-freeze\outputs\us_alpha_core_restart\C1\2026-04-16\`
+      - `C:\Users\14574\Quant\PortfolioOS\.worktrees\codex-us-alpha-week1-freeze\outputs\us_alpha_core_restart\C2\2026-04-16\`
   - First-pass read on the checked-in platform-native sample (`50` expanded-US names, not full `rank_500_1500`):
     - `A1`:
       - `oos_mean_rank_ic ~ 0.0078`
@@ -376,14 +379,33 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
       - `oos_alpha_only_tstat ~ -0.05`
       - passes orthogonality and winner-increment reads
       - fails admission and subperiod
+    - `C1`:
+      - `oos_mean_rank_ic ~ 0.1209`
+      - `oos_rank_ic_tstat ~ 1.45`
+      - `oos_alpha_only_tstat ~ 0.58`
+      - `gross_to_net_retention ~ 0.64`
+      - `spread_corr_vs_baseline ~ -0.28`
+      - strongest raw rank-IC read so far, but coverage is too thin (`coverage_median ~ 0.40`) and it still fails admission / subperiod
+    - `C2`:
+      - `oos_mean_rank_ic ~ -0.0784`
+      - `oos_rank_ic_tstat ~ -1.14`
+      - `oos_alpha_only_tstat ~ -1.22`
+      - `spread_corr_vs_baseline ~ 0.51`
+      - direction is wrong on the current sample and it fails admission / subperiod
   - Interpretation boundary:
     - Week 2 has genuinely started and produced comparable contract-shaped bundles
-    - but there is no Family A winner yet
+    - but there is no Family A or Family C winner yet
     - current results must be read as platform-native narrow-sample evidence, not full mid-cap qualification
 - Next decision node:
   - decide whether to:
-    - continue Week 2 by running Families `B` and `C` under the same qualification contract
-    - or pause to refine / harden the Family A runner interface (for example, add a dedicated reproducible runner entrypoint) before expanding the candidate field
+    - pause to do a Week 2 interim synthesis across `A` and `C`
+    - or explicitly add a historical daily dollar-volume / turnover panel before opening Family `B`
+  - current Family `B` blocker:
+    - the checked-in expanded-US sample has static `avg_adv_20d`, but not the historical daily liquidity series required to evaluate:
+      - `B1` Amihud level
+      - `B2` illiquidity shock
+      - `B3` abnormal-turnover-conditioned reversal
+    - do not silently approximate Family `B` with the static snapshot; either add the missing history or treat `B` as not yet runnable on the current sample
 - Mainline constraints for this sprint:
   - US only
   - `rank_500_1500` mid-cap universe

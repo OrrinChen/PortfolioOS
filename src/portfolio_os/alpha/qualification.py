@@ -26,6 +26,8 @@ _MOMENTUM_LOOKBACK_DAYS = 84
 _MOMENTUM_SKIP_DAYS = 21
 _VOLATILITY_LOOKBACK_DAYS = 63
 _VOLATILITY_FLOOR = 0.20
+_IDIOSYNCRATIC_VOL_LOOKBACK_DAYS = 63
+_MAX_LOOKBACK_DAYS = 21
 _ANNUALIZATION_FACTOR = 252.0
 _QUANTILES = 5
 _MIN_EFFECTIVE_NAMES = 5
@@ -80,6 +82,26 @@ FAMILY_A_DEFINITIONS: dict[str, AlphaCoreCandidateDefinition] = {
         candidate_name="Vol-Managed Residual Momentum",
         description="A1 scaled by trailing 63-day annualized volatility with a 20% floor.",
     ),
+}
+
+FAMILY_C_DEFINITIONS: dict[str, AlphaCoreCandidateDefinition] = {
+    "C1": AlphaCoreCandidateDefinition(
+        candidate_id="C1",
+        family_id="C",
+        candidate_name="Idiosyncratic Volatility",
+        description="Negative trailing 63-day annualized idiosyncratic volatility from a daily market model.",
+    ),
+    "C2": AlphaCoreCandidateDefinition(
+        candidate_id="C2",
+        family_id="C",
+        candidate_name="MAX Effect / Lottery Proxy",
+        description="Negative trailing 21-day maximum daily return as a low-lottery cross-sectional signal.",
+    ),
+}
+
+ALL_CANDIDATE_DEFINITIONS: dict[str, AlphaCoreCandidateDefinition] = {
+    **FAMILY_A_DEFINITIONS,
+    **FAMILY_C_DEFINITIONS,
 }
 
 
@@ -321,6 +343,65 @@ def build_family_a_monthly_signal_frame(
     return frame
 
 
+def build_family_c_monthly_signal_frame(
+    *,
+    returns_panel: pd.DataFrame,
+    universe_reference: pd.DataFrame,
+    candidate_id: str,
+) -> pd.DataFrame:
+    if candidate_id not in FAMILY_C_DEFINITIONS:
+        raise InputValidationError(f"Unsupported Family C candidate_id: {candidate_id}")
+
+    inputs = _prepare_family_a_inputs(
+        returns_panel,
+        universe_reference=_normalize_universe_reference(universe_reference.copy()),
+    )
+
+    market_variance = inputs.market_returns.rolling(
+        window=_IDIOSYNCRATIC_VOL_LOOKBACK_DAYS,
+        min_periods=_IDIOSYNCRATIC_VOL_LOOKBACK_DAYS,
+    ).var()
+    ivol_signal = pd.DataFrame(index=inputs.returns_panel.index, columns=inputs.returns_panel.columns, dtype=float)
+    for ticker in inputs.returns_panel.columns:
+        stock_returns = inputs.returns_panel[str(ticker)]
+        covariance = stock_returns.rolling(
+            window=_IDIOSYNCRATIC_VOL_LOOKBACK_DAYS,
+            min_periods=_IDIOSYNCRATIC_VOL_LOOKBACK_DAYS,
+        ).cov(inputs.market_returns)
+        beta = covariance / market_variance.replace(0.0, np.nan)
+        residual_returns = stock_returns - beta * inputs.market_returns
+        ivol_signal[str(ticker)] = -(
+            residual_returns.rolling(
+                window=_IDIOSYNCRATIC_VOL_LOOKBACK_DAYS,
+                min_periods=_IDIOSYNCRATIC_VOL_LOOKBACK_DAYS,
+            ).std()
+            * np.sqrt(_ANNUALIZATION_FACTOR)
+        )
+
+    max_signal = -inputs.returns_panel.rolling(
+        window=_MAX_LOOKBACK_DAYS,
+        min_periods=_MAX_LOOKBACK_DAYS,
+    ).max()
+
+    selected_signal = ivol_signal if candidate_id == "C1" else max_signal
+
+    rows: list[dict[str, object]] = []
+    for decision_date in inputs.decision_dates:
+        signal_row = selected_signal.loc[decision_date]
+        for ticker, signal_value in signal_row.items():
+            rows.append(
+                {
+                    "date": decision_date.strftime("%Y-%m-%d"),
+                    "ticker": str(ticker),
+                    "signal_value": float(signal_value) if pd.notna(signal_value) else np.nan,
+                }
+            )
+    frame = pd.DataFrame(rows).dropna(subset=["signal_value"]).sort_values(["date", "ticker"]).reset_index(drop=True)
+    if frame.empty:
+        raise InputValidationError(f"Candidate {candidate_id} produced an empty monthly signal frame.")
+    return frame
+
+
 def _build_monthly_forward_return_frame(inputs: _FamilyAInputs) -> pd.DataFrame:
     rows: list[dict[str, object]] = []
     for decision_date in inputs.decision_dates:
@@ -338,6 +419,27 @@ def _build_monthly_forward_return_frame(inputs: _FamilyAInputs) -> pd.DataFrame:
                 }
             )
     return pd.DataFrame(rows).sort_values(["date", "ticker"]).reset_index(drop=True)
+
+
+def _build_candidate_signal_frame(
+    *,
+    candidate_id: str,
+    returns_panel: pd.DataFrame,
+    universe_reference: pd.DataFrame,
+) -> pd.DataFrame:
+    if candidate_id in FAMILY_A_DEFINITIONS:
+        return build_family_a_monthly_signal_frame(
+            returns_panel=returns_panel,
+            universe_reference=universe_reference,
+            candidate_id=candidate_id,
+        )
+    if candidate_id in FAMILY_C_DEFINITIONS:
+        return build_family_c_monthly_signal_frame(
+            returns_panel=returns_panel,
+            universe_reference=universe_reference,
+            candidate_id=candidate_id,
+        )
+    raise InputValidationError(f"Unsupported candidate_id: {candidate_id}")
 
 
 def _load_fee_and_slippage(config_file: str | Path) -> tuple[FeeConfig, SlippageConfig]:
@@ -608,10 +710,10 @@ def run_alpha_core_candidate(
     as_of_date: str,
     nav_notional: float = _NAV_NOTIONAL,
 ) -> AlphaCoreQualificationResult:
-    if candidate_id not in FAMILY_A_DEFINITIONS:
+    if candidate_id not in ALL_CANDIDATE_DEFINITIONS:
         raise InputValidationError(f"Unsupported candidate_id: {candidate_id}")
 
-    candidate = FAMILY_A_DEFINITIONS[candidate_id]
+    candidate = ALL_CANDIDATE_DEFINITIONS[candidate_id]
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
 
@@ -631,10 +733,10 @@ def run_alpha_core_candidate(
     returns_panel = returns_panel.reindex(columns=ordered_reference["ticker"].tolist())
 
     inputs = _prepare_family_a_inputs(returns_panel, universe_reference=ordered_reference)
-    candidate_signal_frame = build_family_a_monthly_signal_frame(
+    candidate_signal_frame = _build_candidate_signal_frame(
+        candidate_id=candidate_id,
         returns_panel=returns_panel,
         universe_reference=ordered_reference,
-        candidate_id=candidate_id,
     )
     baseline_signal_frame = _build_baseline_signal_frame(inputs)
     fee_config, slippage_config = _load_fee_and_slippage(config_file)

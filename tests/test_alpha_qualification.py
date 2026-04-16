@@ -5,9 +5,11 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from portfolio_os.alpha.qualification import (
     build_family_a_monthly_signal_frame,
+    build_family_c_monthly_signal_frame,
     run_alpha_core_candidate,
 )
 from portfolio_os.alpha.research import load_alpha_returns_panel
@@ -132,12 +134,48 @@ def test_build_family_a_monthly_signal_frame_preserves_residual_momentum_directi
     assert float(a3_latest.loc["TALP", "signal_value"]) > float(a3_latest.loc["THIV", "signal_value"])
 
 
-def test_run_alpha_core_candidate_writes_week2_contract_bundle(project_root: Path, tmp_path: Path) -> None:
+def test_build_family_c_monthly_signal_frame_preserves_low_risk_direction(tmp_path: Path) -> None:
     returns_path, reference_path = _write_family_a_fixture(tmp_path)
-    output_dir = tmp_path / "A1_run"
+    returns_panel = load_alpha_returns_panel(returns_path)
+    reference_frame = pd.read_csv(reference_path)
+
+    c1_frame = build_family_c_monthly_signal_frame(
+        returns_panel=returns_panel,
+        universe_reference=reference_frame,
+        candidate_id="C1",
+    )
+    c2_frame = build_family_c_monthly_signal_frame(
+        returns_panel=returns_panel,
+        universe_reference=reference_frame,
+        candidate_id="C2",
+    )
+
+    latest_date = c1_frame["date"].max()
+    c1_latest = c1_frame.loc[c1_frame["date"] == latest_date].set_index("ticker")
+    c2_latest = c2_frame.loc[c2_frame["date"] == latest_date].set_index("ticker")
+
+    assert float(c1_latest.loc["TALP", "signal_value"]) > float(c1_latest.loc["THIV", "signal_value"])
+    assert float(c2_latest.loc["TLAG", "signal_value"]) > float(c2_latest.loc["TALP", "signal_value"])
+
+
+@pytest.mark.parametrize(
+    ("candidate_id", "family_id"),
+    [
+        ("A1", "A"),
+        ("C1", "C"),
+    ],
+)
+def test_run_alpha_core_candidate_writes_week2_contract_bundle(
+    project_root: Path,
+    tmp_path: Path,
+    candidate_id: str,
+    family_id: str,
+) -> None:
+    returns_path, reference_path = _write_family_a_fixture(tmp_path)
+    output_dir = tmp_path / f"{candidate_id}_run"
 
     result = run_alpha_core_candidate(
-        candidate_id="A1",
+        candidate_id=candidate_id,
         returns_file=returns_path,
         universe_reference_file=reference_path,
         config_file=project_root / "config" / "us_expanded_alpha_phase_1_5.yaml",
@@ -164,8 +202,8 @@ def test_run_alpha_core_candidate_writes_week2_contract_bundle(project_root: Pat
     orthogonality = pd.read_csv(output_dir / "orthogonality_vs_baseline.csv")
     note_text = (output_dir / "note.md").read_text(encoding="utf-8")
 
-    assert summary_payload["candidate_id"] == "A1"
-    assert summary_payload["family_id"] == "A"
+    assert summary_payload["candidate_id"] == candidate_id
+    assert summary_payload["family_id"] == family_id
     assert summary_payload["baseline_comparator_id"] == "alt_momentum_4_1"
     assert "coverage_median" in summary_payload
     assert "winner_gate_pass" in summary_payload
