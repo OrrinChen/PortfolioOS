@@ -130,6 +130,44 @@ def test_build_signal_consistency_report_preserves_custom_metadata() -> None:
     assert report.metadata["min_overlap_threshold"] == 10
 
 
+def test_signal_consistency_markdown_calls_out_promoted_month_sign_flip() -> None:
+    tickers = [f"T{i:02d}" for i in range(10)]
+    canonical = pd.concat(
+        [
+            _cross_section("2025-10-31", tickers, [float(value) for value in range(10, 0, -1)]),
+            _cross_section("2025-11-28", tickers, [float(value) for value in range(20, 10, -1)]),
+        ],
+        ignore_index=True,
+    )
+    baseline = _production_view(
+        "2025-10-31",
+        tickers,
+        [float(value) for value in range(10, 0, -1)],
+        [float(value) / 100.0 for value in range(10, 0, -1)],
+    )
+    signed_spread = pd.concat(
+        [
+            baseline,
+            _production_view(
+                "2025-11-28",
+                tickers,
+                [float(value) for value in range(20, 10, -1)],
+                [float(value) / -100.0 for value in range(20, 10, -1)],
+            ),
+        ],
+        ignore_index=True,
+    )
+
+    report = build_signal_consistency_report(
+        canonical_cross_section=canonical,
+        production_views={"baseline": baseline, "signed_spread": signed_spread},
+    )
+
+    markdown = report.to_markdown()
+    assert "promoted floor-zero months" in markdown
+    assert "expected-return mapping can flip relative to canonical ordering" in markdown
+
+
 def test_signal_consistency_runner_writes_expected_artifacts(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

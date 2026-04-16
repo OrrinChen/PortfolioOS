@@ -176,6 +176,22 @@ class SignalConsistencyReport:
                 f"mean_bottom_5_overlap={float(row['mean_bottom_5_overlap']):.2f}"
             )
 
+        def _signed_spread_findings() -> list[str]:
+            if self.per_month_frame.empty:
+                return []
+            signed_rows = self.per_month_frame.loc[
+                (self.per_month_frame["production_view"] == "signed_spread")
+                & (self.per_month_frame["view_has_month"] == True)
+                & (pd.to_numeric(self.per_month_frame["expected_return_vs_canonical_spearman"], errors="coerce") <= -0.90)
+            ].copy()
+            if signed_rows.empty:
+                return []
+            joined_dates = ", ".join(signed_rows["date"].astype(str).tolist())
+            return [
+                f"- The promoted floor-zero months ({joined_dates}) retain `alpha_score` ordering but show near-reversed `expected_return` ordering.",
+                "- This is stronger than a generic local-filter claim: the expected-return mapping can flip relative to canonical ordering on the months introduced by the signed-spread counterfactual.",
+            ]
+
         per_month_text = (
             self.per_month_frame.to_string(index=False) if not self.per_month_frame.empty else "No active-month rows."
         )
@@ -203,6 +219,7 @@ class SignalConsistencyReport:
                 _summary_line("baseline"),
                 _summary_line("signed_spread"),
                 "- Reading rule: if pooled `alpha_score` consistency stays near 1.0 while pooled `expected_return` consistency collapses, the production pipeline is preserving score ordering but the expected-return mapping for the promoted months is no longer aligned with canonical ordering.",
+                *_signed_spread_findings(),
                 "",
                 "## Pooled Summary",
                 "```text",
