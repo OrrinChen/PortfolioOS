@@ -102,6 +102,13 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - immediate full multi-period portfolio-construction work is **not** approved
   - the present issue is a mix of alpha weakness, objective-shape limitations, and missing intertemporal allocation logic
   - reopen multi-period only if a real alpha package later proves that single-period myopia is the next binding loss source
+- Immediate optimizer-interface design reference is now:
+  - `docs/strategy/objective_function_units_spec_2026_04_15.md`
+- Current implementation order from that spec:
+  - align alpha, cost, and covariance to one rebalance-period horizon
+  - remove `target_deviation` from the core economic objective
+  - treat cash deployment as a constraint design problem, not as a hidden objective anchor
+  - rerun continuous-solution ablations before reopening signal research or multi-period work
 
 ## US Research State
 
@@ -325,6 +332,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - `docs/platform_ml_rl_roadmap.md`
   - `docs/phase_1_alpha_closeout_note.md`
   - `docs/strategy/single_period_vs_multi_period_structure_decision_memo_2026_04_15.md`
+  - `docs/strategy/objective_function_units_spec_2026_04_15.md`
   - `docs/phase_1_5_alpha_decision_note.md`
   - `docs/paper_calibration_runbook.md`
   - `docs/paper_calibration_live_2026_04_15.md`
