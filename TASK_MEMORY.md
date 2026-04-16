@@ -321,26 +321,41 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 
 ## US Research State
 
-- Status: stage-closed again after the narrow US roadmap-first Phase 1 restart failed its first package gate; still not an open discovery queue.
-- Last sync: `2026-04-08`
+- Status: reopened as a tightly scoped US factor-layer qualification sprint under an 8-week charter; this is a new line, not a reopen of Branch A.
+- Last sync: `2026-04-16`
 - Branch-local references:
   - roadmap = `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\docs\us_wrds_alpha_roadmap.md`
   - memory = `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\docs\us_wrds_memory.md`
+  - charter = `C:\Users\14574\Quant\PortfolioOS\docs\strategy\us_alpha_core_restart_charter_2026_04_16.md`
+  - week1 checklist = `C:\Users\14574\Quant\PortfolioOS\docs\superpowers\plans\2026-04-16-us-alpha-core-restart-week1.md`
 - Stable read:
   - data quality and evaluation-horizon mismatch were both real bottlenecks
   - `announcement-timed SUE` is the main US event alpha
   - finalized event-aware `revision` is real, but fixed-horizon mainline ingestion does not recover most of its edge
   - naive hybrid-v1 fallback is already rejected
-- same-event package qualification also failed:
-  - same-event `SUE x revision` correlation stayed low
-  - but the simple `SUE + revision` package still underperformed pure `SUE`
-  - redesigned event-aligned mainline delta was not admitted from that branch
+  - same-event package qualification also failed:
+    - same-event `SUE x revision` correlation stayed low
+    - but the simple `SUE + revision` package still underperformed pure `SUE`
+    - redesigned event-aligned mainline delta was not admitted from that branch
+  - package-local diagnosis is now closed:
+    - no package correctness bug was found
+    - `signed_spread` is a by-design abstain case, not a repair direction
+    - the only plausible package-side tweak is the small `min_evaluation_dates: 20 -> 19` coverage sidecar
 - Current active branch:
-  - none; frozen while paper stage is the only active project lane
+  - US factor-layer restart charter only; Week 2 qualification has not started yet
 - Next decision node:
-  - none by default
-  - only reopen if a genuinely new US objective is chosen
-- Do not reopen broad fixed-horizon retries, standalone `CAR3`, old `21d` carry evaluation, or paper/execution work from this state.
+  - end of Week 1 freeze:
+    - frozen baseline scorecard
+    - frozen candidate sheet
+    - frozen qualification contract
+- Mainline constraints for this sprint:
+  - US only
+  - `rank_500_1500` mid-cap universe
+  - no Branch A reopen
+  - no label redesign
+  - no optimizer / multi-period redesign
+  - 3 family directions, at most 8 total candidates
+  - Week 4 is a hard stop/go gate
 
 ## A-Share Research State
 
@@ -372,12 +387,15 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 
 ## Recommended Next Steps
 
-1. Treat `paper-stage only` as the active project rule.
-2. Freeze new research discovery, new alpha integration, new A4/A5 tuning, and repo-merger work.
-3. Keep the research promotion contract in place as a stable boundary:
-   - `docs/research_promotion_contract.md`
-4. Use existing research outputs only as reference material for the paper stage; do not reopen them by drift.
-5. Reopen any research line only by explicit decision, not because a deferred branch or nearby variant exists.
+1. Complete the Week 1 freeze for the US alpha core restart charter:
+   - frozen baseline scorecard
+   - frozen candidate definition sheet
+   - frozen artifact template
+2. Run Week 2 on the highest-priority family first:
+   - residual momentum / residual reversal
+3. Treat `min_evaluation_dates: 20 -> 19` only as a sidecar backlog item, not as the mainline objective.
+4. Keep A-share as background maintenance; do not pull it into this 8-week US sprint.
+5. If Week 4 produces no winner, close the sprint honestly rather than broadening the search space.
 
 ### Current SUE PEAD Read
 
