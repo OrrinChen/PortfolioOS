@@ -52,7 +52,10 @@ def _risk_mode_config(base_config, *, integration_mode: str):
     return config
 
 
-def test_augment_mode_with_zero_risk_terms_matches_legacy_behavior(sample_context: dict, tmp_path: Path) -> None:
+def test_augment_mode_with_zero_risk_terms_matches_replace_mode_not_legacy(
+    sample_context: dict,
+    tmp_path: Path,
+) -> None:
     universe = sample_context["universe"]
     tickers = universe["ticker"].astype(str).tolist()
     returns_path = tmp_path / "returns_long.csv"
@@ -75,18 +78,23 @@ def test_augment_mode_with_zero_risk_terms_matches_legacy_behavior(sample_contex
     assert len(baseline_run.orders) > 0
     assert replace_run is not None
 
-    assert len(augment_run.orders) == len(baseline_run.orders)
+    assert len(augment_run.orders) == len(replace_run.orders)
     assert augment_run.basket.gross_traded_notional == pytest.approx(
-        baseline_run.basket.gross_traded_notional,
+        replace_run.basket.gross_traded_notional,
         abs=1e-6,
     )
     assert augment_run.basket.total_cost == pytest.approx(
-        baseline_run.basket.total_cost,
+        replace_run.basket.total_cost,
         abs=1e-6,
     )
 
-    baseline_signed = _signed_order_quantities(baseline_run.orders)
+    replace_signed = _signed_order_quantities(replace_run.orders)
     augment_signed = _signed_order_quantities(augment_run.orders)
-    assert baseline_signed.keys() == augment_signed.keys()
-    for ticker in baseline_signed:
-        assert augment_signed[ticker] == baseline_signed[ticker]
+    assert replace_signed.keys() == augment_signed.keys()
+    for ticker in replace_signed:
+        assert augment_signed[ticker] == replace_signed[ticker]
+
+    assert augment_run.basket.gross_traded_notional != pytest.approx(
+        baseline_run.basket.gross_traded_notional,
+        abs=1e-6,
+    )
