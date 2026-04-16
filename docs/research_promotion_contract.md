@@ -21,6 +21,48 @@ The platform should be able to answer these questions from the bundle alone:
 5. Why is the candidate blocked from or admitted to Stage 4?
 6. Where are the canonical branch-local memory and ledger artifacts?
 
+## Reviewer Surface
+
+PortfolioOS now has a reviewer-facing registry export path for promotion bundles.
+
+Current v1 entrypoint:
+
+```powershell
+python -m portfolio_os.api.cli promotion-registry --input-root <bundle_root> --output-dir <review_output_dir>
+```
+
+Current outputs:
+
+- `promotion_registry.csv`
+- `promotion_registry_manifest.json`
+- `promotion_registry_summary.md`
+
+This is intentionally a review surface, not an auto-promotion path. The registry validates bundles through the existing contract loader and gives the platform a compact index of candidate state without importing branch-local research code.
+
+Current row granularity:
+
+- one row per **promotion bundle / candidate package**
+- not one row per individual signal variant
+
+Practical implication:
+
+- `promotion_registry.csv` is a package-level review index
+- signal membership is summarized inside each row
+- detailed version history remains upstream in the bundle id, bundle artifacts, and branch-local research records
+
+Current source-of-truth boundary:
+
+- `promotion_contract.py` is the programmatic validator for bundle shape and required fields
+- the producing research line remains the source of truth for the actual promotion judgment and thresholds
+- `eligible_for_stage4` and `blocking_reason` are exported facts from the research line, not values recomputed by the platform registry
+
+Current enforcement boundary:
+
+- registry export is offline and manually triggered
+- it is advisory and review-facing only
+- it does **not** block or approve any live platform state by itself
+- absence of a block entry in the registry does **not** mean a candidate was automatically promoted
+
 ## Current Rule
 
 Research code stays in its own workspace.
@@ -99,7 +141,7 @@ This stage is complete when the contract becomes a stable review interface.
 The next upgrades should be small:
 
 1. export more than one bundle through the same schema,
-2. validate them from PortfolioOS without branch-specific code,
+2. validate and summarize them from PortfolioOS without branch-specific code,
 3. only then decide whether a reusable adapter layer belongs in the platform.
 
 Repository merge is a later question. Repeated successful promotion through the same interface is the precondition for that question, not the consequence.

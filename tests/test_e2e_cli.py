@@ -362,6 +362,81 @@ def test_paper_calibration_aggregate_cli_produces_summary(tmp_path) -> None:
     assert (output_dir / "drift_summary.md").exists()
 
 
+def test_promotion_registry_cli_produces_expected_outputs(tmp_path) -> None:
+    runner = CliRunner()
+    input_root = tmp_path / "promotion_bundles"
+    output_dir = tmp_path / "promotion_registry"
+
+    def _write_bundle(bundle_name: str, bundle_id: str, research_line: str) -> None:
+        bundle_dir = input_root / bundle_name
+        artifacts_dir = bundle_dir / "artifacts"
+        artifacts_dir.mkdir(parents=True, exist_ok=True)
+        for name in [
+            "signal_audit_summary.json",
+            "combo_summary.json",
+            "MEMORY.md",
+            "ledger.md",
+        ]:
+            target_path = artifacts_dir / name
+            if target_path.suffix == ".json":
+                target_path.write_text("{}", encoding="utf-8")
+            else:
+                target_path.write_text("# artifact\n", encoding="utf-8")
+        manifest = {
+            "contract_type": "portfolio_os_research_promotion_bundle",
+            "contract_version": "1.0",
+            "bundle_id": bundle_id,
+            "created_at": "2026-04-15T12:00:00Z",
+            "research_line": research_line,
+            "candidate_status": "stage3_candidate_not_promoted",
+            "thesis": {
+                "summary": f"{research_line} candidate",
+                "universe_name": f"{research_line}_dynamic_universe",
+            },
+            "signals": [
+                {
+                    "name": "signal_a",
+                    "stage_bucket": "partially_real",
+                    "audit_summary_path": "artifacts/signal_audit_summary.json",
+                }
+            ],
+            "combo": {
+                "summary_path": "artifacts/combo_summary.json",
+                "eligible_for_stage4": False,
+                "blocking_reason": "needs more stability",
+                "full_sample_ir": 0.12,
+                "second_half_ir": 0.03,
+            },
+            "artifacts": {
+                "memory_path": "artifacts/MEMORY.md",
+                "ledger_path": "artifacts/ledger.md",
+            },
+        }
+        (bundle_dir / "promotion_bundle.json").write_text(
+            json.dumps(manifest, indent=2),
+            encoding="utf-8",
+        )
+
+    _write_bundle("bundle_a", "ashare_bundle", "ashare")
+    _write_bundle("bundle_b", "us_bundle", "us")
+
+    result = runner.invoke(
+        app,
+        [
+            "promotion-registry",
+            "--input-root",
+            str(input_root),
+            "--output-dir",
+            str(output_dir),
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert (output_dir / "promotion_registry.csv").exists()
+    assert (output_dir / "promotion_registry_manifest.json").exists()
+    assert (output_dir / "promotion_registry_summary.md").exists()
+
+
 def test_replay_cli_produces_suite_outputs(project_root, replay_manifest_path, tmp_path) -> None:
     runner = CliRunner()
     output_dir = tmp_path / "replay_demo"

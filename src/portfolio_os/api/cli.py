@@ -89,6 +89,7 @@ from portfolio_os.workflow.paper_calibration import (
     run_paper_calibration_paper,
 )
 from portfolio_os.workflow.paper_calibration_aggregate import run_paper_calibration_aggregate
+from portfolio_os.workflow.promotion_registry import run_promotion_registry
 from portfolio_os.workflow.single_run import run_single_rebalance
 
 app = typer.Typer(add_completion=False, help="PortfolioOS compliance-aware rebalance CLI.")
@@ -271,6 +272,24 @@ def paper_calibration_aggregate(
         result = run_paper_calibration_aggregate(input_root=input_root, output_dir=output_dir)
         typer.echo(f"drift_observations.csv: {result.observations_path}")
         typer.echo(f"drift_summary.md: {result.summary_path}")
+    except PortfolioOSError as exc:
+        logger.error("%s", exc)
+        raise typer.Exit(code=1) from exc
+
+
+@app.command("promotion-registry")
+def promotion_registry(
+    input_root: Path = typer.Option(..., exists=True, file_okay=False, dir_okay=True),
+    output_dir: Path = typer.Option(...),
+) -> None:
+    """Scan promotion bundles and emit a compact reviewer registry."""
+
+    logger = configure_logging()
+    try:
+        result = run_promotion_registry(input_root=input_root, output_dir=output_dir)
+        typer.echo(f"promotion_registry.csv: {result.registry_csv_path}")
+        typer.echo(f"promotion_registry_manifest.json: {result.manifest_path}")
+        typer.echo(f"promotion_registry_summary.md: {result.summary_path}")
     except PortfolioOSError as exc:
         logger.error("%s", exc)
         raise typer.Exit(code=1) from exc
