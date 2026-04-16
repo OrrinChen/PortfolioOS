@@ -88,6 +88,18 @@ Expected outputs:
 - `drift_observations.csv`
 - `drift_summary.md`
 
+## Calibration Note Discipline
+
+Use the note template below when accumulating repeated tranches:
+
+- [paper_calibration_drift_note_template.md](/C:/Users/14574/Quant/PortfolioOS/docs/paper_calibration_drift_note_template.md)
+
+Interpretation guardrail:
+
+- before cumulative `N >= 30`, only make process statements
+- before cumulative `N >= 30`, do not claim a stable drift regime
+- before cumulative `N >= 30`, do not add new simulator bias terms from the paper sample
+
 ## What To Check
 
 After a paper run, inspect these first:

@@ -85,6 +85,78 @@ The goal is to observe whether:
 - reference-to-fill drift remains small and stable under repeated live runs
 - simulator assumptions remain directionally reasonable under repeated live runs
 
+## Session1 Repeated Tranche
+
+Same-day repeated neutral tranche now exists at:
+
+- `C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_tranche_2026-04-15_session1`
+
+Aggregated read:
+
+- run count: `3`
+- observation count: `3`
+- unique tickers: `['SPY']`
+- reference source mix: `{'mid_price': 3}`
+- fallback reference count: `0`
+- median drift: `0.1430 bps`
+- drift IQR: `0.5004 bps`
+- time-of-day bucket coverage: `14:30-16:00` only
+
+Interpretation discipline for this read:
+
+- this tranche validates repeat-mode artifact capture and aggregation on real multi-run data
+- this tranche does not support any drift-regime conclusion
+- this tranche should be treated as a process verification milestone, not a simulator-calibration conclusion
+
+Immediate next step:
+
+- run `session2` with phase-diversified coverage, prioritizing open and midday buckets instead of adding more late-session-only observations
+
+## Session2 Exact Run Plan (`2026-04-16`)
+
+Use a new root:
+
+- `C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_tranche_2026-04-16_session2`
+
+Run four separate one-shot commands instead of one repeated loop so that phase coverage can be controlled manually.
+
+### `run_001` (`09:45` ET)
+
+```powershell
+python -m portfolio_os.api.cli paper-calibration --ticker SPY --quantity 1 --submit-paper --output-dir C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_tranche_2026-04-16_session2\run_001
+```
+
+### `run_002` (`10:30` ET)
+
+```powershell
+python -m portfolio_os.api.cli paper-calibration --ticker SPY --quantity 1 --submit-paper --output-dir C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_tranche_2026-04-16_session2\run_002
+```
+
+### `run_003` (`12:30` ET)
+
+```powershell
+python -m portfolio_os.api.cli paper-calibration --ticker SPY --quantity 1 --submit-paper --output-dir C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_tranche_2026-04-16_session2\run_003
+```
+
+### `run_004` (`14:00` ET)
+
+```powershell
+python -m portfolio_os.api.cli paper-calibration --ticker SPY --quantity 1 --submit-paper --output-dir C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_tranche_2026-04-16_session2\run_004
+```
+
+After `run_004`, aggregate the whole session:
+
+```powershell
+python -m portfolio_os.api.cli paper-calibration-aggregate --input-root C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_tranche_2026-04-16_session2 --output-dir C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_tranche_2026-04-16_session2\aggregate_session
+```
+
+Expected use of the aggregate:
+
+- confirm that open and midday buckets are now represented
+- confirm that reference capture and fill artifacts still stay on the happy path
+- re-check the aggregator behavior once cumulative observations reach roughly `N = 7`
+- if clean, continue toward cumulative `N = 10-12` before the next review stop
+
 Implementation support for that next step now exists:
 
 - repeated runner:
