@@ -45,6 +45,13 @@ Default remains `replace` to preserve backward compatibility for existing flows.
 
 ## Installation
 
+Supported development platforms:
+
+- Windows 11 / PowerShell
+- macOS 14+ / zsh or bash
+
+Core research, backtest, optimizer, and CLI workflows are Python/Poetry based and are expected to run on both Windows and macOS. The main known portability caveat today is `scripts/run_pilot_validation.py`, which still contains Windows-style Poetry entrypoint lookup for pilot-validation orchestration. If you are continuing research or offline workflow work on a MacBook, the rest of the stack is the safer starting point.
+
 Windows baseline:
 
 ```bash
@@ -59,7 +66,23 @@ cd C:\Users\14574\Quant\PortfolioOS
 py -3.11 -m poetry install
 ```
 
+macOS baseline:
+
+```bash
+cd /path/to/PortfolioOS
+python3.11 -m pip install poetry
+python3.11 -m poetry install
+```
+
+If `python3.11` is already your default interpreter, `poetry install` is also fine.
+
 ## CLI Usage
+
+Shell conventions:
+
+- Windows examples below use PowerShell continuation with `^` and launcher syntax like `py -3.11`.
+- On macOS/Linux, replace `^` with `\` and prefer `python3.11 -m poetry run ...` or `poetry run ...`.
+- Paths inside the codebase are handled with `pathlib`; doc examples remain Windows-heavy because the project was first developed there.
 
 ```bash
 py -3.11 -m poetry run portfolio-os ^
@@ -168,6 +191,13 @@ py -3 scripts/devtools/run_engineering_gate.py
 py -3 scripts/devtools/run_engineering_gate.py --full-pytest
 ```
 
+macOS/Linux equivalent:
+
+```bash
+python3 scripts/devtools/run_engineering_gate.py
+python3 scripts/devtools/run_engineering_gate.py --full-pytest
+```
+
 Pilot operations helper:
 
 ```bash
@@ -244,6 +274,18 @@ py -3.11 -m poetry run portfolio-os-build-market ^
   --tickers-file data/samples/us/sample_us_01/tickers.txt ^
   --as-of-date 2026-03-23 ^
   --provider alpaca ^
+  --output data/generated/market_us_real.csv
+```
+
+macOS/Linux environment setup:
+
+```bash
+export ALPACA_API_KEY=YOUR_KEY
+export ALPACA_SECRET_KEY=YOUR_SECRET
+python3.11 -m poetry run portfolio-os-build-market \
+  --tickers-file data/samples/us/sample_us_01/tickers.txt \
+  --as-of-date 2026-03-23 \
+  --provider alpaca \
   --output data/generated/market_us_real.csv
 ```
 
