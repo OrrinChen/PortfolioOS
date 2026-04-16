@@ -152,17 +152,6 @@ def _component_names_for_mode(config: AppConfig) -> tuple[str, ...]:
     """Return canonical objective component order for the active mode."""
 
     if config.risk_model.enabled:
-        if str(config.risk_model.integration_mode).strip().lower() == "augment":
-            return (
-                "risk_term",
-                "tracking_error",
-                "transaction_cost",
-                "target_deviation",
-                "transaction_fee",
-                "turnover_penalty",
-                "slippage_penalty",
-                "alpha_reward",
-            )
         return ("risk_term", "tracking_error", "transaction_cost", "alpha_reward")
     return ("target_deviation", "transaction_fee", "turnover_penalty", "slippage_penalty", "alpha_reward")
 

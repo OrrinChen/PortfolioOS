@@ -62,7 +62,7 @@ class ObjectiveWeights(BaseModel):
     risk_term: float = 1.0
     tracking_error: float = 1.0
     transaction_cost: float = 1.0
-    transaction_cost_objective_mode: Literal["raw_currency", "nav_fraction"] = "raw_currency"
+    transaction_cost_objective_mode: Literal["raw_currency", "nav_fraction"] = "nav_fraction"
     alpha_weight: float = 0.0
 
     # Legacy objective fields retained for backward compatibility.

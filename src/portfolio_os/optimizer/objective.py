@@ -13,6 +13,26 @@ from portfolio_os.risk.model import RiskModelContext
 from portfolio_os.utils.config import AppConfig
 
 
+def _resolve_decision_horizon_scale(universe: pd.DataFrame, config: AppConfig) -> float:
+    """Return the annualized-to-period scaling factor implied by the universe."""
+
+    if "decision_horizon_days" not in universe.columns:
+        return 1.0
+    horizon_series = pd.to_numeric(universe["decision_horizon_days"], errors="coerce").dropna()
+    if horizon_series.empty:
+        return 1.0
+    unique_values = {float(value) for value in horizon_series.to_list()}
+    if len(unique_values) != 1:
+        raise InputValidationError("decision_horizon_days must resolve to one unique positive value.")
+    horizon_days = unique_values.pop()
+    if horizon_days <= 0.0:
+        raise InputValidationError("decision_horizon_days must be positive.")
+    annualization_factor = float(config.risk_model.annualization_factor)
+    if annualization_factor <= 0.0:
+        raise InputValidationError("risk_model.annualization_factor must be positive.")
+    return float(horizon_days / annualization_factor)
+
+
 def build_objective(
     trades: cp.Variable,
     universe: pd.DataFrame,
@@ -64,29 +84,16 @@ def build_objective(
     if config.risk_model.enabled:
         if risk_context is None:
             raise InputValidationError("Risk mode is enabled but risk context is missing.")
-        sigma_psd = cp.psd_wrap(risk_context.sigma)
+        sigma_scale = _resolve_decision_horizon_scale(universe, config)
+        sigma_psd = cp.psd_wrap(risk_context.sigma * sigma_scale)
         risk_term = cp.quad_form(post_trade_weights, sigma_psd)
         tracking_error = cp.quad_form(post_trade_weights - target_weights, sigma_psd)
-        risk_objective = (
+        economic_objective = (
             config.objective_weights.risk_term * risk_term
             + config.objective_weights.tracking_error * tracking_error
             + config.objective_weights.transaction_cost * transaction_cost
         )
-        if config.risk_model.integration_mode == "augment":
-            objective = legacy_objective + risk_objective - alpha_penalty
-            return objective, {
-                "risk_term": risk_term,
-                "tracking_error": tracking_error,
-                "transaction_cost": transaction_cost,
-                "transaction_cost_currency": transaction_cost_currency,
-                "transaction_cost_fraction": transaction_cost_fraction,
-                "target_deviation": target_deviation,
-                "transaction_fee": transaction_fee,
-                "turnover_penalty": turnover_penalty,
-                "slippage_penalty": slippage_penalty,
-                "alpha_reward": alpha_reward,
-            }
-        return risk_objective - alpha_penalty, {
+        return economic_objective - alpha_penalty, {
             "risk_term": risk_term,
             "tracking_error": tracking_error,
             "transaction_cost": transaction_cost,

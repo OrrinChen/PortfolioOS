@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
+import pytest
 
 from portfolio_os.alpha.backtest_bridge import (
     build_alpha_only_target_weights,
@@ -82,3 +83,35 @@ def test_build_alpha_snapshot_outputs_expected_return_and_quantile_columns(tmp_p
     assert snapshot.current_cross_section["ticker"].nunique() == 25
     assert len([weight for weight in snapshot.alpha_only_target_weights.values() if weight > 0.0]) == 5
     assert abs(sum(snapshot.alpha_only_target_weights.values()) - 1.0) < 1e-12
+
+
+def test_build_alpha_snapshot_deannualizes_expected_return_to_decision_horizon(tmp_path: Path) -> None:
+    returns_path = _write_alpha_bridge_returns_fixture(tmp_path)
+
+    snapshot = build_alpha_snapshot_for_rebalance(
+        returns_file=returns_path,
+        rebalance_date="2025-08-29",
+        quantiles=5,
+        min_evaluation_dates=20,
+        decision_horizon_days=21,
+    )
+
+    frame = snapshot.current_cross_section
+    annualized_spread = float(frame["annualized_top_bottom_spread"].iloc[0])
+    period_spread = float(frame["period_top_bottom_spread"].iloc[0])
+    confidence = float(frame["signal_strength_confidence"].iloc[0])
+    z_gap = float(
+        frame.loc[frame["quantile"] == 5, "alpha_zscore"].mean()
+        - frame.loc[frame["quantile"] == 1, "alpha_zscore"].mean()
+    )
+    expected_returns = (
+        confidence
+        * period_spread
+        * frame["alpha_zscore"]
+        / z_gap
+    ).clip(lower=-0.30, upper=0.30)
+
+    assert frame["decision_horizon_days"].nunique() == 1
+    assert int(frame["decision_horizon_days"].iloc[0]) == 21
+    assert period_spread == pytest.approx((1.0 + annualized_spread) ** (21.0 / 252.0) - 1.0)
+    assert frame["expected_return"].to_numpy(dtype=float) == pytest.approx(expected_returns.to_numpy(dtype=float))

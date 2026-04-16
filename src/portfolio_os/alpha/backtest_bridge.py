@@ -99,6 +99,14 @@ def _rank_ic_t_stat(history_ic: pd.Series) -> float:
     return float(clean.mean() / (std / np.sqrt(float(len(clean)))))
 
 
+def _deannualize_return(annualized_return: float, horizon_days: int) -> float:
+    """Convert an annualized return estimate into one rebalance-period return."""
+
+    if horizon_days <= 0:
+        raise InputValidationError("decision_horizon_days must be positive.")
+    return float((1.0 + float(annualized_return)) ** (float(horizon_days) / _ANNUALIZATION_FACTOR) - 1.0)
+
+
 def build_alpha_snapshot_for_rebalance(
     *,
     returns_file: str | Path,
@@ -108,10 +116,14 @@ def build_alpha_snapshot_for_rebalance(
     zscore_winsor_limit: float = 3.0,
     t_stat_full_confidence: float = 3.0,
     max_abs_expected_return: float = 0.30,
+    decision_horizon_days: int | None = None,
 ) -> AlphaRebalanceSnapshot:
     """Build one walk-forward alpha snapshot aligned to a rebalance date."""
 
     rebalance_ts = pd.Timestamp(rebalance_date).normalize()
+    effective_horizon_days = int(decision_horizon_days or _ACCEPTED_RECIPE.forward_horizon_days)
+    if effective_horizon_days <= 0:
+        raise InputValidationError("decision_horizon_days must be positive.")
     returns_panel = load_alpha_returns_panel(returns_file)
     returns_panel = returns_panel.loc[returns_panel.index <= rebalance_ts].copy()
     if returns_panel.empty:
@@ -179,6 +191,7 @@ def build_alpha_snapshot_for_rebalance(
             max(float(history["top_bottom_spread"].mean()), 0.0)
             * (_ANNUALIZATION_FACTOR / float(_ACCEPTED_RECIPE.forward_horizon_days))
         )
+    period_spread = _deannualize_return(annualized_spread, effective_horizon_days)
 
     top_mask = current_cross_section["quantile"] == int(quantiles)
     bottom_mask = current_cross_section["quantile"] == 1
@@ -191,12 +204,14 @@ def build_alpha_snapshot_for_rebalance(
 
     current_cross_section["expected_return"] = (
         confidence
-        * annualized_spread
+        * period_spread
         * current_cross_section["alpha_zscore"]
         / z_gap
     ).clip(lower=-float(max_abs_expected_return), upper=float(max_abs_expected_return))
     current_cross_section["signal_strength_confidence"] = float(confidence)
     current_cross_section["annualized_top_bottom_spread"] = float(annualized_spread)
+    current_cross_section["period_top_bottom_spread"] = float(period_spread)
+    current_cross_section["decision_horizon_days"] = int(effective_horizon_days)
 
     return AlphaRebalanceSnapshot(
         rebalance_date=rebalance_ts,

@@ -592,7 +592,10 @@ def test_run_backtest_alpha_manifest_exposes_alpha_panel_and_comparisons(tmp_pat
         "quantile",
         "signal_strength_confidence",
         "annualized_top_bottom_spread",
+        "period_top_bottom_spread",
+        "decision_horizon_days",
     } <= set(result.alpha_panel.columns)
+    assert int(result.alpha_panel["decision_horizon_days"].max()) > 5
     assert result.summary["alpha_model"]["enabled"] is True
     assert result.summary["alpha_model"]["recipe_name"] == "alt_momentum_4_1"
     assert result.summary["alpha_model"]["panel_row_count"] == len(result.alpha_panel)

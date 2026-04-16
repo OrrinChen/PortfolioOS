@@ -109,6 +109,31 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - remove `target_deviation` from the core economic objective
   - treat cash deployment as a constraint design problem, not as a hidden objective anchor
   - rerun continuous-solution ablations before reopening signal research or multi-period work
+- As of `2026-04-15`, the first objective-units implementation pass is now in code:
+  - default `transaction_cost_objective_mode` is `nav_fraction`
+  - risk-enabled objective paths now use the economic core only:
+    - `risk_term`
+    - `tracking_error`
+    - `transaction_cost`
+    - `alpha_reward`
+  - legacy `target_deviation` / fee / turnover / slippage penalties no longer re-enter the risk-enabled objective through `augment`
+  - walk-forward alpha snapshots now deannualize `annualized_top_bottom_spread` into a rebalance-period `expected_return`
+  - backtest alpha panels now carry:
+    - `period_top_bottom_spread`
+    - `decision_horizon_days`
+  - risk covariance is now scaled from annualized space to the same decision horizon when `decision_horizon_days` is supplied in-universe
+- First post-fix local sanity checks:
+  - on the frozen US expanded alpha sample at rebalance date `2025-10-31` with next rebalance `2025-11-28` (`decision_horizon_days = 19`):
+    - objective decomposition shares were approximately:
+      - `transaction_cost = 45.4%`
+      - `risk_term = 31.0%`
+      - `alpha_reward = 16.5%`
+      - `tracking_error = 7.2%`
+    - solver continuous gross traded notional was about `$452k`
+    - repair preserved `20` executable instructions
+  - practical read:
+    - the optimizer is no longer collapsing into near-zero continuous trades solely because of raw-currency cost vs annualized-alpha mismatch
+    - any remaining quality issues should now be treated as genuine portfolio-construction or signal problems, not as the old objective-unit bug
 
 ## US Research State
 

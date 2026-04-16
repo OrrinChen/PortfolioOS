@@ -82,6 +82,8 @@ _ALPHA_PANEL_COLUMNS = [
     "quantile",
     "signal_strength_confidence",
     "annualized_top_bottom_spread",
+    "period_top_bottom_spread",
+    "decision_horizon_days",
 ]
 
 
@@ -259,6 +261,18 @@ def _build_summary(
     }
 
 
+def _decision_horizon_days_for_rebalance(
+    *,
+    current_index: int,
+    period_end_date: pd.Timestamp,
+    date_position_map: dict[pd.Timestamp, int],
+) -> int:
+    """Return the number of trading days from rebalance to period end."""
+
+    end_index = date_position_map[pd.Timestamp(period_end_date).normalize()]
+    return max(int(end_index - current_index), 1)
+
+
 def _build_period_attribution_row(
     *,
     strategy_name: str,
@@ -406,6 +420,7 @@ def run_backtest(manifest_path: str | Path) -> BacktestResult:
     commission_rate = float(app_config.fees.commission_rate)
     half_spread_bps = float(app_config.execution.backtest_fixed_half_spread_bps)
     schedule_index_map = {pd.Timestamp(item).normalize(): idx for idx, item in enumerate(schedule, start=1)}
+    date_position_map = {pd.Timestamp(item).normalize(): idx for idx, item in enumerate(dates)}
 
     for idx, current_date in enumerate(dates):
         price_row = price_panel.loc[current_date]
@@ -433,6 +448,11 @@ def run_backtest(manifest_path: str | Path) -> BacktestResult:
         alpha_snapshot = None
         if manifest.alpha_model is not None and manifest.alpha_model.enabled:
             try:
+                decision_horizon_days = _decision_horizon_days_for_rebalance(
+                    current_index=idx,
+                    period_end_date=period_end_date,
+                    date_position_map=date_position_map,
+                )
                 alpha_snapshot = build_alpha_snapshot_for_rebalance(
                     returns_file=manifest.returns_file,
                     rebalance_date=current_date,
@@ -441,6 +461,7 @@ def run_backtest(manifest_path: str | Path) -> BacktestResult:
                     zscore_winsor_limit=manifest.alpha_model.zscore_winsor_limit,
                     t_stat_full_confidence=manifest.alpha_model.t_stat_full_confidence,
                     max_abs_expected_return=manifest.alpha_model.max_abs_expected_return,
+                    decision_horizon_days=decision_horizon_days,
                 )
             except InputValidationError:
                 # Early rebalance dates can legitimately lack enough history for the accepted recipe.

@@ -149,20 +149,12 @@ def test_objective_decomposition_sets_share_zero_when_abs_weighted_sum_zero(
             "risk_term": 10.0,
             "tracking_error": 5.0,
             "transaction_cost": 2.0,
-            "target_deviation": 1.0,
-            "transaction_fee": 2.0,
-            "turnover_penalty": 3.0,
-            "slippage_penalty": 4.0,
         },
         objective_value=None,
         weight_overrides={
             "risk_term": 0.0,
             "tracking_error": 0.0,
             "transaction_cost": 0.0,
-            "target_deviation": 0.0,
-            "transaction_fee": 0.0,
-            "turnover_penalty": 0.0,
-            "slippage_penalty": 0.0,
         },
     )
 
@@ -173,17 +165,12 @@ def test_objective_decomposition_sets_share_zero_when_abs_weighted_sum_zero(
         "risk_term",
         "tracking_error",
         "transaction_cost",
-        "target_deviation",
-        "transaction_fee",
-        "turnover_penalty",
-        "slippage_penalty",
     }
     assert decomposition["abs_weighted_sum"] == pytest.approx(0.0)
     for payload in decomposition["components"].values():
         assert payload["share_abs_weighted"] == pytest.approx(0.0)
 
-
-def test_augment_mode_objective_decomposition_has_seven_components_and_shares_sum_to_one(
+def test_augment_mode_objective_decomposition_uses_economic_core_components(
     sample_context: dict,
     monkeypatch,
 ) -> None:
@@ -196,20 +183,12 @@ def test_augment_mode_objective_decomposition_has_seven_components_and_shares_su
             "risk_term": 1.0,
             "tracking_error": 2.0,
             "transaction_cost": -3.0,
-            "target_deviation": 4.0,
-            "transaction_fee": -5.0,
-            "turnover_penalty": 6.0,
-            "slippage_penalty": 7.0,
         },
         objective_value=0.0,
         weight_overrides={
             "risk_term": 1.0,
             "tracking_error": 1.0,
             "transaction_cost": 1.0,
-            "target_deviation": 1.0,
-            "transaction_fee": 1.0,
-            "turnover_penalty": 1.0,
-            "slippage_penalty": 1.0,
         },
     )
 
@@ -221,10 +200,6 @@ def test_augment_mode_objective_decomposition_has_seven_components_and_shares_su
         "risk_term",
         "tracking_error",
         "transaction_cost",
-        "target_deviation",
-        "transaction_fee",
-        "turnover_penalty",
-        "slippage_penalty",
     }
     share_sum = sum(float(payload["share_abs_weighted"]) for payload in decomposition["components"].values())
     assert decomposition["abs_weighted_sum"] > 0.0

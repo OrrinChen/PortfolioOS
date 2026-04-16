@@ -70,7 +70,7 @@ def test_replace_mode_keeps_risk_components_only(sample_context: dict) -> None:
     assert float(objective.value) == pytest.approx(risk_total, abs=1e-10)
 
 
-def test_augment_mode_combines_legacy_and_risk_components(sample_context: dict) -> None:
+def test_augment_mode_uses_only_economic_core_components(sample_context: dict) -> None:
     universe = sample_context["universe"]
     config = sample_context["config"].model_copy(deep=True)
     config.risk_model.enabled = True
@@ -100,10 +100,6 @@ def test_augment_mode_combines_legacy_and_risk_components(sample_context: dict) 
         "transaction_cost",
         "transaction_cost_currency",
         "transaction_cost_fraction",
-        "target_deviation",
-        "transaction_fee",
-        "turnover_penalty",
-        "slippage_penalty",
     }
     assert float(components["alpha_reward"].value) == pytest.approx(0.0)
     risk_total = (
@@ -111,13 +107,7 @@ def test_augment_mode_combines_legacy_and_risk_components(sample_context: dict) 
         + config.objective_weights.tracking_error * float(components["tracking_error"].value)
         + config.objective_weights.transaction_cost * float(components["transaction_cost"].value)
     )
-    legacy_total = (
-        float(config.objective_weights.target_deviation or 0.0) * float(components["target_deviation"].value)
-        + float(config.objective_weights.transaction_fee or 0.0) * float(components["transaction_fee"].value)
-        + float(config.objective_weights.turnover_penalty or 0.0) * float(components["turnover_penalty"].value)
-        + float(config.objective_weights.slippage_penalty or 0.0) * float(components["slippage_penalty"].value)
-    )
-    assert float(objective.value) == pytest.approx(risk_total + legacy_total, abs=1e-10)
+    assert float(objective.value) == pytest.approx(risk_total, abs=1e-10)
 
 
 def test_alpha_weight_zero_keeps_objective_value_unchanged(sample_context: dict) -> None:
@@ -258,4 +248,50 @@ def test_nav_fraction_transaction_cost_mode_normalizes_by_pre_trade_nav(sample_c
 def test_invalid_transaction_cost_objective_mode_is_rejected_by_schema() -> None:
     with pytest.raises(ValidationError):
         ObjectiveWeights.model_validate({"transaction_cost_objective_mode": "bad_mode"})
+
+
+def test_objective_weights_default_to_nav_fraction_cost_mode() -> None:
+    weights = ObjectiveWeights()
+
+    assert weights.transaction_cost_objective_mode == "nav_fraction"
+
+
+def test_decision_horizon_days_scales_risk_term_to_period_covariance(sample_context: dict) -> None:
+    universe = sample_context["universe"].copy()
+    universe["decision_horizon_days"] = 21
+    config = sample_context["config"].model_copy(deep=True)
+    config.risk_model.enabled = True
+    config.risk_model.integration_mode = "replace"
+    config.risk_model.annualization_factor = 252.0
+    config.objective_weights.risk_term = 1.0
+    config.objective_weights.tracking_error = 0.0
+    config.objective_weights.transaction_cost = 0.0
+
+    pre_trade_nav = _pre_trade_nav(universe, config)
+    prices = universe["estimated_price"].to_numpy(dtype=float)
+    quantities = universe["quantity"].to_numpy(dtype=float)
+    weights = prices * quantities / pre_trade_nav
+    annualized_sigma = np.eye(len(universe), dtype=float) * config.risk_model.annualization_factor
+    annualized_variance = float(weights @ annualized_sigma @ weights)
+    expected_period_variance = annualized_variance * (21.0 / 252.0)
+
+    trades = cp.Variable(len(universe))
+    trades.value = np.zeros(len(universe), dtype=float)
+    objective, components = build_objective(
+        trades,
+        universe,
+        config,
+        pre_trade_nav,
+        risk_context=RiskModelContext(
+            sigma=annualized_sigma,
+            factor_matrix=np.zeros((len(universe), 1), dtype=float),
+            factor_names=["market"],
+            target_factor_exposure=np.zeros(1, dtype=float),
+            returns_observation_count=252,
+            estimator="sample",
+        ),
+    )
+
+    assert float(components["risk_term"].value) == pytest.approx(expected_period_variance, abs=1e-10)
+    assert float(objective.value) == pytest.approx(expected_period_variance, abs=1e-10)
 
