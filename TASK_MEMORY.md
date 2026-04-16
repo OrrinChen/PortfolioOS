@@ -328,6 +328,9 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - memory = `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\docs\us_wrds_memory.md`
   - charter = `C:\Users\14574\Quant\PortfolioOS\docs\strategy\us_alpha_core_restart_charter_2026_04_16.md`
   - week1 checklist = `C:\Users\14574\Quant\PortfolioOS\docs\superpowers\plans\2026-04-16-us-alpha-core-restart-week1.md`
+  - week1 baseline registry = `C:\Users\14574\Quant\PortfolioOS\docs\strategy\us_alpha_core_week1_baseline_registry_2026_04_16.md`
+  - candidate definition sheet = `C:\Users\14574\Quant\PortfolioOS\docs\strategy\us_alpha_core_candidate_definition_sheet_2026_04_16.md`
+  - qualification artifact contract = `C:\Users\14574\Quant\PortfolioOS\docs\strategy\us_alpha_core_qualification_artifact_contract_2026_04_16.md`
 - Stable read:
   - data quality and evaluation-horizon mismatch were both real bottlenecks
   - `announcement-timed SUE` is the main US event alpha
@@ -341,13 +344,20 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     - no package correctness bug was found
     - `signed_spread` is a by-design abstain case, not a repair direction
     - the only plausible package-side tweak is the small `min_evaluation_dates: 20 -> 19` coverage sidecar
+  - Week 1 freeze is now materially defined:
+    - the baseline registry explicitly separates:
+      - current platform-native comparable baselines
+      - external WRDS methodological benchmarks
+      - frozen family references without current-platform scorecards
+    - the eight-candidate field is frozen with exact formulas, direction, cadence, and PIT assumptions
+    - the qualification artifact bundle is frozen so Week 2-3 can run under one report shape
 - Current active branch:
-  - US factor-layer restart charter only; Week 2 qualification has not started yet
+  - US factor-layer restart Week 1 freeze is complete at the specification level; Week 2 qualification has not started yet
 - Next decision node:
-  - end of Week 1 freeze:
-    - frozen baseline scorecard
-    - frozen candidate sheet
-    - frozen qualification contract
+  - start Week 2 on Family A:
+    - `A1` market-residual `84/21` momentum
+    - `A2` sector-residual `84/21` momentum
+    - `A3` vol-managed residual momentum
 - Mainline constraints for this sprint:
   - US only
   - `rank_500_1500` mid-cap universe
@@ -388,9 +398,9 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 ## Recommended Next Steps
 
 1. Complete the Week 1 freeze for the US alpha core restart charter:
-   - frozen baseline scorecard
+   - frozen baseline registry
    - frozen candidate definition sheet
-   - frozen artifact template
+   - frozen artifact contract
 2. Run Week 2 on the highest-priority family first:
    - residual momentum / residual reversal
 3. Treat `min_evaluation_dates: 20 -> 19` only as a sidecar backlog item, not as the mainline objective.
