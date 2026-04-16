@@ -134,6 +134,22 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - practical read:
     - the optimizer is no longer collapsing into near-zero continuous trades solely because of raw-currency cost vs annualized-alpha mismatch
     - any remaining quality issues should now be treated as genuine portfolio-construction or signal problems, not as the old objective-unit bug
+- Optimizer-isolated synthetic-alpha proof is now also live:
+  - runner = `scripts/run_optimizer_isolated_acceptance.py`
+  - module = `src/portfolio_os/optimizer/acceptance_proof.py`
+  - artifacts live under:
+    - `outputs/optimizer_isolated_acceptance_2026-04-16/`
+  - current realistic-context proof read on rebalance date `2025-10-31`:
+    - positive synthetic scales `0.5x -> 1.0x -> 2.0x` all solved `optimal`
+    - `alpha_share_abs_weighted` rose monotonically from `0.1136 -> 0.2883 -> 0.4921`
+    - base-alpha alignment stayed strongly positive (`~0.96`, `~0.94`, `~0.86`)
+    - sign-flip case reversed relative to the same base-alpha ordering:
+      - `base_alignment_spearman ~ -0.93`
+      - `base_top_minus_bottom_weight_delta ~ -0.0300`
+    - repair retained most of the continuous solution gross notional (`~88%` at `0.5x`, `~96%` at `1.0x`, `~98%` at `2.0x`)
+  - practical interpretation:
+    - this is strong evidence that the optimizer can structurally receive alpha once alpha is injected directly into `expected_return`
+    - it is **not** yet proof of full time-series reception under the real bridge, because the real bottleneck still includes sparse alpha activation upstream
 - Alpha-bridge gating diagnosis is now also frozen in:
   - note = `docs/strategy/alpha_bridge_spread_floor_investigation_note_2026_04_15.md`
   - current `spread floor` is an intentional one-sided non-reversal guard from the original Phase 1.5 design, not an accidental implementation leftover
@@ -157,6 +173,127 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - implementation read:
     - runtime can remain on `floor_to_zero` for now because current behavior matches `explicit_abstain`
     - if later downstream consumers distinguish zero-valued alpha vectors from missing alpha coverage, align implementation to the contract explicitly before promotion
+- Real alpha package audit is now also live:
+  - runner = `scripts/run_real_alpha_package_audit.py`
+  - helper = `src/portfolio_os/alpha/package_audit.py`
+  - artifacts live under:
+    - `outputs/real_alpha_package_audit_2026-04-16/`
+  - current read on `manifest_us_expanded_alpha_phase_1_5.yaml`:
+    - `rebalance_count = 12`
+    - `alpha_ready_count = 6`
+    - `alpha_active_count = 2`
+    - corrected terminal-state taxonomy:
+      - `cold_start_count = 6`
+      - `insufficient_history_count = 1`
+      - `spread_floor_to_zero_count = 3`
+      - `guard_zero_count = 3`
+    - among active months, realized mapping is currently wrong on average:
+      - `mean_rank_ic ~ -0.1206`
+      - `positive_rank_ic_ratio = 0`
+      - `mean_realized_top_bottom_spread ~ -7.85%`
+      - `spread_sign_match_ratio = 0`
+    - thickness is not the first failure mode:
+      - gross active trading pnl `~ 562.35`
+      - trading cost pnl `~ -172.52`
+      - net active pnl `~ 389.82`
+      - gross-to-net retention `~ 69.3%`
+  - practical interpretation:
+    - the optimizer is now largely cleared as the first-order bottleneck
+    - the current real alpha package fails mainly because activation is sparse and the few active months currently map the wrong way
+    - however the wrong-way read remains low-confidence at `N=2`; treat it as an observation, not yet a structural conclusion
+    - the next justified work is alpha-package / signal-side diagnosis, not renewed optimizer tuning
+  - diagnostic-only counterfactual spread-floor audit is now also live:
+    - artifacts live under:
+      - `outputs/real_alpha_package_audit_counterfactual_signed_2026-04-16/`
+    - method:
+      - keep the same backtest and optimizer
+      - only replace `spread_floor_to_zero` months with a diagnostic `signed_spread` counterfactual
+      - do **not** treat this as a production recommendation
+    - current read:
+      - `counterfactual_promoted_count = 3`
+      - active sample expands from `2` to `5`
+      - realized mapping improves only modestly:
+        - `mean_rank_ic` moves from `~ -0.1206` to `~ -0.0686`
+        - `positive_rank_ic_ratio = 20%`
+        - `spread_sign_match_ratio = 20%`
+      - thickness worsens materially:
+        - gross active trading pnl drops to `~ 53.46`
+        - net active pnl turns negative at `~ -176.29`
+    - practical interpretation:
+      - opening the spread floor is useful diagnostically because it expands the sample
+      - but it does **not** rescue the package economically
+      - current evidence is therefore:
+        - sparse activation is definitely one bottleneck
+        - removing the floor does not reveal a hidden good package underneath
+        - any next step should stay diagnostic rather than promote a looser production guard
+- Narrow US long-horizon signal extension is now also live:
+  - runner = `scripts/run_us_long_horizon_signal_extension.py`
+  - helper = `src/portfolio_os/alpha/long_horizon.py`
+  - artifacts live under:
+    - `outputs/us_long_horizon_signal_extension_2026-04-16/`
+  - important implementation correction:
+    - factor attribution is now period-aligned by calendar month, not by exact date equality between trading month-end and calendar month-end
+    - this materially weakens the old over-strong read that the operational package itself was just a standard momentum proxy
+  - current proxy read on the same frozen 50-name expanded-US universe:
+    - yfinance-adjusted close history covers all `50/50` names from roughly `2006-05-01` to `2026-04-15`
+    - native-horizon (`5d`) monthly top-bottom spread remains momentum-adjacent, but only moderately:
+      - `Mom beta ~ +0.2377`, `t ~ +2.69`
+      - post-2010 robustness drops materially:
+        - `Mom beta ~ +0.0633`, `t ~ +0.60`
+      - native spread still also carries non-MOM style tilt:
+        - `HML beta ~ +0.2848`
+        - `QMJ beta ~ -0.1764`
+    - deployable operational-horizon (`21d`) spread is **not** materially explained by MOM:
+      - full-sample `Mom beta ~ +0.0158`, `t ~ +0.13`
+      - post-2010 `Mom beta ~ -0.0206`, `t ~ -0.12`
+    - Layer B Stage 2 bad-month cohort decomposition is now also live on the raw operational `21d` spread:
+      - worst-quintile cohort size = `47` months
+      - split = `outer_half 23`, `inner_half 24`, `non_bad 187`
+      - temporal distribution is not identical:
+        - `outer_half median_year ~ 2019`
+        - `inner_half median_year ~ 2014.5`
+        - so the read still carries a real time-mix caveat
+      - pre-2010 historical size coverage is effectively unavailable from the current yfinance shares proxy:
+        - `historical_shares_coverage_ratio = 0` for all pre-2010 cohort rows
+        - treat size-bucket evidence as post-2010-heavy and only directional
+      - relative to non-bad bootstrap nulls, `outer_half` and `inner_half` look materially closer on:
+        - `pre_vol_bucket`
+        - `leg_hhi`
+        - `leg_effective_n`
+        - `long_short_attribution`
+      - sector and industry mixes also look more similar than random non-bad comparisons, but with the static-label caveat:
+        - labels are current-as-of-analysis-date, not historical classifications
+      - `pre_return_bucket` does **not** show the same clean same-type read:
+        - `outer_inner` distance is roughly at the non-bad null median
+        - this weakens any claim that left-tail months share one uniform winner/loser composition story
+      - practical interpretation:
+        - the current best framing is `broad left-tail vulnerability with partial structural consistency`, not `identified independent crash mode`
+        - B3 macro conditioning should stay deferred until there is either a cleaner same-type read or better data coverage
+    - operational-horizon (`21d`) monthly stress view still includes clear negative windows:
+      - `2009-03-31 spread ~ -19.7%`
+      - `2025-10-31 spread ~ -10.4%`
+      - worst observed month in this proxy sample was `2022-12-30` at `~ -35.5%`
+      - `2026-02-27` remains a weaker negative active month at roughly `-3.5%`
+    - conditional decomposition continues to weaken the old self-gating intuition:
+      - high trailing `12m` market state mean spread is roughly flat-to-negative (`~ -0.03%`)
+      - low trailing `12m` market state mean spread stays modestly positive (`~ +0.43%`)
+      - positive trailing signal-spread state actually underperforms nonpositive state on average (`~ -0.40%` vs `~ +0.88%`)
+    - MOM residual analysis on the three key crash windows (`2009-03`, `2022-12`, `2025-10`) now says:
+      - native `5d` mean matching absorption share is only `~ 15.1%`
+      - operational `21d` mean matching absorption share is only `~ 0.3%`
+      - both classify as `independent_residual`
+      - concrete examples:
+        - native `2009-03` is only partially momentum-absorbed (`~45%`)
+        - native `2022-12` and `2025-10` are not absorbed; `2022-12` is actually offset by positive MOM
+        - operational `2009-03`, `2022-12`, and `2025-10` are all almost entirely residual to MOM
+  - practical interpretation:
+    - this is now a two-layer read, not a one-layer label:
+      - the signal is momentum-adjacent at its native `5d` horizon
+      - but the current deployable `21d` package losses are mostly **not** explained away by standard MOM exposure
+    - the current `spread floor` should be treated as a weak semantic filter, not as real crash protection
+    - standard momentum crash protection is therefore **not** yet the default next template for this package
+    - if this line continues, the next research question is custom residual crash mode / regime handling, not direct BSC/DM porting
+    - this remains a fast proxy study until rerun on CRSP-grade history; do not over-upgrade it into a final research verdict
 
 ## US Research State
 

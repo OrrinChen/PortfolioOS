@@ -591,9 +591,12 @@ def test_run_backtest_alpha_manifest_exposes_alpha_panel_and_comparisons(tmp_pat
         "expected_return",
         "quantile",
         "signal_strength_confidence",
+        "raw_mean_top_bottom_spread",
         "annualized_top_bottom_spread",
         "period_top_bottom_spread",
         "decision_horizon_days",
+        "negative_spread_protocol",
+        "alpha_protocol_status",
     } <= set(result.alpha_panel.columns)
     assert int(result.alpha_panel["decision_horizon_days"].max()) > 5
     assert result.summary["alpha_model"]["enabled"] is True

@@ -81,9 +81,12 @@ _ALPHA_PANEL_COLUMNS = [
     "expected_return",
     "quantile",
     "signal_strength_confidence",
+    "raw_mean_top_bottom_spread",
     "annualized_top_bottom_spread",
     "period_top_bottom_spread",
     "decision_horizon_days",
+    "negative_spread_protocol",
+    "alpha_protocol_status",
 ]
 
 
