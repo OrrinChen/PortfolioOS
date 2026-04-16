@@ -28,6 +28,9 @@ _VOLATILITY_LOOKBACK_DAYS = 63
 _VOLATILITY_FLOOR = 0.20
 _IDIOSYNCRATIC_VOL_LOOKBACK_DAYS = 63
 _MAX_LOOKBACK_DAYS = 21
+_ILLIQUIDITY_LEVEL_LOOKBACK_DAYS = 63
+_ILLIQUIDITY_SHORT_LOOKBACK_DAYS = 21
+_SHORT_REVERSAL_LOOKBACK_DAYS = 5
 _ANNUALIZATION_FACTOR = 252.0
 _QUANTILES = 5
 _MIN_EFFECTIVE_NAMES = 5
@@ -84,6 +87,27 @@ FAMILY_A_DEFINITIONS: dict[str, AlphaCoreCandidateDefinition] = {
     ),
 }
 
+FAMILY_B_DEFINITIONS: dict[str, AlphaCoreCandidateDefinition] = {
+    "B1": AlphaCoreCandidateDefinition(
+        candidate_id="B1",
+        family_id="B",
+        candidate_name="Amihud Illiquidity Level",
+        description="Negative trailing 63-day median daily Amihud illiquidity using daily dollar volume.",
+    ),
+    "B2": AlphaCoreCandidateDefinition(
+        candidate_id="B2",
+        family_id="B",
+        candidate_name="Illiquidity Shock / Change",
+        description="Negative 21-day versus 63-day illiquidity shock using daily dollar volume.",
+    ),
+    "B3": AlphaCoreCandidateDefinition(
+        candidate_id="B3",
+        family_id="B",
+        candidate_name="Abnormal-Turnover-Conditioned Short-Term Reversal",
+        description="Five-day reversal conditioned on abnormal 5-day versus 63-day dollar volume.",
+    ),
+}
+
 FAMILY_C_DEFINITIONS: dict[str, AlphaCoreCandidateDefinition] = {
     "C1": AlphaCoreCandidateDefinition(
         candidate_id="C1",
@@ -101,6 +125,7 @@ FAMILY_C_DEFINITIONS: dict[str, AlphaCoreCandidateDefinition] = {
 
 ALL_CANDIDATE_DEFINITIONS: dict[str, AlphaCoreCandidateDefinition] = {
     **FAMILY_A_DEFINITIONS,
+    **FAMILY_B_DEFINITIONS,
     **FAMILY_C_DEFINITIONS,
 }
 
@@ -186,6 +211,30 @@ def _normalize_universe_reference(frame: pd.DataFrame) -> pd.DataFrame:
     if frame.empty:
         raise InputValidationError("Universe reference file produced an empty ticker reference frame.")
     return frame
+
+
+def _normalize_liquidity_long(frame: pd.DataFrame) -> pd.DataFrame:
+    required = {"date", "ticker", "dollar_volume"}
+    missing = required - set(frame.columns)
+    if missing:
+        raise InputValidationError(
+            "Liquidity file is missing required columns: " + ", ".join(sorted(missing))
+        )
+    work = frame.loc[:, ["date", "ticker", "dollar_volume"]].copy()
+    work["date"] = pd.to_datetime(work["date"], errors="coerce").dt.normalize()
+    work["ticker"] = work["ticker"].astype(str)
+    work["dollar_volume"] = pd.to_numeric(work["dollar_volume"], errors="coerce")
+    work = work.dropna(subset=["date", "ticker", "dollar_volume"]).copy()
+    duplicated = work.duplicated(subset=["date", "ticker"], keep=False)
+    if duplicated.any():
+        raise InputValidationError("Liquidity file contains duplicate (date, ticker) rows.")
+    if work.empty:
+        raise InputValidationError("Liquidity file produced an empty dollar-volume frame.")
+    return work.sort_values(["date", "ticker"]).reset_index(drop=True)
+
+
+def _load_liquidity_long(path: str | Path) -> pd.DataFrame:
+    return _normalize_liquidity_long(pd.read_csv(path))
 
 
 def _reconstruct_price_panel(
@@ -402,6 +451,70 @@ def build_family_c_monthly_signal_frame(
     return frame
 
 
+def build_family_b_monthly_signal_frame(
+    *,
+    returns_panel: pd.DataFrame,
+    universe_reference: pd.DataFrame,
+    liquidity_long: pd.DataFrame,
+    candidate_id: str,
+) -> pd.DataFrame:
+    if candidate_id not in FAMILY_B_DEFINITIONS:
+        raise InputValidationError(f"Unsupported Family B candidate_id: {candidate_id}")
+
+    inputs = _prepare_family_a_inputs(
+        returns_panel,
+        universe_reference=_normalize_universe_reference(universe_reference.copy()),
+    )
+    liquidity_frame = _normalize_liquidity_long(liquidity_long.copy())
+    dollar_volume_panel = (
+        liquidity_frame.pivot(index="date", columns="ticker", values="dollar_volume")
+        .sort_index()
+        .reindex(index=inputs.returns_panel.index, columns=inputs.returns_panel.columns)
+    )
+    daily_illiq = inputs.returns_panel.abs().div(dollar_volume_panel.clip(lower=1.0))
+    illiq63 = daily_illiq.rolling(
+        window=_ILLIQUIDITY_LEVEL_LOOKBACK_DAYS,
+        min_periods=_ILLIQUIDITY_LEVEL_LOOKBACK_DAYS,
+    ).median()
+    illiq21 = daily_illiq.rolling(
+        window=_ILLIQUIDITY_SHORT_LOOKBACK_DAYS,
+        min_periods=_ILLIQUIDITY_SHORT_LOOKBACK_DAYS,
+    ).median()
+    adv5 = dollar_volume_panel.rolling(
+        window=_SHORT_REVERSAL_LOOKBACK_DAYS,
+        min_periods=_SHORT_REVERSAL_LOOKBACK_DAYS,
+    ).mean()
+    adv63 = dollar_volume_panel.rolling(
+        window=_ILLIQUIDITY_LEVEL_LOOKBACK_DAYS,
+        min_periods=_ILLIQUIDITY_LEVEL_LOOKBACK_DAYS,
+    ).mean()
+    reversal5 = -(inputs.price_panel / inputs.price_panel.shift(_SHORT_REVERSAL_LOOKBACK_DAYS) - 1.0)
+    abnormal_volume = (adv5 / adv63.clip(lower=1.0)).clip(lower=1.0) - 1.0
+
+    if candidate_id == "B1":
+        selected_signal = -illiq63
+    elif candidate_id == "B2":
+        selected_signal = -((illiq21 / illiq63.clip(lower=1e-12)) - 1.0)
+    else:
+        selected_signal = reversal5 * abnormal_volume
+
+    rows: list[dict[str, object]] = []
+    for decision_date in inputs.decision_dates:
+        signal_row = selected_signal.loc[decision_date]
+        for ticker, signal_value in signal_row.items():
+            rows.append(
+                {
+                    "date": decision_date.strftime("%Y-%m-%d"),
+                    "ticker": str(ticker),
+                    "signal_value": float(signal_value) if pd.notna(signal_value) else np.nan,
+                }
+            )
+    frame = pd.DataFrame(rows).dropna(subset=["signal_value"]).sort_values(["date", "ticker"]).reset_index(drop=True)
+    if frame.empty:
+        raise InputValidationError(f"Candidate {candidate_id} produced an empty monthly signal frame.")
+    return frame
+
+
 def _build_monthly_forward_return_frame(inputs: _FamilyAInputs) -> pd.DataFrame:
     rows: list[dict[str, object]] = []
     for decision_date in inputs.decision_dates:
@@ -426,11 +539,21 @@ def _build_candidate_signal_frame(
     candidate_id: str,
     returns_panel: pd.DataFrame,
     universe_reference: pd.DataFrame,
+    liquidity_long: pd.DataFrame | None = None,
 ) -> pd.DataFrame:
     if candidate_id in FAMILY_A_DEFINITIONS:
         return build_family_a_monthly_signal_frame(
             returns_panel=returns_panel,
             universe_reference=universe_reference,
+            candidate_id=candidate_id,
+        )
+    if candidate_id in FAMILY_B_DEFINITIONS:
+        if liquidity_long is None:
+            raise InputValidationError(f"Candidate {candidate_id} requires a liquidity_file with daily dollar volume.")
+        return build_family_b_monthly_signal_frame(
+            returns_panel=returns_panel,
+            universe_reference=universe_reference,
+            liquidity_long=liquidity_long,
             candidate_id=candidate_id,
         )
     if candidate_id in FAMILY_C_DEFINITIONS:
@@ -705,6 +828,7 @@ def run_alpha_core_candidate(
     candidate_id: str,
     returns_file: str | Path,
     universe_reference_file: str | Path,
+    liquidity_file: str | Path | None,
     config_file: str | Path,
     output_dir: str | Path,
     as_of_date: str,
@@ -731,12 +855,14 @@ def run_alpha_core_candidate(
     if ordered_reference.empty:
         raise InputValidationError("No overlap between returns_file tickers and universe_reference_file.")
     returns_panel = returns_panel.reindex(columns=ordered_reference["ticker"].tolist())
+    liquidity_long = _load_liquidity_long(liquidity_file) if liquidity_file is not None else None
 
     inputs = _prepare_family_a_inputs(returns_panel, universe_reference=ordered_reference)
     candidate_signal_frame = _build_candidate_signal_frame(
         candidate_id=candidate_id,
         returns_panel=returns_panel,
         universe_reference=ordered_reference,
+        liquidity_long=liquidity_long,
     )
     baseline_signal_frame = _build_baseline_signal_frame(inputs)
     fee_config, slippage_config = _load_fee_and_slippage(config_file)
@@ -838,6 +964,7 @@ def run_alpha_core_candidate(
         "input_spec": {
             "returns_file": str(Path(returns_file).resolve()),
             "universe_reference_file": str(Path(universe_reference_file).resolve()),
+            "liquidity_file": str(Path(liquidity_file).resolve()) if liquidity_file is not None else None,
             "config_file": str(Path(config_file).resolve()),
             "market_proxy": "equal_weight_universe_returns",
             "liquidity_cut_fraction": _LIQUIDITY_CUT_FRACTION,

@@ -362,6 +362,15 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     - first-pass Family C artifacts now also exist under:
       - `C:\Users\14574\Quant\PortfolioOS\.worktrees\codex-us-alpha-week1-freeze\outputs\us_alpha_core_restart\C1\2026-04-16\`
       - `C:\Users\14574\Quant\PortfolioOS\.worktrees\codex-us-alpha-week1-freeze\outputs\us_alpha_core_restart\C2\2026-04-16\`
+    - Family B has now been unblocked on the checked-in sample via a local daily dollar-volume panel:
+      - generated liquidity input:
+        - `C:\Users\14574\Quant\PortfolioOS\.worktrees\codex-us-alpha-week1-freeze\outputs\us_alpha_core_restart\liquidity_inputs\2026-04-16\liquidity_long.csv`
+      - first-pass Family B artifacts now exist under:
+        - `C:\Users\14574\Quant\PortfolioOS\.worktrees\codex-us-alpha-week1-freeze\outputs\us_alpha_core_restart\B1\2026-04-16\`
+        - `C:\Users\14574\Quant\PortfolioOS\.worktrees\codex-us-alpha-week1-freeze\outputs\us_alpha_core_restart\B2\2026-04-16\`
+        - `C:\Users\14574\Quant\PortfolioOS\.worktrees\codex-us-alpha-week1-freeze\outputs\us_alpha_core_restart\B3\2026-04-16\`
+    - cross-family first-pass synthesis artifact:
+      - `C:\Users\14574\Quant\PortfolioOS\.worktrees\codex-us-alpha-week1-freeze\outputs\us_alpha_core_restart\week2_interim_synthesis\2026-04-16\week2_interim_synthesis.md`
   - First-pass read on the checked-in platform-native sample (`50` expanded-US names, not full `rank_500_1500`):
     - `A1`:
       - `oos_mean_rank_ic ~ 0.0078`
@@ -392,20 +401,35 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
       - `oos_alpha_only_tstat ~ -1.22`
       - `spread_corr_vs_baseline ~ 0.51`
       - direction is wrong on the current sample and it fails admission / subperiod
+    - `B1`:
+      - `oos_mean_rank_ic ~ -0.0395`
+      - `oos_rank_ic_tstat ~ -0.49`
+      - `oos_alpha_only_tstat ~ -0.69`
+      - fails economically despite clean coverage (`coverage_median ~ 0.80`)
+    - `B2`:
+      - `oos_mean_rank_ic ~ 0.0215`
+      - `oos_rank_ic_tstat ~ 0.31`
+      - `oos_alpha_only_tstat ~ 1.20`
+      - `gross_to_net_retention ~ 0.45`
+      - best Family B candidate so far, but still misses admission / subperiod and does not clear the 50% retention line
+    - `B3`:
+      - `oos_mean_rank_ic ~ 0.0398`
+      - `oos_rank_ic_tstat ~ 0.58`
+      - `oos_alpha_only_tstat ~ -0.13`
+      - orthogonal enough, but economics stay too weak
   - Interpretation boundary:
     - Week 2 has genuinely started and produced comparable contract-shaped bundles
-    - but there is no Family A or Family C winner yet
+    - and all three planned family directions (`A`, `B`, `C`) now have first-pass reads on the current 50-name platform-native sample
+    - but there is still no Family A / B / C winner yet
+    - current first-pass leaderboard is:
+      - raw rank-IC: `C1`
+      - alpha-only t-stat: `B2`
+      - closest all-around platform-native candidate: `A2`
     - current results must be read as platform-native narrow-sample evidence, not full mid-cap qualification
 - Next decision node:
   - decide whether to:
-    - pause to do a Week 2 interim synthesis across `A` and `C`
-    - or explicitly add a historical daily dollar-volume / turnover panel before opening Family `B`
-  - current Family `B` blocker:
-    - the checked-in expanded-US sample has static `avg_adv_20d`, but not the historical daily liquidity series required to evaluate:
-      - `B1` Amihud level
-      - `B2` illiquidity shock
-      - `B3` abnormal-turnover-conditioned reversal
-    - do not silently approximate Family `B` with the static snapshot; either add the missing history or treat `B` as not yet runnable on the current sample
+    - write a Week 2 interim synthesis / scorecard across all eight frozen candidates
+    - or move directly into a Week 4-style stop/go read using the current first-pass bundles as the narrow-sample evidence base
 - Mainline constraints for this sprint:
   - US only
   - `rank_500_1500` mid-cap universe

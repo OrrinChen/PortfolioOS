@@ -9,6 +9,7 @@ import pytest
 
 from portfolio_os.alpha.qualification import (
     build_family_a_monthly_signal_frame,
+    build_family_b_monthly_signal_frame,
     build_family_c_monthly_signal_frame,
     run_alpha_core_candidate,
 )
@@ -103,6 +104,49 @@ def _write_family_a_fixture(tmp_path: Path) -> tuple[Path, Path]:
     return returns_path, reference_path
 
 
+def _write_family_b_liquidity_fixture(tmp_path: Path, returns_path: Path) -> Path:
+    returns_frame = pd.read_csv(returns_path)
+    returns_frame["date"] = pd.to_datetime(returns_frame["date"])
+    last_date = returns_frame["date"].max()
+    shock_start = last_date - pd.Timedelta(days=35)
+    spike_start = last_date - pd.Timedelta(days=7)
+
+    base_dollar_volume = {
+        "TALP": 25_000_000.0,
+        "THIV": 1_200_000.0,
+        "TMID": 8_000_000.0,
+        "TLAG": 6_000_000.0,
+        "TDEF": 10_000_000.0,
+        "HALP": 24_000_000.0,
+        "HHIV": 1_100_000.0,
+        "HMID": 8_500_000.0,
+        "HLAG": 6_500_000.0,
+        "HDEF": 10_500_000.0,
+    }
+
+    rows: list[dict[str, object]] = []
+    for row in returns_frame.itertuples(index=False):
+        date_value = pd.Timestamp(row.date)
+        ticker = str(row.ticker)
+        dollar_volume = float(base_dollar_volume[ticker])
+        if ticker == "TMID" and date_value >= shock_start:
+            dollar_volume *= 3.0
+        if ticker == "THIV" and date_value >= shock_start:
+            dollar_volume *= 0.35
+        if ticker == "TLAG" and date_value >= spike_start:
+            dollar_volume *= 5.0
+        rows.append(
+            {
+                "date": date_value.strftime("%Y-%m-%d"),
+                "ticker": ticker,
+                "dollar_volume": dollar_volume,
+            }
+        )
+    liquidity_path = tmp_path / "liquidity_long.csv"
+    pd.DataFrame(rows).to_csv(liquidity_path, index=False)
+    return liquidity_path
+
+
 def test_build_family_a_monthly_signal_frame_preserves_residual_momentum_direction(tmp_path: Path) -> None:
     returns_path, reference_path = _write_family_a_fixture(tmp_path)
     returns_panel = load_alpha_returns_panel(returns_path)
@@ -158,11 +202,48 @@ def test_build_family_c_monthly_signal_frame_preserves_low_risk_direction(tmp_pa
     assert float(c2_latest.loc["TLAG", "signal_value"]) > float(c2_latest.loc["TALP", "signal_value"])
 
 
+def test_build_family_b_monthly_signal_frame_preserves_liquidity_directions(tmp_path: Path) -> None:
+    returns_path, reference_path = _write_family_a_fixture(tmp_path)
+    liquidity_path = _write_family_b_liquidity_fixture(tmp_path, returns_path)
+    returns_panel = load_alpha_returns_panel(returns_path)
+    reference_frame = pd.read_csv(reference_path)
+    liquidity_frame = pd.read_csv(liquidity_path)
+
+    b1_frame = build_family_b_monthly_signal_frame(
+        returns_panel=returns_panel,
+        universe_reference=reference_frame,
+        liquidity_long=liquidity_frame,
+        candidate_id="B1",
+    )
+    b2_frame = build_family_b_monthly_signal_frame(
+        returns_panel=returns_panel,
+        universe_reference=reference_frame,
+        liquidity_long=liquidity_frame,
+        candidate_id="B2",
+    )
+    b3_frame = build_family_b_monthly_signal_frame(
+        returns_panel=returns_panel,
+        universe_reference=reference_frame,
+        liquidity_long=liquidity_frame,
+        candidate_id="B3",
+    )
+
+    latest_date = b1_frame["date"].max()
+    b1_latest = b1_frame.loc[b1_frame["date"] == latest_date].set_index("ticker")
+    b2_latest = b2_frame.loc[b2_frame["date"] == latest_date].set_index("ticker")
+    b3_latest = b3_frame.loc[b3_frame["date"] == latest_date].set_index("ticker")
+
+    assert float(b1_latest.loc["TALP", "signal_value"]) > float(b1_latest.loc["THIV", "signal_value"])
+    assert float(b2_latest.loc["TMID", "signal_value"]) > float(b2_latest.loc["THIV", "signal_value"])
+    assert float(b3_latest.loc["TMID", "signal_value"]) > float(b3_latest.loc["TDEF", "signal_value"])
+
+
 @pytest.mark.parametrize(
-    ("candidate_id", "family_id"),
+    ("candidate_id", "family_id", "uses_liquidity"),
     [
-        ("A1", "A"),
-        ("C1", "C"),
+        ("A1", "A", False),
+        ("B1", "B", True),
+        ("C1", "C", False),
     ],
 )
 def test_run_alpha_core_candidate_writes_week2_contract_bundle(
@@ -170,14 +251,17 @@ def test_run_alpha_core_candidate_writes_week2_contract_bundle(
     tmp_path: Path,
     candidate_id: str,
     family_id: str,
+    uses_liquidity: bool,
 ) -> None:
     returns_path, reference_path = _write_family_a_fixture(tmp_path)
+    liquidity_path = _write_family_b_liquidity_fixture(tmp_path, returns_path)
     output_dir = tmp_path / f"{candidate_id}_run"
 
     result = run_alpha_core_candidate(
         candidate_id=candidate_id,
         returns_file=returns_path,
         universe_reference_file=reference_path,
+        liquidity_file=liquidity_path if uses_liquidity else None,
         config_file=project_root / "config" / "us_expanded_alpha_phase_1_5.yaml",
         output_dir=output_dir,
         as_of_date="2026-04-16",
