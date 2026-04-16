@@ -124,3 +124,42 @@ But the semantic contract is now:
 - negative trailing spread means `explicit_abstain`
 
 If a future downstream consumer starts to distinguish zero-valued alpha vectors from missing alpha coverage, implementation should be aligned to this contract explicitly rather than relying on the current accidental behavioral equivalence.
+
+## Contract-Runtime Gap
+
+There is currently an **explicit semantic gap** between the selected contract and the runtime representation:
+
+- contract meaning:
+  - negative trailing spread = `explicit_abstain`
+- current runtime representation:
+  - negative trailing spread still flows through `floor_to_zero`
+
+This is acceptable **only because** the current objective stack treats the two representations as behaviorally equivalent on guard dates.
+
+This equivalence is a property of the current downstream stack, not a permanent truth about the alpha bridge.
+
+### What This Means Today
+
+- do not treat the current runtime `floor_to_zero` path as proof that the semantic contract is "active zero prediction"
+- do not infer a distinct active-zero protocol from today's guard-date zero vectors
+- treat the current runtime behavior as an implementation detail that happens to match the abstain contract under the present objective
+
+### Migration Triggers
+
+Runtime should be aligned explicitly to the `explicit_abstain` contract if any of the following become true:
+
+1. a downstream module needs to distinguish missing alpha coverage from zero-valued active predictions
+   - examples:
+     - prior-based fallback logic
+     - confidence-aware objective scaling
+     - signal-health or coverage metrics
+
+2. a second signal is combined into the same bridge/downstream alpha layer
+   - reason:
+     - multi-signal composition needs to distinguish "this signal abstained" from "this signal actively predicts zero"
+
+3. promotion, registry, or audit tooling starts to report signal activity / inactivity as a formal metric
+   - reason:
+     - activity accounting becomes ambiguous if guard-date zero vectors are left semantically overloaded
+
+Until one of those triggers fires, the gap is intentional technical debt with an explicit record, not a current bug.

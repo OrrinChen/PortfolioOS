@@ -7,6 +7,7 @@ import pytest
 from portfolio_os.alpha.bridge_semantics import (
     compute_hold_through_metrics,
     recommend_guard_protocol,
+    render_guard_protocol_comparison_note,
     resolve_negative_spread_protocol,
     summarize_guard_protocol_results,
 )
@@ -147,3 +148,64 @@ def test_recommend_guard_protocol_prefers_high_hold_through_then_low_turnover() 
     )
 
     assert recommend_guard_protocol(summary) == "explicit_abstain"
+
+
+def test_render_guard_protocol_comparison_note_calls_out_runtime_contract_gap() -> None:
+    detail = pd.DataFrame(
+        [
+            {
+                "rebalance_date": "2025-11-28",
+                "protocol": "explicit_abstain",
+                "alpha_snapshot_present": False,
+                "zero_expected_return_count": 0,
+                "turnover": 0.02,
+                "gross_traded_notional": 20_000.0,
+                "hold_through_rate_count": 1.0,
+                "hold_through_rate_value": 1.0,
+            },
+            {
+                "rebalance_date": "2025-11-28",
+                "protocol": "floor_to_zero",
+                "alpha_snapshot_present": True,
+                "zero_expected_return_count": 50,
+                "turnover": 0.02,
+                "gross_traded_notional": 20_000.0,
+                "hold_through_rate_count": 1.0,
+                "hold_through_rate_value": 1.0,
+            },
+        ]
+    )
+    summary = pd.DataFrame(
+        [
+            {
+                "protocol": "explicit_abstain",
+                "guard_event_count": 1,
+                "mean_turnover": 0.02,
+                "mean_gross_traded_notional": 20_000.0,
+                "mean_hold_through_rate_count": 1.0,
+                "mean_hold_through_rate_value": 1.0,
+                "mean_turnover_delta_vs_baseline": 0.0,
+                "mean_gross_traded_notional_delta_vs_baseline": 0.0,
+            },
+            {
+                "protocol": "floor_to_zero",
+                "guard_event_count": 1,
+                "mean_turnover": 0.02,
+                "mean_gross_traded_notional": 20_000.0,
+                "mean_hold_through_rate_count": 1.0,
+                "mean_hold_through_rate_value": 1.0,
+                "mean_turnover_delta_vs_baseline": 0.0,
+                "mean_gross_traded_notional_delta_vs_baseline": 0.0,
+            },
+        ]
+    )
+
+    note = render_guard_protocol_comparison_note(
+        detail_frame=detail,
+        summary_frame=summary,
+        baseline_protocol="explicit_abstain",
+        recommended_protocol="explicit_abstain",
+    )
+
+    assert "runtime still uses `floor_to_zero`" in note
+    assert "zero-valued expected returns under `floor_to_zero` arise from the guard path" in note

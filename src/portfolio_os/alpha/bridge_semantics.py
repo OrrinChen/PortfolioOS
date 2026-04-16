@@ -237,9 +237,21 @@ def render_guard_protocol_comparison_note(
         "",
         f"- guard event count: `{int(detail_frame['rebalance_date'].nunique()) if not detail_frame.empty else 0}`",
         f"- baseline protocol for turnover deltas: `{baseline_protocol}`",
+        "- current runtime still uses `floor_to_zero` while the semantic contract prefers `explicit_abstain`.",
     ]
     if recommended_protocol:
         lines.append(f"- recommended protocol: `{recommended_protocol}`")
+    if not detail_frame.empty:
+        floor_zero_count = 0
+        floor_rows = detail_frame.loc[detail_frame["protocol"] == "floor_to_zero"].copy()
+        if not floor_rows.empty and "zero_expected_return_count" in floor_rows.columns:
+            floor_zero_count = int(pd.to_numeric(floor_rows["zero_expected_return_count"], errors="coerce").fillna(0).sum())
+        abstain_rows = detail_frame.loc[detail_frame["protocol"] == "explicit_abstain"].copy()
+        if not floor_rows.empty and not abstain_rows.empty:
+            lines.append(
+                "- In this guard-event comparison, zero-valued expected returns under `floor_to_zero` arise from the guard path itself; they should not be read as evidence of a separate active-zero prediction protocol."
+            )
+            lines.append(f"- Observed guard-path zero expected-return rows under `floor_to_zero`: `{floor_zero_count}`")
     lines.extend(["", "## Protocol Summary", ""])
     if summary_frame.empty:
         lines.append("- No guard-event rows were available.")
