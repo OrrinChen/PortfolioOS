@@ -351,6 +351,8 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
       - frozen family references without current-platform scorecards
     - the eight-candidate field is frozen with exact formulas, direction, cadence, and PIT assumptions
     - the qualification artifact bundle is frozen so Week 2-3 can run under one report shape
+  - Week 4 stop/go closeout is now also written:
+    - `C:\Users\14574\Quant\PortfolioOS\.worktrees\codex-us-alpha-week1-freeze\docs\strategy\us_alpha_core_week4_stop_go_note_2026_04_16.md`
 - Current active branch:
   - US factor-layer restart has entered Week 2 under a new platform-native qualification engine:
     - implementation path:
@@ -426,10 +428,16 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
       - alpha-only t-stat: `B2`
       - closest all-around platform-native candidate: `A2`
     - current results must be read as platform-native narrow-sample evidence, not full mid-cap qualification
+  - Week 4 stop/go decision on the current evidence base:
+    - `STOP`
+    - no candidate clears the chartered winner definition
+    - Weeks 5-8 do not continue under the frozen sprint
 - Next decision node:
   - decide whether to:
-    - write a Week 2 interim synthesis / scorecard across all eight frozen candidates
-    - or move directly into a Week 4-style stop/go read using the current first-pass bundles as the narrow-sample evidence base
+    - leave the US alpha core restart closed on the current platform-native evidence base
+    - or explicitly reopen under a new decision, for example:
+      - a full `rank_500_1500` rerun under the same contract
+      - a new charter with a different candidate field or data layer
 - Mainline constraints for this sprint:
   - US only
   - `rank_500_1500` mid-cap universe
