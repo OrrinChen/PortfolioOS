@@ -5,9 +5,11 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
+from portfolio_os.alpha.bridge_semantics import AlphaSpreadProtocolDecision
 from portfolio_os.alpha.backtest_bridge import (
     build_alpha_only_target_weights,
     build_alpha_snapshot_for_rebalance,
+    build_alpha_snapshot_for_rebalance_protocol,
 )
 
 
@@ -115,3 +117,48 @@ def test_build_alpha_snapshot_deannualizes_expected_return_to_decision_horizon(t
     assert int(frame["decision_horizon_days"].iloc[0]) == 21
     assert period_spread == pytest.approx((1.0 + annualized_spread) ** (21.0 / 252.0) - 1.0)
     assert frame["expected_return"].to_numpy(dtype=float) == pytest.approx(expected_returns.to_numpy(dtype=float))
+
+
+def test_build_alpha_snapshot_protocol_returns_metadata_for_default_floor_mode(tmp_path: Path) -> None:
+    returns_path = _write_alpha_bridge_returns_fixture(tmp_path)
+
+    result = build_alpha_snapshot_for_rebalance_protocol(
+        returns_file=returns_path,
+        rebalance_date="2025-08-29",
+        quantiles=5,
+        min_evaluation_dates=20,
+        negative_spread_protocol="floor_to_zero",
+    )
+
+    assert result.snapshot is not None
+    assert result.protocol_decision.protocol == "floor_to_zero"
+    assert result.history_length >= 20
+    assert result.snapshot.current_cross_section["negative_spread_protocol"].nunique() == 1
+    assert result.snapshot.current_cross_section["negative_spread_protocol"].iloc[0] == "floor_to_zero"
+
+
+def test_build_alpha_snapshot_protocol_can_explicitly_abstain(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    returns_path = _write_alpha_bridge_returns_fixture(tmp_path)
+
+    monkeypatch.setattr(
+        "portfolio_os.alpha.backtest_bridge.resolve_negative_spread_protocol",
+        lambda *args, **kwargs: AlphaSpreadProtocolDecision(
+            protocol="explicit_abstain",
+            status="explicit_abstain",
+            raw_mean_top_bottom_spread=-0.0032,
+            annualized_top_bottom_spread=None,
+            period_top_bottom_spread=None,
+            should_abstain=True,
+        ),
+    )
+
+    result = build_alpha_snapshot_for_rebalance_protocol(
+        returns_file=returns_path,
+        rebalance_date="2025-08-29",
+        quantiles=5,
+        min_evaluation_dates=20,
+        negative_spread_protocol="explicit_abstain",
+    )
+
+    assert result.snapshot is None
+    assert result.protocol_decision.status == "explicit_abstain"

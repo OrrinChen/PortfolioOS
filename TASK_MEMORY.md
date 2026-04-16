@@ -143,6 +143,20 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     - `spread_floor_to_zero_months = 3`
   - practical implication:
     - do not treat `risk_term = 0.3` time-series confirmation as the next irreversible step until spread-floor semantics are either kept explicitly or replaced explicitly
+- Alpha-bridge semantic closeout is now also frozen in:
+  - contract = `docs/strategy/alpha_bridge_semantic_contract.md`
+  - offline guard-event comparison artifacts live under:
+    - `outputs/alpha_bridge_semantic_comparison_2026-04-15/`
+  - three-event read:
+    - `floor_to_zero` and `explicit_abstain` were behaviorally identical under the current objective
+    - `signed_spread` was the only protocol that changed optimizer behavior materially
+    - it raised mean guard-event turnover from about `1.15%` to about `2.17%`
+  - semantic decision:
+    - selected contract = `explicit_abstain`
+    - rationale = cleaner "no alpha view" semantics with no current behavioral cost versus `floor_to_zero`
+  - implementation read:
+    - runtime can remain on `floor_to_zero` for now because current behavior matches `explicit_abstain`
+    - if later downstream consumers distinguish zero-valued alpha vectors from missing alpha coverage, align implementation to the contract explicitly before promotion
 
 ## US Research State
 

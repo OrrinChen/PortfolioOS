@@ -10,6 +10,11 @@ import numpy as np
 import pandas as pd
 
 from portfolio_os.alpha.acceptance import AlphaRecipeConfig
+from portfolio_os.alpha.bridge_semantics import (
+    AlphaNegativeSpreadProtocol,
+    AlphaSpreadProtocolDecision,
+    resolve_negative_spread_protocol,
+)
 from portfolio_os.alpha.research import (
     build_alpha_ic_frame,
     build_alpha_research_frame,
@@ -44,6 +49,17 @@ class AlphaRebalanceSnapshot:
     ic_frame: pd.DataFrame
     current_cross_section: pd.DataFrame
     alpha_only_target_weights: dict[str, float]
+
+
+@dataclass(frozen=True)
+class AlphaProtocolSnapshotResult:
+    """Protocol-aware alpha snapshot plus semantic decision metadata."""
+
+    rebalance_date: pd.Timestamp
+    snapshot: AlphaRebalanceSnapshot | None
+    protocol_decision: AlphaSpreadProtocolDecision
+    history_length: int
+    confidence: float
 
 
 def _quantile_buckets(scores: pd.Series, *, quantiles: int) -> pd.Series:
@@ -120,6 +136,36 @@ def build_alpha_snapshot_for_rebalance(
 ) -> AlphaRebalanceSnapshot:
     """Build one walk-forward alpha snapshot aligned to a rebalance date."""
 
+    result = build_alpha_snapshot_for_rebalance_protocol(
+        returns_file=returns_file,
+        rebalance_date=rebalance_date,
+        quantiles=quantiles,
+        min_evaluation_dates=min_evaluation_dates,
+        zscore_winsor_limit=zscore_winsor_limit,
+        t_stat_full_confidence=t_stat_full_confidence,
+        max_abs_expected_return=max_abs_expected_return,
+        decision_horizon_days=decision_horizon_days,
+        negative_spread_protocol="floor_to_zero",
+    )
+    if result.snapshot is None:
+        raise InputValidationError("floor_to_zero alpha protocol unexpectedly returned no snapshot.")
+    return result.snapshot
+
+
+def build_alpha_snapshot_for_rebalance_protocol(
+    *,
+    returns_file: str | Path,
+    rebalance_date: str | pd.Timestamp,
+    quantiles: int = 5,
+    min_evaluation_dates: int = 20,
+    zscore_winsor_limit: float = 3.0,
+    t_stat_full_confidence: float = 3.0,
+    max_abs_expected_return: float = 0.30,
+    decision_horizon_days: int | None = None,
+    negative_spread_protocol: AlphaNegativeSpreadProtocol = "floor_to_zero",
+) -> AlphaProtocolSnapshotResult:
+    """Build a protocol-aware alpha snapshot aligned to a rebalance date."""
+
     rebalance_ts = pd.Timestamp(rebalance_date).normalize()
     effective_horizon_days = int(decision_horizon_days or _ACCEPTED_RECIPE.forward_horizon_days)
     if effective_horizon_days <= 0:
@@ -181,17 +227,28 @@ def build_alpha_snapshot_for_rebalance(
     ).astype(int)
 
     history = ic_frame.loc[pd.to_datetime(ic_frame["date"]) < rebalance_ts].copy()
+    raw_mean_top_bottom_spread = float(history["top_bottom_spread"].mean()) if not history.empty else 0.0
     if len(history) < int(min_evaluation_dates):
         confidence = 0.0
-        annualized_spread = 0.0
+        protocol_decision = AlphaSpreadProtocolDecision(
+            protocol=negative_spread_protocol,
+            status="insufficient_history",
+            raw_mean_top_bottom_spread=raw_mean_top_bottom_spread,
+            annualized_top_bottom_spread=0.0,
+            period_top_bottom_spread=0.0,
+            should_abstain=False,
+        )
     else:
         t_stat = _rank_ic_t_stat(history["rank_ic"])
         confidence = float(np.clip(t_stat / float(t_stat_full_confidence), 0.0, 1.0))
-        annualized_spread = float(
-            max(float(history["top_bottom_spread"].mean()), 0.0)
-            * (_ANNUALIZATION_FACTOR / float(_ACCEPTED_RECIPE.forward_horizon_days))
+        protocol_decision = resolve_negative_spread_protocol(
+            raw_mean_top_bottom_spread,
+            forward_horizon_days=_ACCEPTED_RECIPE.forward_horizon_days,
+            decision_horizon_days=effective_horizon_days,
+            protocol=negative_spread_protocol,
         )
-    period_spread = _deannualize_return(annualized_spread, effective_horizon_days)
+    annualized_spread = float(protocol_decision.annualized_top_bottom_spread or 0.0)
+    period_spread = float(protocol_decision.period_top_bottom_spread or 0.0)
 
     top_mask = current_cross_section["quantile"] == int(quantiles)
     bottom_mask = current_cross_section["quantile"] == 1
@@ -201,6 +258,15 @@ def build_alpha_snapshot_for_rebalance(
     )
     if not np.isfinite(z_gap) or z_gap <= 1e-6:
         z_gap = 1e-6
+
+    if protocol_decision.should_abstain:
+        return AlphaProtocolSnapshotResult(
+            rebalance_date=rebalance_ts,
+            snapshot=None,
+            protocol_decision=protocol_decision,
+            history_length=int(len(history)),
+            confidence=float(confidence),
+        )
 
     current_cross_section["expected_return"] = (
         confidence
@@ -212,11 +278,21 @@ def build_alpha_snapshot_for_rebalance(
     current_cross_section["annualized_top_bottom_spread"] = float(annualized_spread)
     current_cross_section["period_top_bottom_spread"] = float(period_spread)
     current_cross_section["decision_horizon_days"] = int(effective_horizon_days)
+    current_cross_section["raw_mean_top_bottom_spread"] = float(raw_mean_top_bottom_spread)
+    current_cross_section["negative_spread_protocol"] = str(negative_spread_protocol)
+    current_cross_section["alpha_protocol_status"] = str(protocol_decision.status)
 
-    return AlphaRebalanceSnapshot(
+    snapshot = AlphaRebalanceSnapshot(
         rebalance_date=rebalance_ts,
         signal_frame=signal_frame,
         ic_frame=history.reset_index(drop=True),
         current_cross_section=current_cross_section,
         alpha_only_target_weights=build_alpha_only_target_weights(current_cross_section, quantiles=quantiles),
+    )
+    return AlphaProtocolSnapshotResult(
+        rebalance_date=rebalance_ts,
+        snapshot=snapshot,
+        protocol_decision=protocol_decision,
+        history_length=int(len(history)),
+        confidence=float(confidence),
     )
