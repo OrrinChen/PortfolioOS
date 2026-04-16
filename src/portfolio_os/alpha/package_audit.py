@@ -179,6 +179,26 @@ def _build_counterfactual_alpha_panel(
     return work, promoted_dates
 
 
+def build_counterfactual_alpha_panel(
+    *,
+    alpha_panel: pd.DataFrame,
+    negative_spread_mode: AlphaNegativeSpreadProtocol | str | None,
+    forward_horizon_days: int,
+    max_abs_expected_return: float,
+) -> tuple[pd.DataFrame, set[str]]:
+    """Public wrapper for diagnostic-only counterfactual alpha-panel rebuilding."""
+
+    protocol = None
+    if negative_spread_mode is not None:
+        protocol = str(negative_spread_mode)
+    return _build_counterfactual_alpha_panel(
+        alpha_panel=alpha_panel,
+        negative_spread_mode=protocol,
+        forward_horizon_days=forward_horizon_days,
+        max_abs_expected_return=max_abs_expected_return,
+    )
+
+
 def _build_coverage_frame(
     *,
     rebalance_schedule: list[str] | list[pd.Timestamp],

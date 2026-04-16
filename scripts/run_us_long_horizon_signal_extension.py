@@ -47,6 +47,14 @@ _FRENCH_LTR_URL = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F
 _AQR_QMJ_URL = "https://www.aqr.com/-/media/AQR/Documents/Insights/Data-Sets/Quality-Minus-Junk-Factors-Monthly.xlsx"
 _AQR_BAB_URL = "https://www.aqr.com/-/media/AQR/Documents/Insights/Data-Sets/Betting-Against-Beta-Equity-Factors-Monthly.xlsx"
 _HORIZON_DAYS = [5, 10, 15, 21]
+CANONICAL_SIGNAL_SPEC = {
+    "reversal_lookback_days": 21,
+    "momentum_lookback_days": 84,
+    "momentum_skip_days": 21,
+    "forward_horizon_days": 21,
+    "reversal_weight": 0.0,
+    "momentum_weight": 1.0,
+}
 
 
 def _load_universe_tickers(path: Path) -> list[str]:
@@ -231,12 +239,12 @@ def _build_operational_cross_section_frame(
 ) -> pd.DataFrame:
     research_frame = build_alpha_research_frame(
         returns_panel,
-        reversal_lookback_days=21,
-        momentum_lookback_days=84,
-        momentum_skip_days=21,
-        forward_horizon_days=21,
-        reversal_weight=0.0,
-        momentum_weight=1.0,
+        reversal_lookback_days=int(CANONICAL_SIGNAL_SPEC["reversal_lookback_days"]),
+        momentum_lookback_days=int(CANONICAL_SIGNAL_SPEC["momentum_lookback_days"]),
+        momentum_skip_days=int(CANONICAL_SIGNAL_SPEC["momentum_skip_days"]),
+        forward_horizon_days=int(CANONICAL_SIGNAL_SPEC["forward_horizon_days"]),
+        reversal_weight=float(CANONICAL_SIGNAL_SPEC["reversal_weight"]),
+        momentum_weight=float(CANONICAL_SIGNAL_SPEC["momentum_weight"]),
     ).copy()
     research_frame["date"] = pd.to_datetime(research_frame["date"]).dt.normalize()
     month_dates = set(pd.to_datetime(operational_frame["date"]).dt.normalize())

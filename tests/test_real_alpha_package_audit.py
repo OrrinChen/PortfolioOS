@@ -3,7 +3,7 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from portfolio_os.alpha.package_audit import build_real_alpha_package_audit
+from portfolio_os.alpha.package_audit import build_counterfactual_alpha_panel, build_real_alpha_package_audit
 
 
 def test_build_real_alpha_package_audit_separates_cold_start_guard_and_active() -> None:
@@ -260,3 +260,33 @@ def test_build_real_alpha_package_audit_counterfactual_bypass_promotes_floor_zer
     assert baseline_audit.summary_payload["mapping"]["active_period_count"] == 1
     assert counterfactual_audit.summary_payload["mapping"]["active_period_count"] == 2
     assert counterfactual_audit.summary_payload["coverage"]["counterfactual_promoted_count"] == 1
+
+
+def test_build_counterfactual_alpha_panel_promotes_signed_spread_months_without_mutating_input() -> None:
+    alpha_panel = pd.DataFrame(
+        {
+            "date": ["2025-11-28"] * 4,
+            "ticker": ["AAA", "BBB", "CCC", "DDD"],
+            "expected_return": [0.0, 0.0, 0.0, 0.0],
+            "quantile": [5, 4, 2, 1],
+            "alpha_zscore": [1.5, 0.5, -0.5, -1.5],
+            "signal_strength_confidence": [0.25] * 4,
+            "annualized_top_bottom_spread": [0.0] * 4,
+            "period_top_bottom_spread": [0.0] * 4,
+            "decision_horizon_days": [1] * 4,
+            "raw_mean_top_bottom_spread": [-0.004] * 4,
+            "negative_spread_protocol": ["floor_to_zero"] * 4,
+            "alpha_protocol_status": ["spread_floor_to_zero"] * 4,
+        }
+    )
+
+    rebuilt, promoted_dates = build_counterfactual_alpha_panel(
+        alpha_panel=alpha_panel,
+        negative_spread_mode="signed_spread",
+        forward_horizon_days=21,
+        max_abs_expected_return=0.2,
+    )
+
+    assert set(promoted_dates) == {"2025-11-28"}
+    assert bool((rebuilt["expected_return"].abs() > 0).any())
+    assert bool((alpha_panel["expected_return"].abs() == 0).all())

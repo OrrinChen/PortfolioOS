@@ -223,9 +223,33 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
       - opening the spread floor is useful diagnostically because it expands the sample
       - but it does **not** rescue the package economically
       - current evidence is therefore:
-        - sparse activation is definitely one bottleneck
-        - removing the floor does not reveal a hidden good package underneath
-        - any next step should stay diagnostic rather than promote a looser production guard
+      - sparse activation is definitely one bottleneck
+      - removing the floor does not reveal a hidden good package underneath
+      - any next step should stay diagnostic rather than promote a looser production guard
+  - pointwise production-vs-canonical consistency diagnostic is now also live:
+    - runner = `scripts/run_signal_consistency_diagnostic.py`
+    - module = `src/portfolio_os/alpha/signal_consistency_diagnostic.py`
+    - artifacts live under:
+      - `outputs/signal_consistency_diagnostic_2026-04-16/`
+    - provenance is now frozen per run:
+      - `portfolioos_head_sha` with dirty-state suffix
+      - canonical builder path/name
+      - canonical signal spec (`21/84/21`, momentum-only, `21d` forward)
+      - pooled method = `concat_then_correlate`
+    - current read:
+      - baseline production view preserves the canonical signal almost exactly on its two active months:
+        - pooled `alpha_score` vs canonical Spearman `~ 0.9982`
+        - pooled `expected_return` vs canonical Spearman `~ 0.9161`
+        - top/bottom overlap remains high
+      - signed-spread counterfactual preserves `alpha_score` ordering but breaks expected-return mapping on the three promoted months:
+        - pooled `alpha_score` vs canonical Spearman `~ 0.9983`
+        - pooled `expected_return` vs canonical Spearman `~ -0.0444`
+        - `2025-11-28`, `2025-12-31`, and `2026-01-30` each flip to near `-1.0` month-level expected-vs-canonical Spearman
+    - practical interpretation:
+      - baseline production does **not** appear to be mechanically distorting the signal on the months where it is active
+      - the signed-spread expansion mainly adds months whose expected-return mapping is misaligned with the canonical ordering
+      - this supports the current read that spread floor can be locally useful as a small-sample filter even though long-horizon work does **not** support a broader crash-protection interpretation
+      - next justified step is to accumulate more production sample before reopening signal re-engineering
 - Narrow US long-horizon signal extension is now also live:
   - runner = `scripts/run_us_long_horizon_signal_extension.py`
   - helper = `src/portfolio_os/alpha/long_horizon.py`
