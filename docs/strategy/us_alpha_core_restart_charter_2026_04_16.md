@@ -71,6 +71,13 @@ However, new definitions built on old families are allowed to compete, for examp
 
 Week 4 winner decisions must be made relative to the frozen baseline scorecard produced in Week 1.
 
+That scorecard must explicitly tag each frozen baseline as one of:
+
+- `anchor_eligible`
+- `known_structural_issue`
+
+Only `anchor_eligible` frozen baselines may serve as Week 4 winner-gate anchors.
+
 ## Qualification Gates
 
 ### Single-Factor Admission Gate
@@ -94,7 +101,7 @@ A candidate passes only if:
 
 ### Winner Increment Gate
 
-Relative to the strongest frozen baseline under the same evaluator:
+Relative to the strongest frozen baseline under the same evaluator that is explicitly tagged `anchor_eligible` in the Week 1 baseline registry:
 
 - comparable rank IC or IR improvement must be at least `15%`
 
@@ -163,6 +170,20 @@ Candidates:
 - `C1`: idiosyncratic volatility
 - `C2`: MAX effect / lottery proxy
 
+### Family C Advancement Rule
+
+`C1` and `C2` are allowed to run separately in Week 3, but they share one downstream family slot.
+
+If both clear the single-factor gates, only the stronger Family C representative may advance beyond Week 4.
+
+Strength is judged in this order:
+
+1. winner-gate status
+2. comparable rank-IC improvement versus the anchor baseline
+3. alpha-only spread t-stat
+
+The weaker Family C member is retired as redundant family coverage rather than treated as an additional finalist direction.
+
 ## Deferred Families
 
 These are explicitly not part of the 4-week qualification sprint:
@@ -221,6 +242,7 @@ Only if Week 4 has a winner:
 
 - run robustness / bootstrap work
 - run deeper cost and capacity checks
+- perform intra-family de-dup before any package work
 - run simple package qualification
 - produce a closeout note with a clear keep / stop judgment
 

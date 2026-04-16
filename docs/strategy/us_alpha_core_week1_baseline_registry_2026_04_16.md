@@ -26,14 +26,21 @@ Until a fresh target-universe rerun exists under the Week 1 qualification contra
 
 This is a **provisional platform-native comparator**, not a claim that the 50-name expanded-US Phase 1 sample is already the final `rank_500_1500` target universe.
 
+The Week 1 registry must also label each frozen baseline as either:
+
+- `anchor_eligible`
+- `known_structural_issue`
+
+Only `anchor_eligible` baselines may serve as Week 4 winner-gate anchors.
+
 ## A. Platform-Native Comparable Baselines
 
 These are frozen numeric comparators because they already exist in checked-in PortfolioOS artifacts.
 
-| Baseline | Family | Sample / Runtime | Mean Rank IC | Mean Top-Bottom Spread | Positive Rank IC Ratio | Mean Monthly Turnover | Notes |
+| Baseline | Family | Sample / Runtime | Mean Rank IC | Mean Top-Bottom Spread | Positive Rank IC Ratio | Mean Monthly Turnover | Structural Status | Notes |
 | --- | --- | --- | ---: | ---: | ---: | ---: | --- |
-| `alt_momentum_4_1` | momentum | PortfolioOS Phase 1 expanded-US frozen sample (`50` names) | `0.1063` | `1.2255%` | `77.5%` | `0.35` | Accepted Phase 1 seed alpha; strongest currently checked-in platform-native comparator |
-| `equal_weight_momentum_6_1` | momentum | PortfolioOS Phase 1 expanded-US frozen sample (`50` names) | `0.0551` | `0.8707%` | not logged in closeout note | `0.25` | Legacy baseline from Phase 1 acceptance loop |
+| `alt_momentum_4_1` | momentum | PortfolioOS Phase 1 expanded-US frozen sample (`50` names) | `0.1063` | `1.2255%` | `77.5%` | `0.35` | `anchor_eligible` | Accepted Phase 1 seed alpha; strongest currently checked-in platform-native comparator |
+| `equal_weight_momentum_6_1` | momentum | PortfolioOS Phase 1 expanded-US frozen sample (`50` names) | `0.0551` | `0.8707%` | not logged in closeout note | `0.25` | `anchor_eligible` | Legacy baseline from Phase 1 acceptance loop |
 
 ### Caveats On The Platform-Native Scorecard
 
@@ -42,6 +49,7 @@ These are frozen numeric comparators because they already exist in checked-in Po
   - development mean rank IC was negative while holdout mean rank IC was positive
   - the Phase 1 closeout treats it as a provisional seed, not a fully validated production alpha
 - The scorecard is still useful because Week 1 needs one frozen, platform-native comparator object before new candidates start competing.
+- This stability warning does **not** currently rise to `known_structural_issue`; it is a provisional-validation warning, so `alt_momentum_4_1` remains `anchor_eligible` until superseded by a fresh rerun.
 
 ## B. External Methodological Benchmarks (Not Direct Week 4 Comparators)
 
@@ -68,6 +76,14 @@ These remain frozen as historical family names, but no current checked-in Week 1
 - asset growth
 - 13F family
 - original Branch A monthly `revision_1m` feature-only mainline attempts
+
+### Structural-Issue Tags Inside The Frozen Reference Set
+
+- original Branch A `revision_1m` feature-only mainline attempts:
+  - `known_structural_issue`
+  - reason: label / lifecycle mismatch was already established as the primary bottleneck for that branch
+- external event-aware `revision` and `SUE` results:
+  - not direct Week 4 comparators because they are external methodological benchmarks, not current-platform baselines
 
 ### Rule For These Families
 
@@ -96,5 +112,8 @@ Use this hierarchy for the restart sprint:
 ## What This Registry Freezes
 
 - Week 2-3 candidate evaluation may not invent a new baseline midstream.
-- Week 4 winner claims must compare first against `alt_momentum_4_1` unless a new target-universe baseline rerun is explicitly produced under the same contract.
+- Week 4 winner claims must compare first against the strongest frozen baseline that is both:
+  - explicitly present in this registry
+  - explicitly tagged `anchor_eligible`
+- Under the current Week 1 freeze, that anchor is `alt_momentum_4_1`.
 - External WRDS results may motivate design choices, but they do not substitute for current-platform qualification evidence.

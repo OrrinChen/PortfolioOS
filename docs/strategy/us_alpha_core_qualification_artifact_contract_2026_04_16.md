@@ -176,7 +176,7 @@ All must pass:
 
 ### Winner Increment Gate
 
-- compare to the strongest frozen baseline (`alt_momentum_4_1` until superseded by a fresh rerun)
+- compare to the strongest frozen baseline that is explicitly tagged `anchor_eligible` in the Week 1 baseline registry (`alt_momentum_4_1` until superseded by a fresh rerun)
 - primary Week 4 increment read = `rank_ic_improvement_vs_baseline`
 - secondary diagnostic read = `rank_ir_improvement_vs_baseline` when the runner emits a directly comparable IR
 - candidate passes only if the primary comparable improvement is at least `15%`
@@ -190,6 +190,8 @@ The artifact bundle must make clear whether the comparator is:
 - or `historical_reference_only`
 
 For Week 2-3 qualification, only `platform_native_comparable` baselines count toward the formal winner gate.
+
+Among platform-native comparables, a baseline marked `known_structural_issue` in the Week 1 baseline registry is frozen as reference only and may not serve as the winner-gate anchor.
 
 ## Naming Rule
 
@@ -207,6 +209,12 @@ Candidate IDs are frozen:
 No aliasing and no late-added suffixes are allowed during Week 2-3.
 
 If a candidate needs a materially different definition, it is a new sprint, not a silent in-sprint variant.
+
+### Family C De-Dup Rule
+
+`C1` and `C2` may both emit full Week 2-3 bundles, but they share one downstream Family C advancement slot.
+
+If both clear the single-factor gates, only the stronger one advances beyond Week 4 under the charter's family de-dup rule.
 
 ## Non-Negotiable Scope Rules
 

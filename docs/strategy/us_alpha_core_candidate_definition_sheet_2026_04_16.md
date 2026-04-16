@@ -236,6 +236,10 @@ A sharp short-term selloff accompanied by unusually heavy trading can leave temp
 
 ## Family C: Idiosyncratic Risk / Lottery
 
+Family C intentionally contains two related definitions (`C1`, `C2`) but only one downstream advancement slot.
+
+If both pass the Week 4 single-factor gates, only the stronger Family C representative may survive into Week 5-8 finalist work. This is a deliberate family de-dup rule, not a late-stage judgment call.
+
 ### `C1` Idiosyncratic Volatility
 
 **Economic idea**
@@ -299,6 +303,7 @@ Names that recently printed extremely large daily upside moves often become lott
 ## What Is Frozen By This Sheet
 
 - exactly `8` candidate definitions
+- `C1` and `C2` are both frozen as valid Week 2-3 entrants, but they share one downstream Family C advancement slot
 - no parameter sweeps during Week 2-3
 - no new family can enter after this sheet is frozen
 - no candidate may borrow event-driven labels or WRDS-only PIT fields during the qualification sprint
