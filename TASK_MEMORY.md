@@ -96,6 +96,12 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - under realistic costs, that suppression gives up more holding return than it saves
 - Risk-aversion tooling is implemented (`portfolio-os-risk-sweep`), but no Sharpe-improving sweet spot was found.
 - Conclusion: better alpha is the main bottleneck, not more optimizer tuning or a risk-aware default objective.
+- Project-level structural decision is now frozen in:
+  - `docs/strategy/single_period_vs_multi_period_structure_decision_memo_2026_04_15.md`
+- Current read from that memo:
+  - immediate full multi-period portfolio-construction work is **not** approved
+  - the present issue is a mix of alpha weakness, objective-shape limitations, and missing intertemporal allocation logic
+  - reopen multi-period only if a real alpha package later proves that single-period myopia is the next binding loss source
 
 ## US Research State
 
@@ -318,6 +324,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - `docs/cost_model_decision_note.md`
   - `docs/platform_ml_rl_roadmap.md`
   - `docs/phase_1_alpha_closeout_note.md`
+  - `docs/strategy/single_period_vs_multi_period_structure_decision_memo_2026_04_15.md`
   - `docs/phase_1_5_alpha_decision_note.md`
   - `docs/paper_calibration_runbook.md`
   - `docs/paper_calibration_live_2026_04_15.md`
