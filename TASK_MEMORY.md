@@ -134,6 +134,15 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - practical read:
     - the optimizer is no longer collapsing into near-zero continuous trades solely because of raw-currency cost vs annualized-alpha mismatch
     - any remaining quality issues should now be treated as genuine portfolio-construction or signal problems, not as the old objective-unit bug
+- Alpha-bridge gating diagnosis is now also frozen in:
+  - note = `docs/strategy/alpha_bridge_spread_floor_investigation_note_2026_04_15.md`
+  - current `spread floor` is an intentional one-sided non-reversal guard from the original Phase 1.5 design, not an accidental implementation leftover
+  - on the corrected walk-forward sample:
+    - `alpha_ready_months = 4`
+    - `nonzero_alpha_months = 1`
+    - `spread_floor_to_zero_months = 3`
+  - practical implication:
+    - do not treat `risk_term = 0.3` time-series confirmation as the next irreversible step until spread-floor semantics are either kept explicitly or replaced explicitly
 
 ## US Research State
 
