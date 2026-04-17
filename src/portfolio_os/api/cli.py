@@ -12,6 +12,9 @@ import yaml
 
 from portfolio_os.alpha.acceptance import run_alpha_acceptance_gate
 from portfolio_os.alpha.research import run_alpha_research
+from portfolio_os.alpha.state_transition_pilot import (
+    run_upper_limit_pilot_artifact_bundle_from_daily_csv,
+)
 from portfolio_os.backtest.engine import run_backtest
 from portfolio_os.backtest.sweep import run_backtest_cost_sweep, run_backtest_risk_sweep
 from portfolio_os.data.builders.market_builder import (
@@ -290,6 +293,36 @@ def promotion_registry(
         typer.echo(f"promotion_registry.csv: {result.registry_csv_path}")
         typer.echo(f"promotion_registry_manifest.json: {result.manifest_path}")
         typer.echo(f"promotion_registry_summary.md: {result.summary_path}")
+    except PortfolioOSError as exc:
+        logger.error("%s", exc)
+        raise typer.Exit(code=1) from exc
+
+
+@app.command("state-transition-pilot")
+def state_transition_pilot(
+    daily_panel: Path = typer.Option(..., exists=True, file_okay=True, dir_okay=False),
+    output_dir: Path = typer.Option(...),
+    lookback_days: int = typer.Option(20, min=1),
+    null_seed: list[int] = typer.Option([7, 8, 9]),
+) -> None:
+    """Run the thin A-share upper-limit daily-state pilot from one contract-shaped daily CSV."""
+
+    logger = configure_logging()
+    try:
+        result = run_upper_limit_pilot_artifact_bundle_from_daily_csv(
+            daily_panel_path=daily_panel,
+            lookback_days=lookback_days,
+            random_seeds=list(null_seed),
+            output_dir=output_dir,
+        )
+        typer.echo(f"expression_frame.csv: {result.output_dir / 'expression_frame.csv'}")
+        typer.echo(f"control_comparison.csv: {result.output_dir / 'control_comparison.csv'}")
+        typer.echo(f"placebo_comparison.csv: {result.output_dir / 'placebo_comparison.csv'}")
+        typer.echo(f"null_pool.csv: {result.output_dir / 'null_pool.csv'}")
+        typer.echo(f"null_summary.csv: {result.output_dir / 'null_summary.csv'}")
+        typer.echo(f"pilot_read_frame.csv: {result.output_dir / 'pilot_read_frame.csv'}")
+        typer.echo(f"summary.json: {result.output_dir / 'summary.json'}")
+        typer.echo(f"note.md: {result.output_dir / 'note.md'}")
     except PortfolioOSError as exc:
         logger.error("%s", exc)
         raise typer.Exit(code=1) from exc

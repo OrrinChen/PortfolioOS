@@ -21,6 +21,110 @@ from portfolio_os.data.providers.mock import MOCK_MARKET_DATA, MOCK_REFERENCE_DA
 from portfolio_os.domain.errors import ProviderPermissionError
 
 
+def _state_transition_daily_cli_fixture() -> pd.DataFrame:
+    rows: list[dict[str, object]] = []
+    shares_by_ticker = {
+        "000001": 10_000_000.0,
+        "000002": 10_000_000.0,
+        "000003": 10_000_000.0,
+        "000004": 10_000_000.0,
+        "000005": 10_000_000.0,
+    }
+    industry_by_ticker = {
+        "000001": "Industrials",
+        "000002": "Industrials",
+        "000003": "Consumer",
+        "000004": "Consumer",
+        "000005": "Technology",
+    }
+    daily_spec = {
+        "2026-03-30": {
+            "000001": {"close": 6.50, "amount": 7_000_000},
+            "000002": {"close": 5.70, "amount": 6_000_000},
+            "000003": {"close": 7.50, "amount": 8_000_000},
+            "000004": {"close": 8.30, "amount": 9_000_000},
+            "000005": {"close": 4.80, "amount": 4_000_000},
+        },
+        "2026-03-31": {
+            "000001": {"close": 6.80, "amount": 7_200_000},
+            "000002": {"close": 5.90, "amount": 6_200_000},
+            "000003": {"close": 7.70, "amount": 8_200_000},
+            "000004": {"close": 8.60, "amount": 9_200_000},
+            "000005": {"close": 4.90, "amount": 4_200_000},
+        },
+        "2026-04-01": {
+            "000001": {
+                "open": 6.90,
+                "high": 7.70,
+                "low": 6.85,
+                "close": 7.70,
+                "upper_limit_price": 7.70,
+                "amount": 7_400_000,
+            },
+            "000002": {
+                "open": 5.95,
+                "high": 6.20,
+                "low": 5.90,
+                "close": 6.00,
+                "upper_limit_price": 6.49,
+                "amount": 6_400_000,
+            },
+            "000003": {
+                "open": 7.75,
+                "high": 8.10,
+                "low": 7.70,
+                "close": 8.00,
+                "upper_limit_price": 8.47,
+                "amount": 8_400_000,
+            },
+            "000004": {
+                "open": 8.70,
+                "high": 9.90,
+                "low": 8.60,
+                "close": 9.45,
+                "upper_limit_price": 9.90,
+                "amount": 9_400_000,
+            },
+            "000005": {
+                "open": 4.95,
+                "high": 5.10,
+                "low": 4.90,
+                "close": 5.00,
+                "upper_limit_price": 5.39,
+                "amount": 4_400_000,
+            },
+        },
+        "2026-04-02": {
+            "000001": {"close": 7.90, "amount": 7_500_000},
+            "000002": {"close": 6.05, "amount": 6_450_000},
+            "000003": {"close": 8.10, "amount": 8_450_000},
+            "000004": {"close": 9.10, "amount": 9_450_000},
+            "000005": {"close": 5.05, "amount": 4_450_000},
+        },
+    }
+    for date_value, ticker_map in daily_spec.items():
+        for ticker, values in ticker_map.items():
+            close = float(values["close"])
+            rows.append(
+                {
+                    "date": date_value,
+                    "ticker": ticker,
+                    "open": float(values.get("open", close * 0.99)),
+                    "high": float(values.get("high", close * 1.01)),
+                    "low": float(values.get("low", close * 0.98)),
+                    "close": close,
+                    "volume": 1_000_000,
+                    "amount": float(values["amount"]),
+                    "upper_limit_price": float(values.get("upper_limit_price", close * 1.10)),
+                    "lower_limit_price": float(values.get("lower_limit_price", close * 0.90)),
+                    "tradable": "true",
+                    "industry": industry_by_ticker[ticker],
+                    "issuer_total_shares": shares_by_ticker[ticker],
+                }
+            )
+    return pd.DataFrame(rows)
+
+
 def test_cli_produces_expected_artifacts(sample_context: dict, tmp_path) -> None:
     runner = CliRunner()
     project_root = sample_context["project_root"]
@@ -1024,3 +1128,40 @@ def test_builder_generated_inputs_can_run_sample_02_without_optimizer_infeasible
     finding_codes = {finding["code"] for finding in audit_payload["findings"]}
     assert "locked_single_name_above_limit" in finding_codes
     assert (output_dir / "orders.csv").exists()
+
+
+def test_state_transition_pilot_cli_writes_expected_artifacts(tmp_path) -> None:
+    runner = CliRunner()
+    daily_path = tmp_path / "state_transition_daily.csv"
+    output_dir = tmp_path / "state_transition_pilot_cli"
+    _state_transition_daily_cli_fixture().to_csv(daily_path, index=False)
+
+    result = runner.invoke(
+        app,
+        [
+            "state-transition-pilot",
+            "--daily-panel",
+            str(daily_path),
+            "--output-dir",
+            str(output_dir),
+            "--lookback-days",
+            "2",
+            "--null-seed",
+            "7",
+            "--null-seed",
+            "8",
+            "--null-seed",
+            "9",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert (output_dir / "expression_frame.csv").exists()
+    assert (output_dir / "control_comparison.csv").exists()
+    assert (output_dir / "placebo_comparison.csv").exists()
+    assert (output_dir / "null_pool.csv").exists()
+    assert (output_dir / "null_summary.csv").exists()
+    assert (output_dir / "pilot_read_frame.csv").exists()
+    assert (output_dir / "summary.json").exists()
+    assert (output_dir / "note.md").exists()
+    assert "summary.json" in result.output

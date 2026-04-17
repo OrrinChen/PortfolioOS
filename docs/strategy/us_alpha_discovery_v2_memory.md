@@ -415,4 +415,37 @@ Exit consequence:
      - no provider / Tushare wiring has been added yet
      - no CLI entrypoint has been added yet
      - no additional pilot expressions beyond `P1` through `P4` have been added
-22. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.
+22. The thirteenth D2 coding slice is now in place:
+   - minimal upper-limit pilot CLI entrypoint added:
+     - command:
+       - `state-transition-pilot`
+     - implementation entry:
+       - `portfolio_os.api.cli.state_transition_pilot(...)`
+   - current CLI contract:
+     - consumes:
+       - `--daily-panel`
+       - `--output-dir`
+       - optional `--lookback-days`
+       - repeatable `--null-seed`
+     - delegates directly to the new CSV-entry runner:
+       - `run_upper_limit_pilot_artifact_bundle_from_daily_csv(...)`
+     - emits the paths for:
+       - `expression_frame.csv`
+       - `control_comparison.csv`
+       - `placebo_comparison.csv`
+       - `null_pool.csv`
+       - `null_summary.csv`
+       - `pilot_read_frame.csv`
+       - `summary.json`
+       - `note.md`
+   - practical meaning:
+     - D2 upper-limit pilot is now callable as a first-class research CLI, not just as an internal Python helper
+     - this makes the contract-shaped CSV path executable end to end for real pilot snapshots
+   - verification status:
+     - targeted CLI test passed
+     - combined regression pack passed:
+       - `64 passed, 4 warnings`
+   - explicit boundary:
+     - no provider / Tushare wiring has been added yet
+     - no family-wide miner or additional expression families have been added yet
+23. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.
