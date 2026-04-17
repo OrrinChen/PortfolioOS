@@ -22,6 +22,8 @@ Short branch-local operating note for the active discovery-v2 lane.
   - `docs/superpowers/plans/2026-04-16-alpha-discovery-v2-kickoff.md`
 - Calibration setup note:
   - `docs/strategy/us_residual_momentum_calibration_setup_note_2026_04_16.md`
+- Calibration failure taxonomy:
+  - `docs/strategy/calibration_machine_failure_taxonomy_2026_04_16.md`
 
 ## Program Structure
 
@@ -67,6 +69,8 @@ Short branch-local operating note for the active discovery-v2 lane.
     - no clear null separation,
     - no stable internal winner dominance,
     - and a residualization step that still shows null-consistent strengthening under `RM3_VOL_MANAGED`
+  - this boundary behavior is now formalized as:
+    - `FM-001: Null-Consistent Residualization Strengthening`
   - calibration machine is therefore live but not yet validated
 
 ## Active Constraints
@@ -86,5 +90,8 @@ Short branch-local operating note for the active discovery-v2 lane.
 
 1. Keep strengthening calibration, not primary mining.
 2. Preserve the shuffled-null benchmark as the default reference; do not reason from one placebo draw.
-3. Keep calibration-family alpha conclusions out of scope; current residualization reads are machine-boundary diagnostics only.
-4. Point the next calibration step at residualization/adversarial calibration logic rather than at reopening family-level winner claims.
+3. Use `FM-001` as the first machine-taxonomy entry; classify similar future reads against it before making family claims.
+4. Next slice order is now fixed:
+   - adversarial-layer hardening first
+   - residualization-layer review second
+5. Keep calibration-family alpha conclusions out of scope unless a later slice pushes the residualized read outside the null envelope.
