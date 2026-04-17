@@ -8,6 +8,7 @@ import pandas as pd
 import pytest
 
 from portfolio_os.alpha.discovery_calibration import (
+    build_baseline_residualized_expression_summary,
     build_bootstrap_expression_rankings,
     build_calibration_signal_frame,
     build_expression_spread_correlation_matrix,
@@ -305,3 +306,37 @@ def test_run_us_residual_momentum_calibration_writes_bootstrap_and_orthogonality
     expression_rows = result.summary_frame.loc[result.summary_frame["role"] == "expression"]
     assert "bootstrap_top1_frequency_rank_ic" in expression_rows.columns
     assert expression_rows["bootstrap_top1_frequency_rank_ic"].between(0.0, 1.0).all()
+
+
+def test_build_baseline_residualized_summary_returns_expression_rows_only(tmp_path: Path) -> None:
+    returns_path, reference_path = _write_fixture(tmp_path)
+    residualized = build_baseline_residualized_expression_summary(
+        returns_panel=load_alpha_returns_panel(returns_path),
+        universe_reference=pd.read_csv(reference_path),
+        expression_ids=["RM1_MKT_RESIDUAL", "RM2_SECTOR_RESIDUAL", "RM3_VOL_MANAGED"],
+    )
+
+    assert list(residualized["expression_id"]) == ["RM1_MKT_RESIDUAL", "RM2_SECTOR_RESIDUAL", "RM3_VOL_MANAGED"]
+    assert {
+        "residualized_evaluation_month_count",
+        "residualized_mean_rank_ic",
+        "residualized_rank_ic_t",
+        "residualized_mean_top_bottom_spread",
+    }.issubset(residualized.columns)
+
+
+def test_run_us_residual_momentum_calibration_writes_residualized_summary_artifact(tmp_path: Path) -> None:
+    returns_path, reference_path = _write_fixture(tmp_path)
+    output_dir = tmp_path / "calibration_run"
+
+    result = run_us_residual_momentum_calibration_from_files(
+        returns_file=returns_path,
+        universe_reference_file=reference_path,
+        output_dir=output_dir,
+        random_seed=7,
+    )
+
+    assert (output_dir / "residualized_vs_baseline_summary.csv").exists()
+    expression_rows = result.summary_frame.loc[result.summary_frame["role"] == "expression"]
+    assert "baseline_residualized_rank_ic_t" in expression_rows.columns
+    assert expression_rows["baseline_residualized_rank_ic_t"].notna().all()

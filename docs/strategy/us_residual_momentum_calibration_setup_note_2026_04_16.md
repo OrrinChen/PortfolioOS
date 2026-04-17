@@ -50,6 +50,16 @@ The third slice extends the harness with family-level stability reads:
 - summary-level stability metric:
   - `bootstrap_top1_frequency_rank_ic`
 
+The fourth slice extends the harness with the next charter-required D3 read:
+
+- expression-level residualization against the frozen baseline mimic
+- persisted artifact:
+  - `residualized_vs_baseline_summary.csv`
+- summary-level residualization fields for each live expression:
+  - `baseline_residualized_mean_rank_ic`
+  - `baseline_residualized_rank_ic_t`
+  - `baseline_residualized_mean_top_bottom_spread`
+
 ## Verification
 
 Targeted verification passed:
@@ -75,6 +85,8 @@ Current summary:
   - shuffled-null `mean_rank_ic` percentile `~ 70%`
   - shuffled-null `rank_ic_t` percentile `~ 72%`
   - bootstrap top-1 frequency by rank IC `~ 53.8%`
+  - baseline-residualized `rank_ic_t ~ 1.03`
+  - baseline-residualized mean spread `~ 3.36%`
 - strongest single shuffled draw = `CTRL1_SHUFFLED_PLACEBO`
   - `mean_rank_ic ~ 0.0668`
   - `rank_ic_t ~ 1.7694`
@@ -89,6 +101,13 @@ Other key reads:
 - live-expression orthogonality is **not** the main failure:
   - max absolute pairwise spread correlation across `RM1/RM2/RM3` is only about `0.40`
   - practical read: the machine is not merely rediscovering one near-duplicate expression three times
+- frozen-baseline residualization does **not** fully collapse the family:
+  - `RM3_VOL_MANAGED` improves after baseline removal
+  - `RM1_MKT_RESIDUAL` also improves materially after baseline removal
+  - `RM2_SECTOR_RESIDUAL` largely collapses after baseline removal
+  - practical read:
+    - the family still does not have a calibrated winner,
+    - but the live residual family is not just a mechanical rewrite of the frozen baseline
 - but bootstrap dominance is still too weak for a clean family winner read:
   - `RM3_VOL_MANAGED ~ 53.8%`
   - `RM2_SECTOR_RESIDUAL ~ 36.6%`
@@ -120,6 +139,11 @@ So the correct conclusion is:
 - and because intra-family distinctness now looks acceptable while winner dominance still does not:
   - the machine can see different expressions,
   - but it still cannot point to one robust winner with enough confidence
+- however the residualization read is directionally constructive:
+  - the family appears to retain some incremental content beyond the frozen baseline
+  - so the current failure mode is better described as:
+    - `machine not yet calibrated to separate a robust winner`
+    - not `family proven to be a pure baseline restatement`
 
 ## Immediate Consequence
 
@@ -130,7 +154,7 @@ The primary family remains blocked.
 The next justified work stays inside calibration and should focus on:
 
 1. extending or otherwise strengthening the calibration sample so the null and bootstrap ranking become more informative,
-2. adding deeper adversarial controls / mechanism-breaking checks rather than relying on one placebo draw or one weak internal winner,
+2. adding deeper adversarial controls / mechanism-breaking checks now that baseline residualization no longer looks like the first binding failure,
 3. and only then asking whether the calibration family can produce a trustworthy closeout.
 
 ## Status Label

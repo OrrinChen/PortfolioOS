@@ -307,6 +307,94 @@ def build_expression_spread_correlation_matrix(
     return matrix
 
 
+def _residualize_against_baseline(signal_values: pd.Series, baseline_values: pd.Series) -> pd.Series:
+    signal = pd.to_numeric(signal_values, errors="coerce").astype(float)
+    baseline = pd.to_numeric(baseline_values, errors="coerce").astype(float)
+    valid = signal.notna() & baseline.notna()
+    if valid.sum() < 2:
+        return signal
+    signal_valid = signal.loc[valid]
+    baseline_valid = baseline.loc[valid]
+    baseline_centered = baseline_valid - float(baseline_valid.mean())
+    denom = float((baseline_centered**2).sum())
+    if denom <= 0.0:
+        return signal
+    signal_centered = signal_valid - float(signal_valid.mean())
+    beta = float((signal_centered * baseline_centered).sum() / denom)
+    residual = signal.copy()
+    residual.loc[valid] = signal_valid - beta * baseline_valid
+    return residual
+
+
+def build_baseline_residualized_expression_summary(
+    *,
+    returns_panel: pd.DataFrame,
+    universe_reference: pd.DataFrame,
+    expression_ids: list[str],
+) -> pd.DataFrame:
+    """Evaluate live expressions after cross-sectional residualization against the frozen baseline."""
+
+    baseline_frame = build_calibration_signal_frame(
+        returns_panel=returns_panel,
+        universe_reference=universe_reference,
+        expression_id="CTRL3_BASELINE_MIMIC",
+    ).rename(columns={"signal_value": "baseline_signal_value"})
+    forward_return_frame = build_monthly_forward_return_frame(
+        returns_panel=returns_panel,
+        universe_reference=universe_reference,
+    )
+
+    rows: list[dict[str, Any]] = []
+    for expression_id in expression_ids:
+        signal_frame = build_calibration_signal_frame(
+            returns_panel=returns_panel,
+            universe_reference=universe_reference,
+            expression_id=expression_id,
+        )
+        merged = signal_frame.merge(
+            baseline_frame.loc[:, ["date", "ticker", "baseline_signal_value"]],
+            on=["date", "ticker"],
+            how="inner",
+        )
+        if merged.empty:
+            rows.append(
+                {
+                    "expression_id": expression_id,
+                    "residualized_evaluation_month_count": 0,
+                    "residualized_mean_rank_ic": 0.0,
+                    "residualized_rank_ic_t": 0.0,
+                    "residualized_mean_top_bottom_spread": 0.0,
+                }
+            )
+            continue
+        residualized_rows: list[pd.DataFrame] = []
+        for date_value, date_frame in merged.groupby("date", sort=True):
+            residual_frame = date_frame.loc[:, ["date", "ticker"]].copy()
+            residual_frame["signal_value"] = _residualize_against_baseline(
+                date_frame["signal_value"],
+                date_frame["baseline_signal_value"],
+            )
+            residualized_rows.append(residual_frame)
+        residualized_signal_frame = pd.concat(residualized_rows, ignore_index=True).sort_values(["date", "ticker"]).reset_index(drop=True)
+        per_date = _build_per_date_metrics(
+            signal_frame=residualized_signal_frame,
+            forward_return_frame=forward_return_frame,
+            expression_id=expression_id,
+        )
+        rows.append(
+            {
+                "expression_id": expression_id,
+                "residualized_evaluation_month_count": int(len(per_date)),
+                "residualized_mean_rank_ic": float(pd.to_numeric(per_date["rank_ic"], errors="coerce").mean()) if not per_date.empty else 0.0,
+                "residualized_rank_ic_t": _mean_t_stat(per_date["rank_ic"]) if not per_date.empty else 0.0,
+                "residualized_mean_top_bottom_spread": float(pd.to_numeric(per_date["top_bottom_spread"], errors="coerce").mean())
+                if not per_date.empty
+                else 0.0,
+            }
+        )
+    return pd.DataFrame(rows).sort_values("expression_id").reset_index(drop=True)
+
+
 def _build_per_date_metrics(
     *,
     signal_frame: pd.DataFrame,
@@ -385,6 +473,8 @@ def _render_calibration_note(
                 f"- shuffled-null mean-rank-IC percentile: `{float(best_expression['shuffle_null_mean_rank_ic_percentile']):.2%}`",
                 f"- shuffled-null rank-IC-t percentile: `{float(best_expression['shuffle_null_rank_ic_t_percentile']):.2%}`",
                 f"- bootstrap top-1 frequency (rank IC): `{float(best_expression['bootstrap_top1_frequency_rank_ic']):.2%}`",
+                f"- baseline-residualized rank IC t-stat: `{float(best_expression['baseline_residualized_rank_ic_t']):.4f}`",
+                f"- baseline-residualized mean top-bottom spread: `{float(best_expression['baseline_residualized_mean_top_bottom_spread']):.4%}`",
                 (
                     f"- max absolute pairwise spread correlation across live expressions: `{off_diag_abs_max:.4f}`"
                     if np.isfinite(off_diag_abs_max)
@@ -506,6 +596,23 @@ def run_us_residual_momentum_calibration(
     summary_frame["bootstrap_top1_frequency_rank_ic"] = (
         summary_frame["expression_id"].map(bootstrap_top1_frequency).fillna(0.0)
     )
+    residualized_summary = build_baseline_residualized_expression_summary(
+        returns_panel=returns_panel,
+        universe_reference=universe_reference,
+        expression_ids=expression_ids,
+    )
+    summary_frame = summary_frame.merge(
+        residualized_summary.rename(
+            columns={
+                "residualized_evaluation_month_count": "baseline_residualized_evaluation_month_count",
+                "residualized_mean_rank_ic": "baseline_residualized_mean_rank_ic",
+                "residualized_rank_ic_t": "baseline_residualized_rank_ic_t",
+                "residualized_mean_top_bottom_spread": "baseline_residualized_mean_top_bottom_spread",
+            }
+        ),
+        on="expression_id",
+        how="left",
+    )
 
     note_markdown = _render_calibration_note(
         summary_frame=summary_frame,
@@ -519,6 +626,7 @@ def run_us_residual_momentum_calibration(
         "control_count": int((registry_frame["role"] == "control").sum()),
         "shuffle_null_seed_count": int(len(shuffle_null_frame)),
         "bootstrap_iteration_count": int(bootstrap_frame["bootstrap_id"].nunique()) if not bootstrap_frame.empty else 0,
+        "residualized_expression_count": int(len(residualized_summary)),
         "best_expression_id": str(summary_frame.loc[summary_frame["role"] == "expression"].iloc[0]["expression_id"])
         if not summary_frame.loc[summary_frame["role"] == "expression"].empty
         else None,
@@ -530,6 +638,7 @@ def run_us_residual_momentum_calibration(
     shuffle_null_frame.to_csv(output_path / "shuffle_null_distribution.csv", index=False)
     bootstrap_frame.to_csv(output_path / "bootstrap_expression_rankings.csv", index=False)
     spread_corr_frame.to_csv(output_path / "expression_spread_correlation.csv")
+    residualized_summary.to_csv(output_path / "residualized_vs_baseline_summary.csv", index=False)
     write_json(output_path / "summary.json", summary_payload)
     write_text(output_path / "note.md", note_markdown)
 
