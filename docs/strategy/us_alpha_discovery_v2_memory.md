@@ -228,4 +228,28 @@ Exit consequence:
    - explicit boundary:
      - no-replacement matching policy still remains deferred
      - placebo / event-conditioned nulls remain deferred
-15. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.
+15. The sixth D2 coding slice is now in place:
+   - pre-event placebo comparison helper added:
+     - `build_upper_limit_pre_event_placebo_comparison_frame(...)`
+   - current placebo contract:
+     - keeps the same event names as the live `P1/P2/P3/P4` rows
+     - maps each event date to the immediately prior trading-day placebo window on the same ticker
+     - expression-specific horizon alignment is:
+       - `P1/P2` -> prior one-day close return
+       - `P3/P4` -> prior one-day intraday return
+     - emits:
+       - `event_forward_return`
+       - `placebo_forward_return`
+       - `placebo_excess_return`
+   - practical meaning:
+     - D2 now has both mandatory adversarial legs from `D1 Slice B` in live coding form:
+       - `NC-1` matched non-event control comparison
+       - `NC-2` pre-event placebo comparison
+   - verification status:
+     - targeted state-transition panel tests passed
+     - broader regression pack passed:
+       - `34 passed, 3 warnings`
+   - explicit boundary:
+     - no-replacement matching policy still remains deferred
+     - event-conditioned null generation under `P-001` remains deferred
+16. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.

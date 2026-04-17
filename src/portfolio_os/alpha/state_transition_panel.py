@@ -61,6 +61,12 @@ _UPPER_LIMIT_CONTROL_FORWARD_COLUMN_BY_EXPRESSION = {
     "P3_NEXT_DAY_AFTER_SEALED": "next_intraday_return",
     "P4_NEXT_DAY_AFTER_FAILED": "next_intraday_return",
 }
+_UPPER_LIMIT_PLACEBO_FORWARD_COLUMN_BY_EXPRESSION = {
+    "P1_SEALED_UPPER_LIMIT": "__prior_next_close_return",
+    "P2_FAILED_UPPER_LIMIT": "__prior_next_close_return",
+    "P3_NEXT_DAY_AFTER_SEALED": "__prior_intraday_return",
+    "P4_NEXT_DAY_AFTER_FAILED": "__prior_intraday_return",
+}
 
 
 def _cross_sectional_terciles(values: pd.Series) -> pd.Series:
@@ -487,6 +493,148 @@ def build_upper_limit_matched_control_comparison_frame(
                 "event_forward_return",
                 "control_forward_return",
                 "excess_forward_return",
+            ],
+        ]
+        .sort_values(["date", "expression_id", "event_ticker"])
+        .reset_index(drop=True)
+    )
+
+
+def build_upper_limit_pre_event_placebo_comparison_frame(
+    expression_frame: pd.DataFrame,
+    placebo_panel: pd.DataFrame,
+) -> pd.DataFrame:
+    """Join event expressions with prior-window placebo returns on the same names."""
+
+    required_expression = {
+        "date",
+        "ticker",
+        "expression_id",
+        "mechanism_id",
+        "state_anchor",
+        "signal_value",
+        "expected_sign",
+        "forward_return",
+    }
+    missing_expression = sorted(required_expression - set(expression_frame.columns))
+    if missing_expression:
+        raise InputValidationError(
+            "upper-limit pre-event placebo comparison requires expression columns: "
+            + ", ".join(missing_expression)
+        )
+
+    required_placebo_panel = {
+        "date",
+        "ticker",
+        "open",
+        "close",
+        "next_close_return",
+    }
+    missing_placebo_panel = sorted(required_placebo_panel - set(placebo_panel.columns))
+    if missing_placebo_panel:
+        raise InputValidationError(
+            "upper-limit pre-event placebo comparison requires placebo-panel columns: "
+            + ", ".join(missing_placebo_panel)
+        )
+
+    work = expression_frame.rename(
+        columns={"ticker": "event_ticker", "forward_return": "event_forward_return"}
+    ).copy()
+
+    source = placebo_panel.copy()
+    source["date"] = pd.to_datetime(source["date"], errors="coerce")
+    if source["date"].isna().any():
+        raise InputValidationError(
+            "upper-limit pre-event placebo comparison contains invalid placebo-panel dates."
+        )
+    source = source.sort_values(["ticker", "date"]).reset_index(drop=True)
+    source["__intraday_return"] = pd.to_numeric(source["close"], errors="coerce") / pd.to_numeric(
+        source["open"], errors="coerce"
+    ) - 1.0
+    source["__event_date"] = source.groupby("ticker", sort=False)["date"].shift(-1)
+    placebo_source = (
+        source.loc[
+            :,
+            [
+                "__event_date",
+                "ticker",
+                "next_close_return",
+                "__intraday_return",
+            ],
+        ]
+        .rename(
+            columns={
+                "__event_date": "date",
+                "ticker": "event_ticker",
+                "next_close_return": "__prior_next_close_return",
+                "__intraday_return": "__prior_intraday_return",
+            }
+        )
+        .dropna(subset=["date"])
+    )
+    placebo_source["date"] = placebo_source["date"].dt.strftime("%Y-%m-%d")
+
+    merged = work.merge(placebo_source, on=["date", "event_ticker"], how="left")
+    if merged.empty:
+        return pd.DataFrame(
+            columns=[
+                "date",
+                "expression_id",
+                "mechanism_id",
+                "state_anchor",
+                "event_ticker",
+                "signal_value",
+                "expected_sign",
+                "event_forward_return",
+                "placebo_forward_return",
+                "placebo_excess_return",
+            ]
+        )
+
+    placebo_rows: list[pd.DataFrame] = []
+    for expression_id, date_frame in merged.groupby("expression_id", sort=False):
+        placebo_column = _UPPER_LIMIT_PLACEBO_FORWARD_COLUMN_BY_EXPRESSION.get(str(expression_id))
+        if placebo_column is None:
+            continue
+        joined = date_frame.copy()
+        joined["placebo_forward_return"] = pd.to_numeric(joined[placebo_column], errors="coerce")
+        placebo_rows.append(joined)
+
+    if not placebo_rows:
+        return pd.DataFrame(
+            columns=[
+                "date",
+                "expression_id",
+                "mechanism_id",
+                "state_anchor",
+                "event_ticker",
+                "signal_value",
+                "expected_sign",
+                "event_forward_return",
+                "placebo_forward_return",
+                "placebo_excess_return",
+            ]
+        )
+
+    result = pd.concat(placebo_rows, ignore_index=True)
+    result["placebo_excess_return"] = (
+        pd.to_numeric(result["event_forward_return"], errors="coerce")
+        - pd.to_numeric(result["placebo_forward_return"], errors="coerce")
+    )
+    return (
+        result.loc[
+            :,
+            [
+                "date",
+                "expression_id",
+                "mechanism_id",
+                "state_anchor",
+                "event_ticker",
+                "signal_value",
+                "expected_sign",
+                "event_forward_return",
+                "placebo_forward_return",
+                "placebo_excess_return",
             ],
         ]
         .sort_values(["date", "expression_id", "event_ticker"])

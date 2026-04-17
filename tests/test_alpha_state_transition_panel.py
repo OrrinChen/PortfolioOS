@@ -7,6 +7,7 @@ from portfolio_os.alpha.state_transition_panel import (
     build_state_transition_daily_panel,
     build_upper_limit_matched_control_comparison_frame,
     build_state_transition_matching_covariates,
+    build_upper_limit_pre_event_placebo_comparison_frame,
     build_upper_limit_pilot_expression_frame,
     build_upper_limit_matched_non_event_control_frame,
     extract_upper_limit_daily_state_slice,
@@ -211,6 +212,91 @@ def _matched_control_forward_panel_fixture() -> pd.DataFrame:
                 "next_open_return": -0.01,
                 "next_intraday_return": -0.02,
                 "next_close_return": -0.0298,
+            },
+        ]
+    )
+
+
+def _pre_event_placebo_daily_bar_fixture() -> pd.DataFrame:
+    return pd.DataFrame(
+        [
+            {
+                "date": "2026-03-31",
+                "ticker": "000001",
+                "open": 9.50,
+                "high": 10.05,
+                "low": 9.45,
+                "close": 10.00,
+                "volume": 950_000,
+                "amount": 9_600_000,
+                "upper_limit_price": 10.45,
+                "lower_limit_price": 8.55,
+                "tradable": True,
+            },
+            {
+                "date": "2026-04-01",
+                "ticker": "000001",
+                "open": 10.00,
+                "high": 11.00,
+                "low": 9.95,
+                "close": 11.00,
+                "volume": 1_000_000,
+                "amount": 10_500_000,
+                "upper_limit_price": 11.00,
+                "lower_limit_price": 9.00,
+                "tradable": True,
+            },
+            {
+                "date": "2026-04-02",
+                "ticker": "000001",
+                "open": 11.10,
+                "high": 11.20,
+                "low": 10.80,
+                "close": 10.90,
+                "volume": 900_000,
+                "amount": 9_900_000,
+                "upper_limit_price": 12.10,
+                "lower_limit_price": 9.90,
+                "tradable": True,
+            },
+            {
+                "date": "2026-03-31",
+                "ticker": "000002",
+                "open": 20.50,
+                "high": 20.70,
+                "low": 19.90,
+                "close": 20.00,
+                "volume": 1_900_000,
+                "amount": 39_000_000,
+                "upper_limit_price": 22.55,
+                "lower_limit_price": 18.45,
+                "tradable": True,
+            },
+            {
+                "date": "2026-04-01",
+                "ticker": "000002",
+                "open": 20.00,
+                "high": 22.00,
+                "low": 19.80,
+                "close": 21.20,
+                "volume": 2_000_000,
+                "amount": 42_000_000,
+                "upper_limit_price": 22.00,
+                "lower_limit_price": 18.00,
+                "tradable": True,
+            },
+            {
+                "date": "2026-04-02",
+                "ticker": "000002",
+                "open": 21.00,
+                "high": 21.10,
+                "low": 20.00,
+                "close": 20.40,
+                "volume": 1_500_000,
+                "amount": 31_000_000,
+                "upper_limit_price": 23.32,
+                "lower_limit_price": 19.08,
+                "tradable": True,
             },
         ]
     )
@@ -425,4 +511,39 @@ def test_build_upper_limit_matched_control_comparison_frame_joins_event_and_cont
     assert keyed.loc[("P4_NEXT_DAY_AFTER_FAILED", "000002"), "control_forward_return"] == pytest.approx(-0.02)
     assert keyed.loc[("P4_NEXT_DAY_AFTER_FAILED", "000002"), "excess_forward_return"] == pytest.approx(
         (20.40 / 21.00 - 1.0) - (-0.02)
+    )
+
+
+def test_build_upper_limit_pre_event_placebo_comparison_frame_aligns_prior_horizons() -> None:
+    event_panel = build_state_transition_daily_panel(_pre_event_placebo_daily_bar_fixture())
+    expression_frame = build_upper_limit_pilot_expression_frame(event_panel.loc[event_panel["date"] == "2026-04-01"])
+
+    comparison = build_upper_limit_pre_event_placebo_comparison_frame(
+        expression_frame,
+        event_panel,
+    )
+    keyed = comparison.set_index(["expression_id", "event_ticker"])
+
+    assert list(comparison.columns) == [
+        "date",
+        "expression_id",
+        "mechanism_id",
+        "state_anchor",
+        "event_ticker",
+        "signal_value",
+        "expected_sign",
+        "event_forward_return",
+        "placebo_forward_return",
+        "placebo_excess_return",
+    ]
+    assert keyed.loc[("P1_SEALED_UPPER_LIMIT", "000001"), "placebo_forward_return"] == pytest.approx(0.10)
+    assert keyed.loc[("P1_SEALED_UPPER_LIMIT", "000001"), "placebo_excess_return"] == pytest.approx(
+        (10.90 / 11.00 - 1.0) - 0.10
+    )
+
+    assert keyed.loc[("P3_NEXT_DAY_AFTER_SEALED", "000001"), "placebo_forward_return"] == pytest.approx(
+        10.00 / 9.50 - 1.0
+    )
+    assert keyed.loc[("P4_NEXT_DAY_AFTER_FAILED", "000002"), "placebo_forward_return"] == pytest.approx(
+        20.00 / 20.50 - 1.0
     )
