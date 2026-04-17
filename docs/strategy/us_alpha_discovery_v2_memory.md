@@ -280,4 +280,29 @@ Exit consequence:
    - explicit boundary:
      - seed-based event-conditioned null generation remains the next slice
      - no-replacement matching policy still remains deferred
-17. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.
+17. The eighth D2 coding slice is now in place:
+   - seed-based `P-001` event-conditioned null draw helper added:
+     - `build_upper_limit_event_conditioned_null_draw(...)`
+   - current null-draw contract:
+     - consumes the live event-conditioned null pool
+     - reshuffles `forward_return` only within:
+       - `date`
+       - `conditioning_bucket_key`
+     - emits:
+       - `null_forward_return`
+       - `null_seed`
+   - practical meaning:
+     - D2 now has the first executable `P-001` null mechanism, not just null strata
+     - the upper-limit pilot can now produce:
+       - live event rows
+       - matched-control rows
+       - pre-event placebo rows
+       - one seeded event-conditioned null draw
+   - verification status:
+     - targeted state-transition panel tests passed
+     - broader regression pack passed:
+       - `38 passed, 3 warnings`
+   - explicit boundary:
+     - per-expression null summaries / percentiles remain deferred
+     - no-replacement matching policy still remains deferred
+18. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.

@@ -13,6 +13,7 @@ from portfolio_os.alpha.promotion_contract import (
 from portfolio_os.alpha.report import render_alpha_acceptance_note, render_alpha_research_report
 from portfolio_os.alpha.research import AlphaResearchResult, build_alpha_score_frame, load_alpha_returns_panel, run_alpha_research
 from portfolio_os.alpha.state_transition_panel import (
+    build_upper_limit_event_conditioned_null_draw,
     build_state_transition_matching_covariates,
     build_upper_limit_event_conditioned_null_pool,
     build_upper_limit_matched_control_comparison_frame,
@@ -36,6 +37,7 @@ __all__ = [
     "build_alpha_score_frame",
     "build_state_transition_matching_covariates",
     "build_upper_limit_event_conditioned_null_pool",
+    "build_upper_limit_event_conditioned_null_draw",
     "build_upper_limit_matched_control_comparison_frame",
     "build_upper_limit_matched_non_event_control_frame",
     "build_upper_limit_pre_event_placebo_comparison_frame",

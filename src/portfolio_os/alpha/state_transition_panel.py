@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 
 from portfolio_os.domain.errors import InputValidationError
@@ -727,6 +728,95 @@ def build_upper_limit_event_conditioned_null_pool(
                 "size_tercile",
                 "liquidity_tercile",
                 "conditioning_bucket_key",
+            ],
+        ]
+        .sort_values(["date", "expression_id", "event_ticker"])
+        .reset_index(drop=True)
+    )
+
+
+def build_upper_limit_event_conditioned_null_draw(
+    null_pool: pd.DataFrame,
+    *,
+    random_seed: int,
+) -> pd.DataFrame:
+    """Generate one seed-based P-001 null draw by shuffling within event-conditioned buckets."""
+
+    required_null_pool = {
+        "date",
+        "expression_id",
+        "mechanism_id",
+        "state_anchor",
+        "event_ticker",
+        "signal_value",
+        "expected_sign",
+        "forward_return",
+        "event_type_bucket",
+        "horizon_bucket",
+        "size_tercile",
+        "liquidity_tercile",
+        "conditioning_bucket_key",
+    }
+    missing_null_pool = sorted(required_null_pool - set(null_pool.columns))
+    if missing_null_pool:
+        raise InputValidationError(
+            "upper-limit event-conditioned null draw requires null-pool columns: "
+            + ", ".join(missing_null_pool)
+        )
+
+    work = null_pool.copy().sort_values(["date", "conditioning_bucket_key", "event_ticker"]).reset_index(drop=True)
+    shuffled_rows: list[pd.DataFrame] = []
+    grouped = list(work.groupby(["date", "conditioning_bucket_key"], sort=True))
+    for offset, (_, bucket_frame) in enumerate(grouped):
+        rng = np.random.default_rng(int(random_seed) + int(offset))
+        shuffled = bucket_frame.copy()
+        shuffled["null_forward_return"] = rng.permutation(
+            pd.to_numeric(bucket_frame["forward_return"], errors="coerce").to_numpy()
+        )
+        shuffled["null_seed"] = int(random_seed)
+        shuffled_rows.append(shuffled)
+
+    if not shuffled_rows:
+        return pd.DataFrame(
+            columns=[
+                "date",
+                "expression_id",
+                "mechanism_id",
+                "state_anchor",
+                "event_ticker",
+                "signal_value",
+                "expected_sign",
+                "forward_return",
+                "event_type_bucket",
+                "horizon_bucket",
+                "size_tercile",
+                "liquidity_tercile",
+                "conditioning_bucket_key",
+                "null_forward_return",
+                "null_seed",
+            ]
+        )
+
+    result = pd.concat(shuffled_rows, ignore_index=True)
+    return (
+        result.loc[
+            :,
+            [
+                "date",
+                "expression_id",
+                "mechanism_id",
+                "state_anchor",
+                "event_ticker",
+                "signal_value",
+                "expected_sign",
+                "forward_return",
+                "event_type_bucket",
+                "horizon_bucket",
+                "size_tercile",
+                "liquidity_tercile",
+                "conditioning_bucket_key",
+                "null_forward_return",
+                "null_seed",
             ],
         ]
         .sort_values(["date", "expression_id", "event_ticker"])

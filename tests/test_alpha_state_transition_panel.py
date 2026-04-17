@@ -5,6 +5,7 @@ import pytest
 
 from portfolio_os.alpha.state_transition_panel import (
     build_state_transition_daily_panel,
+    build_upper_limit_event_conditioned_null_draw,
     build_upper_limit_event_conditioned_null_pool,
     build_upper_limit_matched_control_comparison_frame,
     build_state_transition_matching_covariates,
@@ -303,6 +304,58 @@ def _pre_event_placebo_daily_bar_fixture() -> pd.DataFrame:
     )
 
 
+def _event_conditioned_null_pool_fixture() -> pd.DataFrame:
+    return pd.DataFrame(
+        [
+            {
+                "date": "2026-04-01",
+                "expression_id": "P1_SEALED_UPPER_LIMIT",
+                "mechanism_id": "M1",
+                "state_anchor": "SEALED_UPPER_LIMIT",
+                "event_ticker": "000001",
+                "signal_value": 1.0,
+                "expected_sign": 1.0,
+                "forward_return": 0.10,
+                "event_type_bucket": "SEALED_UPPER_LIMIT",
+                "horizon_bucket": "NEXT_CLOSE",
+                "size_tercile": 2,
+                "liquidity_tercile": 2,
+                "conditioning_bucket_key": "SEALED_UPPER_LIMIT|NEXT_CLOSE|2|2",
+            },
+            {
+                "date": "2026-04-01",
+                "expression_id": "P1_SEALED_UPPER_LIMIT",
+                "mechanism_id": "M1",
+                "state_anchor": "SEALED_UPPER_LIMIT",
+                "event_ticker": "000007",
+                "signal_value": 1.0,
+                "expected_sign": 1.0,
+                "forward_return": 0.30,
+                "event_type_bucket": "SEALED_UPPER_LIMIT",
+                "horizon_bucket": "NEXT_CLOSE",
+                "size_tercile": 2,
+                "liquidity_tercile": 2,
+                "conditioning_bucket_key": "SEALED_UPPER_LIMIT|NEXT_CLOSE|2|2",
+            },
+            {
+                "date": "2026-04-01",
+                "expression_id": "P4_NEXT_DAY_AFTER_FAILED",
+                "mechanism_id": "M5",
+                "state_anchor": "FAILED_UPPER_LIMIT",
+                "event_ticker": "000002",
+                "signal_value": -1.0,
+                "expected_sign": -1.0,
+                "forward_return": -0.20,
+                "event_type_bucket": "FAILED_UPPER_LIMIT",
+                "horizon_bucket": "NEXT_INTRADAY",
+                "size_tercile": 1,
+                "liquidity_tercile": 1,
+                "conditioning_bucket_key": "FAILED_UPPER_LIMIT|NEXT_INTRADAY|1|1",
+            },
+        ]
+    )
+
+
 def test_build_state_transition_daily_panel_derives_upper_limit_states() -> None:
     panel = build_state_transition_daily_panel(_daily_bar_fixture())
     same_day = panel.loc[panel["date"] == "2026-04-01"].set_index("ticker")
@@ -595,3 +648,40 @@ def test_build_upper_limit_event_conditioned_null_pool_rejects_missing_condition
 
     with pytest.raises(InputValidationError, match="requires conditioning columns"):
         build_upper_limit_event_conditioned_null_pool(expression_frame, bad_conditioning)
+
+
+def test_build_upper_limit_event_conditioned_null_draw_shuffles_within_conditioning_buckets() -> None:
+    null_pool = _event_conditioned_null_pool_fixture()
+
+    draw = build_upper_limit_event_conditioned_null_draw(null_pool, random_seed=7)
+    keyed = draw.set_index("event_ticker")
+
+    assert list(draw.columns) == [
+        "date",
+        "expression_id",
+        "mechanism_id",
+        "state_anchor",
+        "event_ticker",
+        "signal_value",
+        "expected_sign",
+        "forward_return",
+        "event_type_bucket",
+        "horizon_bucket",
+        "size_tercile",
+        "liquidity_tercile",
+        "conditioning_bucket_key",
+        "null_forward_return",
+        "null_seed",
+    ]
+    assert set(
+        keyed.loc[["000001", "000007"], "null_forward_return"].tolist()
+    ) == {0.10, 0.30}
+    assert keyed.loc["000002", "null_forward_return"] == pytest.approx(-0.20)
+    assert int(keyed.loc["000001", "null_seed"]) == 7
+
+
+def test_build_upper_limit_event_conditioned_null_draw_rejects_missing_pool_columns() -> None:
+    bad_pool = _event_conditioned_null_pool_fixture().drop(columns=["conditioning_bucket_key"])
+
+    with pytest.raises(InputValidationError, match="requires null-pool columns"):
+        build_upper_limit_event_conditioned_null_draw(bad_pool, random_seed=7)
