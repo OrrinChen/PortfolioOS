@@ -8,6 +8,7 @@ import pytest
 
 from portfolio_os.alpha.discovery_calibration import (
     build_calibration_signal_frame,
+    build_shuffled_null_distribution,
     build_us_residual_momentum_calibration_registry,
     run_us_residual_momentum_calibration_from_files,
 )
@@ -173,3 +174,40 @@ def test_run_us_residual_momentum_calibration_writes_expected_artifacts(tmp_path
 
     assert result.summary_frame["expression_id"].nunique() == 6
     assert "calibration family" in result.note_markdown.lower()
+
+
+def test_build_shuffled_null_distribution_writes_one_row_per_seed(tmp_path: Path) -> None:
+    returns_path, reference_path = _write_fixture(tmp_path)
+    returns_panel = load_alpha_returns_panel(returns_path)
+    reference_frame = pd.read_csv(reference_path)
+
+    null_frame = build_shuffled_null_distribution(
+        returns_panel=returns_panel,
+        universe_reference=reference_frame,
+        random_seeds=[0, 1, 2, 3],
+    )
+
+    assert list(null_frame["seed"]) == [0, 1, 2, 3]
+    assert (null_frame["expression_id"] == "CTRL1_SHUFFLED_PLACEBO").all()
+    assert null_frame["mean_rank_ic"].notna().all()
+    assert null_frame["rank_ic_t"].notna().all()
+
+
+def test_run_us_residual_momentum_calibration_adds_shuffle_null_percentiles(tmp_path: Path) -> None:
+    returns_path, reference_path = _write_fixture(tmp_path)
+    output_dir = tmp_path / "calibration_run"
+
+    result = run_us_residual_momentum_calibration_from_files(
+        returns_file=returns_path,
+        universe_reference_file=reference_path,
+        output_dir=output_dir,
+        random_seed=7,
+    )
+
+    assert (output_dir / "shuffle_null_distribution.csv").exists()
+    assert "shuffle_null_mean_rank_ic_percentile" in result.summary_frame.columns
+    assert "shuffle_null_rank_ic_t_percentile" in result.summary_frame.columns
+
+    expression_rows = result.summary_frame.loc[result.summary_frame["role"] == "expression"]
+    assert expression_rows["shuffle_null_mean_rank_ic_percentile"].between(0.0, 1.0).all()
+    assert expression_rows["shuffle_null_rank_ic_t_percentile"].between(0.0, 1.0).all()

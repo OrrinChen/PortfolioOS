@@ -32,52 +32,72 @@ The first slice includes:
   - `summary.json`
   - `note.md`
 
+The second slice extends the harness with a repeated shuffled-null benchmark:
+
+- `100` shuffled-placebo seeds
+- persisted null-distribution artifact:
+  - `shuffle_null_distribution.csv`
+- summary-level null percentiles for each live expression:
+  - `shuffle_null_mean_rank_ic_percentile`
+  - `shuffle_null_rank_ic_t_percentile`
+
 ## Verification
 
 Targeted verification passed:
 
 ```text
 python -m pytest tests/test_alpha_discovery_calibration.py tests/test_alpha_qualification.py -q
-9 passed, 3 warnings
+11 passed, 3 warnings
 ```
 
 The live runner also completed and wrote artifacts under:
 
 - `outputs/us_residual_momentum_calibration/2026-04-16/`
 
-## First Read
+## Updated Read After Null Benchmark Extension
 
-The harness is live, but the read is **not** yet a calibration success.
+The harness is live, but the read is still **not** a calibration success.
 
 Current summary:
 
 - best live expression = `RM3_VOL_MANAGED`
   - `mean_rank_ic ~ 0.0329`
   - `rank_ic_t ~ 0.7371`
-- strongest control = `CTRL1_SHUFFLED_PLACEBO`
+  - shuffled-null `mean_rank_ic` percentile `~ 70%`
+  - shuffled-null `rank_ic_t` percentile `~ 72%`
+- strongest single shuffled draw = `CTRL1_SHUFFLED_PLACEBO`
   - `mean_rank_ic ~ 0.0668`
   - `rank_ic_t ~ 1.7694`
+  - but this now reads as a high null draw rather than a standalone falsification result:
+    - shuffled-null `mean_rank_ic` percentile `~ 92%`
+    - shuffled-null `rank_ic_t` percentile `~ 95%`
 
 Other key reads:
 
-- `RM2_SECTOR_RESIDUAL` has the best live mean spread, but still weak significance
-- `CTRL2_PRE_WINDOW_PLACEBO` is also not weak enough
-- none of the live expressions yet dominate the controls clearly
+- `RM2_SECTOR_RESIDUAL` and `RM1_MKT_RESIDUAL` also fail to separate cleanly from the shuffled null
+- `CTRL2_PRE_WINDOW_PLACEBO` and `CTRL3_BASELINE_MIMIC` remain economically nontrivial controls
+- no live expression yet clears the stronger claim the calibration family needs:
+  - that a mechanism-bearing expression is obviously distinct from the null/control envelope, not just better than one arbitrary placebo seed
 
 ## Interpretation
 
-This is exactly the kind of read the calibration family is supposed to surface.
+This is exactly the kind of update the calibration family is supposed to force before any primary-family mining opens.
 
-The correct conclusion is **not**:
+The first-pass concern was:
 
-- residual momentum is dead
-- or the charter should jump to the primary family anyway
+- one shuffled placebo looked too strong relative to the live expressions
 
-The correct conclusion is:
+The refined read is more precise:
 
-- the calibration harness is operational,
-- but the discovery machine is not yet well-calibrated enough to trust a family winner decision,
-- because at least one placebo-style control is still too strong relative to the live expressions.
+- a single shuffled placebo draw is too noisy to interpret alone on this short sample
+- after moving to a `100`-seed shuffled null, the core problem is not "one placebo got lucky"
+- the core problem is that the live expressions still do not sit far enough into the right tail of the null distribution to validate the discovery machine
+
+So the correct conclusion is:
+
+- the calibration harness is now materially better calibrated than the first slice
+- but the calibration family is still **not validated**
+- because the best live expression is only around the `70-72` percentile of the shuffled null, not at a level that supports a trustworthy family closeout
 
 ## Immediate Consequence
 
@@ -87,12 +107,12 @@ The primary family remains blocked.
 
 The next justified work stays inside calibration and should focus on:
 
-1. tightening control interpretation,
-2. improving the calibration evaluator so placebo controls are more clearly separated from mechanism-bearing expressions,
+1. extending or otherwise strengthening the calibration sample so the null becomes more informative,
+2. adding deeper adversarial controls / mechanism-breaking checks rather than relying on one placebo draw,
 3. and only then asking whether the calibration family can produce a trustworthy closeout.
 
 ## Status Label
 
 Current status:
 
-`calibration harness live; calibration family not yet validated`
+`calibration harness live with shuffled-null benchmark; calibration family not yet validated`

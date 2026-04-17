@@ -116,6 +116,13 @@ def _mean_t_stat(values: pd.Series) -> float:
     return float(clean.mean() / (std / np.sqrt(float(len(clean)))))
 
 
+def _empirical_percentile(sample: pd.Series, value: float) -> float:
+    clean = pd.to_numeric(sample, errors="coerce").dropna().astype(float)
+    if clean.empty or not np.isfinite(value):
+        return float("nan")
+    return float((clean <= float(value)).mean())
+
+
 def _quantile_buckets(values: pd.Series, *, quantiles: int = _QUANTILES) -> pd.Series:
     ranked = values.rank(method="first", pct=True)
     return np.ceil(ranked * quantiles).clip(1, quantiles).astype(int)
@@ -189,6 +196,46 @@ def build_calibration_signal_frame(
     raise InputValidationError(f"Unsupported calibration expression_id: {expression_id}")
 
 
+def build_shuffled_null_distribution(
+    *,
+    returns_panel: pd.DataFrame,
+    universe_reference: pd.DataFrame,
+    random_seeds: list[int],
+) -> pd.DataFrame:
+    """Build one repeated shuffled-placebo null distribution."""
+
+    rows: list[dict[str, Any]] = []
+    forward_return_frame = build_monthly_forward_return_frame(
+        returns_panel=returns_panel,
+        universe_reference=universe_reference,
+    )
+    for seed in random_seeds:
+        signal_frame = build_calibration_signal_frame(
+            returns_panel=returns_panel,
+            universe_reference=universe_reference,
+            expression_id="CTRL1_SHUFFLED_PLACEBO",
+            random_seed=int(seed),
+        )
+        per_date = _build_per_date_metrics(
+            signal_frame=signal_frame,
+            forward_return_frame=forward_return_frame,
+            expression_id="CTRL1_SHUFFLED_PLACEBO",
+        )
+        rows.append(
+            {
+                "seed": int(seed),
+                "expression_id": "CTRL1_SHUFFLED_PLACEBO",
+                "evaluation_month_count": int(len(per_date)),
+                "mean_rank_ic": float(pd.to_numeric(per_date["rank_ic"], errors="coerce").mean()) if not per_date.empty else 0.0,
+                "rank_ic_t": _mean_t_stat(per_date["rank_ic"]) if not per_date.empty else 0.0,
+                "mean_top_bottom_spread": float(pd.to_numeric(per_date["top_bottom_spread"], errors="coerce").mean())
+                if not per_date.empty
+                else 0.0,
+            }
+        )
+    return pd.DataFrame(rows).sort_values("seed").reset_index(drop=True)
+
+
 def _build_per_date_metrics(
     *,
     signal_frame: pd.DataFrame,
@@ -254,6 +301,8 @@ def _render_calibration_note(
                 f"- mean rank IC: `{best_expression['mean_rank_ic']:.4f}`",
                 f"- rank IC t-stat: `{best_expression['rank_ic_t']:.4f}`",
                 f"- mean top-bottom spread: `{best_expression['mean_top_bottom_spread']:.4%}`",
+                f"- shuffled-null mean-rank-IC percentile: `{float(best_expression['shuffle_null_mean_rank_ic_percentile']):.2%}`",
+                f"- shuffled-null rank-IC-t percentile: `{float(best_expression['shuffle_null_rank_ic_t_percentile']):.2%}`",
                 "",
             ]
         )
@@ -297,6 +346,11 @@ def run_us_residual_momentum_calibration(
 
     registry = build_us_residual_momentum_calibration_registry()
     registry_frame = pd.DataFrame(asdict(item) for item in registry)
+    shuffle_null_frame = build_shuffled_null_distribution(
+        returns_panel=returns_panel,
+        universe_reference=universe_reference,
+        random_seeds=list(range(100)),
+    )
     forward_return_frame = build_monthly_forward_return_frame(
         returns_panel=returns_panel,
         universe_reference=universe_reference,
@@ -337,6 +391,12 @@ def run_us_residual_momentum_calibration(
         ["role", "mean_rank_ic", "rank_ic_t", "expression_id"],
         ascending=[True, False, False, True],
     ).reset_index(drop=True)
+    summary_frame["shuffle_null_mean_rank_ic_percentile"] = summary_frame["mean_rank_ic"].map(
+        lambda value: _empirical_percentile(shuffle_null_frame["mean_rank_ic"], float(value))
+    )
+    summary_frame["shuffle_null_rank_ic_t_percentile"] = summary_frame["rank_ic_t"].map(
+        lambda value: _empirical_percentile(shuffle_null_frame["rank_ic_t"], float(value))
+    )
 
     note_markdown = _render_calibration_note(summary_frame=summary_frame, registry_frame=registry_frame)
     summary_payload = {
@@ -344,6 +404,7 @@ def run_us_residual_momentum_calibration(
         "registry_count": int(len(registry_frame)),
         "expression_count": int((registry_frame["role"] == "expression").sum()),
         "control_count": int((registry_frame["role"] == "control").sum()),
+        "shuffle_null_seed_count": int(len(shuffle_null_frame)),
         "best_expression_id": str(summary_frame.loc[summary_frame["role"] == "expression"].iloc[0]["expression_id"])
         if not summary_frame.loc[summary_frame["role"] == "expression"].empty
         else None,
@@ -352,6 +413,7 @@ def run_us_residual_momentum_calibration(
     registry_frame.to_csv(output_path / "registry.csv", index=False)
     per_date_frame.to_csv(output_path / "per_date_metrics.csv", index=False)
     summary_frame.to_csv(output_path / "summary.csv", index=False)
+    shuffle_null_frame.to_csv(output_path / "shuffle_null_distribution.csv", index=False)
     write_json(output_path / "summary.json", summary_payload)
     write_text(output_path / "note.md", note_markdown)
 
