@@ -575,3 +575,18 @@ Exit consequence:
      - richer pre-`R3` history
      - a deliberately downside-rich `M3` universe
      - or a new charter with different scope
+35. `Mechanism suggestive but unproven` is a real intermediate state, not a softened synonym for failure:
+   - it means the family produced local mechanism-linked evidence
+   - but strength and portability were still insufficient to clear the current cycle's family-winner gate
+   - future reopening should therefore inherit a bounded prior rather than restart from a blank slate
+36. The preserved inheritance points from this closeout are:
+   - `P1/P4` directionality is worth treating as a restart prior, but must be independently revalidated
+   - pre-event placebo contamination is now the first failure surface to defend against in any reopened state-transition null design
+   - a future `FM-002` placeholder should be reserved for state-transition-specific placebo contamination if the same pattern reappears under richer data
+   - the current provider path, not just the family read, was a hard cycle constraint; any honest reopening requires a stronger pre-`R3` data layer first
+37. Discovery-v2 closeout should not be remembered as `tried and failed`:
+   - it closed with:
+     - reusable machine assets (`P-001`, `FM-001`)
+     - a real provider-backed A-share state-transition panel path
+     - a bounded family-level conclusion that prevents false-winner inflation
+   - that combination is a successful discovery-cycle output even without a promotable winner
