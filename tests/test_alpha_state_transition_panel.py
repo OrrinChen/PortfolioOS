@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import json
+
 import pandas as pd
 import pytest
 
+from portfolio_os.alpha.state_transition_pilot import run_upper_limit_pilot_artifact_bundle
 from portfolio_os.alpha.state_transition_panel import (
     build_state_transition_daily_panel,
     build_upper_limit_event_conditioned_null_draw,
@@ -811,3 +814,54 @@ def test_build_upper_limit_pilot_read_frame_rejects_missing_null_summary_columns
             placebo_comparison,
             bad_null_summary,
         )
+
+
+def test_run_upper_limit_pilot_artifact_bundle_writes_expected_artifacts(tmp_path) -> None:
+    event_panel = build_state_transition_daily_panel(_pre_event_placebo_daily_bar_fixture())
+    expression_frame = build_upper_limit_pilot_expression_frame(event_panel.loc[event_panel["date"] == "2026-04-01"])
+    matched_controls = build_upper_limit_matched_non_event_control_frame(_matched_control_fixture())
+    control_comparison = build_upper_limit_matched_control_comparison_frame(
+        expression_frame,
+        matched_controls,
+        _matched_control_forward_panel_fixture(),
+    )
+    placebo_comparison = build_upper_limit_pre_event_placebo_comparison_frame(
+        expression_frame,
+        event_panel,
+    )
+    null_pool = build_upper_limit_event_conditioned_null_pool(expression_frame, _matched_control_fixture())
+    output_dir = tmp_path / "upper_limit_pilot"
+
+    result = run_upper_limit_pilot_artifact_bundle(
+        expression_frame=expression_frame,
+        control_comparison_frame=control_comparison,
+        placebo_comparison_frame=placebo_comparison,
+        null_pool=null_pool,
+        random_seeds=[7, 8, 9],
+        output_dir=output_dir,
+    )
+
+    expected_files = {
+        "expression_frame.csv",
+        "control_comparison.csv",
+        "placebo_comparison.csv",
+        "null_pool.csv",
+        "null_summary.csv",
+        "pilot_read_frame.csv",
+        "summary.json",
+        "note.md",
+    }
+    assert expected_files == {path.name for path in output_dir.iterdir() if path.is_file()}
+    assert result.output_dir == output_dir
+    assert len(result.read_frame) == 4
+
+    summary = json.loads((output_dir / "summary.json").read_text(encoding="utf-8"))
+    assert summary["pilot_name"] == "upper_limit_daily_state"
+    assert summary["expression_count"] == 4
+    assert summary["null_seed_count"] == 3
+    assert summary["degenerate_expression_count"] == 4
+    assert "P1_SEALED_UPPER_LIMIT" in summary["degenerate_expression_ids"]
+
+    note_text = (output_dir / "note.md").read_text(encoding="utf-8")
+    assert "Upper-Limit Pilot Read" in note_text
+    assert "degenerate" in note_text.lower()

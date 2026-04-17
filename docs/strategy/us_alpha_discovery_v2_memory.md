@@ -350,4 +350,35 @@ Exit consequence:
    - explicit boundary:
      - no-replacement matching policy still remains deferred
      - no file-writing D2 runner / artifact bundle has been added yet
-20. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.
+20. The eleventh D2 coding slice is now in place:
+   - thin upper-limit pilot artifact runner added:
+     - `run_upper_limit_pilot_artifact_bundle(...)`
+     - module:
+       - `src/portfolio_os/alpha/state_transition_pilot.py`
+   - current runner contract:
+     - consumes existing D2 objects only:
+       - `expression_frame`
+       - `control_comparison_frame`
+       - `placebo_comparison_frame`
+       - `null_pool`
+       - `random_seeds`
+     - writes:
+       - `expression_frame.csv`
+       - `control_comparison.csv`
+       - `placebo_comparison.csv`
+       - `null_pool.csv`
+       - `null_summary.csv`
+       - `pilot_read_frame.csv`
+       - `summary.json`
+       - `note.md`
+   - practical meaning:
+     - D2 now has its first thin artifact layer for the `M1/M2/M5` upper-limit pilot
+     - the full pilot read chain can be snapshotted without rebuilding each component manually
+   - verification status:
+     - targeted state-transition panel tests passed
+     - broader regression pack passed:
+       - `43 passed, 3 warnings`
+   - explicit boundary:
+     - no real-data ingestion / provider wiring has been added yet
+     - no CLI entrypoint has been added yet
+21. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.
