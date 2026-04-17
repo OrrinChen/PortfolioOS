@@ -3,7 +3,10 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from portfolio_os.alpha.state_transition_panel import build_state_transition_daily_panel
+from portfolio_os.alpha.state_transition_panel import (
+    build_state_transition_daily_panel,
+    extract_upper_limit_daily_state_slice,
+)
 from portfolio_os.domain.errors import InputValidationError
 
 
@@ -94,3 +97,18 @@ def test_build_state_transition_daily_panel_rejects_missing_required_columns() -
 
     with pytest.raises(InputValidationError, match="missing required columns"):
         build_state_transition_daily_panel(bad)
+
+
+def test_extract_upper_limit_daily_state_slice_keeps_only_pilot_rows() -> None:
+    panel = build_state_transition_daily_panel(_daily_bar_fixture())
+    pilot = extract_upper_limit_daily_state_slice(panel)
+
+    assert set(pilot["ticker"]) == {"000001", "000002"}
+    assert {
+        "sealed_upper_limit",
+        "failed_upper_limit",
+        "next_open_return",
+        "next_close_return",
+    } <= set(pilot.columns)
+    assert bool(pilot.loc[pilot["ticker"] == "000001", "sealed_upper_limit"].iloc[0]) is True
+    assert bool(pilot.loc[pilot["ticker"] == "000002", "failed_upper_limit"].iloc[0]) is True
