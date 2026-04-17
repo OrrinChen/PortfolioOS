@@ -5,7 +5,11 @@ import json
 import pandas as pd
 import pytest
 
-from portfolio_os.alpha.state_transition_pilot import run_upper_limit_pilot_artifact_bundle
+from portfolio_os.alpha.state_transition_pilot import (
+    load_upper_limit_pilot_daily_panel_csv,
+    run_upper_limit_pilot_artifact_bundle,
+    run_upper_limit_pilot_artifact_bundle_from_daily_csv,
+)
 from portfolio_os.alpha.state_transition_panel import (
     build_state_transition_daily_panel,
     build_upper_limit_event_conditioned_null_draw,
@@ -307,6 +311,110 @@ def _pre_event_placebo_daily_bar_fixture() -> pd.DataFrame:
             },
         ]
     )
+
+
+def _upper_limit_pilot_daily_csv_fixture() -> pd.DataFrame:
+    rows: list[dict[str, object]] = []
+    shares_by_ticker = {
+        "000001": 10_000_000.0,
+        "000002": 10_000_000.0,
+        "000003": 10_000_000.0,
+        "000004": 10_000_000.0,
+        "000005": 10_000_000.0,
+    }
+    industry_by_ticker = {
+        "000001": " Industrials ",
+        "000002": "Industrials",
+        "000003": "Consumer",
+        "000004": "Consumer",
+        "000005": "Technology",
+    }
+    daily_spec = {
+        "2026-03-30": {
+            "000001": {"close": 6.50, "amount": 7_000_000},
+            "000002": {"close": 5.70, "amount": 6_000_000},
+            "000003": {"close": 7.50, "amount": 8_000_000},
+            "000004": {"close": 8.30, "amount": 9_000_000},
+            "000005": {"close": 4.80, "amount": 4_000_000},
+        },
+        "2026-03-31": {
+            "000001": {"close": 6.80, "amount": 7_200_000},
+            "000002": {"close": 5.90, "amount": 6_200_000},
+            "000003": {"close": 7.70, "amount": 8_200_000},
+            "000004": {"close": 8.60, "amount": 9_200_000},
+            "000005": {"close": 4.90, "amount": 4_200_000},
+        },
+        "2026-04-01": {
+            "000001": {
+                "open": 6.90,
+                "high": 7.70,
+                "low": 6.85,
+                "close": 7.70,
+                "upper_limit_price": 7.70,
+                "amount": 7_400_000,
+            },
+            "000002": {
+                "open": 5.95,
+                "high": 6.20,
+                "low": 5.90,
+                "close": 6.00,
+                "upper_limit_price": 6.49,
+                "amount": 6_400_000,
+            },
+            "000003": {
+                "open": 7.75,
+                "high": 8.10,
+                "low": 7.70,
+                "close": 8.00,
+                "upper_limit_price": 8.47,
+                "amount": 8_400_000,
+            },
+            "000004": {
+                "open": 8.70,
+                "high": 9.90,
+                "low": 8.60,
+                "close": 9.45,
+                "upper_limit_price": 9.90,
+                "amount": 9_400_000,
+            },
+            "000005": {
+                "open": 4.95,
+                "high": 5.10,
+                "low": 4.90,
+                "close": 5.00,
+                "upper_limit_price": 5.39,
+                "amount": 4_400_000,
+            },
+        },
+        "2026-04-02": {
+            "000001": {"close": 7.90, "amount": 7_500_000},
+            "000002": {"close": 6.05, "amount": 6_450_000},
+            "000003": {"close": 8.10, "amount": 8_450_000},
+            "000004": {"close": 9.10, "amount": 9_450_000},
+            "000005": {"close": 5.05, "amount": 4_450_000},
+        },
+    }
+    for date_value, ticker_map in daily_spec.items():
+        for ticker, values in ticker_map.items():
+            close = float(values["close"])
+            rows.append(
+                {
+                    "date": date_value,
+                    "ticker": f" {ticker} ",
+                    "open": float(values.get("open", close * 0.99)),
+                    "high": float(values.get("high", close * 1.01)),
+                    "low": float(values.get("low", close * 0.98)),
+                    "close": close,
+                    "volume": 1_000_000,
+                    "amount": float(values["amount"]),
+                    "upper_limit_price": float(values.get("upper_limit_price", close * 1.10)),
+                    "lower_limit_price": float(values.get("lower_limit_price", close * 0.90)),
+                    "tradable": "true",
+                    "industry": industry_by_ticker[ticker],
+                    "issuer_total_shares": shares_by_ticker[ticker],
+                }
+            )
+    return pd.DataFrame(rows)
 
 
 def _event_conditioned_null_pool_fixture() -> pd.DataFrame:
@@ -865,3 +973,54 @@ def test_run_upper_limit_pilot_artifact_bundle_writes_expected_artifacts(tmp_pat
     note_text = (output_dir / "note.md").read_text(encoding="utf-8")
     assert "Upper-Limit Pilot Read" in note_text
     assert "degenerate" in note_text.lower()
+
+
+def test_load_upper_limit_pilot_daily_panel_csv_normalizes_and_derives_state_columns(tmp_path) -> None:
+    daily_path = tmp_path / "state_transition_daily.csv"
+    _upper_limit_pilot_daily_csv_fixture().to_csv(daily_path, index=False)
+
+    panel = load_upper_limit_pilot_daily_panel_csv(daily_path)
+    keyed = panel.set_index(["date", "ticker"])
+
+    assert "upper_limit_touched" in panel.columns
+    assert "sealed_upper_limit" in panel.columns
+    assert bool(keyed.loc[("2026-04-01", "000001"), "sealed_upper_limit"]) is True
+    assert bool(keyed.loc[("2026-04-01", "000004"), "failed_upper_limit"]) is True
+    assert keyed.loc[("2026-04-01", "000001"), "industry"] == "Industrials"
+    assert keyed.loc[("2026-04-01", "000001"), "issuer_total_shares"] == pytest.approx(10_000_000.0)
+
+
+def test_load_upper_limit_pilot_daily_panel_csv_rejects_missing_reference_columns(tmp_path) -> None:
+    daily_path = tmp_path / "state_transition_daily_missing_reference.csv"
+    _upper_limit_pilot_daily_csv_fixture().drop(columns=["industry"]).to_csv(daily_path, index=False)
+
+    with pytest.raises(InputValidationError, match="requires pilot reference columns"):
+        load_upper_limit_pilot_daily_panel_csv(daily_path)
+
+
+def test_run_upper_limit_pilot_artifact_bundle_from_daily_csv_writes_expected_artifacts(tmp_path) -> None:
+    daily_path = tmp_path / "state_transition_daily.csv"
+    _upper_limit_pilot_daily_csv_fixture().to_csv(daily_path, index=False)
+    output_dir = tmp_path / "upper_limit_daily_csv_pilot"
+
+    result = run_upper_limit_pilot_artifact_bundle_from_daily_csv(
+        daily_panel_path=daily_path,
+        lookback_days=2,
+        random_seeds=[7, 8, 9],
+        output_dir=output_dir,
+    )
+
+    expected_files = {
+        "expression_frame.csv",
+        "control_comparison.csv",
+        "placebo_comparison.csv",
+        "null_pool.csv",
+        "null_summary.csv",
+        "pilot_read_frame.csv",
+        "summary.json",
+        "note.md",
+    }
+    assert expected_files == {path.name for path in output_dir.iterdir() if path.is_file()}
+    assert result.summary_payload["pilot_name"] == "upper_limit_daily_state"
+    assert result.summary_payload["expression_count"] == 4
+    assert len(result.read_frame) == 4

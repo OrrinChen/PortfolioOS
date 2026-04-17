@@ -8,10 +8,24 @@ from pathlib import Path
 import pandas as pd
 
 from portfolio_os.alpha.state_transition_panel import (
+    REQUIRED_STATE_TRANSITION_COLUMNS,
+    build_state_transition_daily_panel,
+    build_state_transition_matching_covariates,
+    build_upper_limit_event_conditioned_null_pool,
     build_upper_limit_event_conditioned_null_summary,
+    build_upper_limit_matched_control_comparison_frame,
+    build_upper_limit_matched_non_event_control_frame,
     build_upper_limit_pilot_read_frame,
+    build_upper_limit_pilot_expression_frame,
+    build_upper_limit_pre_event_placebo_comparison_frame,
+    extract_upper_limit_daily_state_slice,
 )
+from portfolio_os.data.loaders import normalize_ticker, parse_bool, read_csv
+from portfolio_os.domain.errors import InputValidationError
 from portfolio_os.storage.snapshots import write_json, write_text
+
+
+_UPPER_LIMIT_PILOT_REFERENCE_COLUMNS = ("industry", "issuer_total_shares")
 
 
 @dataclass
@@ -23,6 +37,71 @@ class UpperLimitPilotRunResult:
     null_summary_frame: pd.DataFrame
     summary_payload: dict[str, object]
     note_markdown: str
+
+
+def load_upper_limit_pilot_daily_panel_csv(path: str | Path) -> pd.DataFrame:
+    """Load one daily CSV into the normalized upper-limit pilot panel contract."""
+
+    source_path = Path(path)
+    frame = read_csv(source_path)
+
+    missing_reference = [
+        column for column in _UPPER_LIMIT_PILOT_REFERENCE_COLUMNS if column not in frame.columns
+    ]
+    if missing_reference:
+        raise InputValidationError(
+            "upper-limit pilot daily csv requires pilot reference columns: "
+            + ", ".join(missing_reference)
+        )
+
+    missing_state_columns = [
+        column for column in REQUIRED_STATE_TRANSITION_COLUMNS if column not in frame.columns
+    ]
+    if missing_state_columns:
+        raise InputValidationError(
+            "upper-limit pilot daily csv is missing required state-transition columns: "
+            + ", ".join(missing_state_columns)
+        )
+
+    frame["ticker"] = frame["ticker"].map(normalize_ticker)
+    frame["tradable"] = frame["tradable"].map(
+        lambda value: parse_bool(value, "tradable")
+    )
+    frame["industry"] = frame["industry"].astype(str).str.strip()
+    if frame["industry"].eq("").any():
+        raise InputValidationError("upper-limit pilot daily csv contains blank industries.")
+
+    frame["issuer_total_shares"] = pd.to_numeric(
+        frame["issuer_total_shares"], errors="coerce"
+    )
+    if frame["issuer_total_shares"].isna().any() or (
+        frame["issuer_total_shares"] <= 0
+    ).any():
+        raise InputValidationError(
+            "upper-limit pilot daily csv contains non-positive issuer_total_shares."
+        )
+
+    return build_state_transition_daily_panel(frame)
+
+
+def _build_upper_limit_pilot_reference_frame(daily_panel: pd.DataFrame) -> pd.DataFrame:
+    reference = daily_panel.loc[:, ["ticker", "industry", "issuer_total_shares"]].copy()
+    inconsistent_industry = (
+        reference.groupby("ticker", sort=False)["industry"].nunique(dropna=False) > 1
+    )
+    inconsistent_shares = (
+        reference.groupby("ticker", sort=False)["issuer_total_shares"].nunique(dropna=False) > 1
+    )
+    inconsistent_tickers = sorted(
+        set(inconsistent_industry.loc[inconsistent_industry].index.tolist())
+        | set(inconsistent_shares.loc[inconsistent_shares].index.tolist())
+    )
+    if inconsistent_tickers:
+        raise InputValidationError(
+            "upper-limit pilot daily csv contains inconsistent reference fields for ticker(s): "
+            + ", ".join(inconsistent_tickers)
+        )
+    return reference.drop_duplicates(subset=["ticker"]).reset_index(drop=True)
 
 
 def _render_upper_limit_pilot_note(
@@ -119,4 +198,52 @@ def run_upper_limit_pilot_artifact_bundle(
         null_summary_frame=null_summary_frame,
         summary_payload=summary_payload,
         note_markdown=note_markdown,
+    )
+
+
+def run_upper_limit_pilot_artifact_bundle_from_daily_csv(
+    *,
+    daily_panel_path: str | Path,
+    lookback_days: int = 20,
+    random_seeds: list[int],
+    output_dir: str | Path,
+) -> UpperLimitPilotRunResult:
+    """Build and write one upper-limit pilot artifact bundle directly from a daily CSV."""
+
+    daily_panel = load_upper_limit_pilot_daily_panel_csv(daily_panel_path)
+    reference_frame = _build_upper_limit_pilot_reference_frame(daily_panel)
+    matching_source = daily_panel.drop(
+        columns=list(_UPPER_LIMIT_PILOT_REFERENCE_COLUMNS),
+        errors="ignore",
+    )
+    matching_panel = build_state_transition_matching_covariates(
+        matching_source,
+        reference_frame,
+        lookback_days=lookback_days,
+    )
+    event_panel = extract_upper_limit_daily_state_slice(matching_panel)
+    expression_frame = build_upper_limit_pilot_expression_frame(event_panel)
+    matched_control_frame = build_upper_limit_matched_non_event_control_frame(
+        matching_panel
+    )
+    control_comparison_frame = build_upper_limit_matched_control_comparison_frame(
+        expression_frame,
+        matched_control_frame,
+        matching_panel,
+    )
+    placebo_comparison_frame = build_upper_limit_pre_event_placebo_comparison_frame(
+        expression_frame,
+        daily_panel,
+    )
+    null_pool = build_upper_limit_event_conditioned_null_pool(
+        expression_frame,
+        matching_panel,
+    )
+    return run_upper_limit_pilot_artifact_bundle(
+        expression_frame=expression_frame,
+        control_comparison_frame=control_comparison_frame,
+        placebo_comparison_frame=placebo_comparison_frame,
+        null_pool=null_pool,
+        random_seeds=random_seeds,
+        output_dir=output_dir,
     )

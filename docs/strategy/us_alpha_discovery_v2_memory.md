@@ -381,4 +381,38 @@ Exit consequence:
    - explicit boundary:
      - no real-data ingestion / provider wiring has been added yet
      - no CLI entrypoint has been added yet
-21. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.
+21. The twelfth D2 coding slice is now in place:
+   - real-data upper-limit pilot CSV entry added:
+     - `load_upper_limit_pilot_daily_panel_csv(...)`
+     - `run_upper_limit_pilot_artifact_bundle_from_daily_csv(...)`
+   - current entry contract:
+     - consumes one daily CSV with:
+       - the state-transition daily panel base fields
+       - pilot reference fields:
+         - `industry`
+         - `issuer_total_shares`
+     - normalizes:
+       - `ticker`
+       - `tradable`
+       - reference-field consistency
+     - derives the full existing D2 chain from the raw daily panel:
+       - matching covariates
+       - upper-limit event slice
+       - `P1` through `P4` expression rows
+       - matched non-event controls
+       - pre-event placebo comparisons
+       - `P-001` event-conditioned null pool
+       - thin artifact bundle output
+   - practical meaning:
+     - D2 now has its first true data-entry path from contract-shaped daily CSV to full upper-limit pilot artifacts
+     - this unlocks real-data pilot snapshots without provider wiring or manual assembly of intermediate D2 objects
+   - verification status:
+     - targeted state-transition panel tests passed:
+       - `23 passed`
+     - broader regression pack passed:
+       - `46 passed, 3 warnings`
+   - explicit boundary:
+     - no provider / Tushare wiring has been added yet
+     - no CLI entrypoint has been added yet
+     - no additional pilot expressions beyond `P1` through `P4` have been added
+22. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.
