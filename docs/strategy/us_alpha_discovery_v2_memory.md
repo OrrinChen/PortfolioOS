@@ -305,4 +305,29 @@ Exit consequence:
    - explicit boundary:
      - per-expression null summaries / percentiles remain deferred
      - no-replacement matching policy still remains deferred
-18. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.
+18. The ninth D2 coding slice is now in place:
+   - per-expression `P-001` null summary helper added:
+     - `build_upper_limit_event_conditioned_null_summary(...)`
+   - current summary contract:
+     - runs repeated seed-based null draws over the event-conditioned null pool
+     - summarizes, for each live expression:
+       - `observed_mean_forward_return`
+       - `null_mean_forward_return_median`
+       - `null_mean_forward_return_std`
+       - `null_mean_forward_return_unique_count`
+       - `null_is_degenerate`
+       - `observed_mean_forward_return_null_percentile`
+   - current honesty rule:
+     - when the null draw is degenerate for an expression, percentile is reported as `NaN`
+     - this avoids treating an invariant null as positive evidence
+   - practical meaning:
+     - D2 can now produce its first direct `P-001` read at the expression level
+     - for the current first-wave binary upper-limit pilot, the machine is now able to surface whether the honest null is informative or degenerate
+   - verification status:
+     - targeted state-transition panel tests passed
+     - broader regression pack passed:
+       - `40 passed, 3 warnings`
+   - explicit boundary:
+     - no-replacement matching policy still remains deferred
+     - no higher-level D2 report / runner has been added yet
+19. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.

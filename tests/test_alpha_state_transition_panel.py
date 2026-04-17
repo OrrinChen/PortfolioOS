@@ -7,6 +7,7 @@ from portfolio_os.alpha.state_transition_panel import (
     build_state_transition_daily_panel,
     build_upper_limit_event_conditioned_null_draw,
     build_upper_limit_event_conditioned_null_pool,
+    build_upper_limit_event_conditioned_null_summary,
     build_upper_limit_matched_control_comparison_frame,
     build_state_transition_matching_covariates,
     build_upper_limit_pre_event_placebo_comparison_frame,
@@ -685,3 +686,44 @@ def test_build_upper_limit_event_conditioned_null_draw_rejects_missing_pool_colu
 
     with pytest.raises(InputValidationError, match="requires null-pool columns"):
         build_upper_limit_event_conditioned_null_draw(bad_pool, random_seed=7)
+
+
+def test_build_upper_limit_event_conditioned_null_summary_reports_degenerate_nulls() -> None:
+    null_pool = _event_conditioned_null_pool_fixture()
+
+    summary = build_upper_limit_event_conditioned_null_summary(
+        null_pool,
+        random_seeds=[7, 8, 9],
+    )
+    keyed = summary.set_index("expression_id")
+
+    assert list(summary.columns) == [
+        "expression_id",
+        "mechanism_id",
+        "state_anchor",
+        "observation_count",
+        "null_seed_count",
+        "observed_mean_forward_return",
+        "null_mean_forward_return_median",
+        "null_mean_forward_return_std",
+        "null_mean_forward_return_unique_count",
+        "null_is_degenerate",
+        "observed_mean_forward_return_null_percentile",
+    ]
+    assert int(keyed.loc["P1_SEALED_UPPER_LIMIT", "observation_count"]) == 2
+    assert keyed.loc["P1_SEALED_UPPER_LIMIT", "observed_mean_forward_return"] == pytest.approx(0.20)
+    assert keyed.loc["P1_SEALED_UPPER_LIMIT", "null_mean_forward_return_median"] == pytest.approx(0.20)
+    assert int(keyed.loc["P1_SEALED_UPPER_LIMIT", "null_mean_forward_return_unique_count"]) == 1
+    assert bool(keyed.loc["P1_SEALED_UPPER_LIMIT", "null_is_degenerate"]) is True
+    assert pd.isna(keyed.loc["P1_SEALED_UPPER_LIMIT", "observed_mean_forward_return_null_percentile"])
+
+    assert int(keyed.loc["P4_NEXT_DAY_AFTER_FAILED", "observation_count"]) == 1
+    assert keyed.loc["P4_NEXT_DAY_AFTER_FAILED", "null_mean_forward_return_median"] == pytest.approx(-0.20)
+    assert bool(keyed.loc["P4_NEXT_DAY_AFTER_FAILED", "null_is_degenerate"]) is True
+
+
+def test_build_upper_limit_event_conditioned_null_summary_rejects_empty_seed_list() -> None:
+    null_pool = _event_conditioned_null_pool_fixture()
+
+    with pytest.raises(InputValidationError, match="random_seeds must not be empty"):
+        build_upper_limit_event_conditioned_null_summary(null_pool, random_seeds=[])

@@ -76,6 +76,13 @@ _UPPER_LIMIT_HORIZON_BUCKET_BY_EXPRESSION = {
 }
 
 
+def _empirical_percentile(sample: pd.Series, value: float) -> float:
+    clean = pd.to_numeric(sample, errors="coerce").dropna().astype(float)
+    if clean.empty or not np.isfinite(value):
+        return float("nan")
+    return float((clean <= float(value)).mean())
+
+
 def _cross_sectional_terciles(values: pd.Series) -> pd.Series:
     numeric = pd.to_numeric(values, errors="coerce")
     result = pd.Series(pd.NA, index=values.index, dtype="Float64")
@@ -822,3 +829,89 @@ def build_upper_limit_event_conditioned_null_draw(
         .sort_values(["date", "expression_id", "event_ticker"])
         .reset_index(drop=True)
     )
+
+
+def build_upper_limit_event_conditioned_null_summary(
+    null_pool: pd.DataFrame,
+    *,
+    random_seeds: list[int],
+) -> pd.DataFrame:
+    """Summarize observed expression means against repeated P-001 null draws."""
+
+    if not random_seeds:
+        raise InputValidationError("random_seeds must not be empty.")
+
+    required_null_pool = {
+        "expression_id",
+        "mechanism_id",
+        "state_anchor",
+        "forward_return",
+    }
+    missing_null_pool = sorted(required_null_pool - set(null_pool.columns))
+    if missing_null_pool:
+        raise InputValidationError(
+            "upper-limit event-conditioned null summary requires null-pool columns: "
+            + ", ".join(missing_null_pool)
+        )
+
+    observed = (
+        null_pool.groupby(["expression_id", "mechanism_id", "state_anchor"], sort=True)
+        .agg(
+            observation_count=("event_ticker", "count"),
+            observed_mean_forward_return=("forward_return", lambda values: float(pd.to_numeric(values, errors="coerce").mean())),
+        )
+        .reset_index()
+    )
+
+    draw_summaries: list[pd.DataFrame] = []
+    for seed in random_seeds:
+        draw = build_upper_limit_event_conditioned_null_draw(null_pool, random_seed=int(seed))
+        grouped = (
+            draw.groupby(["expression_id", "mechanism_id", "state_anchor"], sort=True)
+            .agg(
+                null_mean_forward_return=("null_forward_return", lambda values: float(pd.to_numeric(values, errors="coerce").mean()))
+            )
+            .reset_index()
+        )
+        grouped["null_seed"] = int(seed)
+        draw_summaries.append(grouped)
+
+    null_summary_frame = (
+        pd.concat(draw_summaries, ignore_index=True)
+        if draw_summaries
+        else pd.DataFrame(columns=["expression_id", "mechanism_id", "state_anchor", "null_mean_forward_return", "null_seed"])
+    )
+
+    rows: list[dict[str, object]] = []
+    for observed_row in observed.itertuples(index=False):
+        sample = null_summary_frame.loc[
+            null_summary_frame["expression_id"] == observed_row.expression_id,
+            "null_mean_forward_return",
+        ]
+        unique_count = int(pd.to_numeric(sample, errors="coerce").dropna().nunique())
+        is_degenerate = unique_count <= 1
+        rows.append(
+            {
+                "expression_id": observed_row.expression_id,
+                "mechanism_id": observed_row.mechanism_id,
+                "state_anchor": observed_row.state_anchor,
+                "observation_count": int(observed_row.observation_count),
+                "null_seed_count": int(len(random_seeds)),
+                "observed_mean_forward_return": float(observed_row.observed_mean_forward_return),
+                "null_mean_forward_return_median": float(pd.to_numeric(sample, errors="coerce").median())
+                if not sample.empty
+                else float("nan"),
+                "null_mean_forward_return_std": float(pd.to_numeric(sample, errors="coerce").std(ddof=1))
+                if len(pd.to_numeric(sample, errors="coerce").dropna()) >= 2
+                else float("nan"),
+                "null_mean_forward_return_unique_count": unique_count,
+                "null_is_degenerate": bool(is_degenerate),
+                "observed_mean_forward_return_null_percentile": (
+                    float("nan")
+                    if is_degenerate
+                    else _empirical_percentile(sample, float(observed_row.observed_mean_forward_return))
+                ),
+            }
+        )
+
+    return pd.DataFrame(rows).sort_values(["expression_id"]).reset_index(drop=True)
