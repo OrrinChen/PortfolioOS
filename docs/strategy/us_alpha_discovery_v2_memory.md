@@ -7,7 +7,7 @@ Short branch-local operating note for the active discovery-v2 lane.
 - Worktree: `C:\Users\14574\Quant\PortfolioOS\.worktrees\codex-us-alpha-week1-freeze`
 - Branch: `codex/us-alpha-week1-freeze`
 - Last sync: `2026-04-17`
-- Active lane: calibration-family closeout complete
+- Active lane: discovery-v2 charter closeout complete
 - Old `US alpha core restart` sprint remains closed with no winner
 
 ## Canonical References
@@ -35,6 +35,10 @@ Short branch-local operating note for the active discovery-v2 lane.
   - `docs/strategy/a_share_state_transition_adversarial_and_data_plan_2026_04_17.md`
 - A-share primary family D2 pilot scope:
   - `docs/strategy/a_share_state_transition_d2_pilot_scope_2026_04_17.md`
+- A-share primary family upper-limit slice closeout:
+  - `docs/strategy/a_share_state_transition_upper_limit_slice_closeout_2026_04_17.md`
+- A-share primary family final closeout:
+  - `docs/strategy/a_share_state_transition_family_closeout_2026_04_17.md`
 
 ## Program Structure
 
@@ -484,3 +488,90 @@ Exit consequence:
    - explicit boundary:
      - the first real live panel build and live upper-limit pilot read remain the next slice
 24. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.
+25. Post-commit D2 hardening now exists but is not yet committed:
+   - Tushare history fallback now degrades honestly when:
+     - `trade_cal` permission is unavailable
+     - historical `stk_limit` is unavailable or partial
+   - `state-transition daily panel` live builds now succeed using:
+     - per-ticker `daily` fallback
+     - price-band approximation for missing historical `stk_limit`
+   - upper-limit pilot now handles:
+     - empty event sets
+     - incomplete-conditioning event rows
+     - non-degenerate `P-001` candidate-return null pools
+26. Real D2 live builds now exist for the primary family:
+   - sample panel:
+     - `data/generated/state_transition_daily_panel_sample_real.csv`
+   - growth universe:
+     - `data/generated/state_transition_daily_panel_growth40_long_real.csv`
+     - `data/generated/state_transition_daily_panel_growth60_long_real.csv`
+     - `data/generated/state_transition_daily_panel_growth60_2024_real.csv`
+27. The first thin-sample live upper-limit pilot (`growth60_long_real`) established:
+   - real event rows exist
+   - real control/placebo/null artifacts can be emitted
+   - but the null was still too thin to support a serious slice conclusion
+28. After `P-001` candidate-pool hardening and the wider `2024-01-02 -> 2026-04-17` growth60 panel:
+   - `P1/P2/P3/P4` upper-limit slice now has a non-degenerate conditioned null
+   - event counts on the wider panel are:
+     - upper-limit touched: `51`
+     - sealed upper-limit: `42`
+     - failed upper-limit: `9`
+     - lower-limit touched: `7`
+29. Current upper-limit slice read on `growth60_2024_real` is:
+   - `P1_SEALED_UPPER_LIMIT`
+     - observed mean `+0.9857%`
+     - excess vs control `+2.9016%`
+     - excess vs placebo `-19.0181%`
+     - null percentile `1.00`
+   - `P2_FAILED_UPPER_LIMIT`
+     - observed mean `+0.3270%`
+     - excess vs control `+1.1822%`
+     - excess vs placebo `-12.4534%`
+     - null percentile `0.00`
+   - `P3_NEXT_DAY_AFTER_SEALED`
+     - observed mean `-1.0570%`
+     - excess vs control `+0.8907%`
+     - excess vs placebo `-4.2665%`
+     - null percentile `0.00`
+   - `P4_NEXT_DAY_AFTER_FAILED`
+     - observed mean `+2.1166%`
+     - excess vs control `+2.7333%`
+     - excess vs placebo `-2.0556%`
+     - null percentile `1.00`
+30. Interpretation of the first upper-limit slice is now frozen in:
+   - `docs/strategy/a_share_state_transition_upper_limit_slice_closeout_2026_04_17.md`
+   - classification:
+     - `mechanism suggestive but unproven`
+   - not a family winner because:
+     - only `R3` regime is observed
+     - placebo contamination remains unresolved
+     - `M2/M5` do not survive cleanly as a portable cluster
+31. `M4` high-turnover exploratory read does not rescue the upper-limit branch:
+   - sealed high-turnover subset goes negative with null percentile `0.00`
+   - failed high-turnover subset turns positive with null percentile `1.00`
+   - practical read:
+     - do not open a dedicated `M4` winner lane from the current upper-limit universe
+32. A pre-`R3` history unlock was attempted through the current provider path:
+   - target:
+     - `40` growth tickers
+     - `2020-01-01 -> 2026-04-17`
+   - result:
+     - no artifact emitted inside a `20`-minute execution window
+   - practical implication:
+     - current Tushare history path is not operationally viable for multi-regime family closeout inside this cycle
+33. Primary-family final closeout is now recorded in:
+   - `docs/strategy/a_share_state_transition_family_closeout_2026_04_17.md`
+   - final classification:
+     - `mechanism suggestive but unproven`
+   - why not a winner:
+     - upper-limit slice produced mixed evidence with unresolved placebo contamination
+     - `M4` exploratory read did not rescue the branch
+     - `M3` remained too sparse in the live `R3` window
+     - the regime gate could not be honestly cleared with the current provider path
+34. Discovery-v2 charter consequence:
+   - no `D5` qualification handoff
+   - no active family-mining lane remains under this charter
+   - future reopening requires:
+     - richer pre-`R3` history
+     - a deliberately downside-rich `M3` universe
+     - or a new charter with different scope

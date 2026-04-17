@@ -382,3 +382,181 @@ def test_tushare_provider_can_build_state_transition_daily_panel_history(monkeyp
     assert frame.loc[0, "volume"] == pytest.approx(1_000_000.0)
     assert frame.loc[0, "amount"] == pytest.approx(10_500_000.0)
     assert frame.loc[0, "industry"] == "Industrials"
+
+
+def test_tushare_provider_state_transition_history_falls_back_when_trade_cal_unavailable(
+    monkeypatch,
+) -> None:
+    provider = TushareProvider(token="demo_token", token_source="cli")
+
+    def _call_api(api_name: str, *, params=None, fields=None):
+        _ = fields
+        if api_name == "trade_cal":
+            raise ProviderPermissionError("trade_cal permission denied")
+        if api_name == "daily":
+            ts_code = params.get("ts_code")
+            if ts_code == "000001.SZ":
+                return pd.DataFrame(
+                    [
+                        {
+                            "ts_code": "000001.SZ",
+                            "trade_date": "20260402",
+                            "open": 11.1,
+                            "high": 11.2,
+                            "low": 10.8,
+                            "close": 10.9,
+                            "pre_close": 11.0,
+                            "vol": 9000.0,
+                            "amount": 9900.0,
+                        },
+                        {
+                            "ts_code": "000001.SZ",
+                            "trade_date": "20260401",
+                            "open": 10.0,
+                            "high": 11.0,
+                            "low": 9.9,
+                            "close": 11.0,
+                            "pre_close": 10.0,
+                            "vol": 10000.0,
+                            "amount": 10500.0,
+                        },
+                    ]
+                )
+        if api_name == "stk_limit":
+            trade_date = params["trade_date"]
+            if trade_date == "20260401":
+                return pd.DataFrame(
+                    [
+                        {
+                            "ts_code": "000001.SZ",
+                            "trade_date": "20260401",
+                            "up_limit": 11.0,
+                            "down_limit": 9.0,
+                        }
+                    ]
+                )
+            if trade_date == "20260402":
+                return pd.DataFrame(
+                    [
+                        {
+                            "ts_code": "000001.SZ",
+                            "trade_date": "20260402",
+                            "up_limit": 12.1,
+                            "down_limit": 9.9,
+                        }
+                    ]
+                )
+        raise AssertionError(f"unexpected api_name: {api_name} with params={params}")
+
+    monkeypatch.setattr(provider, "_call_api", _call_api)
+    monkeypatch.setattr(
+        provider,
+        "get_reference_snapshot",
+        lambda tickers, as_of_date: [
+            type(
+                "_Row",
+                (object,),
+                {
+                    "ticker": "000001",
+                    "industry": "Industrials",
+                    "issuer_total_shares": 10_000_000.0,
+                    "model_dump": lambda self, mode="json": {
+                        "ticker": "000001",
+                        "industry": "Industrials",
+                        "benchmark_weight": None,
+                        "issuer_total_shares": 10_000_000.0,
+                    },
+                },
+            )()
+        ],
+    )
+
+    frame = provider.get_state_transition_daily_panel(
+        ["000001"],
+        "2026-04-01",
+        "2026-04-02",
+    )
+
+    report = provider.get_capability_report("state_transition_daily_panel")
+    assert list(frame["date"]) == ["2026-04-01", "2026-04-02"]
+    assert report["provider_capability_status"] == "available"
+    assert "trade_cal_permission_missing" in report["fallback_notes"]
+
+
+def test_tushare_provider_state_transition_history_uses_price_band_approximation_when_stk_limit_unavailable(
+    monkeypatch,
+) -> None:
+    provider = TushareProvider(token="demo_token", token_source="cli")
+
+    def _call_api(api_name: str, *, params=None, fields=None):
+        _ = fields
+        if api_name == "trade_cal":
+            return pd.DataFrame(
+                [
+                    {"cal_date": "20260401", "is_open": 1},
+                ]
+            )
+        if api_name == "daily":
+            return pd.DataFrame(
+                [
+                    {
+                        "ts_code": "000001.SZ",
+                        "trade_date": "20260401",
+                        "open": 10.0,
+                        "high": 11.0,
+                        "low": 9.9,
+                        "close": 11.0,
+                        "pre_close": 10.0,
+                        "vol": 10000.0,
+                        "amount": 10500.0,
+                    }
+                ]
+            )
+        if api_name == "stk_limit":
+            raise ProviderPermissionError("stk_limit permission denied")
+        raise AssertionError(f"unexpected api_name: {api_name} with params={params}")
+
+    monkeypatch.setattr(provider, "_call_api", _call_api)
+    monkeypatch.setattr(
+        provider,
+        "_akshare_limits_for_tickers",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("akshare fallback should not run")),
+    )
+    monkeypatch.setattr(
+        provider,
+        "_tencent_limits_for_tickers",
+        lambda **kwargs: (_ for _ in ()).throw(AssertionError("tencent fallback should not run")),
+    )
+    monkeypatch.setattr(
+        provider,
+        "get_reference_snapshot",
+        lambda tickers, as_of_date: [
+            type(
+                "_Row",
+                (object,),
+                {
+                    "ticker": "000001",
+                    "industry": "Industrials",
+                    "issuer_total_shares": 10_000_000.0,
+                    "model_dump": lambda self, mode="json": {
+                        "ticker": "000001",
+                        "industry": "Industrials",
+                        "benchmark_weight": None,
+                        "issuer_total_shares": 10_000_000.0,
+                    },
+                },
+            )()
+        ],
+    )
+
+    frame = provider.get_state_transition_daily_panel(
+        ["000001"],
+        "2026-04-01",
+        "2026-04-01",
+    )
+
+    report = provider.get_capability_report("state_transition_daily_panel")
+    assert frame.loc[0, "upper_limit_price"] == pytest.approx(11.0)
+    assert frame.loc[0, "lower_limit_price"] == pytest.approx(9.0)
+    assert report["provider_capability_status"] == "degraded"
+    assert "stk_limit_unavailable_used_price_band_approximation" in report["fallback_notes"]

@@ -221,6 +221,7 @@ class TushareProvider:
     ) -> None:
         """Merge multiple feed capability reports into one composite report."""
 
+        target_existing = self.get_capability_report(target_feed_name)
         merged = self._default_report()
         merged["fallback_notes"] = []
         merged["fallback_chain_used"] = []
@@ -228,8 +229,7 @@ class TushareProvider:
         merged["permission_notes"] = []
         statuses: list[str] = []
 
-        for feed_name in component_feed_names:
-            report = self.get_capability_report(feed_name)
+        for report in [target_existing, *[self.get_capability_report(feed_name) for feed_name in component_feed_names]]:
             statuses.append(str(report.get("provider_capability_status", "available")))
             for field in ("fallback_notes", "fallback_chain_used", "data_source_mix", "permission_notes"):
                 for value in report.get(field, []) or []:
@@ -758,6 +758,48 @@ class TushareProvider:
             )
         return limit_frame[limit_frame["ts_code"].isin(ts_codes)].copy()
 
+    def _load_state_transition_limits_for_trade_date(
+        self,
+        trade_date: str,
+        ts_codes: list[str],
+    ) -> pd.DataFrame:
+        """Load daily price limits for history panels without external per-day fallbacks."""
+
+        try:
+            limit_frame = self._call_api(
+                "stk_limit",
+                params={"trade_date": trade_date},
+                fields="ts_code,trade_date,up_limit,down_limit",
+            )
+        except (ProviderPermissionError, ProviderRuntimeError):
+            self._mark_degraded(
+                "state_transition_daily_panel",
+                fallback_note="stk_limit_unavailable_used_price_band_approximation",
+                permission_note="stk_limit_permission_missing_or_rate_limited",
+                recommended_alternative_path="provide_state_transition_daily_panel_csv_and_continue",
+            )
+            return pd.DataFrame(columns=["ts_code", "trade_date", "up_limit", "down_limit"])
+
+        limit_frame = limit_frame[limit_frame["ts_code"].isin(ts_codes)].copy()
+        if limit_frame.empty:
+            self._mark_degraded(
+                "state_transition_daily_panel",
+                fallback_note="stk_limit_unavailable_used_price_band_approximation",
+                permission_note="stk_limit_data_unavailable",
+                recommended_alternative_path="provide_state_transition_daily_panel_csv_and_continue",
+            )
+            return pd.DataFrame(columns=["ts_code", "trade_date", "up_limit", "down_limit"])
+
+        missing_codes = [code for code in ts_codes if code not in set(limit_frame.get("ts_code", []))]
+        if missing_codes:
+            self._mark_degraded(
+                "state_transition_daily_panel",
+                fallback_note="stk_limit_partial_used_price_band_approximation",
+                permission_note="stk_limit_partial_data_unavailable",
+                recommended_alternative_path="provide_state_transition_daily_panel_csv_and_continue",
+            )
+        return limit_frame.drop_duplicates(subset=["ts_code", "trade_date"], keep="last").copy()
+
     @staticmethod
     def _approx_limit_rate_from_ticker(ticker: str) -> float:
         """Approximate the daily price-limit rate from the board code."""
@@ -809,31 +851,60 @@ class TushareProvider:
         normalized_tickers = [normalize_ticker(ticker) for ticker in tickers]
         ts_codes = [self._ticker_to_ts_code(ticker) for ticker in normalized_tickers]
 
-        trade_calendar = self._call_api(
-            "trade_cal",
-            params={
-                "exchange": "",
-                "start_date": start_trade_date,
-                "end_date": end_trade_date,
-            },
-            fields="cal_date,is_open",
-        )
-        if trade_calendar.empty:
-            raise ProviderDataError(
-                f"Tushare trade_cal returned no rows between {start_trade_date} and {end_trade_date}."
+        daily_history_fallback: pd.DataFrame | None = None
+        try:
+            trade_calendar = self._call_api(
+                "trade_cal",
+                params={
+                    "exchange": "",
+                    "start_date": start_trade_date,
+                    "end_date": end_trade_date,
+                },
+                fields="cal_date,is_open",
             )
-        trade_calendar["cal_date"] = trade_calendar["cal_date"].astype(str)
-        trade_calendar["is_open"] = pd.to_numeric(trade_calendar["is_open"], errors="coerce")
-        open_trade_dates = (
-            trade_calendar.loc[trade_calendar["is_open"] == 1, "cal_date"]
-            .astype(str)
-            .sort_values()
-            .tolist()
-        )
-        if not open_trade_dates:
-            raise ProviderDataError(
-                f"Tushare trade_cal has no open sessions between {start_trade_date} and {end_trade_date}."
+            if trade_calendar.empty:
+                raise ProviderDataError(
+                    f"Tushare trade_cal returned no rows between {start_trade_date} and {end_trade_date}."
+                )
+            trade_calendar["cal_date"] = trade_calendar["cal_date"].astype(str)
+            trade_calendar["is_open"] = pd.to_numeric(trade_calendar["is_open"], errors="coerce")
+            open_trade_dates = (
+                trade_calendar.loc[trade_calendar["is_open"] == 1, "cal_date"]
+                .astype(str)
+                .sort_values()
+                .tolist()
             )
+            if not open_trade_dates:
+                raise ProviderDataError(
+                    f"Tushare trade_cal has no open sessions between {start_trade_date} and {end_trade_date}."
+                )
+        except (ProviderPermissionError, ProviderRuntimeError):
+            self._record_fallback_source(
+                "state_transition_daily_panel",
+                source="tushare",
+                note="trade_cal_permission_missing",
+                permission_note="trade_cal_permission_missing_or_rate_limited",
+            )
+            fallback_frames: list[pd.DataFrame] = []
+            for ts_code in ts_codes:
+                daily_history = self._call_api(
+                    "daily",
+                    params={
+                        "ts_code": ts_code,
+                        "start_date": start_trade_date,
+                        "end_date": end_trade_date,
+                    },
+                    fields="ts_code,trade_date,open,high,low,close,pre_close,vol,amount",
+                )
+                if not daily_history.empty:
+                    fallback_frames.append(daily_history.copy())
+            if not fallback_frames:
+                raise ProviderDataError(
+                    f"Tushare daily history fallback returned no rows between {start_trade_date} and {end_trade_date}."
+                )
+            daily_history_fallback = pd.concat(fallback_frames, ignore_index=True)
+            daily_history_fallback["trade_date"] = daily_history_fallback["trade_date"].astype(str)
+            open_trade_dates = sorted(set(daily_history_fallback["trade_date"]))
 
         reference_rows = self.get_reference_snapshot(normalized_tickers, end_date)
         reference_records: list[dict[str, Any]] = []
@@ -856,11 +927,14 @@ class TushareProvider:
 
         history_frames: list[pd.DataFrame] = []
         for trade_date in open_trade_dates:
-            daily = self._call_api(
-                "daily",
-                params={"trade_date": trade_date},
-                fields="ts_code,trade_date,open,high,low,close,pre_close,vol,amount",
-            )
+            if daily_history_fallback is None:
+                daily = self._call_api(
+                    "daily",
+                    params={"trade_date": trade_date},
+                    fields="ts_code,trade_date,open,high,low,close,pre_close,vol,amount",
+                )
+            else:
+                daily = daily_history_fallback[daily_history_fallback["trade_date"] == trade_date].copy()
             if daily.empty:
                 continue
             daily = daily[daily["ts_code"].isin(ts_codes)].copy()
@@ -868,7 +942,7 @@ class TushareProvider:
                 continue
 
             active_ts_codes = sorted(set(daily["ts_code"].astype(str)))
-            limits = self._load_stk_limit_for_trade_date(trade_date, active_ts_codes)
+            limits = self._load_state_transition_limits_for_trade_date(trade_date, active_ts_codes)
             merged = daily.merge(limits, on=["ts_code", "trade_date"], how="left")
             merged["ticker"] = merged["ts_code"].map(self._ts_code_to_ticker)
             for column in (
@@ -885,7 +959,7 @@ class TushareProvider:
                 merged[column] = pd.to_numeric(merged.get(column), errors="coerce")
             if bool(merged["up_limit"].isna().any() or merged["down_limit"].isna().any()):
                 self._mark_degraded(
-                    "market",
+                    "state_transition_daily_panel",
                     fallback_note="stk_limit_partial_used_price_band_approximation",
                     permission_note="stk_limit_partial_data_unavailable",
                     recommended_alternative_path="provide_state_transition_daily_panel_csv_and_continue",
@@ -953,7 +1027,7 @@ class TushareProvider:
                 "Tushare state-transition history contains missing issuer_total_shares values."
             )
 
-        self._merge_capability_reports("state_transition_daily_panel", ["market", "reference"])
+        self._merge_capability_reports("state_transition_daily_panel", ["reference"])
         return history.sort_values(["date", "ticker"]).reset_index(drop=True)
 
     def get_daily_market_snapshot(

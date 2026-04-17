@@ -26,6 +26,13 @@ from portfolio_os.storage.snapshots import write_json, write_text
 
 
 _UPPER_LIMIT_PILOT_REFERENCE_COLUMNS = ("industry", "issuer_total_shares")
+_UPPER_LIMIT_PILOT_ELIGIBILITY_COLUMNS = (
+    "size_tercile",
+    "liquidity_tercile",
+    "recent_realized_volatility",
+    "recent_return_state",
+    "recent_liquidity_amount",
+)
 
 
 @dataclass
@@ -222,7 +229,10 @@ def run_upper_limit_pilot_artifact_bundle_from_daily_csv(
         lookback_days=lookback_days,
     )
     event_panel = extract_upper_limit_daily_state_slice(matching_panel)
-    expression_frame = build_upper_limit_pilot_expression_frame(event_panel)
+    eligible_event_panel = event_panel.dropna(
+        subset=list(_UPPER_LIMIT_PILOT_ELIGIBILITY_COLUMNS),
+    ).reset_index(drop=True)
+    expression_frame = build_upper_limit_pilot_expression_frame(eligible_event_panel)
     matched_control_frame = build_upper_limit_matched_non_event_control_frame(
         matching_panel
     )

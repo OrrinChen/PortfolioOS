@@ -660,7 +660,7 @@ def build_upper_limit_event_conditioned_null_pool(
     expression_frame: pd.DataFrame,
     conditioning_panel: pd.DataFrame,
 ) -> pd.DataFrame:
-    """Attach P-001 event-conditioned strata to live upper-limit pilot expressions."""
+    """Build one P-001 candidate-return pool for each live upper-limit event row."""
 
     required_expression = {
         "date",
@@ -682,8 +682,12 @@ def build_upper_limit_event_conditioned_null_pool(
     required_conditioning = {
         "date",
         "ticker",
+        "tradable",
+        "upper_limit_touched",
         "size_tercile",
         "liquidity_tercile",
+        "next_close_return",
+        "next_intraday_return",
     }
     missing_conditioning = sorted(required_conditioning - set(conditioning_panel.columns))
     if missing_conditioning:
@@ -693,10 +697,43 @@ def build_upper_limit_event_conditioned_null_pool(
         )
 
     work = expression_frame.rename(columns={"ticker": "event_ticker"}).copy()
-    conditioning = conditioning_panel.loc[:, ["date", "ticker", "size_tercile", "liquidity_tercile"]].rename(
-        columns={"ticker": "event_ticker"}
+    conditioning = conditioning_panel.copy()
+    conditioning["ticker"] = conditioning["ticker"].astype(str).str.strip()
+    conditioning["tradable"] = conditioning["tradable"].fillna(False).astype(bool)
+    conditioning["upper_limit_touched"] = conditioning["upper_limit_touched"].fillna(False).astype(bool)
+    conditioning["size_tercile"] = pd.to_numeric(conditioning["size_tercile"], errors="coerce")
+    conditioning["liquidity_tercile"] = pd.to_numeric(conditioning["liquidity_tercile"], errors="coerce")
+    conditioning["next_close_return"] = pd.to_numeric(conditioning["next_close_return"], errors="coerce")
+    conditioning["next_intraday_return"] = pd.to_numeric(
+        conditioning["next_intraday_return"], errors="coerce"
     )
-    merged = work.merge(conditioning, on=["date", "event_ticker"], how="left")
+    merged = work.merge(
+        conditioning.loc[:, ["date", "ticker", "size_tercile", "liquidity_tercile"]].rename(
+            columns={"ticker": "event_ticker"}
+        ),
+        on=["date", "event_ticker"],
+        how="left",
+    )
+    if merged.empty:
+        return pd.DataFrame(
+            columns=[
+                "date",
+                "expression_id",
+                "mechanism_id",
+                "state_anchor",
+                "event_ticker",
+                "candidate_ticker",
+                "signal_value",
+                "expected_sign",
+                "forward_return",
+                "candidate_forward_return",
+                "event_type_bucket",
+                "horizon_bucket",
+                "size_tercile",
+                "liquidity_tercile",
+                "conditioning_bucket_key",
+            ]
+        )
 
     merged["size_tercile"] = pd.to_numeric(merged["size_tercile"], errors="coerce")
     merged["liquidity_tercile"] = pd.to_numeric(merged["liquidity_tercile"], errors="coerce")
@@ -711,15 +748,84 @@ def build_upper_limit_event_conditioned_null_pool(
         raise InputValidationError(
             "upper-limit event-conditioned null pool encountered an unknown expression horizon."
         )
-    merged["conditioning_bucket_key"] = merged.apply(
-        lambda row: (
-            f"{row['event_type_bucket']}|{row['horizon_bucket']}|"
-            f"{int(row['size_tercile'])}|{int(row['liquidity_tercile'])}"
-        ),
-        axis=1,
-    )
+
+    candidate_rows: list[dict[str, object]] = []
+    for row in merged.itertuples(index=False):
+        horizon_bucket = str(row.horizon_bucket)
+        if horizon_bucket == "NEXT_CLOSE":
+            forward_column = "next_close_return"
+        elif horizon_bucket == "NEXT_INTRADAY":
+            forward_column = "next_intraday_return"
+        else:
+            raise InputValidationError(
+                "upper-limit event-conditioned null pool encountered an unknown expression horizon."
+            )
+
+        candidate_bucket = conditioning.loc[
+            (conditioning["date"] == row.date)
+            & conditioning["tradable"]
+            & (~conditioning["upper_limit_touched"])
+            & (conditioning["size_tercile"] == float(row.size_tercile))
+            & (conditioning["liquidity_tercile"] == float(row.liquidity_tercile))
+            & (conditioning["ticker"] != str(row.event_ticker))
+        ].copy()
+        if candidate_bucket.empty:
+            continue
+
+        candidate_bucket["candidate_forward_return"] = pd.to_numeric(
+            candidate_bucket[forward_column], errors="coerce"
+        )
+        candidate_bucket = candidate_bucket.dropna(subset=["candidate_forward_return"])
+        if candidate_bucket.empty:
+            continue
+
+        conditioning_bucket_key = (
+            f"{row.event_type_bucket}|{horizon_bucket}|"
+            f"{int(row.size_tercile)}|{int(row.liquidity_tercile)}"
+        )
+        for candidate in candidate_bucket.itertuples(index=False):
+            candidate_rows.append(
+                {
+                    "date": row.date,
+                    "expression_id": row.expression_id,
+                    "mechanism_id": row.mechanism_id,
+                    "state_anchor": row.state_anchor,
+                    "event_ticker": row.event_ticker,
+                    "candidate_ticker": str(candidate.ticker),
+                    "signal_value": row.signal_value,
+                    "expected_sign": row.expected_sign,
+                    "forward_return": row.forward_return,
+                    "candidate_forward_return": float(candidate.candidate_forward_return),
+                    "event_type_bucket": row.event_type_bucket,
+                    "horizon_bucket": horizon_bucket,
+                    "size_tercile": float(row.size_tercile),
+                    "liquidity_tercile": float(row.liquidity_tercile),
+                    "conditioning_bucket_key": conditioning_bucket_key,
+                }
+            )
+
+    if not candidate_rows:
+        return pd.DataFrame(
+            columns=[
+                "date",
+                "expression_id",
+                "mechanism_id",
+                "state_anchor",
+                "event_ticker",
+                "candidate_ticker",
+                "signal_value",
+                "expected_sign",
+                "forward_return",
+                "candidate_forward_return",
+                "event_type_bucket",
+                "horizon_bucket",
+                "size_tercile",
+                "liquidity_tercile",
+                "conditioning_bucket_key",
+            ]
+        )
     return (
-        merged.loc[
+        pd.DataFrame(candidate_rows).loc[
             :,
             [
                 "date",
@@ -727,9 +833,11 @@ def build_upper_limit_event_conditioned_null_pool(
                 "mechanism_id",
                 "state_anchor",
                 "event_ticker",
+                "candidate_ticker",
                 "signal_value",
                 "expected_sign",
                 "forward_return",
+                "candidate_forward_return",
                 "event_type_bucket",
                 "horizon_bucket",
                 "size_tercile",
@@ -737,7 +845,7 @@ def build_upper_limit_event_conditioned_null_pool(
                 "conditioning_bucket_key",
             ],
         ]
-        .sort_values(["date", "expression_id", "event_ticker"])
+        .sort_values(["date", "expression_id", "event_ticker", "candidate_ticker"])
         .reset_index(drop=True)
     )
 
@@ -747,7 +855,7 @@ def build_upper_limit_event_conditioned_null_draw(
     *,
     random_seed: int,
 ) -> pd.DataFrame:
-    """Generate one seed-based P-001 null draw by shuffling within event-conditioned buckets."""
+    """Generate one seed-based P-001 null draw by sampling from candidate pools."""
 
     required_null_pool = {
         "date",
@@ -755,9 +863,11 @@ def build_upper_limit_event_conditioned_null_draw(
         "mechanism_id",
         "state_anchor",
         "event_ticker",
+        "candidate_ticker",
         "signal_value",
         "expected_sign",
         "forward_return",
+        "candidate_forward_return",
         "event_type_bucket",
         "horizon_bucket",
         "size_tercile",
@@ -771,17 +881,36 @@ def build_upper_limit_event_conditioned_null_draw(
             + ", ".join(missing_null_pool)
         )
 
-    work = null_pool.copy().sort_values(["date", "conditioning_bucket_key", "event_ticker"]).reset_index(drop=True)
-    shuffled_rows: list[pd.DataFrame] = []
-    grouped = list(work.groupby(["date", "conditioning_bucket_key"], sort=True))
+    work = null_pool.copy().sort_values(
+        ["date", "expression_id", "event_ticker", "candidate_ticker"]
+    ).reset_index(drop=True)
+    shuffled_rows: list[dict[str, object]] = []
+    grouped = list(work.groupby(["date", "expression_id", "event_ticker"], sort=True))
     for offset, (_, bucket_frame) in enumerate(grouped):
         rng = np.random.default_rng(int(random_seed) + int(offset))
-        shuffled = bucket_frame.copy()
-        shuffled["null_forward_return"] = rng.permutation(
-            pd.to_numeric(bucket_frame["forward_return"], errors="coerce").to_numpy()
+        chosen_index = int(rng.integers(0, len(bucket_frame)))
+        chosen = bucket_frame.iloc[chosen_index]
+        shuffled_rows.append(
+            {
+                "date": chosen["date"],
+                "expression_id": chosen["expression_id"],
+                "mechanism_id": chosen["mechanism_id"],
+                "state_anchor": chosen["state_anchor"],
+                "event_ticker": chosen["event_ticker"],
+                "candidate_ticker": chosen["candidate_ticker"],
+                "signal_value": chosen["signal_value"],
+                "expected_sign": chosen["expected_sign"],
+                "forward_return": chosen["forward_return"],
+                "candidate_forward_return": chosen["candidate_forward_return"],
+                "event_type_bucket": chosen["event_type_bucket"],
+                "horizon_bucket": chosen["horizon_bucket"],
+                "size_tercile": chosen["size_tercile"],
+                "liquidity_tercile": chosen["liquidity_tercile"],
+                "conditioning_bucket_key": chosen["conditioning_bucket_key"],
+                "null_forward_return": float(chosen["candidate_forward_return"]),
+                "null_seed": int(random_seed),
+            }
         )
-        shuffled["null_seed"] = int(random_seed)
-        shuffled_rows.append(shuffled)
 
     if not shuffled_rows:
         return pd.DataFrame(
@@ -791,9 +920,11 @@ def build_upper_limit_event_conditioned_null_draw(
                 "mechanism_id",
                 "state_anchor",
                 "event_ticker",
+                "candidate_ticker",
                 "signal_value",
                 "expected_sign",
                 "forward_return",
+                "candidate_forward_return",
                 "event_type_bucket",
                 "horizon_bucket",
                 "size_tercile",
@@ -804,7 +935,7 @@ def build_upper_limit_event_conditioned_null_draw(
             ]
         )
 
-    result = pd.concat(shuffled_rows, ignore_index=True)
+    result = pd.DataFrame(shuffled_rows)
     return (
         result.loc[
             :,
@@ -814,9 +945,11 @@ def build_upper_limit_event_conditioned_null_draw(
                 "mechanism_id",
                 "state_anchor",
                 "event_ticker",
+                "candidate_ticker",
                 "signal_value",
                 "expected_sign",
                 "forward_return",
+                "candidate_forward_return",
                 "event_type_bucket",
                 "horizon_bucket",
                 "size_tercile",
@@ -845,6 +978,8 @@ def build_upper_limit_event_conditioned_null_summary(
         "expression_id",
         "mechanism_id",
         "state_anchor",
+        "date",
+        "event_ticker",
         "forward_return",
     }
     missing_null_pool = sorted(required_null_pool - set(null_pool.columns))
@@ -853,9 +988,29 @@ def build_upper_limit_event_conditioned_null_summary(
             "upper-limit event-conditioned null summary requires null-pool columns: "
             + ", ".join(missing_null_pool)
         )
+    if null_pool.empty:
+        return pd.DataFrame(
+            columns=[
+                "expression_id",
+                "mechanism_id",
+                "state_anchor",
+                "observation_count",
+                "null_seed_count",
+                "observed_mean_forward_return",
+                "null_mean_forward_return_median",
+                "null_mean_forward_return_std",
+                "null_mean_forward_return_unique_count",
+                "null_is_degenerate",
+                "observed_mean_forward_return_null_percentile",
+            ]
+        )
 
+    observed_source = (
+        null_pool.sort_values(["date", "expression_id", "event_ticker", "candidate_ticker"])
+        .drop_duplicates(subset=["date", "expression_id", "event_ticker"])
+    )
     observed = (
-        null_pool.groupby(["expression_id", "mechanism_id", "state_anchor"], sort=True)
+        observed_source.groupby(["expression_id", "mechanism_id", "state_anchor"], sort=True)
         .agg(
             observation_count=("event_ticker", "count"),
             observed_mean_forward_return=("forward_return", lambda values: float(pd.to_numeric(values, errors="coerce").mean())),
@@ -968,6 +1123,24 @@ def build_upper_limit_pilot_read_frame(
         raise InputValidationError(
             "upper-limit pilot read frame requires null-summary columns: "
             + ", ".join(missing_null_summary)
+        )
+    if expression_frame.empty:
+        return pd.DataFrame(
+            columns=[
+                "expression_id",
+                "mechanism_id",
+                "state_anchor",
+                "observation_count",
+                "observed_mean_forward_return",
+                "mean_excess_vs_control",
+                "mean_excess_vs_placebo",
+                "null_seed_count",
+                "null_mean_forward_return_median",
+                "null_mean_forward_return_std",
+                "null_mean_forward_return_unique_count",
+                "null_is_degenerate",
+                "observed_mean_forward_return_null_percentile",
+            ]
         )
 
     observed = (

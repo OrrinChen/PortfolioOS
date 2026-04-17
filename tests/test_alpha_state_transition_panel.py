@@ -219,12 +219,27 @@ def _matched_control_forward_panel_fixture() -> pd.DataFrame:
             },
             {
                 "date": "2026-04-01",
+                "ticker": "000004",
+                "next_open_return": 0.03,
+                "next_intraday_return": 0.04,
+                "next_close_return": 0.0504,
+            },
+            {
+                "date": "2026-04-01",
                 "ticker": "000005",
                 "next_open_return": -0.01,
                 "next_intraday_return": -0.02,
                 "next_close_return": -0.0298,
             },
         ]
+    )
+
+
+def _event_conditioning_panel_fixture() -> pd.DataFrame:
+    return _matched_control_fixture().merge(
+        _matched_control_forward_panel_fixture(),
+        on=["date", "ticker"],
+        how="left",
     )
 
 
@@ -426,9 +441,11 @@ def _event_conditioned_null_pool_fixture() -> pd.DataFrame:
                 "mechanism_id": "M1",
                 "state_anchor": "SEALED_UPPER_LIMIT",
                 "event_ticker": "000001",
+                "candidate_ticker": "000003",
                 "signal_value": 1.0,
                 "expected_sign": 1.0,
                 "forward_return": 0.10,
+                "candidate_forward_return": 0.05,
                 "event_type_bucket": "SEALED_UPPER_LIMIT",
                 "horizon_bucket": "NEXT_CLOSE",
                 "size_tercile": 2,
@@ -441,9 +458,45 @@ def _event_conditioned_null_pool_fixture() -> pd.DataFrame:
                 "mechanism_id": "M1",
                 "state_anchor": "SEALED_UPPER_LIMIT",
                 "event_ticker": "000007",
+                "candidate_ticker": "000008",
                 "signal_value": 1.0,
                 "expected_sign": 1.0,
                 "forward_return": 0.30,
+                "candidate_forward_return": 0.25,
+                "event_type_bucket": "SEALED_UPPER_LIMIT",
+                "horizon_bucket": "NEXT_CLOSE",
+                "size_tercile": 2,
+                "liquidity_tercile": 2,
+                "conditioning_bucket_key": "SEALED_UPPER_LIMIT|NEXT_CLOSE|2|2",
+            },
+            {
+                "date": "2026-04-01",
+                "expression_id": "P1_SEALED_UPPER_LIMIT",
+                "mechanism_id": "M1",
+                "state_anchor": "SEALED_UPPER_LIMIT",
+                "event_ticker": "000001",
+                "candidate_ticker": "000009",
+                "signal_value": 1.0,
+                "expected_sign": 1.0,
+                "forward_return": 0.10,
+                "candidate_forward_return": 0.15,
+                "event_type_bucket": "SEALED_UPPER_LIMIT",
+                "horizon_bucket": "NEXT_CLOSE",
+                "size_tercile": 2,
+                "liquidity_tercile": 2,
+                "conditioning_bucket_key": "SEALED_UPPER_LIMIT|NEXT_CLOSE|2|2",
+            },
+            {
+                "date": "2026-04-01",
+                "expression_id": "P1_SEALED_UPPER_LIMIT",
+                "mechanism_id": "M1",
+                "state_anchor": "SEALED_UPPER_LIMIT",
+                "event_ticker": "000007",
+                "candidate_ticker": "000010",
+                "signal_value": 1.0,
+                "expected_sign": 1.0,
+                "forward_return": 0.30,
+                "candidate_forward_return": 0.35,
                 "event_type_bucket": "SEALED_UPPER_LIMIT",
                 "horizon_bucket": "NEXT_CLOSE",
                 "size_tercile": 2,
@@ -456,9 +509,11 @@ def _event_conditioned_null_pool_fixture() -> pd.DataFrame:
                 "mechanism_id": "M5",
                 "state_anchor": "FAILED_UPPER_LIMIT",
                 "event_ticker": "000002",
+                "candidate_ticker": "000005",
                 "signal_value": -1.0,
                 "expected_sign": -1.0,
                 "forward_return": -0.20,
+                "candidate_forward_return": -0.10,
                 "event_type_bucket": "FAILED_UPPER_LIMIT",
                 "horizon_bucket": "NEXT_INTRADAY",
                 "size_tercile": 1,
@@ -716,15 +771,22 @@ def test_build_upper_limit_pre_event_placebo_comparison_frame_aligns_prior_horiz
     )
 
 
-def test_build_upper_limit_event_conditioned_null_pool_attaches_p001_strata() -> None:
+def test_build_upper_limit_event_conditioned_null_pool_builds_non_event_candidate_rows() -> None:
     event_panel = build_state_transition_daily_panel(_daily_bar_fixture())
     expression_frame = build_upper_limit_pilot_expression_frame(event_panel)
 
     null_pool = build_upper_limit_event_conditioned_null_pool(
         expression_frame,
-        _matched_control_fixture(),
+        _event_conditioning_panel_fixture(),
     )
-    keyed = null_pool.set_index(["expression_id", "event_ticker"])
+    p1_rows = null_pool.loc[
+        (null_pool["expression_id"] == "P1_SEALED_UPPER_LIMIT")
+        & (null_pool["event_ticker"] == "000001")
+    ].sort_values("candidate_ticker")
+    p4_rows = null_pool.loc[
+        (null_pool["expression_id"] == "P4_NEXT_DAY_AFTER_FAILED")
+        & (null_pool["event_ticker"] == "000002")
+    ].sort_values("candidate_ticker")
 
     assert list(null_pool.columns) == [
         "date",
@@ -732,32 +794,34 @@ def test_build_upper_limit_event_conditioned_null_pool_attaches_p001_strata() ->
         "mechanism_id",
         "state_anchor",
         "event_ticker",
+        "candidate_ticker",
         "signal_value",
         "expected_sign",
         "forward_return",
+        "candidate_forward_return",
         "event_type_bucket",
         "horizon_bucket",
         "size_tercile",
         "liquidity_tercile",
         "conditioning_bucket_key",
     ]
-    assert keyed.loc[("P1_SEALED_UPPER_LIMIT", "000001"), "event_type_bucket"] == "SEALED_UPPER_LIMIT"
-    assert keyed.loc[("P1_SEALED_UPPER_LIMIT", "000001"), "horizon_bucket"] == "NEXT_CLOSE"
-    assert keyed.loc[("P1_SEALED_UPPER_LIMIT", "000001"), "conditioning_bucket_key"] == (
-        "SEALED_UPPER_LIMIT|NEXT_CLOSE|2|2"
-    )
-    assert keyed.loc[("P3_NEXT_DAY_AFTER_SEALED", "000001"), "conditioning_bucket_key"] == (
-        "SEALED_UPPER_LIMIT|NEXT_INTRADAY|2|2"
-    )
-    assert keyed.loc[("P4_NEXT_DAY_AFTER_FAILED", "000002"), "conditioning_bucket_key"] == (
-        "FAILED_UPPER_LIMIT|NEXT_INTRADAY|1|1"
-    )
+    assert p1_rows["event_type_bucket"].unique().tolist() == ["SEALED_UPPER_LIMIT"]
+    assert p1_rows["horizon_bucket"].unique().tolist() == ["NEXT_CLOSE"]
+    assert set(p1_rows["candidate_ticker"].tolist()) == {"000003", "000004"}
+    assert set(p1_rows["candidate_forward_return"].round(4).tolist()) == {0.0302, 0.0504}
+    assert p1_rows["conditioning_bucket_key"].unique().tolist() == ["SEALED_UPPER_LIMIT|NEXT_CLOSE|2|2"]
+
+    assert p4_rows["event_type_bucket"].unique().tolist() == ["FAILED_UPPER_LIMIT"]
+    assert p4_rows["horizon_bucket"].unique().tolist() == ["NEXT_INTRADAY"]
+    assert p4_rows["candidate_ticker"].tolist() == ["000005"]
+    assert p4_rows["candidate_forward_return"].tolist() == pytest.approx([-0.02])
+    assert p4_rows["conditioning_bucket_key"].unique().tolist() == ["FAILED_UPPER_LIMIT|NEXT_INTRADAY|1|1"]
 
 
 def test_build_upper_limit_event_conditioned_null_pool_rejects_missing_conditioning_columns() -> None:
     event_panel = build_state_transition_daily_panel(_daily_bar_fixture())
     expression_frame = build_upper_limit_pilot_expression_frame(event_panel)
-    bad_conditioning = _matched_control_fixture().drop(columns=["size_tercile"])
+    bad_conditioning = _event_conditioning_panel_fixture().drop(columns=["size_tercile"])
 
     with pytest.raises(InputValidationError, match="requires conditioning columns"):
         build_upper_limit_event_conditioned_null_pool(expression_frame, bad_conditioning)
@@ -767,7 +831,7 @@ def test_build_upper_limit_event_conditioned_null_draw_shuffles_within_condition
     null_pool = _event_conditioned_null_pool_fixture()
 
     draw = build_upper_limit_event_conditioned_null_draw(null_pool, random_seed=7)
-    keyed = draw.set_index("event_ticker")
+    keyed = draw.set_index(["expression_id", "event_ticker"])
 
     assert list(draw.columns) == [
         "date",
@@ -775,9 +839,11 @@ def test_build_upper_limit_event_conditioned_null_draw_shuffles_within_condition
         "mechanism_id",
         "state_anchor",
         "event_ticker",
+        "candidate_ticker",
         "signal_value",
         "expected_sign",
         "forward_return",
+        "candidate_forward_return",
         "event_type_bucket",
         "horizon_bucket",
         "size_tercile",
@@ -786,11 +852,11 @@ def test_build_upper_limit_event_conditioned_null_draw_shuffles_within_condition
         "null_forward_return",
         "null_seed",
     ]
-    assert set(
-        keyed.loc[["000001", "000007"], "null_forward_return"].tolist()
-    ) == {0.10, 0.30}
-    assert keyed.loc["000002", "null_forward_return"] == pytest.approx(-0.20)
-    assert int(keyed.loc["000001", "null_seed"]) == 7
+    assert len(draw) == 3
+    assert keyed.loc[("P1_SEALED_UPPER_LIMIT", "000001"), "null_forward_return"] in {0.05, 0.15}
+    assert keyed.loc[("P1_SEALED_UPPER_LIMIT", "000007"), "null_forward_return"] in {0.25, 0.35}
+    assert keyed.loc[("P4_NEXT_DAY_AFTER_FAILED", "000002"), "null_forward_return"] == pytest.approx(-0.10)
+    assert int(keyed.loc[("P1_SEALED_UPPER_LIMIT", "000001"), "null_seed"]) == 7
 
 
 def test_build_upper_limit_event_conditioned_null_draw_rejects_missing_pool_columns() -> None:
@@ -825,12 +891,12 @@ def test_build_upper_limit_event_conditioned_null_summary_reports_degenerate_nul
     assert int(keyed.loc["P1_SEALED_UPPER_LIMIT", "observation_count"]) == 2
     assert keyed.loc["P1_SEALED_UPPER_LIMIT", "observed_mean_forward_return"] == pytest.approx(0.20)
     assert keyed.loc["P1_SEALED_UPPER_LIMIT", "null_mean_forward_return_median"] == pytest.approx(0.20)
-    assert int(keyed.loc["P1_SEALED_UPPER_LIMIT", "null_mean_forward_return_unique_count"]) == 1
-    assert bool(keyed.loc["P1_SEALED_UPPER_LIMIT", "null_is_degenerate"]) is True
-    assert pd.isna(keyed.loc["P1_SEALED_UPPER_LIMIT", "observed_mean_forward_return_null_percentile"])
+    assert int(keyed.loc["P1_SEALED_UPPER_LIMIT", "null_mean_forward_return_unique_count"]) > 1
+    assert bool(keyed.loc["P1_SEALED_UPPER_LIMIT", "null_is_degenerate"]) is False
+    assert 0.0 <= float(keyed.loc["P1_SEALED_UPPER_LIMIT", "observed_mean_forward_return_null_percentile"]) <= 1.0
 
     assert int(keyed.loc["P4_NEXT_DAY_AFTER_FAILED", "observation_count"]) == 1
-    assert keyed.loc["P4_NEXT_DAY_AFTER_FAILED", "null_mean_forward_return_median"] == pytest.approx(-0.20)
+    assert keyed.loc["P4_NEXT_DAY_AFTER_FAILED", "null_mean_forward_return_median"] == pytest.approx(-0.10)
     assert bool(keyed.loc["P4_NEXT_DAY_AFTER_FAILED", "null_is_degenerate"]) is True
 
 
@@ -854,7 +920,10 @@ def test_build_upper_limit_pilot_read_frame_joins_live_control_placebo_and_null_
         expression_frame,
         event_panel,
     )
-    null_pool = build_upper_limit_event_conditioned_null_pool(expression_frame, _matched_control_fixture())
+    null_pool = build_upper_limit_event_conditioned_null_pool(
+        expression_frame,
+        _event_conditioning_panel_fixture(),
+    )
     null_summary = build_upper_limit_event_conditioned_null_summary(
         null_pool,
         random_seeds=[7, 8, 9],
@@ -890,7 +959,10 @@ def test_build_upper_limit_pilot_read_frame_joins_live_control_placebo_and_null_
     assert keyed.loc["P1_SEALED_UPPER_LIMIT", "mean_excess_vs_placebo"] == pytest.approx(
         (10.90 / 11.00 - 1.0) - 0.10
     )
-    assert bool(keyed.loc["P1_SEALED_UPPER_LIMIT", "null_is_degenerate"]) is True
+    assert bool(keyed.loc["P1_SEALED_UPPER_LIMIT", "null_is_degenerate"]) is False
+    assert 0.0 <= float(
+        keyed.loc["P1_SEALED_UPPER_LIMIT", "observed_mean_forward_return_null_percentile"]
+    ) <= 1.0
 
 
 def test_build_upper_limit_pilot_read_frame_rejects_missing_null_summary_columns() -> None:
@@ -937,7 +1009,10 @@ def test_run_upper_limit_pilot_artifact_bundle_writes_expected_artifacts(tmp_pat
         expression_frame,
         event_panel,
     )
-    null_pool = build_upper_limit_event_conditioned_null_pool(expression_frame, _matched_control_fixture())
+    null_pool = build_upper_limit_event_conditioned_null_pool(
+        expression_frame,
+        _event_conditioning_panel_fixture(),
+    )
     output_dir = tmp_path / "upper_limit_pilot"
 
     result = run_upper_limit_pilot_artifact_bundle(
@@ -967,8 +1042,11 @@ def test_run_upper_limit_pilot_artifact_bundle_writes_expected_artifacts(tmp_pat
     assert summary["pilot_name"] == "upper_limit_daily_state"
     assert summary["expression_count"] == 4
     assert summary["null_seed_count"] == 3
-    assert summary["degenerate_expression_count"] == 4
-    assert "P1_SEALED_UPPER_LIMIT" in summary["degenerate_expression_ids"]
+    assert summary["degenerate_expression_count"] == 2
+    assert set(summary["degenerate_expression_ids"]) == {
+        "P2_FAILED_UPPER_LIMIT",
+        "P4_NEXT_DAY_AFTER_FAILED",
+    }
 
     note_text = (output_dir / "note.md").read_text(encoding="utf-8")
     assert "Upper-Limit Pilot Read" in note_text
@@ -1024,3 +1102,48 @@ def test_run_upper_limit_pilot_artifact_bundle_from_daily_csv_writes_expected_ar
     assert result.summary_payload["pilot_name"] == "upper_limit_daily_state"
     assert result.summary_payload["expression_count"] == 4
     assert len(result.read_frame) == 4
+
+
+def test_run_upper_limit_pilot_artifact_bundle_from_daily_csv_handles_empty_event_set(tmp_path) -> None:
+    daily_path = tmp_path / "state_transition_daily_no_events.csv"
+    no_event_frame = _upper_limit_pilot_daily_csv_fixture().copy()
+    no_event_frame["upper_limit_price"] = pd.to_numeric(no_event_frame["close"], errors="coerce") * 1.20
+    no_event_frame["lower_limit_price"] = pd.to_numeric(no_event_frame["close"], errors="coerce") * 0.80
+    no_event_frame.to_csv(daily_path, index=False)
+    output_dir = tmp_path / "upper_limit_daily_csv_pilot_no_events"
+
+    result = run_upper_limit_pilot_artifact_bundle_from_daily_csv(
+        daily_panel_path=daily_path,
+        lookback_days=2,
+        random_seeds=[7, 8, 9],
+        output_dir=output_dir,
+    )
+
+    assert result.summary_payload["pilot_name"] == "upper_limit_daily_state"
+    assert result.summary_payload["expression_count"] == 0
+    assert result.summary_payload["degenerate_expression_count"] == 0
+    assert result.read_frame.empty
+    assert result.null_summary_frame.empty
+    assert (output_dir / "pilot_read_frame.csv").exists()
+    assert (output_dir / "summary.json").exists()
+
+
+def test_run_upper_limit_pilot_artifact_bundle_from_daily_csv_drops_events_with_incomplete_conditioning(
+    tmp_path,
+) -> None:
+    daily_path = tmp_path / "state_transition_daily_incomplete_conditioning.csv"
+    _upper_limit_pilot_daily_csv_fixture().to_csv(daily_path, index=False)
+    output_dir = tmp_path / "upper_limit_daily_csv_pilot_incomplete_conditioning"
+
+    result = run_upper_limit_pilot_artifact_bundle_from_daily_csv(
+        daily_panel_path=daily_path,
+        lookback_days=20,
+        random_seeds=[7, 8, 9],
+        output_dir=output_dir,
+    )
+
+    assert result.summary_payload["pilot_name"] == "upper_limit_daily_state"
+    assert result.summary_payload["expression_count"] == 0
+    assert result.read_frame.empty
+    assert (output_dir / "expression_frame.csv").exists()
+    assert (output_dir / "pilot_read_frame.csv").exists()
