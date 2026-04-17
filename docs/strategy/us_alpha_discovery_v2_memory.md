@@ -252,4 +252,32 @@ Exit consequence:
    - explicit boundary:
      - no-replacement matching policy still remains deferred
      - event-conditioned null generation under `P-001` remains deferred
-16. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.
+16. The seventh D2 coding slice is now in place:
+   - `P-001` event-conditioned null pool helper added:
+     - `build_upper_limit_event_conditioned_null_pool(...)`
+   - current null-pool contract:
+     - attaches required `P-001` minimum conditioning dimensions to live `P1/P2/P3/P4` rows:
+       - `event_type_bucket`
+       - `horizon_bucket`
+       - `size_tercile`
+       - `liquidity_tercile`
+     - materializes a deterministic resampling key:
+       - `conditioning_bucket_key`
+     - keeps the object at the pool layer only:
+       - no seed loop
+       - no shuffled null draw
+       - no percentile / summary logic
+   - practical meaning:
+     - D2 now has the full set of preregistered pilot ingredients needed before null sampling:
+       - live event expressions
+       - matched non-event comparisons
+       - pre-event placebo comparisons
+       - event-conditioned null strata
+   - verification status:
+     - targeted state-transition panel tests passed
+     - broader regression pack passed:
+       - `36 passed, 3 warnings`
+   - explicit boundary:
+     - seed-based event-conditioned null generation remains the next slice
+     - no-replacement matching policy still remains deferred
+17. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.

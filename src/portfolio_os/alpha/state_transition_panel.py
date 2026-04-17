@@ -67,6 +67,12 @@ _UPPER_LIMIT_PLACEBO_FORWARD_COLUMN_BY_EXPRESSION = {
     "P3_NEXT_DAY_AFTER_SEALED": "__prior_intraday_return",
     "P4_NEXT_DAY_AFTER_FAILED": "__prior_intraday_return",
 }
+_UPPER_LIMIT_HORIZON_BUCKET_BY_EXPRESSION = {
+    "P1_SEALED_UPPER_LIMIT": "NEXT_CLOSE",
+    "P2_FAILED_UPPER_LIMIT": "NEXT_CLOSE",
+    "P3_NEXT_DAY_AFTER_SEALED": "NEXT_INTRADAY",
+    "P4_NEXT_DAY_AFTER_FAILED": "NEXT_INTRADAY",
+}
 
 
 def _cross_sectional_terciles(values: pd.Series) -> pd.Series:
@@ -635,6 +641,92 @@ def build_upper_limit_pre_event_placebo_comparison_frame(
                 "event_forward_return",
                 "placebo_forward_return",
                 "placebo_excess_return",
+            ],
+        ]
+        .sort_values(["date", "expression_id", "event_ticker"])
+        .reset_index(drop=True)
+    )
+
+
+def build_upper_limit_event_conditioned_null_pool(
+    expression_frame: pd.DataFrame,
+    conditioning_panel: pd.DataFrame,
+) -> pd.DataFrame:
+    """Attach P-001 event-conditioned strata to live upper-limit pilot expressions."""
+
+    required_expression = {
+        "date",
+        "ticker",
+        "expression_id",
+        "mechanism_id",
+        "state_anchor",
+        "signal_value",
+        "expected_sign",
+        "forward_return",
+    }
+    missing_expression = sorted(required_expression - set(expression_frame.columns))
+    if missing_expression:
+        raise InputValidationError(
+            "upper-limit event-conditioned null pool requires expression columns: "
+            + ", ".join(missing_expression)
+        )
+
+    required_conditioning = {
+        "date",
+        "ticker",
+        "size_tercile",
+        "liquidity_tercile",
+    }
+    missing_conditioning = sorted(required_conditioning - set(conditioning_panel.columns))
+    if missing_conditioning:
+        raise InputValidationError(
+            "upper-limit event-conditioned null pool requires conditioning columns: "
+            + ", ".join(missing_conditioning)
+        )
+
+    work = expression_frame.rename(columns={"ticker": "event_ticker"}).copy()
+    conditioning = conditioning_panel.loc[:, ["date", "ticker", "size_tercile", "liquidity_tercile"]].rename(
+        columns={"ticker": "event_ticker"}
+    )
+    merged = work.merge(conditioning, on=["date", "event_ticker"], how="left")
+
+    merged["size_tercile"] = pd.to_numeric(merged["size_tercile"], errors="coerce")
+    merged["liquidity_tercile"] = pd.to_numeric(merged["liquidity_tercile"], errors="coerce")
+    if merged[["size_tercile", "liquidity_tercile"]].isna().any().any():
+        raise InputValidationError(
+            "upper-limit event-conditioned null pool requires complete conditioning rows."
+        )
+
+    merged["event_type_bucket"] = merged["state_anchor"].astype(str)
+    merged["horizon_bucket"] = merged["expression_id"].map(_UPPER_LIMIT_HORIZON_BUCKET_BY_EXPRESSION)
+    if merged["horizon_bucket"].isna().any():
+        raise InputValidationError(
+            "upper-limit event-conditioned null pool encountered an unknown expression horizon."
+        )
+    merged["conditioning_bucket_key"] = merged.apply(
+        lambda row: (
+            f"{row['event_type_bucket']}|{row['horizon_bucket']}|"
+            f"{int(row['size_tercile'])}|{int(row['liquidity_tercile'])}"
+        ),
+        axis=1,
+    )
+    return (
+        merged.loc[
+            :,
+            [
+                "date",
+                "expression_id",
+                "mechanism_id",
+                "state_anchor",
+                "event_ticker",
+                "signal_value",
+                "expected_sign",
+                "forward_return",
+                "event_type_bucket",
+                "horizon_bucket",
+                "size_tercile",
+                "liquidity_tercile",
+                "conditioning_bucket_key",
             ],
         ]
         .sort_values(["date", "expression_id", "event_ticker"])

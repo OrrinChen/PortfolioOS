@@ -5,6 +5,7 @@ import pytest
 
 from portfolio_os.alpha.state_transition_panel import (
     build_state_transition_daily_panel,
+    build_upper_limit_event_conditioned_null_pool,
     build_upper_limit_matched_control_comparison_frame,
     build_state_transition_matching_covariates,
     build_upper_limit_pre_event_placebo_comparison_frame,
@@ -547,3 +548,50 @@ def test_build_upper_limit_pre_event_placebo_comparison_frame_aligns_prior_horiz
     assert keyed.loc[("P4_NEXT_DAY_AFTER_FAILED", "000002"), "placebo_forward_return"] == pytest.approx(
         20.00 / 20.50 - 1.0
     )
+
+
+def test_build_upper_limit_event_conditioned_null_pool_attaches_p001_strata() -> None:
+    event_panel = build_state_transition_daily_panel(_daily_bar_fixture())
+    expression_frame = build_upper_limit_pilot_expression_frame(event_panel)
+
+    null_pool = build_upper_limit_event_conditioned_null_pool(
+        expression_frame,
+        _matched_control_fixture(),
+    )
+    keyed = null_pool.set_index(["expression_id", "event_ticker"])
+
+    assert list(null_pool.columns) == [
+        "date",
+        "expression_id",
+        "mechanism_id",
+        "state_anchor",
+        "event_ticker",
+        "signal_value",
+        "expected_sign",
+        "forward_return",
+        "event_type_bucket",
+        "horizon_bucket",
+        "size_tercile",
+        "liquidity_tercile",
+        "conditioning_bucket_key",
+    ]
+    assert keyed.loc[("P1_SEALED_UPPER_LIMIT", "000001"), "event_type_bucket"] == "SEALED_UPPER_LIMIT"
+    assert keyed.loc[("P1_SEALED_UPPER_LIMIT", "000001"), "horizon_bucket"] == "NEXT_CLOSE"
+    assert keyed.loc[("P1_SEALED_UPPER_LIMIT", "000001"), "conditioning_bucket_key"] == (
+        "SEALED_UPPER_LIMIT|NEXT_CLOSE|2|2"
+    )
+    assert keyed.loc[("P3_NEXT_DAY_AFTER_SEALED", "000001"), "conditioning_bucket_key"] == (
+        "SEALED_UPPER_LIMIT|NEXT_INTRADAY|2|2"
+    )
+    assert keyed.loc[("P4_NEXT_DAY_AFTER_FAILED", "000002"), "conditioning_bucket_key"] == (
+        "FAILED_UPPER_LIMIT|NEXT_INTRADAY|1|1"
+    )
+
+
+def test_build_upper_limit_event_conditioned_null_pool_rejects_missing_conditioning_columns() -> None:
+    event_panel = build_state_transition_daily_panel(_daily_bar_fixture())
+    expression_frame = build_upper_limit_pilot_expression_frame(event_panel)
+    bad_conditioning = _matched_control_fixture().drop(columns=["size_tercile"])
+
+    with pytest.raises(InputValidationError, match="requires conditioning columns"):
+        build_upper_limit_event_conditioned_null_pool(expression_frame, bad_conditioning)
