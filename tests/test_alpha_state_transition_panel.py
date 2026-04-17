@@ -5,6 +5,7 @@ import pytest
 
 from portfolio_os.alpha.state_transition_panel import (
     build_state_transition_daily_panel,
+    build_upper_limit_matched_control_comparison_frame,
     build_state_transition_matching_covariates,
     build_upper_limit_pilot_expression_frame,
     build_upper_limit_matched_non_event_control_frame,
@@ -194,6 +195,27 @@ def _matching_reference_fixture() -> pd.DataFrame:
     )
 
 
+def _matched_control_forward_panel_fixture() -> pd.DataFrame:
+    return pd.DataFrame(
+        [
+            {
+                "date": "2026-04-01",
+                "ticker": "000003",
+                "next_open_return": 0.01,
+                "next_intraday_return": 0.02,
+                "next_close_return": 0.0302,
+            },
+            {
+                "date": "2026-04-01",
+                "ticker": "000005",
+                "next_open_return": -0.01,
+                "next_intraday_return": -0.02,
+                "next_close_return": -0.0298,
+            },
+        ]
+    )
+
+
 def test_build_state_transition_daily_panel_derives_upper_limit_states() -> None:
     panel = build_state_transition_daily_panel(_daily_bar_fixture())
     same_day = panel.loc[panel["date"] == "2026-04-01"].set_index("ticker")
@@ -366,3 +388,41 @@ def test_build_state_transition_matching_covariates_rejects_missing_reference_co
 
     with pytest.raises(InputValidationError, match="requires reference columns"):
         build_state_transition_matching_covariates(panel, bad_reference, lookback_days=3)
+
+
+def test_build_upper_limit_matched_control_comparison_frame_joins_event_and_control_horizons() -> None:
+    event_panel = build_state_transition_daily_panel(_daily_bar_fixture())
+    expression_frame = build_upper_limit_pilot_expression_frame(event_panel)
+    matched_controls = build_upper_limit_matched_non_event_control_frame(_matched_control_fixture())
+
+    comparison = build_upper_limit_matched_control_comparison_frame(
+        expression_frame,
+        matched_controls,
+        _matched_control_forward_panel_fixture(),
+    )
+    keyed = comparison.set_index(["expression_id", "event_ticker"])
+
+    assert list(comparison.columns) == [
+        "date",
+        "expression_id",
+        "mechanism_id",
+        "state_anchor",
+        "event_ticker",
+        "control_ticker",
+        "signal_value",
+        "expected_sign",
+        "event_forward_return",
+        "control_forward_return",
+        "excess_forward_return",
+    ]
+    assert keyed.loc[("P1_SEALED_UPPER_LIMIT", "000001"), "control_ticker"] == "000003"
+    assert keyed.loc[("P1_SEALED_UPPER_LIMIT", "000001"), "control_forward_return"] == pytest.approx(0.0302)
+    assert keyed.loc[("P1_SEALED_UPPER_LIMIT", "000001"), "excess_forward_return"] == pytest.approx(
+        (10.90 / 11.00 - 1.0) - 0.0302
+    )
+
+    assert keyed.loc[("P4_NEXT_DAY_AFTER_FAILED", "000002"), "control_ticker"] == "000005"
+    assert keyed.loc[("P4_NEXT_DAY_AFTER_FAILED", "000002"), "control_forward_return"] == pytest.approx(-0.02)
+    assert keyed.loc[("P4_NEXT_DAY_AFTER_FAILED", "000002"), "excess_forward_return"] == pytest.approx(
+        (20.40 / 21.00 - 1.0) - (-0.02)
+    )

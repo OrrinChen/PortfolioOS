@@ -55,6 +55,12 @@ _UPPER_LIMIT_PILOT_SPECS = (
     ("P3_NEXT_DAY_AFTER_SEALED", "M5", "SEALED_UPPER_LIMIT", "sealed_upper_limit", 1.0, "next_intraday_return"),
     ("P4_NEXT_DAY_AFTER_FAILED", "M5", "FAILED_UPPER_LIMIT", "failed_upper_limit", -1.0, "next_intraday_return"),
 )
+_UPPER_LIMIT_CONTROL_FORWARD_COLUMN_BY_EXPRESSION = {
+    "P1_SEALED_UPPER_LIMIT": "next_close_return",
+    "P2_FAILED_UPPER_LIMIT": "next_close_return",
+    "P3_NEXT_DAY_AFTER_SEALED": "next_intraday_return",
+    "P4_NEXT_DAY_AFTER_FAILED": "next_intraday_return",
+}
 
 
 def _cross_sectional_terciles(values: pd.Series) -> pd.Series:
@@ -355,5 +361,134 @@ def build_upper_limit_matched_non_event_control_frame(panel: pd.DataFrame) -> pd
             ],
         )
         .sort_values(["date", "event_ticker"])
+        .reset_index(drop=True)
+    )
+
+
+def build_upper_limit_matched_control_comparison_frame(
+    expression_frame: pd.DataFrame,
+    matched_control_frame: pd.DataFrame,
+    control_panel: pd.DataFrame,
+) -> pd.DataFrame:
+    """Join event expressions with matched control forward returns on the same horizon."""
+
+    required_expression = {
+        "date",
+        "ticker",
+        "expression_id",
+        "mechanism_id",
+        "state_anchor",
+        "signal_value",
+        "expected_sign",
+        "forward_return",
+    }
+    missing_expression = sorted(required_expression - set(expression_frame.columns))
+    if missing_expression:
+        raise InputValidationError(
+            "upper-limit matched control comparison requires expression columns: "
+            + ", ".join(missing_expression)
+        )
+
+    required_match = {"date", "event_ticker", "control_ticker"}
+    missing_match = sorted(required_match - set(matched_control_frame.columns))
+    if missing_match:
+        raise InputValidationError(
+            "upper-limit matched control comparison requires matched-control columns: "
+            + ", ".join(missing_match)
+        )
+
+    required_control_panel = {
+        "date",
+        "ticker",
+        "next_intraday_return",
+        "next_close_return",
+    }
+    missing_control_panel = sorted(required_control_panel - set(control_panel.columns))
+    if missing_control_panel:
+        raise InputValidationError(
+            "upper-limit matched control comparison requires control-panel columns: "
+            + ", ".join(missing_control_panel)
+        )
+
+    work = expression_frame.rename(columns={"ticker": "event_ticker", "forward_return": "event_forward_return"}).copy()
+    matches = matched_control_frame.loc[:, ["date", "event_ticker", "control_ticker"]].copy()
+    controls = control_panel.rename(columns={"ticker": "control_ticker"}).copy()
+
+    merged = work.merge(matches, on=["date", "event_ticker"], how="inner")
+    if merged.empty:
+        return pd.DataFrame(
+            columns=[
+                "date",
+                "expression_id",
+                "mechanism_id",
+                "state_anchor",
+                "event_ticker",
+                "control_ticker",
+                "signal_value",
+                "expected_sign",
+                "event_forward_return",
+                "control_forward_return",
+                "excess_forward_return",
+            ]
+        )
+
+    control_rows: list[pd.DataFrame] = []
+    for expression_id, date_frame in merged.groupby("expression_id", sort=False):
+        forward_column = _UPPER_LIMIT_CONTROL_FORWARD_COLUMN_BY_EXPRESSION.get(str(expression_id))
+        if forward_column is None:
+            continue
+        control_forward_column = "__control_forward_return_source"
+        joined = date_frame.merge(
+            controls.loc[:, ["date", "control_ticker", forward_column]].rename(
+                columns={forward_column: control_forward_column}
+            ),
+            on=["date", "control_ticker"],
+            how="left",
+        )
+        joined["control_forward_return"] = pd.to_numeric(
+            joined[control_forward_column], errors="coerce"
+        )
+        control_rows.append(joined)
+
+    if not control_rows:
+        return pd.DataFrame(
+            columns=[
+                "date",
+                "expression_id",
+                "mechanism_id",
+                "state_anchor",
+                "event_ticker",
+                "control_ticker",
+                "signal_value",
+                "expected_sign",
+                "event_forward_return",
+                "control_forward_return",
+                "excess_forward_return",
+            ]
+        )
+
+    result = pd.concat(control_rows, ignore_index=True)
+    result["excess_forward_return"] = (
+        pd.to_numeric(result["event_forward_return"], errors="coerce")
+        - pd.to_numeric(result["control_forward_return"], errors="coerce")
+    )
+    return (
+        result.loc[
+            :,
+            [
+                "date",
+                "expression_id",
+                "mechanism_id",
+                "state_anchor",
+                "event_ticker",
+                "control_ticker",
+                "signal_value",
+                "expected_sign",
+                "event_forward_return",
+                "control_forward_return",
+                "excess_forward_return",
+            ],
+        ]
+        .sort_values(["date", "expression_id", "event_ticker"])
         .reset_index(drop=True)
     )

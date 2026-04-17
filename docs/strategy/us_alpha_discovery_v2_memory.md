@@ -203,4 +203,29 @@ Exit consequence:
    - explicit boundary:
      - no-replacement matching policy still remains deferred
      - placebo / event-conditioned nulls remain deferred
-14. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.
+14. The fifth D2 coding slice is now in place:
+   - matched event-vs-control comparison helper added:
+     - `build_upper_limit_matched_control_comparison_frame(...)`
+   - current comparison contract:
+     - joins first-wave pilot expressions against the `NC-1` matched-control map
+     - emits paired rows with:
+       - `event_forward_return`
+       - `control_forward_return`
+       - `excess_forward_return`
+     - horizon alignment is expression-specific:
+       - `P1/P2` compare on `next_close_return`
+       - `P3/P4` compare on `next_intraday_return`
+   - practical meaning:
+     - D2 now has a deterministic bridge from
+       - event-state tagging
+       - to expression emission
+       - to matched-control pairing
+       - to excess-return comparison
+   - verification status:
+     - targeted state-transition panel tests passed
+     - broader regression pack passed:
+       - `33 passed, 3 warnings`
+   - explicit boundary:
+     - no-replacement matching policy still remains deferred
+     - placebo / event-conditioned nulls remain deferred
+15. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.

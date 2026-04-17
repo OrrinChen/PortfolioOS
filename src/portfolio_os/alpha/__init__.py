@@ -14,6 +14,7 @@ from portfolio_os.alpha.report import render_alpha_acceptance_note, render_alpha
 from portfolio_os.alpha.research import AlphaResearchResult, build_alpha_score_frame, load_alpha_returns_panel, run_alpha_research
 from portfolio_os.alpha.state_transition_panel import (
     build_state_transition_matching_covariates,
+    build_upper_limit_matched_control_comparison_frame,
     build_upper_limit_matched_non_event_control_frame,
     build_state_transition_daily_panel,
     build_upper_limit_pilot_expression_frame,
@@ -32,6 +33,7 @@ __all__ = [
     "build_event_target_manifest",
     "build_alpha_score_frame",
     "build_state_transition_matching_covariates",
+    "build_upper_limit_matched_control_comparison_frame",
     "build_upper_limit_matched_non_event_control_frame",
     "build_upper_limit_pilot_expression_frame",
     "default_round_one_recipes",
