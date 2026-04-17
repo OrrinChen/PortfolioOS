@@ -109,6 +109,13 @@ class TushareProvider:
                     "bak_basic.total_share is treated as 100m-share units and scaled into shares.",
                     "benchmark_weight is not populated by get_reference_snapshot and remains blank unless added downstream.",
                 ],
+                "state_transition_daily_panel": [
+                    "daily panel history is assembled from tushare trade_cal, daily, and stk_limit plus end-date reference fields.",
+                    "volume is converted from Tushare vol lots into shares by multiplying by 100.",
+                    "amount is converted from Tushare amount-thousand-yuan into CNY by multiplying by 1000.",
+                    "industry and issuer_total_shares are static end-date reference fields joined onto each history row.",
+                    "tradable is approximated from positive daily volume on each trade date.",
+                ],
                 "target": [
                     "index weights are sourced from index_weight.weight and scaled from percent to decimal by dividing by 100.",
                     "when the requested date has no exact index-weight sample, the latest available trade_date on or before as_of_date is used.",
@@ -206,6 +213,42 @@ class TushareProvider:
             report["fallback_chain_used"].append(chain_entry)
         if permission_note is not None and permission_note not in report["permission_notes"]:
             report["permission_notes"].append(permission_note)
+
+    def _merge_capability_reports(
+        self,
+        target_feed_name: str,
+        component_feed_names: list[str],
+    ) -> None:
+        """Merge multiple feed capability reports into one composite report."""
+
+        merged = self._default_report()
+        merged["fallback_notes"] = []
+        merged["fallback_chain_used"] = []
+        merged["data_source_mix"] = []
+        merged["permission_notes"] = []
+        statuses: list[str] = []
+
+        for feed_name in component_feed_names:
+            report = self.get_capability_report(feed_name)
+            statuses.append(str(report.get("provider_capability_status", "available")))
+            for field in ("fallback_notes", "fallback_chain_used", "data_source_mix", "permission_notes"):
+                for value in report.get(field, []) or []:
+                    if value not in merged[field]:
+                        merged[field].append(value)
+            recommended = report.get("recommended_alternative_path")
+            if recommended and merged["recommended_alternative_path"] is None:
+                merged["recommended_alternative_path"] = recommended
+
+        if "unavailable" in statuses:
+            merged["provider_capability_status"] = "unavailable"
+        elif "degraded" in statuses:
+            merged["provider_capability_status"] = "degraded"
+        else:
+            merged["provider_capability_status"] = "available"
+
+        if "tushare" not in merged["data_source_mix"]:
+            merged["data_source_mix"].append("tushare")
+        self._reports[target_feed_name] = merged
 
     @staticmethod
     def _to_share_count(value: Any) -> float | None:
@@ -750,6 +793,168 @@ class TushareProvider:
                 f"Tushare daily history produced non-positive adv_shares for {ts_code}."
             )
         return adv_shares
+
+    def get_state_transition_daily_panel(
+        self,
+        tickers: list[str],
+        start_date: str,
+        end_date: str,
+    ) -> pd.DataFrame:
+        """Return a contract-shaped daily history panel for state-transition research."""
+
+        self._reset_report("state_transition_daily_panel")
+        self._reset_report("market")
+        start_trade_date = self._to_trade_date(start_date)
+        end_trade_date = self._to_trade_date(end_date)
+        normalized_tickers = [normalize_ticker(ticker) for ticker in tickers]
+        ts_codes = [self._ticker_to_ts_code(ticker) for ticker in normalized_tickers]
+
+        trade_calendar = self._call_api(
+            "trade_cal",
+            params={
+                "exchange": "",
+                "start_date": start_trade_date,
+                "end_date": end_trade_date,
+            },
+            fields="cal_date,is_open",
+        )
+        if trade_calendar.empty:
+            raise ProviderDataError(
+                f"Tushare trade_cal returned no rows between {start_trade_date} and {end_trade_date}."
+            )
+        trade_calendar["cal_date"] = trade_calendar["cal_date"].astype(str)
+        trade_calendar["is_open"] = pd.to_numeric(trade_calendar["is_open"], errors="coerce")
+        open_trade_dates = (
+            trade_calendar.loc[trade_calendar["is_open"] == 1, "cal_date"]
+            .astype(str)
+            .sort_values()
+            .tolist()
+        )
+        if not open_trade_dates:
+            raise ProviderDataError(
+                f"Tushare trade_cal has no open sessions between {start_trade_date} and {end_trade_date}."
+            )
+
+        reference_rows = self.get_reference_snapshot(normalized_tickers, end_date)
+        reference_records: list[dict[str, Any]] = []
+        for row in reference_rows:
+            if hasattr(row, "model_dump"):
+                payload = row.model_dump(mode="json")
+            else:
+                payload = {
+                    "ticker": getattr(row, "ticker", None),
+                    "industry": getattr(row, "industry", None),
+                    "benchmark_weight": getattr(row, "benchmark_weight", None),
+                    "issuer_total_shares": getattr(row, "issuer_total_shares", None),
+                }
+            reference_records.append(payload)
+        reference_frame = pd.DataFrame(reference_records)
+        if reference_frame.empty:
+            raise ProviderDataError("Tushare reference snapshot returned no rows for state-transition history.")
+        reference_frame["ticker"] = reference_frame["ticker"].map(normalize_ticker)
+        reference_frame = reference_frame.loc[:, ["ticker", "industry", "issuer_total_shares"]].copy()
+
+        history_frames: list[pd.DataFrame] = []
+        for trade_date in open_trade_dates:
+            daily = self._call_api(
+                "daily",
+                params={"trade_date": trade_date},
+                fields="ts_code,trade_date,open,high,low,close,pre_close,vol,amount",
+            )
+            if daily.empty:
+                continue
+            daily = daily[daily["ts_code"].isin(ts_codes)].copy()
+            if daily.empty:
+                continue
+
+            active_ts_codes = sorted(set(daily["ts_code"].astype(str)))
+            limits = self._load_stk_limit_for_trade_date(trade_date, active_ts_codes)
+            merged = daily.merge(limits, on=["ts_code", "trade_date"], how="left")
+            merged["ticker"] = merged["ts_code"].map(self._ts_code_to_ticker)
+            for column in (
+                "open",
+                "high",
+                "low",
+                "close",
+                "pre_close",
+                "vol",
+                "amount",
+                "up_limit",
+                "down_limit",
+            ):
+                merged[column] = pd.to_numeric(merged.get(column), errors="coerce")
+            if bool(merged["up_limit"].isna().any() or merged["down_limit"].isna().any()):
+                self._mark_degraded(
+                    "market",
+                    fallback_note="stk_limit_partial_used_price_band_approximation",
+                    permission_note="stk_limit_partial_data_unavailable",
+                    recommended_alternative_path="provide_state_transition_daily_panel_csv_and_continue",
+                )
+            merged["approx_limit_rate"] = merged["ticker"].map(self._approx_limit_rate_from_ticker)
+            merged["up_limit"] = merged.apply(
+                lambda row: (
+                    float(row["up_limit"])
+                    if pd.notna(row["up_limit"])
+                    else float(row["pre_close"]) * (1.0 + float(row["approx_limit_rate"]))
+                ),
+                axis=1,
+            )
+            merged["down_limit"] = merged.apply(
+                lambda row: (
+                    float(row["down_limit"])
+                    if pd.notna(row["down_limit"])
+                    else float(row["pre_close"]) * (1.0 - float(row["approx_limit_rate"]))
+                ),
+                axis=1,
+            )
+            merged["date"] = pd.to_datetime(merged["trade_date"], format="%Y%m%d", errors="raise").dt.strftime(
+                "%Y-%m-%d"
+            )
+            merged["volume"] = merged["vol"] * 100.0
+            merged["amount_cny"] = merged["amount"] * 1000.0
+            merged["tradable"] = merged["vol"].fillna(0.0) > 0.0
+            history_frames.append(
+                merged.loc[
+                    :,
+                    [
+                        "date",
+                        "ticker",
+                        "open",
+                        "high",
+                        "low",
+                        "close",
+                        "volume",
+                        "amount_cny",
+                        "up_limit",
+                        "down_limit",
+                        "tradable",
+                    ],
+                ].rename(
+                    columns={
+                        "amount_cny": "amount",
+                        "up_limit": "upper_limit_price",
+                        "down_limit": "lower_limit_price",
+                    }
+                )
+            )
+
+        if not history_frames:
+            raise ProviderDataError(
+                f"Tushare state-transition history returned no matching rows between {start_trade_date} and {end_trade_date}."
+            )
+
+        history = pd.concat(history_frames, ignore_index=True)
+        history = history.merge(reference_frame, on="ticker", how="left")
+        if history["industry"].astype(str).str.strip().eq("").any() or history["industry"].isna().any():
+            raise ProviderDataError("Tushare state-transition history contains missing industry values.")
+        history["issuer_total_shares"] = pd.to_numeric(history["issuer_total_shares"], errors="coerce")
+        if history["issuer_total_shares"].isna().any():
+            raise ProviderDataError(
+                "Tushare state-transition history contains missing issuer_total_shares values."
+            )
+
+        self._merge_capability_reports("state_transition_daily_panel", ["market", "reference"])
+        return history.sort_values(["date", "ticker"]).reset_index(drop=True)
 
     def get_daily_market_snapshot(
         self,

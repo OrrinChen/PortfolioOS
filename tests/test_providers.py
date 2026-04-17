@@ -259,3 +259,126 @@ def test_tushare_reference_uses_xq_fallback_when_em_and_bak_basic_unavailable(mo
     report = provider.get_capability_report("reference")
     assert report["provider_capability_status"] == "available"
     assert "akshare" in report["data_source_mix"]
+
+
+def test_tushare_provider_can_build_state_transition_daily_panel_history(monkeypatch) -> None:
+    provider = TushareProvider(token="demo_token", token_source="cli")
+
+    def _call_api(api_name: str, *, params=None, fields=None):
+        _ = fields
+        if api_name == "trade_cal":
+            return pd.DataFrame(
+                [
+                    {"cal_date": "20260401", "is_open": 1},
+                    {"cal_date": "20260402", "is_open": 1},
+                ]
+            )
+        if api_name == "daily":
+            trade_date = params["trade_date"]
+            if trade_date == "20260401":
+                return pd.DataFrame(
+                    [
+                        {
+                            "ts_code": "000001.SZ",
+                            "trade_date": "20260401",
+                            "open": 10.0,
+                            "high": 11.0,
+                            "low": 9.9,
+                            "close": 11.0,
+                            "pre_close": 10.0,
+                            "vol": 10000.0,
+                            "amount": 10500.0,
+                        }
+                    ]
+                )
+            if trade_date == "20260402":
+                return pd.DataFrame(
+                    [
+                        {
+                            "ts_code": "000001.SZ",
+                            "trade_date": "20260402",
+                            "open": 11.1,
+                            "high": 11.2,
+                            "low": 10.8,
+                            "close": 10.9,
+                            "pre_close": 11.0,
+                            "vol": 9000.0,
+                            "amount": 9900.0,
+                        }
+                    ]
+                )
+        if api_name == "stk_limit":
+            trade_date = params["trade_date"]
+            if trade_date == "20260401":
+                return pd.DataFrame(
+                    [
+                        {
+                            "ts_code": "000001.SZ",
+                            "trade_date": "20260401",
+                            "up_limit": 11.0,
+                            "down_limit": 9.0,
+                        }
+                    ]
+                )
+            if trade_date == "20260402":
+                return pd.DataFrame(
+                    [
+                        {
+                            "ts_code": "000001.SZ",
+                            "trade_date": "20260402",
+                            "up_limit": 12.1,
+                            "down_limit": 9.9,
+                        }
+                    ]
+                )
+        raise AssertionError(f"unexpected api_name: {api_name} with params={params}")
+
+    monkeypatch.setattr(provider, "_call_api", _call_api)
+    monkeypatch.setattr(
+        provider,
+        "get_reference_snapshot",
+        lambda tickers, as_of_date: [
+            type(
+                "_Row",
+                (),
+                {
+                    "ticker": "000001",
+                    "industry": "Industrials",
+                    "issuer_total_shares": 10_000_000.0,
+                    "model_dump": lambda self, mode="json": {
+                        "ticker": "000001",
+                        "industry": "Industrials",
+                        "benchmark_weight": None,
+                        "issuer_total_shares": 10_000_000.0,
+                    },
+                },
+            )()
+        ],
+    )
+
+    frame = provider.get_state_transition_daily_panel(
+        ["000001"],
+        "2026-04-01",
+        "2026-04-02",
+    )
+
+    assert list(frame.columns) == [
+        "date",
+        "ticker",
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "amount",
+        "upper_limit_price",
+        "lower_limit_price",
+        "tradable",
+        "industry",
+        "issuer_total_shares",
+    ]
+    assert frame.loc[0, "date"] == "2026-04-01"
+    assert frame.loc[0, "ticker"] == "000001"
+    assert frame.loc[0, "volume"] == pytest.approx(1_000_000.0)
+    assert frame.loc[0, "amount"] == pytest.approx(10_500_000.0)
+    assert frame.loc[0, "industry"] == "Industrials"

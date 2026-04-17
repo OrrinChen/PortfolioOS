@@ -448,4 +448,39 @@ Exit consequence:
    - explicit boundary:
      - no provider / Tushare wiring has been added yet
      - no family-wide miner or additional expression families have been added yet
-23. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.
+23. The fourteenth D2 coding slice is now in place:
+   - contract-shaped state-transition daily-panel builder added:
+     - `src/portfolio_os/data/builders/state_transition_builder.py`
+   - current builder contract:
+     - expects provider history support via:
+       - `get_state_transition_daily_panel(...)`
+     - validates and writes:
+       - `state_transition_daily_panel.csv`
+       - `state_transition_daily_panel_manifest.json`
+     - enforces:
+       - unique `(date, ticker)` rows
+       - positive price / limit / share fields
+       - non-negative volume / amount
+       - non-blank `industry`
+   - provider / CLI wiring added:
+     - root CLI command:
+       - `build-state-transition-panel`
+     - Tushare historical provider support now exists for:
+       - `trade_cal`
+       - per-day `daily`
+       - per-day `stk_limit`
+       - end-date `reference` join into the panel
+     - composite capability report now propagates to:
+       - `state_transition_daily_panel`
+   - practical meaning:
+     - D2 now has a real provider-backed path from Tushare history to a contract-shaped A-share state-transition daily panel
+     - the upper-limit pilot can now be driven from a true historical provider build, not only synthetic CSV fixtures
+   - verification status:
+     - targeted provider-history red test now passes
+     - state-transition test pack passed:
+       - `5 passed`
+     - broader regression pack passed:
+       - `68 passed, 4 warnings`
+   - explicit boundary:
+     - the first real live panel build and live upper-limit pilot read remain the next slice
+24. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.

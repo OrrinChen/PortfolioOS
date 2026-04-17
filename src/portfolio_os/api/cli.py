@@ -23,6 +23,11 @@ from portfolio_os.data.builders.market_builder import (
     load_tickers_file,
     write_market_csv,
 )
+from portfolio_os.data.builders.state_transition_builder import (
+    build_state_transition_daily_panel_frame,
+    build_state_transition_daily_panel_manifest,
+    write_state_transition_daily_panel_csv,
+)
 from portfolio_os.data.builders.reference_builder import (
     build_reference_frame,
     build_reference_manifest,
@@ -323,6 +328,51 @@ def state_transition_pilot(
         typer.echo(f"pilot_read_frame.csv: {result.output_dir / 'pilot_read_frame.csv'}")
         typer.echo(f"summary.json: {result.output_dir / 'summary.json'}")
         typer.echo(f"note.md: {result.output_dir / 'note.md'}")
+    except PortfolioOSError as exc:
+        logger.error("%s", exc)
+        raise typer.Exit(code=1) from exc
+
+
+@app.command("build-state-transition-panel")
+def build_state_transition_panel(
+    tickers_file: Path = typer.Option(..., exists=True, file_okay=True, dir_okay=False),
+    start_date: str = typer.Option(...),
+    end_date: str = typer.Option(...),
+    provider: str = typer.Option("tushare"),
+    provider_token: str | None = typer.Option(
+        None,
+        help="Provider token. For tushare this overrides the TUSHARE_TOKEN environment variable.",
+    ),
+    output: Path = typer.Option(...),
+) -> None:
+    """Build a contract-shaped state-transition daily panel from provider history."""
+
+    logger = configure_logging()
+    try:
+        provider_instance = get_data_provider(provider, provider_token=provider_token)
+        tickers = load_tickers_file(tickers_file)
+        frame = build_state_transition_daily_panel_frame(
+            provider=provider_instance,
+            tickers=tickers,
+            start_date=start_date,
+            end_date=end_date,
+        )
+        write_state_transition_daily_panel_csv(frame, output)
+        manifest_path = builder_manifest_path(output)
+        write_json(
+            manifest_path,
+            build_state_transition_daily_panel_manifest(
+                provider=provider_instance,
+                start_date=start_date,
+                end_date=end_date,
+                tickers_file=tickers_file,
+                output_path=output,
+                tickers=tickers,
+                frame=frame,
+            ),
+        )
+        typer.echo(f"state_transition_daily_panel.csv: {output}")
+        typer.echo(f"state_transition_daily_panel_manifest.json: {manifest_path}")
     except PortfolioOSError as exc:
         logger.error("%s", exc)
         raise typer.Exit(code=1) from exc

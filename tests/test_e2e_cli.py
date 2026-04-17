@@ -1165,3 +1165,81 @@ def test_state_transition_pilot_cli_writes_expected_artifacts(tmp_path) -> None:
     assert (output_dir / "summary.json").exists()
     assert (output_dir / "note.md").exists()
     assert "summary.json" in result.output
+
+
+def test_build_state_transition_panel_cli_writes_expected_artifacts(tmp_path, monkeypatch) -> None:
+    class _FakeStateTransitionProvider:
+        provider_name = "fake_state_transition"
+        provider_metadata = {
+            "provider_token_source": "cli",
+            "approximation_notes": {
+                "state_transition_daily_panel": [
+                    "industry and issuer_total_shares are treated as static end-date reference fields."
+                ]
+            },
+        }
+
+        def get_state_transition_daily_panel(self, tickers, start_date, end_date):
+            _ = (tickers, start_date, end_date)
+            return pd.DataFrame(
+                [
+                    {
+                        "date": "2026-04-01",
+                        "ticker": "000001",
+                        "open": 10.0,
+                        "high": 11.0,
+                        "low": 9.9,
+                        "close": 11.0,
+                        "volume": 1_000_000.0,
+                        "amount": 10_500_000.0,
+                        "upper_limit_price": 11.0,
+                        "lower_limit_price": 9.0,
+                        "tradable": True,
+                        "industry": "Industrials",
+                        "issuer_total_shares": 10_000_000.0,
+                    }
+                ]
+            )
+
+        def get_capability_report(self, feed_name: str):
+            _ = feed_name
+            return {
+                "provider_capability_status": "available",
+                "fallback_notes": [],
+                "fallback_chain_used": [],
+                "data_source_mix": ["fake_state_transition"],
+                "permission_notes": [],
+                "recommended_alternative_path": None,
+            }
+
+    monkeypatch.setattr(
+        "portfolio_os.api.cli.get_data_provider",
+        lambda name, provider_token=None: _FakeStateTransitionProvider(),
+    )
+
+    runner = CliRunner()
+    tickers_path = tmp_path / "tickers.txt"
+    output_path = tmp_path / "state_transition_daily_panel.csv"
+    tickers_path.write_text("000001\n", encoding="utf-8")
+
+    result = runner.invoke(
+        app,
+        [
+            "build-state-transition-panel",
+            "--tickers-file",
+            str(tickers_path),
+            "--start-date",
+            "2026-04-01",
+            "--end-date",
+            "2026-04-02",
+            "--provider",
+            "tushare",
+            "--output",
+            str(output_path),
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert output_path.exists()
+    assert (tmp_path / "state_transition_daily_panel_manifest.json").exists()
+    assert "state_transition_daily_panel.csv" in result.output
