@@ -330,4 +330,24 @@ Exit consequence:
    - explicit boundary:
      - no-replacement matching policy still remains deferred
      - no higher-level D2 report / runner has been added yet
-19. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.
+19. The tenth D2 coding slice is now in place:
+   - per-expression upper-limit pilot read helper added:
+     - `build_upper_limit_pilot_read_frame(...)`
+   - current read-frame contract:
+     - joins:
+       - live expression means
+       - matched-control excess means
+       - pre-event placebo excess means
+       - `P-001` null summary fields
+     - emits one deterministic per-expression pilot row
+   - practical meaning:
+     - D2 now has its first end-to-end read object for the `M1/M2/M5` upper-limit pilot
+     - the pilot can now be inspected at the expression level without reconstructing each component by hand
+   - verification status:
+     - targeted state-transition panel tests passed
+     - broader regression pack passed:
+       - `42 passed, 3 warnings`
+   - explicit boundary:
+     - no-replacement matching policy still remains deferred
+     - no file-writing D2 runner / artifact bundle has been added yet
+20. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.

@@ -8,6 +8,7 @@ from portfolio_os.alpha.state_transition_panel import (
     build_upper_limit_event_conditioned_null_draw,
     build_upper_limit_event_conditioned_null_pool,
     build_upper_limit_event_conditioned_null_summary,
+    build_upper_limit_pilot_read_frame,
     build_upper_limit_matched_control_comparison_frame,
     build_state_transition_matching_covariates,
     build_upper_limit_pre_event_placebo_comparison_frame,
@@ -727,3 +728,86 @@ def test_build_upper_limit_event_conditioned_null_summary_rejects_empty_seed_lis
 
     with pytest.raises(InputValidationError, match="random_seeds must not be empty"):
         build_upper_limit_event_conditioned_null_summary(null_pool, random_seeds=[])
+
+
+def test_build_upper_limit_pilot_read_frame_joins_live_control_placebo_and_null_reads() -> None:
+    event_panel = build_state_transition_daily_panel(_pre_event_placebo_daily_bar_fixture())
+    expression_frame = build_upper_limit_pilot_expression_frame(event_panel.loc[event_panel["date"] == "2026-04-01"])
+    matched_controls = build_upper_limit_matched_non_event_control_frame(_matched_control_fixture())
+    control_comparison = build_upper_limit_matched_control_comparison_frame(
+        expression_frame,
+        matched_controls,
+        _matched_control_forward_panel_fixture(),
+    )
+    placebo_comparison = build_upper_limit_pre_event_placebo_comparison_frame(
+        expression_frame,
+        event_panel,
+    )
+    null_pool = build_upper_limit_event_conditioned_null_pool(expression_frame, _matched_control_fixture())
+    null_summary = build_upper_limit_event_conditioned_null_summary(
+        null_pool,
+        random_seeds=[7, 8, 9],
+    )
+
+    read_frame = build_upper_limit_pilot_read_frame(
+        expression_frame,
+        control_comparison,
+        placebo_comparison,
+        null_summary,
+    )
+    keyed = read_frame.set_index("expression_id")
+
+    assert list(read_frame.columns) == [
+        "expression_id",
+        "mechanism_id",
+        "state_anchor",
+        "observation_count",
+        "observed_mean_forward_return",
+        "mean_excess_vs_control",
+        "mean_excess_vs_placebo",
+        "null_seed_count",
+        "null_mean_forward_return_median",
+        "null_mean_forward_return_std",
+        "null_mean_forward_return_unique_count",
+        "null_is_degenerate",
+        "observed_mean_forward_return_null_percentile",
+    ]
+    assert keyed.loc["P1_SEALED_UPPER_LIMIT", "observed_mean_forward_return"] == pytest.approx(10.90 / 11.00 - 1.0)
+    assert keyed.loc["P1_SEALED_UPPER_LIMIT", "mean_excess_vs_control"] == pytest.approx(
+        (10.90 / 11.00 - 1.0) - 0.0302
+    )
+    assert keyed.loc["P1_SEALED_UPPER_LIMIT", "mean_excess_vs_placebo"] == pytest.approx(
+        (10.90 / 11.00 - 1.0) - 0.10
+    )
+    assert bool(keyed.loc["P1_SEALED_UPPER_LIMIT", "null_is_degenerate"]) is True
+
+
+def test_build_upper_limit_pilot_read_frame_rejects_missing_null_summary_columns() -> None:
+    event_panel = build_state_transition_daily_panel(_pre_event_placebo_daily_bar_fixture())
+    expression_frame = build_upper_limit_pilot_expression_frame(event_panel.loc[event_panel["date"] == "2026-04-01"])
+    matched_controls = build_upper_limit_matched_non_event_control_frame(_matched_control_fixture())
+    control_comparison = build_upper_limit_matched_control_comparison_frame(
+        expression_frame,
+        matched_controls,
+        _matched_control_forward_panel_fixture(),
+    )
+    placebo_comparison = build_upper_limit_pre_event_placebo_comparison_frame(
+        expression_frame,
+        event_panel,
+    )
+    bad_null_summary = pd.DataFrame(
+        [
+            {
+                "expression_id": "P1_SEALED_UPPER_LIMIT",
+                "mechanism_id": "M1",
+            }
+        ]
+    )
+
+    with pytest.raises(InputValidationError, match="requires null-summary columns"):
+        build_upper_limit_pilot_read_frame(
+            expression_frame,
+            control_comparison,
+            placebo_comparison,
+            bad_null_summary,
+        )

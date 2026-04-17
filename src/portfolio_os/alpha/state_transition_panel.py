@@ -915,3 +915,117 @@ def build_upper_limit_event_conditioned_null_summary(
         )
 
     return pd.DataFrame(rows).sort_values(["expression_id"]).reset_index(drop=True)
+
+
+def build_upper_limit_pilot_read_frame(
+    expression_frame: pd.DataFrame,
+    control_comparison_frame: pd.DataFrame,
+    placebo_comparison_frame: pd.DataFrame,
+    null_summary_frame: pd.DataFrame,
+) -> pd.DataFrame:
+    """Join live, control, placebo, and P-001 null reads into one per-expression pilot frame."""
+
+    required_expression = {
+        "expression_id",
+        "mechanism_id",
+        "state_anchor",
+        "forward_return",
+    }
+    missing_expression = sorted(required_expression - set(expression_frame.columns))
+    if missing_expression:
+        raise InputValidationError(
+            "upper-limit pilot read frame requires expression columns: "
+            + ", ".join(missing_expression)
+        )
+
+    required_control = {"expression_id", "excess_forward_return"}
+    missing_control = sorted(required_control - set(control_comparison_frame.columns))
+    if missing_control:
+        raise InputValidationError(
+            "upper-limit pilot read frame requires control-comparison columns: "
+            + ", ".join(missing_control)
+        )
+
+    required_placebo = {"expression_id", "placebo_excess_return"}
+    missing_placebo = sorted(required_placebo - set(placebo_comparison_frame.columns))
+    if missing_placebo:
+        raise InputValidationError(
+            "upper-limit pilot read frame requires placebo-comparison columns: "
+            + ", ".join(missing_placebo)
+        )
+
+    required_null_summary = {
+        "expression_id",
+        "null_seed_count",
+        "null_mean_forward_return_median",
+        "null_mean_forward_return_std",
+        "null_mean_forward_return_unique_count",
+        "null_is_degenerate",
+        "observed_mean_forward_return_null_percentile",
+    }
+    missing_null_summary = sorted(required_null_summary - set(null_summary_frame.columns))
+    if missing_null_summary:
+        raise InputValidationError(
+            "upper-limit pilot read frame requires null-summary columns: "
+            + ", ".join(missing_null_summary)
+        )
+
+    observed = (
+        expression_frame.groupby(["expression_id", "mechanism_id", "state_anchor"], sort=True)
+        .agg(
+            observation_count=("ticker", "count"),
+            observed_mean_forward_return=("forward_return", lambda values: float(pd.to_numeric(values, errors="coerce").mean())),
+        )
+        .reset_index()
+    )
+    control = (
+        control_comparison_frame.groupby("expression_id", sort=True)
+        .agg(mean_excess_vs_control=("excess_forward_return", lambda values: float(pd.to_numeric(values, errors="coerce").mean())))
+        .reset_index()
+    )
+    placebo = (
+        placebo_comparison_frame.groupby("expression_id", sort=True)
+        .agg(mean_excess_vs_placebo=("placebo_excess_return", lambda values: float(pd.to_numeric(values, errors="coerce").mean())))
+        .reset_index()
+    )
+
+    result = observed.merge(control, on="expression_id", how="left")
+    result = result.merge(placebo, on="expression_id", how="left")
+    result = result.merge(
+        null_summary_frame.loc[
+            :,
+            [
+                "expression_id",
+                "null_seed_count",
+                "null_mean_forward_return_median",
+                "null_mean_forward_return_std",
+                "null_mean_forward_return_unique_count",
+                "null_is_degenerate",
+                "observed_mean_forward_return_null_percentile",
+            ],
+        ],
+        on="expression_id",
+        how="left",
+    )
+    return (
+        result.loc[
+            :,
+            [
+                "expression_id",
+                "mechanism_id",
+                "state_anchor",
+                "observation_count",
+                "observed_mean_forward_return",
+                "mean_excess_vs_control",
+                "mean_excess_vs_placebo",
+                "null_seed_count",
+                "null_mean_forward_return_median",
+                "null_mean_forward_return_std",
+                "null_mean_forward_return_unique_count",
+                "null_is_degenerate",
+                "observed_mean_forward_return_null_percentile",
+            ],
+        ]
+        .sort_values(["expression_id"])
+        .reset_index(drop=True)
+    )
