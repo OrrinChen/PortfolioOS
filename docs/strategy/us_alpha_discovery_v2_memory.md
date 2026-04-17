@@ -31,6 +31,8 @@ Short branch-local operating note for the active discovery-v2 lane.
 - A-share primary family D1 Slice A:
   - `docs/strategy/a_share_state_transition_mechanism_charter_2026_04_17.md`
   - `docs/strategy/a_share_state_transition_expression_ledger_initial_2026_04_17.md`
+- A-share primary family D1 Slice B:
+  - `docs/strategy/a_share_state_transition_adversarial_and_data_plan_2026_04_17.md`
 
 ## Program Structure
 
@@ -141,5 +143,7 @@ Exit consequence:
 5. `D1 Slice A` is now complete through:
    - `docs/strategy/a_share_state_transition_mechanism_charter_2026_04_17.md`
    - `docs/strategy/a_share_state_transition_expression_ledger_initial_2026_04_17.md`
-6. Next live step is `D1 Slice B: Adversarial Plan + Ideal-Data Gap + Regime Gate`, after a deliberate buffer and not direct D2 expression mining.
-7. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.
+6. `D1 Slice B` is now complete through:
+   - `docs/strategy/a_share_state_transition_adversarial_and_data_plan_2026_04_17.md`
+7. D1 is therefore complete for the primary family, and the next live step is `D2: Mechanism-Linked Expression Mining`.
+8. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.
