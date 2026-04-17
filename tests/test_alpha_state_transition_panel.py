@@ -6,6 +6,7 @@ import pytest
 from portfolio_os.alpha.state_transition_panel import (
     build_state_transition_daily_panel,
     build_upper_limit_pilot_expression_frame,
+    build_upper_limit_matched_non_event_control_frame,
     extract_upper_limit_daily_state_slice,
 )
 from portfolio_os.domain.errors import InputValidationError
@@ -65,6 +66,91 @@ def _daily_bar_fixture() -> pd.DataFrame:
                 "upper_limit_price": 23.32,
                 "lower_limit_price": 19.08,
                 "tradable": True,
+            },
+        ]
+    )
+
+
+def _matched_control_fixture() -> pd.DataFrame:
+    return pd.DataFrame(
+        [
+            {
+                "date": "2026-04-01",
+                "ticker": "000001",
+                "tradable": True,
+                "upper_limit_touched": True,
+                "sealed_upper_limit": True,
+                "failed_upper_limit": False,
+                "industry": "Industrials",
+                "size_tercile": 2,
+                "liquidity_tercile": 2,
+                "recent_realized_volatility": 0.18,
+                "recent_return_state": 0.12,
+            },
+            {
+                "date": "2026-04-01",
+                "ticker": "000002",
+                "tradable": True,
+                "upper_limit_touched": True,
+                "sealed_upper_limit": False,
+                "failed_upper_limit": True,
+                "industry": "Consumer",
+                "size_tercile": 1,
+                "liquidity_tercile": 1,
+                "recent_realized_volatility": 0.25,
+                "recent_return_state": -0.02,
+            },
+            {
+                "date": "2026-04-01",
+                "ticker": "000003",
+                "tradable": True,
+                "upper_limit_touched": False,
+                "sealed_upper_limit": False,
+                "failed_upper_limit": False,
+                "industry": "Industrials",
+                "size_tercile": 2,
+                "liquidity_tercile": 2,
+                "recent_realized_volatility": 0.17,
+                "recent_return_state": 0.11,
+            },
+            {
+                "date": "2026-04-01",
+                "ticker": "000004",
+                "tradable": True,
+                "upper_limit_touched": False,
+                "sealed_upper_limit": False,
+                "failed_upper_limit": False,
+                "industry": "Industrials",
+                "size_tercile": 2,
+                "liquidity_tercile": 2,
+                "recent_realized_volatility": 0.32,
+                "recent_return_state": 0.06,
+            },
+            {
+                "date": "2026-04-01",
+                "ticker": "000005",
+                "tradable": True,
+                "upper_limit_touched": False,
+                "sealed_upper_limit": False,
+                "failed_upper_limit": False,
+                "industry": "Consumer",
+                "size_tercile": 1,
+                "liquidity_tercile": 1,
+                "recent_realized_volatility": 0.24,
+                "recent_return_state": -0.03,
+            },
+            {
+                "date": "2026-04-01",
+                "ticker": "000006",
+                "tradable": False,
+                "upper_limit_touched": False,
+                "sealed_upper_limit": False,
+                "failed_upper_limit": False,
+                "industry": "Consumer",
+                "size_tercile": 1,
+                "liquidity_tercile": 1,
+                "recent_realized_volatility": 0.249,
+                "recent_return_state": -0.021,
             },
         ]
     )
@@ -166,3 +252,41 @@ def test_build_upper_limit_pilot_expression_frame_emits_p1_to_p4_rows() -> None:
     assert keyed.loc[("P4_NEXT_DAY_AFTER_FAILED", "000002"), "signal_value"] == pytest.approx(-1.0)
     assert keyed.loc[("P4_NEXT_DAY_AFTER_FAILED", "000002"), "expected_sign"] == pytest.approx(-1.0)
     assert keyed.loc[("P4_NEXT_DAY_AFTER_FAILED", "000002"), "forward_return"] == pytest.approx(20.40 / 21.00 - 1.0)
+
+
+def test_build_upper_limit_matched_non_event_control_frame_selects_same_bucket_nearest_neighbor() -> None:
+    matched = build_upper_limit_matched_non_event_control_frame(_matched_control_fixture())
+    keyed = matched.set_index("event_ticker")
+
+    assert list(matched.columns) == [
+        "date",
+        "event_ticker",
+        "control_ticker",
+        "event_state_anchor",
+        "industry",
+        "size_tercile",
+        "liquidity_tercile",
+        "match_distance",
+        "event_recent_realized_volatility",
+        "control_recent_realized_volatility",
+        "event_recent_return_state",
+        "control_recent_return_state",
+    ]
+    assert keyed.loc["000001", "control_ticker"] == "000003"
+    assert keyed.loc["000001", "event_state_anchor"] == "SEALED_UPPER_LIMIT"
+    assert keyed.loc["000001", "match_distance"] == pytest.approx(
+        abs(0.18 - 0.17) + abs(0.12 - 0.11)
+    )
+
+    assert keyed.loc["000002", "control_ticker"] == "000005"
+    assert keyed.loc["000002", "event_state_anchor"] == "FAILED_UPPER_LIMIT"
+    assert keyed.loc["000002", "match_distance"] == pytest.approx(
+        abs(0.25 - 0.24) + abs(-0.02 - (-0.03))
+    )
+
+
+def test_build_upper_limit_matched_non_event_control_frame_rejects_missing_matching_columns() -> None:
+    bad = _matched_control_fixture().drop(columns=["recent_return_state"])
+
+    with pytest.raises(InputValidationError, match="requires matching columns"):
+        build_upper_limit_matched_non_event_control_frame(bad)

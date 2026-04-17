@@ -31,6 +31,19 @@ _UPPER_LIMIT_PILOT_REQUIRED_COLUMNS = {
     "next_intraday_return",
     "next_close_return",
 }
+_UPPER_LIMIT_MATCHING_REQUIRED_COLUMNS = {
+    "date",
+    "ticker",
+    "tradable",
+    "upper_limit_touched",
+    "sealed_upper_limit",
+    "failed_upper_limit",
+    "industry",
+    "size_tercile",
+    "liquidity_tercile",
+    "recent_realized_volatility",
+    "recent_return_state",
+}
 _UPPER_LIMIT_PILOT_SPECS = (
     ("P1_SEALED_UPPER_LIMIT", "M1", "SEALED_UPPER_LIMIT", "sealed_upper_limit", 1.0, "next_close_return"),
     ("P2_FAILED_UPPER_LIMIT", "M2", "FAILED_UPPER_LIMIT", "failed_upper_limit", -1.0, "next_close_return"),
@@ -175,5 +188,90 @@ def build_upper_limit_pilot_expression_frame(panel: pd.DataFrame) -> pd.DataFram
     return (
         pd.concat(rows, ignore_index=True)
         .sort_values(["date", "ticker", "expression_id"])
+        .reset_index(drop=True)
+    )
+
+
+def build_upper_limit_matched_non_event_control_frame(panel: pd.DataFrame) -> pd.DataFrame:
+    """Select same-day matched non-event controls for upper-limit events."""
+
+    missing = sorted(_UPPER_LIMIT_MATCHING_REQUIRED_COLUMNS - set(panel.columns))
+    if missing:
+        raise InputValidationError(
+            "upper-limit matched control frame requires matching columns: "
+            + ", ".join(missing)
+        )
+
+    work = panel.copy()
+    work["ticker"] = work["ticker"].astype(str).str.strip()
+    work["industry"] = work["industry"].astype(str).str.strip()
+    work["tradable"] = work["tradable"].fillna(False).astype(bool)
+    numeric_columns = [
+        "size_tercile",
+        "liquidity_tercile",
+        "recent_realized_volatility",
+        "recent_return_state",
+    ]
+    for column in numeric_columns:
+        work[column] = pd.to_numeric(work[column], errors="coerce")
+
+    events = work.loc[work["tradable"] & work["upper_limit_touched"]].copy()
+    candidates = work.loc[work["tradable"] & ~work["upper_limit_touched"]].copy()
+
+    rows: list[dict[str, object]] = []
+    for _, event_row in events.sort_values(["date", "ticker"]).iterrows():
+        bucket = candidates.loc[
+            (candidates["date"] == event_row["date"])
+            & (candidates["industry"] == event_row["industry"])
+            & (candidates["size_tercile"] == event_row["size_tercile"])
+            & (candidates["liquidity_tercile"] == event_row["liquidity_tercile"])
+        ].copy()
+        if bucket.empty:
+            continue
+        bucket["match_distance"] = (
+            (bucket["recent_realized_volatility"] - float(event_row["recent_realized_volatility"])).abs()
+            + (bucket["recent_return_state"] - float(event_row["recent_return_state"])).abs()
+        )
+        best = bucket.sort_values(["match_distance", "ticker"]).iloc[0]
+        rows.append(
+            {
+                "date": event_row["date"],
+                "event_ticker": event_row["ticker"],
+                "control_ticker": best["ticker"],
+                "event_state_anchor": (
+                    "SEALED_UPPER_LIMIT"
+                    if bool(event_row["sealed_upper_limit"])
+                    else "FAILED_UPPER_LIMIT"
+                ),
+                "industry": event_row["industry"],
+                "size_tercile": int(event_row["size_tercile"]),
+                "liquidity_tercile": int(event_row["liquidity_tercile"]),
+                "match_distance": float(best["match_distance"]),
+                "event_recent_realized_volatility": float(event_row["recent_realized_volatility"]),
+                "control_recent_realized_volatility": float(best["recent_realized_volatility"]),
+                "event_recent_return_state": float(event_row["recent_return_state"]),
+                "control_recent_return_state": float(best["recent_return_state"]),
+            }
+        )
+
+    return (
+        pd.DataFrame(
+            rows,
+            columns=[
+                "date",
+                "event_ticker",
+                "control_ticker",
+                "event_state_anchor",
+                "industry",
+                "size_tercile",
+                "liquidity_tercile",
+                "match_distance",
+                "event_recent_realized_volatility",
+                "control_recent_realized_volatility",
+                "event_recent_return_state",
+                "control_recent_return_state",
+            ],
+        )
+        .sort_values(["date", "event_ticker"])
         .reset_index(drop=True)
     )

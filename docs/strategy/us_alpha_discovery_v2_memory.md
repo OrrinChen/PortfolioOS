@@ -172,4 +172,15 @@ Exit consequence:
    - current practical read:
      - D2 now has a deterministic event-to-expression expansion layer for the `M1/M2/M5` pilot
      - matched controls, placebo checks, and event-conditioned nulls remain deferred to later D2 slices
-12. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.
+12. The third D2 coding slice is now in place:
+   - minimal `NC-1` same-day matched non-event control selector added:
+     - `build_upper_limit_matched_non_event_control_frame(...)`
+   - current control-selection contract:
+     - coarse bucket filter on `industry`, `size_tercile`, `liquidity_tercile`
+     - nearest-neighbor tie-break on:
+       - `recent_realized_volatility`
+       - `recent_return_state`
+   - explicit boundary:
+     - this slice assumes matching covariates are already present on the input frame
+     - covariate derivation and no-replacement policies remain deferred
+13. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.
