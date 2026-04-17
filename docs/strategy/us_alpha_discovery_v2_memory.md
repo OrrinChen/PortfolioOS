@@ -28,6 +28,9 @@ Short branch-local operating note for the active discovery-v2 lane.
   - `docs/strategy/us_residual_momentum_residualization_confirmation_note_2026_04_17.md`
 - A-share primary family Phase 0 memo:
   - `docs/strategy/a_share_state_transition_phase0_memo_2026_04_17.md`
+- A-share primary family D1 Slice A:
+  - `docs/strategy/a_share_state_transition_mechanism_charter_2026_04_17.md`
+  - `docs/strategy/a_share_state_transition_expression_ledger_initial_2026_04_17.md`
 
 ## Program Structure
 
@@ -133,7 +136,10 @@ Exit consequence:
 1. Treat calibration-family closeout as complete; do not reopen `US residual momentum / residual reversal` as a winner search.
 2. Preserve the shuffled-null benchmark and `P-001` as default machine principles for future families.
 3. Use `FM-001` as the first machine-taxonomy entry; classify similar residualization reads against it before making family claims.
-4. Phase 0 family-selection work for `A-share state-transition microstructure` is now opened through:
+4. Phase 0 family-selection work for `A-share state-transition microstructure` is now recorded through:
    - `docs/strategy/a_share_state_transition_phase0_memo_2026_04_17.md`
-5. Next live step is `D1 Slice A: Mechanism Charter` after a deliberate buffer, not direct D2 expression mining.
-6. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.
+5. `D1 Slice A` is now complete through:
+   - `docs/strategy/a_share_state_transition_mechanism_charter_2026_04_17.md`
+   - `docs/strategy/a_share_state_transition_expression_ledger_initial_2026_04_17.md`
+6. Next live step is `D1 Slice B: Adversarial Plan + Ideal-Data Gap + Regime Gate`, after a deliberate buffer and not direct D2 expression mining.
+7. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.
