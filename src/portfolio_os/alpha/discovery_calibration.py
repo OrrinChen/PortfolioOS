@@ -355,6 +355,32 @@ def _build_residualized_signal_frame(
     )
 
 
+def _attach_baseline_exposure_terciles(
+    *,
+    signal_frame: pd.DataFrame,
+    baseline_frame: pd.DataFrame,
+) -> pd.DataFrame:
+    baseline_values = baseline_frame.rename(columns={"signal_value": "baseline_signal_value"})
+    merged = signal_frame.merge(
+        baseline_values.loc[:, ["date", "ticker", "baseline_signal_value"]],
+        on=["date", "ticker"],
+        how="inner",
+    )
+    if merged.empty:
+        return pd.DataFrame(
+            columns=["date", "ticker", "signal_value", "baseline_signal_value", "baseline_exposure_tercile_id", "baseline_exposure_tercile"]
+        )
+    rows: list[pd.DataFrame] = []
+    label_map = {1: "low", 2: "mid", 3: "high"}
+    for _, date_frame in merged.groupby("date", sort=True):
+        work = date_frame.copy()
+        bucket_ids = _quantile_buckets(work["baseline_signal_value"], quantiles=3)
+        work["baseline_exposure_tercile_id"] = bucket_ids
+        work["baseline_exposure_tercile"] = bucket_ids.map(label_map)
+        rows.append(work)
+    return pd.concat(rows, ignore_index=True).sort_values(["date", "ticker"]).reset_index(drop=True)
+
+
 def build_baseline_residualized_expression_summary(
     *,
     returns_panel: pd.DataFrame,
@@ -518,26 +544,19 @@ def build_baseline_exposure_tercile_decomposition(
                 "mean_observation_count",
             ]
         )
-
-    tercile_rows: list[pd.DataFrame] = []
-    for _, date_frame in residualized_signal_frame.groupby("date", sort=True):
-        tercile_frame = date_frame.loc[:, ["date", "ticker", "signal_value"]].copy()
-        tercile_frame["baseline_exposure_tercile"] = _quantile_buckets(
-            date_frame["baseline_signal_value"],
-            quantiles=3,
-        )
-        tercile_rows.append(tercile_frame)
-    tercile_signal_frame = pd.concat(tercile_rows, ignore_index=True).sort_values(["date", "ticker"]).reset_index(drop=True)
+    tercile_signal_frame = _attach_baseline_exposure_terciles(
+        signal_frame=residualized_signal_frame.loc[:, ["date", "ticker", "signal_value"]],
+        baseline_frame=baseline_frame,
+    )
 
     forward_return_frame = build_monthly_forward_return_frame(
         returns_panel=returns_panel,
         universe_reference=universe_reference,
     )
-    label_map = {1: "low", 2: "mid", 3: "high"}
     rows: list[dict[str, Any]] = []
-    for bucket_id in [1, 2, 3]:
+    for bucket_id, bucket_label in [(1, "low"), (2, "mid"), (3, "high")]:
         bucket_signal_frame = tercile_signal_frame.loc[
-            tercile_signal_frame["baseline_exposure_tercile"] == bucket_id,
+            tercile_signal_frame["baseline_exposure_tercile_id"] == bucket_id,
             ["date", "ticker", "signal_value"],
         ].copy()
         per_date = _build_per_date_metrics(
@@ -549,7 +568,7 @@ def build_baseline_exposure_tercile_decomposition(
             {
                 "expression_id": expression_id,
                 "baseline_expression_id": baseline_expression_id,
-                "baseline_exposure_tercile": label_map[bucket_id],
+                "baseline_exposure_tercile": bucket_label,
                 "evaluation_month_count": int(len(per_date)),
                 "mean_rank_ic": float(pd.to_numeric(per_date["rank_ic"], errors="coerce").mean()) if not per_date.empty else 0.0,
                 "rank_ic_t": _mean_t_stat(per_date["rank_ic"]) if not per_date.empty else 0.0,
@@ -568,6 +587,171 @@ def build_baseline_exposure_tercile_decomposition(
         ordered=True,
     )
     return decomposition.sort_values("baseline_exposure_tercile").reset_index(drop=True)
+
+
+def build_exposure_conditioned_residualization_placebo_null_distribution(
+    *,
+    returns_panel: pd.DataFrame,
+    universe_reference: pd.DataFrame,
+    expression_id: str,
+    baseline_expression_id: str,
+    random_seeds: list[int],
+) -> pd.DataFrame:
+    """Build a residualization placebo null that preserves per-date baseline-exposure terciles."""
+
+    signal_frame = build_calibration_signal_frame(
+        returns_panel=returns_panel,
+        universe_reference=universe_reference,
+        expression_id=expression_id,
+    )
+    baseline_frame = build_calibration_signal_frame(
+        returns_panel=returns_panel,
+        universe_reference=universe_reference,
+        expression_id=baseline_expression_id,
+    )
+    signal_with_exposure = _attach_baseline_exposure_terciles(
+        signal_frame=signal_frame,
+        baseline_frame=baseline_frame,
+    )
+    forward_return_frame = build_monthly_forward_return_frame(
+        returns_panel=returns_panel,
+        universe_reference=universe_reference,
+    )
+
+    rows: list[dict[str, Any]] = []
+    grouped_dates = list(signal_with_exposure.groupby("date", sort=True))
+    for seed in random_seeds:
+        conditioned_rows: list[pd.DataFrame] = []
+        for offset, (_, date_frame) in enumerate(grouped_dates):
+            bucket_rows: list[pd.DataFrame] = []
+            for bucket_id, bucket_frame in date_frame.groupby("baseline_exposure_tercile_id", sort=True):
+                rng = np.random.default_rng(int(seed) + int(offset) * 10 + int(bucket_id))
+                shuffled_bucket = bucket_frame.loc[:, ["date", "ticker", "signal_value"]].copy()
+                shuffled_bucket["signal_value"] = rng.permutation(bucket_frame["signal_value"].to_numpy())
+                bucket_rows.append(shuffled_bucket)
+            conditioned_rows.append(pd.concat(bucket_rows, ignore_index=True))
+        conditioned_signal_frame = (
+            pd.concat(conditioned_rows, ignore_index=True).sort_values(["date", "ticker"]).reset_index(drop=True)
+            if conditioned_rows
+            else pd.DataFrame(columns=["date", "ticker", "signal_value"])
+        )
+        residualized_signal_frame = _build_residualized_signal_frame(
+            signal_frame=conditioned_signal_frame,
+            baseline_frame=baseline_frame,
+        )
+        residualized_with_exposure = _attach_baseline_exposure_terciles(
+            signal_frame=residualized_signal_frame.loc[:, ["date", "ticker", "signal_value"]],
+            baseline_frame=baseline_frame,
+        )
+
+        overall_per_date = _build_per_date_metrics(
+            signal_frame=residualized_signal_frame.loc[:, ["date", "ticker", "signal_value"]],
+            forward_return_frame=forward_return_frame,
+            expression_id=expression_id,
+        )
+        rows.append(
+            {
+                "seed": int(seed),
+                "expression_id": expression_id,
+                "baseline_expression_id": baseline_expression_id,
+                "baseline_exposure_tercile": "all",
+                "evaluation_month_count": int(len(overall_per_date)),
+                "residualized_mean_rank_ic": float(pd.to_numeric(overall_per_date["rank_ic"], errors="coerce").mean())
+                if not overall_per_date.empty
+                else 0.0,
+                "residualized_rank_ic_t": _mean_t_stat(overall_per_date["rank_ic"]) if not overall_per_date.empty else 0.0,
+                "residualized_mean_top_bottom_spread": float(
+                    pd.to_numeric(overall_per_date["top_bottom_spread"], errors="coerce").mean()
+                )
+                if not overall_per_date.empty
+                else 0.0,
+            }
+        )
+        for bucket_label in ["low", "mid", "high"]:
+            bucket_signal_frame = residualized_with_exposure.loc[
+                residualized_with_exposure["baseline_exposure_tercile"] == bucket_label,
+                ["date", "ticker", "signal_value"],
+            ].copy()
+            per_date = _build_per_date_metrics(
+                signal_frame=bucket_signal_frame,
+                forward_return_frame=forward_return_frame,
+                expression_id=expression_id,
+            )
+            rows.append(
+                {
+                    "seed": int(seed),
+                    "expression_id": expression_id,
+                    "baseline_expression_id": baseline_expression_id,
+                    "baseline_exposure_tercile": bucket_label,
+                    "evaluation_month_count": int(len(per_date)),
+                    "residualized_mean_rank_ic": float(pd.to_numeric(per_date["rank_ic"], errors="coerce").mean())
+                    if not per_date.empty
+                    else 0.0,
+                    "residualized_rank_ic_t": _mean_t_stat(per_date["rank_ic"]) if not per_date.empty else 0.0,
+                    "residualized_mean_top_bottom_spread": float(
+                        pd.to_numeric(per_date["top_bottom_spread"], errors="coerce").mean()
+                    )
+                    if not per_date.empty
+                    else 0.0,
+                }
+            )
+    conditioned_null = pd.DataFrame(rows)
+    conditioned_null["baseline_exposure_tercile"] = pd.Categorical(
+        conditioned_null["baseline_exposure_tercile"],
+        categories=["all", "low", "mid", "high"],
+        ordered=True,
+    )
+    return conditioned_null.sort_values(["seed", "baseline_exposure_tercile"]).reset_index(drop=True)
+
+
+def build_baseline_exposure_tercile_null_comparison(
+    *,
+    observed_decomposition_frame: pd.DataFrame,
+    conditioned_null_frame: pd.DataFrame,
+) -> pd.DataFrame:
+    """Compare observed tercile reads against the exposure-conditioned placebo null."""
+
+    rows: list[dict[str, Any]] = []
+    for bucket_label in ["low", "mid", "high"]:
+        observed = observed_decomposition_frame.loc[
+            observed_decomposition_frame["baseline_exposure_tercile"] == bucket_label
+        ]
+        if observed.empty:
+            continue
+        observed_row = observed.iloc[0]
+        sample = conditioned_null_frame.loc[
+            conditioned_null_frame["baseline_exposure_tercile"] == bucket_label
+        ]
+        rows.append(
+            {
+                "baseline_exposure_tercile": bucket_label,
+                "observed_rank_ic_t": float(observed_row["rank_ic_t"]),
+                "observed_rank_ic_t_null_percentile": _empirical_percentile(
+                    sample["residualized_rank_ic_t"],
+                    float(observed_row["rank_ic_t"]),
+                ),
+                "null_rank_ic_t_median": float(pd.to_numeric(sample["residualized_rank_ic_t"], errors="coerce").median())
+                if not sample.empty
+                else float("nan"),
+                "observed_mean_top_bottom_spread": float(observed_row["mean_top_bottom_spread"]),
+                "observed_spread_null_percentile": _empirical_percentile(
+                    sample["residualized_mean_top_bottom_spread"],
+                    float(observed_row["mean_top_bottom_spread"]),
+                ),
+                "null_mean_top_bottom_spread_median": float(
+                    pd.to_numeric(sample["residualized_mean_top_bottom_spread"], errors="coerce").median()
+                )
+                if not sample.empty
+                else float("nan"),
+            }
+        )
+    comparison = pd.DataFrame(rows)
+    comparison["baseline_exposure_tercile"] = pd.Categorical(
+        comparison["baseline_exposure_tercile"],
+        categories=["low", "mid", "high"],
+        ordered=True,
+    )
+    return comparison.sort_values("baseline_exposure_tercile").reset_index(drop=True)
 
 
 def _build_per_date_metrics(
@@ -604,7 +788,9 @@ def _render_calibration_note(
     registry_frame: pd.DataFrame,
     spread_corr_frame: pd.DataFrame,
     rm3_placebo_null_frame: pd.DataFrame,
+    rm3_conditioned_placebo_null_frame: pd.DataFrame,
     rm3_tercile_decomposition_frame: pd.DataFrame,
+    rm3_tercile_null_comparison_frame: pd.DataFrame,
 ) -> str:
     expression_rows = summary_frame.loc[summary_frame["role"] == "expression"].sort_values(
         ["mean_rank_ic", "rank_ic_t"], ascending=[False, False]
@@ -667,6 +853,12 @@ def _render_calibration_note(
                 "",
                 f"- live residualized `rank_ic_t`: `{float(summary_frame.loc[summary_frame['expression_id'] == 'RM3_VOL_MANAGED', 'baseline_residualized_rank_ic_t'].iloc[0]):.4f}`",
                 f"- placebo-null percentile for residualized `rank_ic_t`: `{_empirical_percentile(rm3_placebo_null_frame['residualized_rank_ic_t'], float(summary_frame.loc[summary_frame['expression_id'] == 'RM3_VOL_MANAGED', 'baseline_residualized_rank_ic_t'].iloc[0])):.2%}`",
+                (
+                    f"- exposure-conditioned placebo-null percentile for residualized `rank_ic_t`: "
+                    f"`{_empirical_percentile(rm3_conditioned_placebo_null_frame.loc[rm3_conditioned_placebo_null_frame['baseline_exposure_tercile'] == 'all', 'residualized_rank_ic_t'], float(summary_frame.loc[summary_frame['expression_id'] == 'RM3_VOL_MANAGED', 'baseline_residualized_rank_ic_t'].iloc[0])):.2%}`"
+                    if not rm3_conditioned_placebo_null_frame.empty
+                    else "- exposure-conditioned placebo-null percentile for residualized `rank_ic_t`: `n/a`"
+                ),
                 "",
             ]
         )
@@ -681,6 +873,19 @@ def _render_calibration_note(
             lines.append(
                 f"- `{row.baseline_exposure_tercile}`: rank_ic_t={float(row.rank_ic_t):.4f}, "
                 f"spread={float(row.mean_top_bottom_spread):.4%}, months={int(row.evaluation_month_count)}"
+            )
+        lines.append("")
+    if not rm3_tercile_null_comparison_frame.empty:
+        lines.extend(
+            [
+                "### RM3 Tercile Null Comparison",
+                "",
+            ]
+        )
+        for row in rm3_tercile_null_comparison_frame.itertuples(index=False):
+            lines.append(
+                f"- `{row.baseline_exposure_tercile}`: rank_ic_t null percentile={float(row.observed_rank_ic_t_null_percentile):.2%}, "
+                f"spread null percentile={float(row.observed_spread_null_percentile):.2%}"
             )
         lines.append("")
     lines.extend(
@@ -808,11 +1013,22 @@ def run_us_residual_momentum_calibration(
         baseline_expression_id="CTRL3_BASELINE_MIMIC",
         random_seeds=list(range(100)),
     )
+    rm3_conditioned_placebo_null_frame = build_exposure_conditioned_residualization_placebo_null_distribution(
+        returns_panel=returns_panel,
+        universe_reference=universe_reference,
+        expression_id="RM3_VOL_MANAGED",
+        baseline_expression_id="CTRL3_BASELINE_MIMIC",
+        random_seeds=list(range(100)),
+    )
     rm3_tercile_decomposition_frame = build_baseline_exposure_tercile_decomposition(
         returns_panel=returns_panel,
         universe_reference=universe_reference,
         expression_id="RM3_VOL_MANAGED",
         baseline_expression_id="CTRL3_BASELINE_MIMIC",
+    )
+    rm3_tercile_null_comparison_frame = build_baseline_exposure_tercile_null_comparison(
+        observed_decomposition_frame=rm3_tercile_decomposition_frame,
+        conditioned_null_frame=rm3_conditioned_placebo_null_frame,
     )
     summary_frame = summary_frame.merge(
         residualized_summary.rename(
@@ -832,7 +1048,9 @@ def run_us_residual_momentum_calibration(
         registry_frame=registry_frame,
         spread_corr_frame=spread_corr_frame,
         rm3_placebo_null_frame=rm3_placebo_null_frame,
+        rm3_conditioned_placebo_null_frame=rm3_conditioned_placebo_null_frame,
         rm3_tercile_decomposition_frame=rm3_tercile_decomposition_frame,
+        rm3_tercile_null_comparison_frame=rm3_tercile_null_comparison_frame,
     )
     rm3_live_residualized_rank_ic_t = float(
         summary_frame.loc[
@@ -852,6 +1070,13 @@ def run_us_residual_momentum_calibration(
             rm3_placebo_null_frame["residualized_rank_ic_t"],
             rm3_live_residualized_rank_ic_t,
         ),
+        "rm3_residualized_rank_ic_t_exposure_conditioned_null_percentile": _empirical_percentile(
+            rm3_conditioned_placebo_null_frame.loc[
+                rm3_conditioned_placebo_null_frame["baseline_exposure_tercile"] == "all",
+                "residualized_rank_ic_t",
+            ],
+            rm3_live_residualized_rank_ic_t,
+        ),
         "best_expression_id": str(summary_frame.loc[summary_frame["role"] == "expression"].iloc[0]["expression_id"])
         if not summary_frame.loc[summary_frame["role"] == "expression"].empty
         else None,
@@ -865,7 +1090,15 @@ def run_us_residual_momentum_calibration(
     spread_corr_frame.to_csv(output_path / "expression_spread_correlation.csv")
     residualized_summary.to_csv(output_path / "residualized_vs_baseline_summary.csv", index=False)
     rm3_placebo_null_frame.to_csv(output_path / "residualization_placebo_null_distribution.csv", index=False)
+    rm3_conditioned_placebo_null_frame.to_csv(
+        output_path / "residualization_placebo_null_distribution_exposure_conditioned.csv",
+        index=False,
+    )
     rm3_tercile_decomposition_frame.to_csv(output_path / "baseline_exposure_tercile_decomposition.csv", index=False)
+    rm3_tercile_null_comparison_frame.to_csv(
+        output_path / "baseline_exposure_tercile_null_comparison.csv",
+        index=False,
+    )
     write_json(output_path / "summary.json", summary_payload)
     write_text(output_path / "note.md", note_markdown)
 

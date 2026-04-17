@@ -61,9 +61,11 @@ Short branch-local operating note for the active discovery-v2 lane.
     - `RM2` largely collapses
     - `RM3` live residualized `rank_ic_t ~ 1.03` only reaches about the `81st` percentile of the residualization placebo null
     - `19 / 100` placebo seeds match or exceed the live residualized `rank_ic_t`
+    - after exposure-conditioned adversarial hardening, `RM3` drops to about the `15th` percentile of the hardened null
     - residualized `RM3` strength is concentrated in the `mid/high` baseline-exposure terciles while the `low` tercile is negative
     - practical read:
-      - the strengthening is still null-consistent
+      - the strengthening is not just null-consistent
+      - under a stricter, exposure-aware null it is plainly non-exceptional
       - and is being treated as a residualization-calibration edge case, not as family evidence
   - the updated failure mode is:
     - no clear null separation,
@@ -71,6 +73,9 @@ Short branch-local operating note for the active discovery-v2 lane.
     - and a residualization step that still shows null-consistent strengthening under `RM3_VOL_MANAGED`
   - this boundary behavior is now formalized as:
     - `FM-001: Null-Consistent Residualization Strengthening`
+  - adversarial hardening status:
+    - complete for `FM-001`
+    - next justified slice is residualization-layer review
   - calibration machine is therefore live but not yet validated
 
 ## Active Constraints
@@ -91,7 +96,8 @@ Short branch-local operating note for the active discovery-v2 lane.
 1. Keep strengthening calibration, not primary mining.
 2. Preserve the shuffled-null benchmark as the default reference; do not reason from one placebo draw.
 3. Use `FM-001` as the first machine-taxonomy entry; classify similar future reads against it before making family claims.
-4. Next slice order is now fixed:
-   - adversarial-layer hardening first
-   - residualization-layer review second
-5. Keep calibration-family alpha conclusions out of scope unless a later slice pushes the residualized read outside the null envelope.
+4. Adversarial-layer hardening is now complete for the current `RM3` edge case.
+5. Next slice order is now:
+   - residualization-layer review
+   - only then any renewed family-level interpretation
+6. Keep calibration-family alpha conclusions out of scope unless a later slice pushes the residualized read outside the hardened null envelope.

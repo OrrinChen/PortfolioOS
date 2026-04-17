@@ -94,6 +94,10 @@ The entry is considered matched when all or most of the following hold:
      - live residualized `rank_ic_t = 1.0258`
      - placebo-null percentile `= 81%`
      - `19 / 100` placebo seeds meet or exceed the live residualized `rank_ic_t`
+   - after adversarial-layer hardening:
+     - exposure-conditioned placebo-null percentile `= 15%`
+   - practical read:
+     - once the null preserves baseline-exposure structure, the live residualized read is weaker than most conditioned-null draws
 
 3. **The strengthening is not broad across baseline exposure**
    - observed read here:
@@ -102,10 +106,14 @@ The entry is considered matched when all or most of the following hold:
        - mean spread `= -3.6069%`
      - `mid` baseline-exposure tercile:
        - `rank_ic_t = 1.0498`
-       - mean spread `= 6.4612%`
+      - mean spread `= 6.4612%`
      - `high` baseline-exposure tercile:
        - `rank_ic_t = 1.4632`
        - mean spread `= 7.7576%`
+   - conditioned-null comparison:
+     - `low` tercile `rank_ic_t` percentile `= 1%`
+     - `mid` tercile `rank_ic_t` percentile `= 76%`
+     - `high` tercile `rank_ic_t` percentile `= 56%`
 
 4. **The read can be mis-seen as incremental-alpha evidence if the placebo envelope is ignored**
    - this is the key interpretive hazard
@@ -168,6 +176,9 @@ Under FM-001:
 - calibration remains open
 - primary-family mining remains blocked
 - family-alpha conclusions remain out of scope
+- current sub-status:
+  - adversarial-layer hardening complete
+  - residualization-layer review is now the justified next slice
 
 ### Exit Condition
 

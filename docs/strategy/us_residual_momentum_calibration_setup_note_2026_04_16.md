@@ -69,6 +69,15 @@ The fifth slice adds two narrow diagnostics targeted at the `RM3_VOL_MANAGED` re
 - summary-level diagnostic field:
   - `rm3_residualized_rank_ic_t_null_percentile`
 
+The sixth slice hardens the adversarial layer around `FM-001`:
+
+- exposure-conditioned residualization placebo null:
+  - `residualization_placebo_null_distribution_exposure_conditioned.csv`
+- observed-vs-conditioned-null tercile comparison:
+  - `baseline_exposure_tercile_null_comparison.csv`
+- summary-level hardened-null field:
+  - `rm3_residualized_rank_ic_t_exposure_conditioned_null_percentile`
+
 ## Verification
 
 Targeted verification passed:
@@ -128,6 +137,18 @@ Other key reads:
   - practical read:
     - the strengthening still sits inside a plausible null envelope,
     - and it is concentrated in the mid/high baseline-exposure buckets rather than appearing as a broad incremental signal
+- after adversarial-layer hardening, the read becomes stricter still:
+  - exposure-conditioned placebo-null percentile for residualized `rank_ic_t ~ 15%`
+  - practical read:
+    - once the null preserves baseline-exposure structure, the live residualized read is no longer "borderline strong"
+    - it is weaker than most conditioned-null draws
+- tercile-conditioned null comparison sharpens the asymmetry:
+  - `low` tercile remains strongly negative relative to its own null (`rank_ic_t percentile ~ 1%`, spread percentile `~ 2%`)
+  - `mid` tercile remains null-consistent on `rank_ic_t` (`~76%`) even while spread looks large
+  - `high` tercile also remains null-consistent on `rank_ic_t` (`~56%`) despite a large spread
+  - practical read:
+    - the apparent strengthening is not surviving a stricter adversarial benchmark
+    - most of what looked informative is explained by exposure-conditioned null behavior rather than by robust incremental signal
 - but bootstrap dominance is still too weak for a clean family winner read:
   - `RM3_VOL_MANAGED ~ 53.8%`
   - `RM2_SECTOR_RESIDUAL ~ 36.6%`
@@ -156,6 +177,9 @@ The refined read is more precise:
 - after the placebo-null and tercile diagnostics, the current working interpretation is:
   - the read is better treated as a residualization-calibration / machine-boundary issue,
   - not as evidence that `RM3` has earned a stronger family prior
+- after the exposure-conditioned null is added, that interpretation is now stronger:
+  - the adversarial layer no longer merely says "this may still be null-consistent"
+  - it says "under a more mechanism-aware null, the live read is plainly not exceptional"
 
 So the correct conclusion is:
 
@@ -170,7 +194,7 @@ So the correct conclusion is:
   - not as evidence for or against the family’s standalone economic value
 - more specifically:
   - this diagnostic does **not** support "RM3 has incremental alpha after baseline stripping"
-  - it supports "the discovery machine can still generate null-consistent strengthening after residualization"
+  - it supports "the discovery machine can still generate null-consistent, and even stronger, strengthening after residualization once exposure structure is preserved"
 
 ## Immediate Consequence
 
@@ -180,9 +204,10 @@ The primary family remains blocked.
 
 The next justified work stays inside calibration and should focus on:
 
-1. treating residualization strengthening as a calibration-machine boundary behavior unless later evidence pushes it outside the null envelope,
+1. treating residualization strengthening as a calibration-machine boundary behavior unless later evidence pushes it outside the hardened null envelope,
 2. keeping primary-family mining blocked,
-3. and aiming the next calibration step at residualization / adversarial calibration logic rather than at rescuing this family.
+3. considering adversarial-layer hardening complete for `FM-001`,
+4. and moving the next calibration step to the residualization-layer review itself.
 
 ## Status Label
 

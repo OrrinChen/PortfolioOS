@@ -12,6 +12,7 @@ from portfolio_os.alpha.discovery_calibration import (
     build_baseline_residualized_expression_summary,
     build_bootstrap_expression_rankings,
     build_calibration_signal_frame,
+    build_exposure_conditioned_residualization_placebo_null_distribution,
     build_expression_spread_correlation_matrix,
     build_residualization_placebo_null_distribution,
     build_shuffled_null_distribution,
@@ -383,6 +384,26 @@ def test_build_baseline_exposure_tercile_decomposition_returns_three_buckets(tmp
     }.issubset(decomposition.columns)
 
 
+def test_build_exposure_conditioned_residualization_placebo_null_distribution_returns_all_and_tercile_rows(
+    tmp_path: Path,
+) -> None:
+    returns_path, reference_path = _write_fixture(tmp_path)
+
+    conditioned_null = build_exposure_conditioned_residualization_placebo_null_distribution(
+        returns_panel=load_alpha_returns_panel(returns_path),
+        universe_reference=pd.read_csv(reference_path),
+        expression_id="RM3_VOL_MANAGED",
+        baseline_expression_id="CTRL3_BASELINE_MIMIC",
+        random_seeds=[0, 1],
+    )
+
+    assert set(conditioned_null["baseline_exposure_tercile"]) == {"all", "low", "mid", "high"}
+    assert conditioned_null["seed"].nunique() == 2
+    assert len(conditioned_null) == 8
+    assert conditioned_null["residualized_rank_ic_t"].notna().all()
+    assert conditioned_null["residualized_mean_top_bottom_spread"].notna().all()
+
+
 def test_run_us_residual_momentum_calibration_writes_residualization_diagnostic_artifacts(tmp_path: Path) -> None:
     returns_path, reference_path = _write_fixture(tmp_path)
     output_dir = tmp_path / "calibration_run"
@@ -396,5 +417,9 @@ def test_run_us_residual_momentum_calibration_writes_residualization_diagnostic_
 
     assert (output_dir / "residualization_placebo_null_distribution.csv").exists()
     assert (output_dir / "baseline_exposure_tercile_decomposition.csv").exists()
+    assert (output_dir / "residualization_placebo_null_distribution_exposure_conditioned.csv").exists()
+    assert (output_dir / "baseline_exposure_tercile_null_comparison.csv").exists()
     assert "rm3_residualized_rank_ic_t_null_percentile" in result.summary_payload
+    assert "rm3_residualized_rank_ic_t_exposure_conditioned_null_percentile" in result.summary_payload
     assert 0.0 <= float(result.summary_payload["rm3_residualized_rank_ic_t_null_percentile"]) <= 1.0
+    assert 0.0 <= float(result.summary_payload["rm3_residualized_rank_ic_t_exposure_conditioned_null_percentile"]) <= 1.0
