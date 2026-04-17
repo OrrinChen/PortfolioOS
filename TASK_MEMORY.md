@@ -34,6 +34,10 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - The new proposed order is:
   - calibration family first = `US residual momentum / residual reversal`
   - then a primary mining family = `A-share state-transition microstructure`
+- Current implementation slice = `Phase 0 + calibration-family D1 kickoff`
+- `docs/strategy/alpha_discovery_family_selection_memo_2026_04_16.md` now records why the primary family is chosen by structural edge rather than convenience
+- `docs/strategy/us_residual_momentum_calibration_d1_2026_04_16.md` is now the next document gate before any calibration-family implementation or experiment setup
+- No primary-family mining should begin before a calibration-family closeout exists
 - Important methodological change:
   - discovery is now organized around mechanism-bearing families, not frozen single-factor tournaments
   - qualification becomes a downstream handoff phase rather than the discovery admission filter
