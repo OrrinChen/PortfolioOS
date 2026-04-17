@@ -20,8 +20,24 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01` main research repo = home of the closed US WRDS method asset; read `docs/us_wrds_alpha_roadmap.md` and `docs/us_wrds_memory.md` there instead of treating US as an active worktree.
 - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\ashare-a1` = the only active A-share research line.
 - `C:\Users\14574\Quant\PortfolioOS` main repo = shared platform changes only; do not leave branch-local research copies here.
+- `C:\Users\14574\Quant\PortfolioOS\.worktrees\codex-us-alpha-week1-freeze` = current strategy-doc worktree for closing the old US qualification sprint and drafting the next discovery charter; no active implementation should begin here before the new charter is reviewed.
 
 ## Stable Platform State
+
+### Research Governance
+
+- The narrow `US alpha core restart` qualification sprint is formally closed with `no winner`:
+  - see `docs/strategy/us_alpha_core_week4_stop_go_note_2026_04_16.md`
+- The next research move is no longer "expand the old frozen candidate field".
+- The next active design object is a discovery-first charter:
+  - `docs/strategy/alpha_discovery_charter_v2_2026_04_16.md`
+- The new proposed order is:
+  - calibration family first = `US residual momentum / residual reversal`
+  - then a primary mining family = `A-share state-transition microstructure`
+- Important methodological change:
+  - discovery is now organized around mechanism-bearing families, not frozen single-factor tournaments
+  - qualification becomes a downstream handoff phase rather than the discovery admission filter
+  - the primary family is selected by structural edge, not by code convenience or continuity with the failed US restart sprint
 
 ### Data And Inputs
 
