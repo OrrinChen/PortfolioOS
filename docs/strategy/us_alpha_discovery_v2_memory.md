@@ -33,6 +33,8 @@ Short branch-local operating note for the active discovery-v2 lane.
   - `docs/strategy/a_share_state_transition_expression_ledger_initial_2026_04_17.md`
 - A-share primary family D1 Slice B:
   - `docs/strategy/a_share_state_transition_adversarial_and_data_plan_2026_04_17.md`
+- A-share primary family D2 pilot scope:
+  - `docs/strategy/a_share_state_transition_d2_pilot_scope_2026_04_17.md`
 
 ## Program Structure
 
@@ -145,5 +147,12 @@ Exit consequence:
    - `docs/strategy/a_share_state_transition_expression_ledger_initial_2026_04_17.md`
 6. `D1 Slice B` is now complete through:
    - `docs/strategy/a_share_state_transition_adversarial_and_data_plan_2026_04_17.md`
-7. D1 is therefore complete for the primary family, and the next live step is `D2: Mechanism-Linked Expression Mining`.
-8. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.
+7. `D2` is now narrowed through:
+   - `docs/strategy/a_share_state_transition_d2_pilot_scope_2026_04_17.md`
+8. The first live `D2` slice is:
+   - upper-limit daily-state pilot
+   - mechanisms `M1/M2/M5`
+   - admitted first-wave expressions `P1/P2/P3/P4`
+9. The next implementation object is not a full family miner; it is:
+   - a dedicated `state-transition daily panel` contract plus daily-state taggers
+10. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.
