@@ -392,6 +392,23 @@ def build_family_a_monthly_signal_frame(
     return frame
 
 
+def build_baseline_monthly_signal_frame(
+    *,
+    returns_panel: pd.DataFrame,
+    universe_reference: pd.DataFrame,
+) -> pd.DataFrame:
+    """Build the raw 84/21 momentum baseline frame on the monthly decision grid."""
+
+    inputs = _prepare_family_a_inputs(
+        returns_panel,
+        universe_reference=_normalize_universe_reference(universe_reference.copy()),
+    )
+    frame = _build_baseline_signal_frame(inputs)
+    if frame.empty:
+        raise InputValidationError("Baseline monthly signal frame is empty.")
+    return frame
+
+
 def build_family_c_monthly_signal_frame(
     *,
     returns_panel: pd.DataFrame,
@@ -532,6 +549,23 @@ def _build_monthly_forward_return_frame(inputs: _FamilyAInputs) -> pd.DataFrame:
                 }
             )
     return pd.DataFrame(rows).sort_values(["date", "ticker"]).reset_index(drop=True)
+
+
+def build_monthly_forward_return_frame(
+    *,
+    returns_panel: pd.DataFrame,
+    universe_reference: pd.DataFrame,
+) -> pd.DataFrame:
+    """Build next-month forward returns aligned to the monthly decision grid."""
+
+    inputs = _prepare_family_a_inputs(
+        returns_panel,
+        universe_reference=_normalize_universe_reference(universe_reference.copy()),
+    )
+    frame = _build_monthly_forward_return_frame(inputs)
+    if frame.empty:
+        raise InputValidationError("Monthly forward return frame is empty.")
+    return frame
 
 
 def _build_candidate_signal_frame(

@@ -38,6 +38,17 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - `docs/strategy/alpha_discovery_family_selection_memo_2026_04_16.md` now records why the primary family is chosen by structural edge rather than convenience
 - `docs/strategy/us_residual_momentum_calibration_d1_2026_04_16.md` is now the next document gate before any calibration-family implementation or experiment setup
 - No primary-family mining should begin before a calibration-family closeout exists
+- First executable calibration slice is now live:
+  - module = `src/portfolio_os/alpha/discovery_calibration.py`
+  - runner = `scripts/run_us_residual_momentum_calibration.py`
+  - tests = `tests/test_alpha_discovery_calibration.py`
+  - first artifacts = `outputs/us_residual_momentum_calibration/2026-04-16/`
+- Current calibration read:
+  - harness is operational
+  - but calibration is **not yet validated**
+  - strongest control (`CTRL1_SHUFFLED_PLACEBO`) currently reads stronger than the best live expression (`RM3_VOL_MANAGED`)
+  - therefore the discovery machine should be treated as still under calibration, not yet trusted for family-winner promotion
+- Primary-family mining remains blocked until calibration produces a credible closeout
 - Important methodological change:
   - discovery is now organized around mechanism-bearing families, not frozen single-factor tournaments
   - qualification becomes a downstream handoff phase rather than the discovery admission filter
