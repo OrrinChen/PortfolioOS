@@ -3,15 +3,19 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import pytest
 
 from portfolio_os.alpha.discovery_calibration import (
+    build_bootstrap_expression_rankings,
     build_calibration_signal_frame,
+    build_expression_spread_correlation_matrix,
     build_shuffled_null_distribution,
     build_us_residual_momentum_calibration_registry,
     run_us_residual_momentum_calibration_from_files,
 )
+from portfolio_os.alpha.qualification import build_monthly_forward_return_frame
 from portfolio_os.alpha.qualification import build_family_a_monthly_signal_frame
 from portfolio_os.alpha.research import load_alpha_returns_panel
 
@@ -211,3 +215,93 @@ def test_run_us_residual_momentum_calibration_adds_shuffle_null_percentiles(tmp_
     expression_rows = result.summary_frame.loc[result.summary_frame["role"] == "expression"]
     assert expression_rows["shuffle_null_mean_rank_ic_percentile"].between(0.0, 1.0).all()
     assert expression_rows["shuffle_null_rank_ic_t_percentile"].between(0.0, 1.0).all()
+
+
+def test_build_bootstrap_expression_rankings_returns_one_row_per_iteration_per_expression(tmp_path: Path) -> None:
+    returns_path, reference_path = _write_fixture(tmp_path)
+    returns_panel = load_alpha_returns_panel(returns_path)
+    reference_frame = pd.read_csv(reference_path)
+    forward_return_frame = build_monthly_forward_return_frame(
+        returns_panel=returns_panel,
+        universe_reference=reference_frame,
+    )
+
+    per_date_frames = []
+    expression_ids = ["RM1_MKT_RESIDUAL", "RM2_SECTOR_RESIDUAL", "RM3_VOL_MANAGED"]
+    for expression_id in expression_ids:
+        signal_frame = build_calibration_signal_frame(
+            returns_panel=returns_panel,
+            universe_reference=reference_frame,
+            expression_id=expression_id,
+            random_seed=7,
+        )
+        merged = signal_frame.merge(
+            forward_return_frame.loc[:, ["date", "ticker", "forward_return"]],
+            on=["date", "ticker"],
+            how="inner",
+        )
+        rows = []
+        for date_value, date_frame in merged.groupby("date", sort=True):
+            rows.append(
+                {
+                    "expression_id": expression_id,
+                    "date": str(date_value),
+                    "rank_ic": float(date_frame["signal_value"].corr(date_frame["forward_return"], method="spearman")),
+                    "top_bottom_spread": float(date_frame["forward_return"].mean()),
+                }
+            )
+        per_date_frames.append(pd.DataFrame(rows))
+
+    per_date_frame = pd.concat(per_date_frames, ignore_index=True)
+    bootstrap_frame = build_bootstrap_expression_rankings(
+        per_date_frame=per_date_frame,
+        expression_ids=expression_ids,
+        bootstrap_iterations=5,
+        random_seed=11,
+    )
+
+    assert len(bootstrap_frame) == 15
+    assert set(bootstrap_frame["expression_id"]) == set(expression_ids)
+    assert bootstrap_frame["bootstrap_id"].nunique() == 5
+    assert {"mean_rank_ic", "mean_top_bottom_spread", "rank_by_rank_ic"}.issubset(bootstrap_frame.columns)
+
+
+def test_build_expression_spread_correlation_matrix_returns_square_expression_matrix(tmp_path: Path) -> None:
+    returns_path, reference_path = _write_fixture(tmp_path)
+    returns_panel = load_alpha_returns_panel(returns_path)
+    reference_frame = pd.read_csv(reference_path)
+
+    result = run_us_residual_momentum_calibration_from_files(
+        returns_file=returns_path,
+        universe_reference_file=reference_path,
+        output_dir=tmp_path / "calibration_run",
+        random_seed=7,
+    )
+
+    expression_ids = ["RM1_MKT_RESIDUAL", "RM2_SECTOR_RESIDUAL", "RM3_VOL_MANAGED"]
+    matrix = build_expression_spread_correlation_matrix(
+        per_date_frame=result.per_date_frame,
+        expression_ids=expression_ids,
+    )
+
+    assert list(matrix.index) == expression_ids
+    assert list(matrix.columns) == expression_ids
+    assert np.allclose(np.diag(matrix.to_numpy(dtype=float)), 1.0)
+
+
+def test_run_us_residual_momentum_calibration_writes_bootstrap_and_orthogonality_artifacts(tmp_path: Path) -> None:
+    returns_path, reference_path = _write_fixture(tmp_path)
+    output_dir = tmp_path / "calibration_run"
+
+    result = run_us_residual_momentum_calibration_from_files(
+        returns_file=returns_path,
+        universe_reference_file=reference_path,
+        output_dir=output_dir,
+        random_seed=7,
+    )
+
+    assert (output_dir / "bootstrap_expression_rankings.csv").exists()
+    assert (output_dir / "expression_spread_correlation.csv").exists()
+    expression_rows = result.summary_frame.loc[result.summary_frame["role"] == "expression"]
+    assert "bootstrap_top1_frequency_rank_ic" in expression_rows.columns
+    assert expression_rows["bootstrap_top1_frequency_rank_ic"].between(0.0, 1.0).all()

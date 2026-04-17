@@ -41,6 +41,15 @@ The second slice extends the harness with a repeated shuffled-null benchmark:
   - `shuffle_null_mean_rank_ic_percentile`
   - `shuffle_null_rank_ic_t_percentile`
 
+The third slice extends the harness with family-level stability reads:
+
+- expression bootstrap ranking artifact:
+  - `bootstrap_expression_rankings.csv`
+- expression spread-correlation artifact:
+  - `expression_spread_correlation.csv`
+- summary-level stability metric:
+  - `bootstrap_top1_frequency_rank_ic`
+
 ## Verification
 
 Targeted verification passed:
@@ -65,6 +74,7 @@ Current summary:
   - `rank_ic_t ~ 0.7371`
   - shuffled-null `mean_rank_ic` percentile `~ 70%`
   - shuffled-null `rank_ic_t` percentile `~ 72%`
+  - bootstrap top-1 frequency by rank IC `~ 53.8%`
 - strongest single shuffled draw = `CTRL1_SHUFFLED_PLACEBO`
   - `mean_rank_ic ~ 0.0668`
   - `rank_ic_t ~ 1.7694`
@@ -76,8 +86,17 @@ Other key reads:
 
 - `RM2_SECTOR_RESIDUAL` and `RM1_MKT_RESIDUAL` also fail to separate cleanly from the shuffled null
 - `CTRL2_PRE_WINDOW_PLACEBO` and `CTRL3_BASELINE_MIMIC` remain economically nontrivial controls
+- live-expression orthogonality is **not** the main failure:
+  - max absolute pairwise spread correlation across `RM1/RM2/RM3` is only about `0.40`
+  - practical read: the machine is not merely rediscovering one near-duplicate expression three times
+- but bootstrap dominance is still too weak for a clean family winner read:
+  - `RM3_VOL_MANAGED ~ 53.8%`
+  - `RM2_SECTOR_RESIDUAL ~ 36.6%`
+  - `RM1_MKT_RESIDUAL ~ 9.6%`
 - no live expression yet clears the stronger claim the calibration family needs:
   - that a mechanism-bearing expression is obviously distinct from the null/control envelope, not just better than one arbitrary placebo seed
+  - and no live expression yet clears the charter-style dominance read either:
+    - one stable top expression rather than a noisy internal ranking split
 
 ## Interpretation
 
@@ -98,6 +117,9 @@ So the correct conclusion is:
 - the calibration harness is now materially better calibrated than the first slice
 - but the calibration family is still **not validated**
 - because the best live expression is only around the `70-72` percentile of the shuffled null, not at a level that supports a trustworthy family closeout
+- and because intra-family distinctness now looks acceptable while winner dominance still does not:
+  - the machine can see different expressions,
+  - but it still cannot point to one robust winner with enough confidence
 
 ## Immediate Consequence
 
@@ -107,8 +129,8 @@ The primary family remains blocked.
 
 The next justified work stays inside calibration and should focus on:
 
-1. extending or otherwise strengthening the calibration sample so the null becomes more informative,
-2. adding deeper adversarial controls / mechanism-breaking checks rather than relying on one placebo draw,
+1. extending or otherwise strengthening the calibration sample so the null and bootstrap ranking become more informative,
+2. adding deeper adversarial controls / mechanism-breaking checks rather than relying on one placebo draw or one weak internal winner,
 3. and only then asking whether the calibration family can produce a trustworthy closeout.
 
 ## Status Label

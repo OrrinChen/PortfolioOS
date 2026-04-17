@@ -236,6 +236,77 @@ def build_shuffled_null_distribution(
     return pd.DataFrame(rows).sort_values("seed").reset_index(drop=True)
 
 
+def build_bootstrap_expression_rankings(
+    *,
+    per_date_frame: pd.DataFrame,
+    expression_ids: list[str],
+    bootstrap_iterations: int,
+    random_seed: int = 0,
+) -> pd.DataFrame:
+    """Bootstrap expression-level ranking stability from per-date metrics."""
+
+    if bootstrap_iterations <= 0:
+        raise InputValidationError("bootstrap_iterations must be positive.")
+    work = per_date_frame.loc[per_date_frame["expression_id"].isin(expression_ids)].copy()
+    if work.empty:
+        return pd.DataFrame(
+            columns=[
+                "bootstrap_id",
+                "expression_id",
+                "sampled_month_count",
+                "mean_rank_ic",
+                "mean_top_bottom_spread",
+                "rank_by_rank_ic",
+                "rank_by_top_bottom_spread",
+            ]
+        )
+    unique_dates = sorted(str(item) for item in work["date"].dropna().astype(str).unique().tolist())
+    if not unique_dates:
+        return pd.DataFrame()
+    rng = np.random.default_rng(int(random_seed))
+    rows: list[dict[str, Any]] = []
+    for bootstrap_id in range(int(bootstrap_iterations)):
+        sampled_dates = pd.DataFrame({"date": rng.choice(unique_dates, size=len(unique_dates), replace=True)})
+        sampled = sampled_dates.merge(work, on="date", how="left")
+        grouped = (
+            sampled.groupby("expression_id", as_index=False)
+            .agg(
+                sampled_month_count=("date", "size"),
+                mean_rank_ic=("rank_ic", "mean"),
+                mean_top_bottom_spread=("top_bottom_spread", "mean"),
+            )
+            .sort_values(["mean_rank_ic", "mean_top_bottom_spread", "expression_id"], ascending=[False, False, True])
+            .reset_index(drop=True)
+        )
+        grouped["rank_by_rank_ic"] = grouped["mean_rank_ic"].rank(method="first", ascending=False).astype(int)
+        grouped["rank_by_top_bottom_spread"] = grouped["mean_top_bottom_spread"].rank(method="first", ascending=False).astype(int)
+        grouped["bootstrap_id"] = int(bootstrap_id)
+        rows.extend(grouped.to_dict(orient="records"))
+    return pd.DataFrame(rows).sort_values(["bootstrap_id", "rank_by_rank_ic", "expression_id"]).reset_index(drop=True)
+
+
+def build_expression_spread_correlation_matrix(
+    *,
+    per_date_frame: pd.DataFrame,
+    expression_ids: list[str],
+) -> pd.DataFrame:
+    """Return the per-date spread correlation matrix for expression rows only."""
+
+    work = per_date_frame.loc[per_date_frame["expression_id"].isin(expression_ids), ["date", "expression_id", "top_bottom_spread"]].copy()
+    if work.empty:
+        return pd.DataFrame(index=expression_ids, columns=expression_ids, dtype=float)
+    pivot = (
+        work.pivot(index="date", columns="expression_id", values="top_bottom_spread")
+        .reindex(columns=expression_ids)
+        .sort_index()
+    )
+    matrix = pivot.corr(method="pearson", min_periods=1).reindex(index=expression_ids, columns=expression_ids)
+    for expression_id in expression_ids:
+        if expression_id in matrix.index and expression_id in matrix.columns:
+            matrix.loc[expression_id, expression_id] = 1.0
+    return matrix
+
+
 def _build_per_date_metrics(
     *,
     signal_frame: pd.DataFrame,
@@ -268,6 +339,7 @@ def _render_calibration_note(
     *,
     summary_frame: pd.DataFrame,
     registry_frame: pd.DataFrame,
+    spread_corr_frame: pd.DataFrame,
 ) -> str:
     expression_rows = summary_frame.loc[summary_frame["role"] == "expression"].sort_values(
         ["mean_rank_ic", "rank_ic_t"], ascending=[False, False]
@@ -295,6 +367,15 @@ def _render_calibration_note(
     if best_expression is None:
         lines.extend(["- no expression produced evaluable months", ""])
     else:
+        off_diag_abs_max = float("nan")
+        if not spread_corr_frame.empty:
+            corr_values = spread_corr_frame.to_numpy(dtype=float)
+            if corr_values.size:
+                mask = ~np.eye(corr_values.shape[0], dtype=bool)
+                off_diag = np.abs(corr_values[mask])
+                finite = off_diag[np.isfinite(off_diag)]
+                if finite.size:
+                    off_diag_abs_max = float(finite.max())
         lines.extend(
             [
                 f"- best expression: `{best_expression['expression_id']}`",
@@ -303,6 +384,12 @@ def _render_calibration_note(
                 f"- mean top-bottom spread: `{best_expression['mean_top_bottom_spread']:.4%}`",
                 f"- shuffled-null mean-rank-IC percentile: `{float(best_expression['shuffle_null_mean_rank_ic_percentile']):.2%}`",
                 f"- shuffled-null rank-IC-t percentile: `{float(best_expression['shuffle_null_rank_ic_t_percentile']):.2%}`",
+                f"- bootstrap top-1 frequency (rank IC): `{float(best_expression['bootstrap_top1_frequency_rank_ic']):.2%}`",
+                (
+                    f"- max absolute pairwise spread correlation across live expressions: `{off_diag_abs_max:.4f}`"
+                    if np.isfinite(off_diag_abs_max)
+                    else "- max absolute pairwise spread correlation across live expressions: `n/a`"
+                ),
                 "",
             ]
         )
@@ -397,14 +484,41 @@ def run_us_residual_momentum_calibration(
     summary_frame["shuffle_null_rank_ic_t_percentile"] = summary_frame["rank_ic_t"].map(
         lambda value: _empirical_percentile(shuffle_null_frame["rank_ic_t"], float(value))
     )
+    expression_ids = registry_frame.loc[registry_frame["role"] == "expression", "expression_id"].astype(str).tolist()
+    bootstrap_frame = build_bootstrap_expression_rankings(
+        per_date_frame=per_date_frame,
+        expression_ids=expression_ids,
+        bootstrap_iterations=500,
+        random_seed=random_seed,
+    )
+    spread_corr_frame = build_expression_spread_correlation_matrix(
+        per_date_frame=per_date_frame,
+        expression_ids=expression_ids,
+    )
+    bootstrap_top1_frequency = (
+        bootstrap_frame.loc[bootstrap_frame["rank_by_rank_ic"] == 1]
+        .groupby("expression_id")
+        .size()
+        .div(float(bootstrap_frame["bootstrap_id"].nunique()) if not bootstrap_frame.empty else 1.0)
+        if not bootstrap_frame.empty
+        else pd.Series(dtype=float)
+    )
+    summary_frame["bootstrap_top1_frequency_rank_ic"] = (
+        summary_frame["expression_id"].map(bootstrap_top1_frequency).fillna(0.0)
+    )
 
-    note_markdown = _render_calibration_note(summary_frame=summary_frame, registry_frame=registry_frame)
+    note_markdown = _render_calibration_note(
+        summary_frame=summary_frame,
+        registry_frame=registry_frame,
+        spread_corr_frame=spread_corr_frame,
+    )
     summary_payload = {
         "family_id": "US_RESIDUAL_MOMENTUM_CALIBRATION",
         "registry_count": int(len(registry_frame)),
         "expression_count": int((registry_frame["role"] == "expression").sum()),
         "control_count": int((registry_frame["role"] == "control").sum()),
         "shuffle_null_seed_count": int(len(shuffle_null_frame)),
+        "bootstrap_iteration_count": int(bootstrap_frame["bootstrap_id"].nunique()) if not bootstrap_frame.empty else 0,
         "best_expression_id": str(summary_frame.loc[summary_frame["role"] == "expression"].iloc[0]["expression_id"])
         if not summary_frame.loc[summary_frame["role"] == "expression"].empty
         else None,
@@ -414,6 +528,8 @@ def run_us_residual_momentum_calibration(
     per_date_frame.to_csv(output_path / "per_date_metrics.csv", index=False)
     summary_frame.to_csv(output_path / "summary.csv", index=False)
     shuffle_null_frame.to_csv(output_path / "shuffle_null_distribution.csv", index=False)
+    bootstrap_frame.to_csv(output_path / "bootstrap_expression_rankings.csv", index=False)
+    spread_corr_frame.to_csv(output_path / "expression_spread_correlation.csv")
     write_json(output_path / "summary.json", summary_payload)
     write_text(output_path / "note.md", note_markdown)
 

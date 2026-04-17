@@ -38,15 +38,23 @@ Short branch-local operating note for the active discovery-v2 lane.
   - `3` live expressions
   - `3` controls
   - persisted `100`-seed shuffled null distribution
+  - expression bootstrap ranking artifact
+  - expression spread-correlation artifact
 - Best current live expression:
   - `RM3_VOL_MANAGED`
   - `mean_rank_ic ~ 0.0329`
   - `rank_ic_t ~ 0.7371`
   - shuffled-null percentiles only `~70-72%`
+  - bootstrap top-1 frequency only `~53.8%`
 - Key interpretation:
   - a single shuffled placebo draw is too noisy to judge alone on this short sample
   - after moving to a null distribution, the stronger read is still negative:
     - no live expression yet separates cleanly from the null/control envelope
+  - orthogonality is not the main issue:
+    - live-expression spread correlations stay modest (`max abs ~0.40`)
+  - the updated failure mode is:
+    - no clear null separation,
+    - and no stable internal winner dominance
   - calibration machine is therefore live but not yet validated
 
 ## Active Constraints
