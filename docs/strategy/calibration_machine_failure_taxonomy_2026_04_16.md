@@ -86,6 +86,8 @@ When a future read resembles an entry below:
 ### Status
 
 - `observed`
+- resolution state:
+  - `partially explained`
 
 ### Observed In
 
@@ -202,12 +204,14 @@ When FM-001 is active, the next slices must proceed in this order:
 
 Under FM-001:
 
-- calibration remains open
-- primary-family mining remains blocked
+- calibration must stay open until adversarial hardening and residualization review are complete
+- primary-family mining remains blocked until those two slices are complete
 - family-alpha conclusions remain out of scope
 - current sub-status:
   - adversarial-layer hardening complete
-  - residualization-layer review is now the justified next slice
+  - residualization-layer review complete as a light confirmation
+  - no broad residualization redesign justified
+  - FM-001 no longer blocks calibration exit
 
 ### Exit Condition
 

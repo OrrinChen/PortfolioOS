@@ -6,8 +6,8 @@ Short branch-local operating note for the active discovery-v2 lane.
 
 - Worktree: `C:\Users\14574\Quant\PortfolioOS\.worktrees\codex-us-alpha-week1-freeze`
 - Branch: `codex/us-alpha-week1-freeze`
-- Last sync: `2026-04-16`
-- Active lane: calibration-family validation only
+- Last sync: `2026-04-17`
+- Active lane: calibration-family closeout complete
 - Old `US alpha core restart` sprint remains closed with no winner
 
 ## Canonical References
@@ -24,6 +24,8 @@ Short branch-local operating note for the active discovery-v2 lane.
   - `docs/strategy/us_residual_momentum_calibration_setup_note_2026_04_16.md`
 - Calibration failure taxonomy:
   - `docs/strategy/calibration_machine_failure_taxonomy_2026_04_16.md`
+- Residualization confirmation closeout:
+  - `docs/strategy/us_residual_momentum_residualization_confirmation_note_2026_04_17.md`
 
 ## Program Structure
 
@@ -83,9 +85,11 @@ Short branch-local operating note for the active discovery-v2 lane.
     - `FM-001: Null-Consistent Residualization Strengthening`
   - adversarial hardening status:
     - complete for `FM-001`
-    - next justified slice is residualization-layer review
-    - current triage says that review should start as a light confirmation review, not a broad repair program
-  - calibration machine is therefore live but not yet validated
+  - residualization review status:
+    - complete as a light confirmation review
+    - no broad residualization redesign justified
+    - `FM-001` now classified as `partially explained`
+  - calibration machine is therefore live and sufficiently validated for calibration exit
 
 ## Calibration Exit Condition
 
@@ -102,28 +106,30 @@ Calibration exits when all three conditions hold:
 Exit consequence:
 
 - open the primary family immediately after those conditions are met,
-- keep the calibration family’s alpha conclusion permanently out of scope.
+- keep the calibration family's alpha conclusion permanently out of scope.
+- Current state:
+  - all calibration exit conditions are now satisfied
+  - next lane is `A-share state-transition microstructure`
 
 ## Active Constraints
 
-- Do not open the primary family yet.
-- Do not treat the calibration family as a winner search.
+- Do not reopen the calibration family as a winner search.
 - Do not reopen Branch A / fixed candidate tournament logic.
 - Do not escalate into optimizer redesign from this lane.
 
-## Next Gate
+## Prior Shift Before Primary Family
 
-- Calibration-family closeout only if one of these becomes true:
-  - live expressions clearly outrun the null/control envelope, or
-  - the calibration family honestly shows that the current discovery machine is not yet trustworthy
+- Calibration prior:
+  - suspicious reads are presumed machine-boundary behavior until proven otherwise
+- Primary-family prior:
+  1. first suspect family-specific event/data structure
+  2. then suspect a mismatch between the family and an existing machine principle
+  3. only then conclude that the family has no signal
 
 ## Practical Next Work
 
-1. Keep strengthening calibration, not primary mining.
-2. Preserve the shuffled-null benchmark as the default reference; do not reason from one placebo draw.
-3. Use `FM-001` as the first machine-taxonomy entry; classify similar future reads against it before making family claims.
-4. Adversarial-layer hardening is now complete for the current `RM3` edge case.
-5. Next slice order is now:
-   - residualization-layer review (light confirmation scope unless new evidence widens it)
-   - only then any renewed family-level interpretation
-6. Keep calibration-family alpha conclusions out of scope unless a later slice pushes the residualized read outside the hardened null envelope.
+1. Treat calibration-family closeout as complete; do not reopen `US residual momentum / residual reversal` as a winner search.
+2. Preserve the shuffled-null benchmark and `P-001` as default machine principles for future families.
+3. Use `FM-001` as the first machine-taxonomy entry; classify similar residualization reads against it before making family claims.
+4. Open Phase 0 family-selection work for `A-share state-transition microstructure`.
+5. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.
