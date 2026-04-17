@@ -754,6 +754,56 @@ def build_baseline_exposure_tercile_null_comparison(
     return comparison.sort_values("baseline_exposure_tercile").reset_index(drop=True)
 
 
+def build_exposure_conditioned_residualized_expression_summary(
+    *,
+    returns_panel: pd.DataFrame,
+    universe_reference: pd.DataFrame,
+    expression_ids: list[str],
+    baseline_expression_id: str = "CTRL3_BASELINE_MIMIC",
+    random_seeds: list[int] | None = None,
+) -> pd.DataFrame:
+    """Summarize exposure-conditioned residualized null percentiles for all live expressions."""
+
+    seeds = list(range(100)) if random_seeds is None else [int(item) for item in random_seeds]
+    residualized_summary = build_baseline_residualized_expression_summary(
+        returns_panel=returns_panel,
+        universe_reference=universe_reference,
+        expression_ids=expression_ids,
+    ).set_index("expression_id")
+
+    rows: list[dict[str, Any]] = []
+    for expression_id in expression_ids:
+        conditioned_null = build_exposure_conditioned_residualization_placebo_null_distribution(
+            returns_panel=returns_panel,
+            universe_reference=universe_reference,
+            expression_id=expression_id,
+            baseline_expression_id=baseline_expression_id,
+            random_seeds=seeds,
+        )
+        live_rank_ic_t = float(residualized_summary.loc[expression_id, "residualized_rank_ic_t"])
+        all_sample = conditioned_null.loc[
+            conditioned_null["baseline_exposure_tercile"] == "all",
+            "residualized_rank_ic_t",
+        ]
+        rows.append(
+            {
+                "expression_id": expression_id,
+                "baseline_expression_id": baseline_expression_id,
+                "baseline_residualized_rank_ic_t": live_rank_ic_t,
+                "baseline_residualized_rank_ic_t_exposure_conditioned_null_percentile": _empirical_percentile(
+                    all_sample,
+                    live_rank_ic_t,
+                ),
+                "baseline_residualized_rank_ic_t_exposure_conditioned_null_median": float(
+                    pd.to_numeric(all_sample, errors="coerce").median()
+                )
+                if not all_sample.empty
+                else float("nan"),
+            }
+        )
+    return pd.DataFrame(rows).sort_values("expression_id").reset_index(drop=True)
+
+
 def _build_per_date_metrics(
     *,
     signal_frame: pd.DataFrame,
@@ -1006,6 +1056,13 @@ def run_us_residual_momentum_calibration(
         universe_reference=universe_reference,
         expression_ids=expression_ids,
     )
+    conditioned_residualized_summary = build_exposure_conditioned_residualized_expression_summary(
+        returns_panel=returns_panel,
+        universe_reference=universe_reference,
+        expression_ids=expression_ids,
+        baseline_expression_id="CTRL3_BASELINE_MIMIC",
+        random_seeds=list(range(100)),
+    )
     rm3_placebo_null_frame = build_residualization_placebo_null_distribution(
         returns_panel=returns_panel,
         universe_reference=universe_reference,
@@ -1039,6 +1096,18 @@ def run_us_residual_momentum_calibration(
                 "residualized_mean_top_bottom_spread": "baseline_residualized_mean_top_bottom_spread",
             }
         ),
+        on="expression_id",
+        how="left",
+    )
+    summary_frame = summary_frame.merge(
+        conditioned_residualized_summary.loc[
+            :,
+            [
+                "expression_id",
+                "baseline_residualized_rank_ic_t_exposure_conditioned_null_percentile",
+                "baseline_residualized_rank_ic_t_exposure_conditioned_null_median",
+            ],
+        ],
         on="expression_id",
         how="left",
     )
@@ -1089,6 +1158,10 @@ def run_us_residual_momentum_calibration(
     bootstrap_frame.to_csv(output_path / "bootstrap_expression_rankings.csv", index=False)
     spread_corr_frame.to_csv(output_path / "expression_spread_correlation.csv")
     residualized_summary.to_csv(output_path / "residualized_vs_baseline_summary.csv", index=False)
+    conditioned_residualized_summary.to_csv(
+        output_path / "residualized_vs_baseline_exposure_conditioned_summary.csv",
+        index=False,
+    )
     rm3_placebo_null_frame.to_csv(output_path / "residualization_placebo_null_distribution.csv", index=False)
     rm3_conditioned_placebo_null_frame.to_csv(
         output_path / "residualization_placebo_null_distribution_exposure_conditioned.csv",

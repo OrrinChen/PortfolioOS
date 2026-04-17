@@ -78,6 +78,13 @@ The sixth slice hardens the adversarial layer around `FM-001`:
 - summary-level hardened-null field:
   - `rm3_residualized_rank_ic_t_exposure_conditioned_null_percentile`
 
+The seventh slice adds exposure-conditioned triage for all live expressions:
+
+- summary-level all-expression field:
+  - `baseline_residualized_rank_ic_t_exposure_conditioned_null_percentile`
+- persisted artifact:
+  - `residualized_vs_baseline_exposure_conditioned_summary.csv`
+
 ## Verification
 
 Targeted verification passed:
@@ -149,6 +156,14 @@ Other key reads:
   - practical read:
     - the apparent strengthening is not surviving a stricter adversarial benchmark
     - most of what looked informative is explained by exposure-conditioned null behavior rather than by robust incremental signal
+- all-expression triage now says the same thing more broadly:
+  - `RM1_MKT_RESIDUAL` exposure-conditioned residualized percentile `~ 7%`
+  - `RM2_SECTOR_RESIDUAL` exposure-conditioned residualized percentile `~ 8%`
+  - `RM3_VOL_MANAGED` exposure-conditioned residualized percentile `~ 15%`
+  - practical read:
+    - no live residualized expression remains exceptional under the hardened null
+    - the adversarial issue was not RM3-specific
+    - the hardened null is now doing its intended job across the whole calibration family
 - but bootstrap dominance is still too weak for a clean family winner read:
   - `RM3_VOL_MANAGED ~ 53.8%`
   - `RM2_SECTOR_RESIDUAL ~ 36.6%`
@@ -180,6 +195,9 @@ The refined read is more precise:
 - after the exposure-conditioned null is added, that interpretation is now stronger:
   - the adversarial layer no longer merely says "this may still be null-consistent"
   - it says "under a more mechanism-aware null, the live read is plainly not exceptional"
+- this also upgrades a machine-level principle:
+  - when expression generation changes exposure structure, the adversarial null must preserve that same structure
+  - otherwise percentile reads can be systematically inflated
 
 So the correct conclusion is:
 
@@ -207,7 +225,10 @@ The next justified work stays inside calibration and should focus on:
 1. treating residualization strengthening as a calibration-machine boundary behavior unless later evidence pushes it outside the hardened null envelope,
 2. keeping primary-family mining blocked,
 3. considering adversarial-layer hardening complete for `FM-001`,
-4. and moving the next calibration step to the residualization-layer review itself.
+4. using the all-expression triage to scope the next step:
+   - because all live expressions sit at only `~7-15%` under the hardened null,
+   - residualization-layer review should now begin as a **light confirmation review**, not as a broad rescue / redesign program,
+5. and only escalating beyond light confirmation if the residualization review finds an algorithmic inconsistency that the hardened null did not already neutralize.
 
 ## Status Label
 

@@ -43,6 +43,7 @@ Short branch-local operating note for the active discovery-v2 lane.
   - expression bootstrap ranking artifact
   - expression spread-correlation artifact
   - baseline-residualization artifact versus frozen baseline mimic
+  - exposure-conditioned residualized summary artifact
 - Best current live expression:
   - `RM3_VOL_MANAGED`
   - `mean_rank_ic ~ 0.0329`
@@ -62,11 +63,18 @@ Short branch-local operating note for the active discovery-v2 lane.
     - `RM3` live residualized `rank_ic_t ~ 1.03` only reaches about the `81st` percentile of the residualization placebo null
     - `19 / 100` placebo seeds match or exceed the live residualized `rank_ic_t`
     - after exposure-conditioned adversarial hardening, `RM3` drops to about the `15th` percentile of the hardened null
+    - all live residualized expressions now sit low under the hardened null:
+      - `RM1 ~ 7%`
+      - `RM2 ~ 8%`
+      - `RM3 ~ 15%`
     - residualized `RM3` strength is concentrated in the `mid/high` baseline-exposure terciles while the `low` tercile is negative
     - practical read:
       - the strengthening is not just null-consistent
       - under a stricter, exposure-aware null it is plainly non-exceptional
       - and is being treated as a residualization-calibration edge case, not as family evidence
+  - machine principle now recorded:
+    - `P-001: Exposure-Conditioned Adversarial Nulls`
+    - whenever expression generation changes exposure structure, the adversarial null must preserve that same structure
   - the updated failure mode is:
     - no clear null separation,
     - no stable internal winner dominance,
@@ -76,7 +84,25 @@ Short branch-local operating note for the active discovery-v2 lane.
   - adversarial hardening status:
     - complete for `FM-001`
     - next justified slice is residualization-layer review
+    - current triage says that review should start as a light confirmation review, not a broad repair program
   - calibration machine is therefore live but not yet validated
+
+## Calibration Exit Condition
+
+Calibration exits when all three conditions hold:
+
+1. adversarial layer can produce credible conditional-null reads for exposure-biased expressions,
+2. residualization layer has been reviewed and classified:
+   - either the main issue was null-layer miscalibration,
+   - or a residualization algorithm issue has been explicitly located,
+3. machine governance assets exist:
+   - at least one recorded failure-mode entry,
+   - and at least one reusable machine principle.
+
+Exit consequence:
+
+- open the primary family immediately after those conditions are met,
+- keep the calibration family’s alpha conclusion permanently out of scope.
 
 ## Active Constraints
 
@@ -98,6 +124,6 @@ Short branch-local operating note for the active discovery-v2 lane.
 3. Use `FM-001` as the first machine-taxonomy entry; classify similar future reads against it before making family claims.
 4. Adversarial-layer hardening is now complete for the current `RM3` edge case.
 5. Next slice order is now:
-   - residualization-layer review
+   - residualization-layer review (light confirmation scope unless new evidence widens it)
    - only then any renewed family-level interpretation
 6. Keep calibration-family alpha conclusions out of scope unless a later slice pushes the residualized read outside the hardened null envelope.

@@ -423,3 +423,21 @@ def test_run_us_residual_momentum_calibration_writes_residualization_diagnostic_
     assert "rm3_residualized_rank_ic_t_exposure_conditioned_null_percentile" in result.summary_payload
     assert 0.0 <= float(result.summary_payload["rm3_residualized_rank_ic_t_null_percentile"]) <= 1.0
     assert 0.0 <= float(result.summary_payload["rm3_residualized_rank_ic_t_exposure_conditioned_null_percentile"]) <= 1.0
+
+
+def test_run_us_residual_momentum_calibration_adds_conditioned_null_percentiles_for_all_live_expressions(
+    tmp_path: Path,
+) -> None:
+    returns_path, reference_path = _write_fixture(tmp_path)
+    output_dir = tmp_path / "calibration_run"
+
+    result = run_us_residual_momentum_calibration_from_files(
+        returns_file=returns_path,
+        universe_reference_file=reference_path,
+        output_dir=output_dir,
+        random_seed=7,
+    )
+
+    expression_rows = result.summary_frame.loc[result.summary_frame["role"] == "expression"]
+    assert "baseline_residualized_rank_ic_t_exposure_conditioned_null_percentile" in expression_rows.columns
+    assert expression_rows["baseline_residualized_rank_ic_t_exposure_conditioned_null_percentile"].between(0.0, 1.0).all()

@@ -31,6 +31,35 @@ Two layers matter:
      - mechanism-breaking controls,
      - winner-selection reads
 
+## Machine Principles
+
+### P-001: Exposure-Conditioned Adversarial Nulls
+
+When an expression-generation step changes the exposure distribution of the evaluated cross-section, the adversarial null must preserve that exposure structure.
+
+Examples of exposure-shifting generation steps include:
+
+- residualization,
+- neutralization,
+- sector or beta orthogonalization,
+- volatility scaling,
+- or any transformation that reweights the signal differently across a known exposure axis.
+
+The reason is simple:
+
+- an unconditional null can understate null-tail thickness when the live expression is exposure-biased,
+- which inflates percentile reads and makes boundary behavior look like genuine alpha.
+
+Current calibration evidence supporting this principle:
+
+- `RM3_VOL_MANAGED` residualized `rank_ic_t` looked borderline under the unconditional placebo null (`81%` percentile),
+- but became clearly non-exceptional once the placebo preserved baseline-exposure terciles (`15%` percentile).
+
+Operational rule:
+
+- if the live expression is evaluated with exposure-aware decomposition,
+- the adversarial null must be conditioned on the same exposure partition before any family-level interpretation is allowed.
+
 ## Use Rule
 
 When a future read resembles an entry below:
