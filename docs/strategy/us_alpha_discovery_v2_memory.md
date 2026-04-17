@@ -54,12 +54,19 @@ Short branch-local operating note for the active discovery-v2 lane.
     - no live expression yet separates cleanly from the null/control envelope
   - orthogonality is not the main issue:
     - live-expression spread correlations stay modest (`max abs ~0.40`)
-  - baseline residualization is also not the main failure:
-    - `RM3` and `RM1` retain or improve incremental read after baseline removal
+  - baseline residualization now exposes a boundary behavior rather than a positive read:
+    - `RM3` and `RM1` strengthen after baseline removal
     - `RM2` largely collapses
+    - `RM3` live residualized `rank_ic_t ~ 1.03` only reaches about the `81st` percentile of the residualization placebo null
+    - `19 / 100` placebo seeds match or exceed the live residualized `rank_ic_t`
+    - residualized `RM3` strength is concentrated in the `mid/high` baseline-exposure terciles while the `low` tercile is negative
+    - practical read:
+      - the strengthening is still null-consistent
+      - and is being treated as a residualization-calibration edge case, not as family evidence
   - the updated failure mode is:
     - no clear null separation,
-    - and no stable internal winner dominance
+    - no stable internal winner dominance,
+    - and a residualization step that still shows null-consistent strengthening under `RM3_VOL_MANAGED`
   - calibration machine is therefore live but not yet validated
 
 ## Active Constraints
@@ -79,5 +86,5 @@ Short branch-local operating note for the active discovery-v2 lane.
 
 1. Keep strengthening calibration, not primary mining.
 2. Preserve the shuffled-null benchmark as the default reference; do not reason from one placebo draw.
-3. Add deeper adversarial / mechanism-breaking checks before any family-open decision.
-4. Do not downgrade the family to a pure baseline rewrite at this stage; residualization now argues for incremental content but insufficiently calibrated winner selection.
+3. Keep calibration-family alpha conclusions out of scope; current residualization reads are machine-boundary diagnostics only.
+4. Point the next calibration step at residualization/adversarial calibration logic rather than at reopening family-level winner claims.

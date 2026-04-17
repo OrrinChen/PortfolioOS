@@ -8,10 +8,12 @@ import pandas as pd
 import pytest
 
 from portfolio_os.alpha.discovery_calibration import (
+    build_baseline_exposure_tercile_decomposition,
     build_baseline_residualized_expression_summary,
     build_bootstrap_expression_rankings,
     build_calibration_signal_frame,
     build_expression_spread_correlation_matrix,
+    build_residualization_placebo_null_distribution,
     build_shuffled_null_distribution,
     build_us_residual_momentum_calibration_registry,
     run_us_residual_momentum_calibration_from_files,
@@ -340,3 +342,59 @@ def test_run_us_residual_momentum_calibration_writes_residualized_summary_artifa
     expression_rows = result.summary_frame.loc[result.summary_frame["role"] == "expression"]
     assert "baseline_residualized_rank_ic_t" in expression_rows.columns
     assert expression_rows["baseline_residualized_rank_ic_t"].notna().all()
+
+
+def test_build_residualization_placebo_null_distribution_returns_one_row_per_seed(tmp_path: Path) -> None:
+    returns_path, reference_path = _write_fixture(tmp_path)
+
+    placebo_frame = build_residualization_placebo_null_distribution(
+        returns_panel=load_alpha_returns_panel(returns_path),
+        universe_reference=pd.read_csv(reference_path),
+        expression_id="RM3_VOL_MANAGED",
+        baseline_expression_id="CTRL3_BASELINE_MIMIC",
+        random_seeds=[0, 1, 2, 3],
+    )
+
+    assert list(placebo_frame["seed"]) == [0, 1, 2, 3]
+    assert (placebo_frame["expression_id"] == "RM3_VOL_MANAGED").all()
+    assert (placebo_frame["baseline_expression_id"] == "CTRL3_BASELINE_MIMIC").all()
+    assert placebo_frame["residualized_rank_ic_t"].notna().all()
+    assert placebo_frame["residualized_mean_top_bottom_spread"].notna().all()
+
+
+def test_build_baseline_exposure_tercile_decomposition_returns_three_buckets(tmp_path: Path) -> None:
+    returns_path, reference_path = _write_fixture(tmp_path)
+
+    decomposition = build_baseline_exposure_tercile_decomposition(
+        returns_panel=load_alpha_returns_panel(returns_path),
+        universe_reference=pd.read_csv(reference_path),
+        expression_id="RM3_VOL_MANAGED",
+        baseline_expression_id="CTRL3_BASELINE_MIMIC",
+    )
+
+    assert list(decomposition["baseline_exposure_tercile"]) == ["low", "mid", "high"]
+    assert (decomposition["expression_id"] == "RM3_VOL_MANAGED").all()
+    assert {
+        "evaluation_month_count",
+        "mean_rank_ic",
+        "rank_ic_t",
+        "mean_top_bottom_spread",
+        "mean_observation_count",
+    }.issubset(decomposition.columns)
+
+
+def test_run_us_residual_momentum_calibration_writes_residualization_diagnostic_artifacts(tmp_path: Path) -> None:
+    returns_path, reference_path = _write_fixture(tmp_path)
+    output_dir = tmp_path / "calibration_run"
+
+    result = run_us_residual_momentum_calibration_from_files(
+        returns_file=returns_path,
+        universe_reference_file=reference_path,
+        output_dir=output_dir,
+        random_seed=7,
+    )
+
+    assert (output_dir / "residualization_placebo_null_distribution.csv").exists()
+    assert (output_dir / "baseline_exposure_tercile_decomposition.csv").exists()
+    assert "rm3_residualized_rank_ic_t_null_percentile" in result.summary_payload
+    assert 0.0 <= float(result.summary_payload["rm3_residualized_rank_ic_t_null_percentile"]) <= 1.0

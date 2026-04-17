@@ -60,6 +60,15 @@ The fourth slice extends the harness with the next charter-required D3 read:
   - `baseline_residualized_rank_ic_t`
   - `baseline_residualized_mean_top_bottom_spread`
 
+The fifth slice adds two narrow diagnostics targeted at the `RM3_VOL_MANAGED` residualization edge case:
+
+- residualization placebo-null benchmark:
+  - `residualization_placebo_null_distribution.csv`
+- baseline-exposure tercile decomposition:
+  - `baseline_exposure_tercile_decomposition.csv`
+- summary-level diagnostic field:
+  - `rm3_residualized_rank_ic_t_null_percentile`
+
 ## Verification
 
 Targeted verification passed:
@@ -101,13 +110,24 @@ Other key reads:
 - live-expression orthogonality is **not** the main failure:
   - max absolute pairwise spread correlation across `RM1/RM2/RM3` is only about `0.40`
   - practical read: the machine is not merely rediscovering one near-duplicate expression three times
-- frozen-baseline residualization does **not** fully collapse the family:
+- frozen-baseline residualization now exposes a **boundary diagnostic**, not a positive family read:
   - `RM3_VOL_MANAGED` improves after baseline removal
   - `RM1_MKT_RESIDUAL` also improves materially after baseline removal
   - `RM2_SECTOR_RESIDUAL` largely collapses after baseline removal
   - practical read:
-    - the family still does not have a calibrated winner,
-    - but the live residual family is not just a mechanical rewrite of the frozen baseline
+    - this is a red-flag calibration behavior that still needs explanation,
+    - not evidence that the family has earned an incremental-alpha prior
+- the new RM3-specific diagnostic now narrows that read:
+  - live residualized `rank_ic_t ~ 1.03`
+  - residualization placebo-null percentile for `rank_ic_t ~ 81%`
+  - `19 / 100` placebo seeds meet or exceed the live residualized `rank_ic_t`
+  - residualized strength is not uniform across baseline exposure:
+    - `low` tercile: `rank_ic_t ~ -1.91`, spread `~-3.61%`
+    - `mid` tercile: `rank_ic_t ~ 1.05`, spread `~6.46%`
+    - `high` tercile: `rank_ic_t ~ 1.46`, spread `~7.76%`
+  - practical read:
+    - the strengthening still sits inside a plausible null envelope,
+    - and it is concentrated in the mid/high baseline-exposure buckets rather than appearing as a broad incremental signal
 - but bootstrap dominance is still too weak for a clean family winner read:
   - `RM3_VOL_MANAGED ~ 53.8%`
   - `RM2_SECTOR_RESIDUAL ~ 36.6%`
@@ -130,6 +150,12 @@ The refined read is more precise:
 - a single shuffled placebo draw is too noisy to interpret alone on this short sample
 - after moving to a `100`-seed shuffled null, the core problem is not "one placebo got lucky"
 - the core problem is that the live expressions still do not sit far enough into the right tail of the null distribution to validate the discovery machine
+- the residualization strengthening read should currently be treated as a calibration edge case:
+  - it may reflect genuine negative overlap with the frozen baseline,
+  - or it may reflect residualization-driven tail amplification on a short sample
+- after the placebo-null and tercile diagnostics, the current working interpretation is:
+  - the read is better treated as a residualization-calibration / machine-boundary issue,
+  - not as evidence that `RM3` has earned a stronger family prior
 
 So the correct conclusion is:
 
@@ -139,11 +165,12 @@ So the correct conclusion is:
 - and because intra-family distinctness now looks acceptable while winner dominance still does not:
   - the machine can see different expressions,
   - but it still cannot point to one robust winner with enough confidence
-- however the residualization read is directionally constructive:
-  - the family appears to retain some incremental content beyond the frozen baseline
-  - so the current failure mode is better described as:
-    - `machine not yet calibrated to separate a robust winner`
-    - not `family proven to be a pure baseline restatement`
+- calibration-family alpha conclusions remain out of scope here:
+  - the residualization read is being kept only as a machine-boundary diagnostic,
+  - not as evidence for or against the family’s standalone economic value
+- more specifically:
+  - this diagnostic does **not** support "RM3 has incremental alpha after baseline stripping"
+  - it supports "the discovery machine can still generate null-consistent strengthening after residualization"
 
 ## Immediate Consequence
 
@@ -153,9 +180,9 @@ The primary family remains blocked.
 
 The next justified work stays inside calibration and should focus on:
 
-1. extending or otherwise strengthening the calibration sample so the null and bootstrap ranking become more informative,
-2. adding deeper adversarial controls / mechanism-breaking checks now that baseline residualization no longer looks like the first binding failure,
-3. and only then asking whether the calibration family can produce a trustworthy closeout.
+1. treating residualization strengthening as a calibration-machine boundary behavior unless later evidence pushes it outside the null envelope,
+2. keeping primary-family mining blocked,
+3. and aiming the next calibration step at residualization / adversarial calibration logic rather than at rescuing this family.
 
 ## Status Label
 
