@@ -44,12 +44,30 @@ _UPPER_LIMIT_MATCHING_REQUIRED_COLUMNS = {
     "recent_realized_volatility",
     "recent_return_state",
 }
+_MATCHING_REFERENCE_REQUIRED_COLUMNS = {
+    "ticker",
+    "industry",
+    "issuer_total_shares",
+}
 _UPPER_LIMIT_PILOT_SPECS = (
     ("P1_SEALED_UPPER_LIMIT", "M1", "SEALED_UPPER_LIMIT", "sealed_upper_limit", 1.0, "next_close_return"),
     ("P2_FAILED_UPPER_LIMIT", "M2", "FAILED_UPPER_LIMIT", "failed_upper_limit", -1.0, "next_close_return"),
     ("P3_NEXT_DAY_AFTER_SEALED", "M5", "SEALED_UPPER_LIMIT", "sealed_upper_limit", 1.0, "next_intraday_return"),
     ("P4_NEXT_DAY_AFTER_FAILED", "M5", "FAILED_UPPER_LIMIT", "failed_upper_limit", -1.0, "next_intraday_return"),
 )
+
+
+def _cross_sectional_terciles(values: pd.Series) -> pd.Series:
+    numeric = pd.to_numeric(values, errors="coerce")
+    result = pd.Series(pd.NA, index=values.index, dtype="Float64")
+    valid = numeric.dropna()
+    if valid.empty:
+        return result
+    terciles = (
+        (valid.rank(method="first", pct=True) * 3.0)
+        .apply(lambda value: min(3, max(1, int(value if float(value).is_integer() else value + 0.999999999)))))
+    result.loc[valid.index] = terciles.astype(float)
+    return result
 
 
 def build_state_transition_daily_panel(frame: pd.DataFrame) -> pd.DataFrame:
@@ -192,6 +210,61 @@ def build_upper_limit_pilot_expression_frame(panel: pd.DataFrame) -> pd.DataFram
     )
 
 
+def build_state_transition_matching_covariates(
+    panel: pd.DataFrame,
+    reference_frame: pd.DataFrame,
+    *,
+    lookback_days: int = 20,
+) -> pd.DataFrame:
+    """Enrich the state-transition panel with NC-1 matching covariates."""
+
+    if lookback_days <= 0:
+        raise InputValidationError("lookback_days must be positive.")
+
+    missing_reference = sorted(_MATCHING_REFERENCE_REQUIRED_COLUMNS - set(reference_frame.columns))
+    if missing_reference:
+        raise InputValidationError(
+            "state-transition matching covariates requires reference columns: "
+            + ", ".join(missing_reference)
+        )
+
+    work = panel.copy()
+    reference = reference_frame.copy()
+    reference["ticker"] = reference["ticker"].astype(str).str.strip()
+    reference["industry"] = reference["industry"].astype(str).str.strip()
+    reference["issuer_total_shares"] = pd.to_numeric(reference["issuer_total_shares"], errors="coerce")
+
+    work["ticker"] = work["ticker"].astype(str).str.strip()
+    work["date"] = pd.to_datetime(work["date"], errors="coerce").dt.strftime("%Y-%m-%d")
+    work = work.merge(
+        reference.loc[:, ["ticker", "industry", "issuer_total_shares"]],
+        on="ticker",
+        how="left",
+    )
+    work["float_market_cap"] = pd.to_numeric(work["close"], errors="coerce") * work["issuer_total_shares"]
+    work = work.sort_values(["ticker", "date"]).reset_index(drop=True)
+
+    grouped = work.groupby("ticker", sort=False)
+    work["daily_return"] = grouped["close"].pct_change()
+    work["recent_realized_volatility"] = (
+        grouped["daily_return"].rolling(window=int(lookback_days), min_periods=int(lookback_days)).std().reset_index(level=0, drop=True)
+    )
+    work["recent_return_state"] = grouped["close"].pct_change(periods=int(lookback_days))
+    work["recent_liquidity_amount"] = (
+        grouped["amount"].rolling(window=int(lookback_days), min_periods=int(lookback_days)).mean().reset_index(level=0, drop=True)
+    )
+
+    work["size_tercile"] = (
+        work.groupby("date", sort=False)["float_market_cap"]
+        .transform(_cross_sectional_terciles)
+    )
+    work["liquidity_tercile"] = (
+        work.groupby("date", sort=False)["recent_liquidity_amount"]
+        .transform(_cross_sectional_terciles)
+    )
+    return work
+
+
 def build_upper_limit_matched_non_event_control_frame(panel: pd.DataFrame) -> pd.DataFrame:
     """Select same-day matched non-event controls for upper-limit events."""
 
@@ -214,6 +287,15 @@ def build_upper_limit_matched_non_event_control_frame(panel: pd.DataFrame) -> pd
     ]
     for column in numeric_columns:
         work[column] = pd.to_numeric(work[column], errors="coerce")
+    work = work.dropna(
+        subset=[
+            "industry",
+            "size_tercile",
+            "liquidity_tercile",
+            "recent_realized_volatility",
+            "recent_return_state",
+        ]
+    ).copy()
 
     events = work.loc[work["tradable"] & work["upper_limit_touched"]].copy()
     candidates = work.loc[work["tradable"] & ~work["upper_limit_touched"]].copy()

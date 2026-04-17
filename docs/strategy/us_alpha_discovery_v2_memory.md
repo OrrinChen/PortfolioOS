@@ -183,4 +183,24 @@ Exit consequence:
    - explicit boundary:
      - this slice assumes matching covariates are already present on the input frame
      - covariate derivation and no-replacement policies remain deferred
-13. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.
+13. The fourth D2 coding slice is now in place:
+   - `NC-1` matching-covariate enrichment helper added:
+     - `build_state_transition_matching_covariates(...)`
+   - current enrichment contract:
+     - merges static reference fields:
+       - `industry`
+       - `issuer_total_shares`
+     - derives:
+       - `float_market_cap`
+       - `recent_liquidity_amount`
+       - `size_tercile`
+       - `liquidity_tercile`
+       - `recent_realized_volatility`
+       - `recent_return_state`
+     - lookback is configurable, default `20`
+   - selector hardening:
+     - matched-control selection now skips rows with incomplete matching covariates
+   - explicit boundary:
+     - no-replacement matching policy still remains deferred
+     - placebo / event-conditioned nulls remain deferred
+14. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.

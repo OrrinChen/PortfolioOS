@@ -5,6 +5,7 @@ import pytest
 
 from portfolio_os.alpha.state_transition_panel import (
     build_state_transition_daily_panel,
+    build_state_transition_matching_covariates,
     build_upper_limit_pilot_expression_frame,
     build_upper_limit_matched_non_event_control_frame,
     extract_upper_limit_daily_state_slice,
@@ -156,6 +157,43 @@ def _matched_control_fixture() -> pd.DataFrame:
     )
 
 
+def _matching_covariate_daily_bar_fixture() -> pd.DataFrame:
+    rows: list[dict[str, object]] = []
+    for date_value, closes, amounts in [
+        ("2026-03-30", {"000001": 10.0, "000002": 20.0, "000003": 5.0}, {"000001": 10_000_000, "000002": 30_000_000, "000003": 5_000_000}),
+        ("2026-03-31", {"000001": 10.5, "000002": 20.2, "000003": 6.0}, {"000001": 11_000_000, "000002": 31_000_000, "000003": 4_000_000}),
+        ("2026-04-01", {"000001": 11.0, "000002": 20.1, "000003": 5.5}, {"000001": 12_000_000, "000002": 29_000_000, "000003": 6_000_000}),
+        ("2026-04-02", {"000001": 11.5, "000002": 20.3, "000003": 6.5}, {"000001": 13_000_000, "000002": 32_000_000, "000003": 7_000_000}),
+    ]:
+        for ticker, close in closes.items():
+            rows.append(
+                {
+                    "date": date_value,
+                    "ticker": ticker,
+                    "open": close * 0.99,
+                    "high": close * 1.01,
+                    "low": close * 0.98,
+                    "close": close,
+                    "volume": 1_000_000,
+                    "amount": amounts[ticker],
+                    "upper_limit_price": close * 1.10,
+                    "lower_limit_price": close * 0.90,
+                    "tradable": True,
+                }
+            )
+    return pd.DataFrame(rows)
+
+
+def _matching_reference_fixture() -> pd.DataFrame:
+    return pd.DataFrame(
+        [
+            {"ticker": "000001", "industry": "Industrials", "issuer_total_shares": 10_000_000.0},
+            {"ticker": "000002", "industry": "Financials", "issuer_total_shares": 20_000_000.0},
+            {"ticker": "000003", "industry": "Technology", "issuer_total_shares": 30_000_000.0},
+        ]
+    )
+
+
 def test_build_state_transition_daily_panel_derives_upper_limit_states() -> None:
     panel = build_state_transition_daily_panel(_daily_bar_fixture())
     same_day = panel.loc[panel["date"] == "2026-04-01"].set_index("ticker")
@@ -290,3 +328,41 @@ def test_build_upper_limit_matched_non_event_control_frame_rejects_missing_match
 
     with pytest.raises(InputValidationError, match="requires matching columns"):
         build_upper_limit_matched_non_event_control_frame(bad)
+
+
+def test_build_state_transition_matching_covariates_derives_reference_and_rolling_fields() -> None:
+    panel = build_state_transition_daily_panel(_matching_covariate_daily_bar_fixture())
+
+    enriched = build_state_transition_matching_covariates(
+        panel,
+        _matching_reference_fixture(),
+        lookback_days=3,
+    )
+    latest = enriched.loc[enriched["date"] == "2026-04-02"].set_index("ticker")
+
+    assert latest.loc["000001", "industry"] == "Industrials"
+    assert latest.loc["000002", "industry"] == "Financials"
+    assert latest.loc["000001", "float_market_cap"] == pytest.approx(11.5 * 10_000_000.0)
+    assert latest.loc["000002", "float_market_cap"] == pytest.approx(20.3 * 20_000_000.0)
+
+    assert int(latest.loc["000001", "size_tercile"]) == 1
+    assert int(latest.loc["000003", "size_tercile"]) == 2
+    assert int(latest.loc["000002", "size_tercile"]) == 3
+
+    assert int(latest.loc["000003", "liquidity_tercile"]) == 1
+    assert int(latest.loc["000001", "liquidity_tercile"]) == 2
+    assert int(latest.loc["000002", "liquidity_tercile"]) == 3
+
+    assert latest.loc["000001", "recent_return_state"] == pytest.approx(11.5 / 10.0 - 1.0)
+    assert latest.loc["000003", "recent_return_state"] == pytest.approx(6.5 / 5.0 - 1.0)
+    assert float(latest.loc["000003", "recent_realized_volatility"]) > float(
+        latest.loc["000002", "recent_realized_volatility"]
+    )
+
+
+def test_build_state_transition_matching_covariates_rejects_missing_reference_columns() -> None:
+    panel = build_state_transition_daily_panel(_matching_covariate_daily_bar_fixture())
+    bad_reference = _matching_reference_fixture().drop(columns=["industry"])
+
+    with pytest.raises(InputValidationError, match="requires reference columns"):
+        build_state_transition_matching_covariates(panel, bad_reference, lookback_days=3)
