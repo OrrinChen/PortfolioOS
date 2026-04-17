@@ -155,4 +155,9 @@ Exit consequence:
    - admitted first-wave expressions `P1/P2/P3/P4`
 9. The next implementation object is not a full family miner; it is:
    - a dedicated `state-transition daily panel` contract plus daily-state taggers
-10. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.
+10. D2 implementation has now started with the first coding slice:
+   - `state-transition daily panel`
+   - `sealed / failed upper-limit` daily-state taggers
+   - active code path:
+     - `src/portfolio_os/alpha/state_transition_panel.py`
+11. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.
