@@ -22,6 +22,21 @@ REQUIRED_STATE_TRANSITION_COLUMNS = [
 ]
 
 _PRICE_TOLERANCE = 1e-6
+_UPPER_LIMIT_PILOT_REQUIRED_COLUMNS = {
+    "date",
+    "ticker",
+    "sealed_upper_limit",
+    "failed_upper_limit",
+    "next_open_return",
+    "next_intraday_return",
+    "next_close_return",
+}
+_UPPER_LIMIT_PILOT_SPECS = (
+    ("P1_SEALED_UPPER_LIMIT", "M1", "SEALED_UPPER_LIMIT", "sealed_upper_limit", 1.0, "next_close_return"),
+    ("P2_FAILED_UPPER_LIMIT", "M2", "FAILED_UPPER_LIMIT", "failed_upper_limit", -1.0, "next_close_return"),
+    ("P3_NEXT_DAY_AFTER_SEALED", "M5", "SEALED_UPPER_LIMIT", "sealed_upper_limit", 1.0, "next_intraday_return"),
+    ("P4_NEXT_DAY_AFTER_FAILED", "M5", "FAILED_UPPER_LIMIT", "failed_upper_limit", -1.0, "next_intraday_return"),
+)
 
 
 def build_state_transition_daily_panel(frame: pd.DataFrame) -> pd.DataFrame:
@@ -80,6 +95,7 @@ def build_state_transition_daily_panel(frame: pd.DataFrame) -> pd.DataFrame:
     work["next_open"] = grouped["open"].shift(-1)
     work["next_close"] = grouped["close"].shift(-1)
     work["next_open_return"] = work["next_open"] / work["close"] - 1.0
+    work["next_intraday_return"] = work["next_close"] / work["next_open"] - 1.0
     work["next_close_return"] = work["next_close"] / work["close"] - 1.0
     work["date"] = work["date"].dt.strftime("%Y-%m-%d")
     return work
@@ -98,3 +114,66 @@ def extract_upper_limit_daily_state_slice(panel: pd.DataFrame) -> pd.DataFrame:
     work = panel.copy()
     work = work.loc[work["upper_limit_touched"]].copy()
     return work.sort_values(["date", "ticker"]).reset_index(drop=True)
+
+
+def build_upper_limit_pilot_expression_frame(panel: pd.DataFrame) -> pd.DataFrame:
+    """Expand one upper-limit daily-state slice into the first-wave pilot expressions."""
+
+    missing = sorted(_UPPER_LIMIT_PILOT_REQUIRED_COLUMNS - set(panel.columns))
+    if missing:
+        raise InputValidationError(
+            "upper-limit pilot expression frame requires derived columns: "
+            + ", ".join(missing)
+        )
+
+    rows: list[pd.DataFrame] = []
+    for expression_id, mechanism_id, state_anchor, state_column, expected_sign, forward_column in _UPPER_LIMIT_PILOT_SPECS:
+        subset = panel.loc[panel[state_column]].copy()
+        if subset.empty:
+            continue
+        subset["expression_id"] = expression_id
+        subset["mechanism_id"] = mechanism_id
+        subset["state_anchor"] = state_anchor
+        subset["signal_value"] = float(expected_sign)
+        subset["expected_sign"] = float(expected_sign)
+        subset["forward_return"] = pd.to_numeric(subset[forward_column], errors="coerce")
+        rows.append(
+            subset.loc[
+                :,
+                [
+                    "date",
+                    "ticker",
+                    "expression_id",
+                    "mechanism_id",
+                    "state_anchor",
+                    "signal_value",
+                    "expected_sign",
+                    "forward_return",
+                    "next_open_return",
+                    "next_intraday_return",
+                    "next_close_return",
+                ],
+            ]
+        )
+
+    if not rows:
+        return pd.DataFrame(
+            columns=[
+                "date",
+                "ticker",
+                "expression_id",
+                "mechanism_id",
+                "state_anchor",
+                "signal_value",
+                "expected_sign",
+                "forward_return",
+                "next_open_return",
+                "next_intraday_return",
+                "next_close_return",
+            ]
+        )
+    return (
+        pd.concat(rows, ignore_index=True)
+        .sort_values(["date", "ticker", "expression_id"])
+        .reset_index(drop=True)
+    )

@@ -5,6 +5,7 @@ import pytest
 
 from portfolio_os.alpha.state_transition_panel import (
     build_state_transition_daily_panel,
+    build_upper_limit_pilot_expression_frame,
     extract_upper_limit_daily_state_slice,
 )
 from portfolio_os.domain.errors import InputValidationError
@@ -89,6 +90,7 @@ def test_build_state_transition_daily_panel_derives_next_day_returns() -> None:
     ].iloc[0]
 
     assert same_day["next_open_return"] == pytest.approx(11.10 / 11.00 - 1.0)
+    assert same_day["next_intraday_return"] == pytest.approx(10.90 / 11.10 - 1.0)
     assert same_day["next_close_return"] == pytest.approx(10.90 / 11.00 - 1.0)
 
 
@@ -108,7 +110,59 @@ def test_extract_upper_limit_daily_state_slice_keeps_only_pilot_rows() -> None:
         "sealed_upper_limit",
         "failed_upper_limit",
         "next_open_return",
+        "next_intraday_return",
         "next_close_return",
     } <= set(pilot.columns)
     assert bool(pilot.loc[pilot["ticker"] == "000001", "sealed_upper_limit"].iloc[0]) is True
     assert bool(pilot.loc[pilot["ticker"] == "000002", "failed_upper_limit"].iloc[0]) is True
+
+
+def test_build_upper_limit_pilot_expression_frame_emits_p1_to_p4_rows() -> None:
+    panel = build_state_transition_daily_panel(_daily_bar_fixture())
+
+    expression_frame = build_upper_limit_pilot_expression_frame(panel)
+    keyed = expression_frame.set_index(["expression_id", "ticker"])
+
+    assert set(expression_frame["expression_id"]) == {
+        "P1_SEALED_UPPER_LIMIT",
+        "P2_FAILED_UPPER_LIMIT",
+        "P3_NEXT_DAY_AFTER_SEALED",
+        "P4_NEXT_DAY_AFTER_FAILED",
+    }
+    assert list(expression_frame.columns) == [
+        "date",
+        "ticker",
+        "expression_id",
+        "mechanism_id",
+        "state_anchor",
+        "signal_value",
+        "expected_sign",
+        "forward_return",
+        "next_open_return",
+        "next_intraday_return",
+        "next_close_return",
+    ]
+
+    assert keyed.loc[("P1_SEALED_UPPER_LIMIT", "000001"), "mechanism_id"] == "M1"
+    assert keyed.loc[("P1_SEALED_UPPER_LIMIT", "000001"), "state_anchor"] == "SEALED_UPPER_LIMIT"
+    assert keyed.loc[("P1_SEALED_UPPER_LIMIT", "000001"), "signal_value"] == pytest.approx(1.0)
+    assert keyed.loc[("P1_SEALED_UPPER_LIMIT", "000001"), "expected_sign"] == pytest.approx(1.0)
+    assert keyed.loc[("P1_SEALED_UPPER_LIMIT", "000001"), "forward_return"] == pytest.approx(10.90 / 11.00 - 1.0)
+
+    assert keyed.loc[("P2_FAILED_UPPER_LIMIT", "000002"), "mechanism_id"] == "M2"
+    assert keyed.loc[("P2_FAILED_UPPER_LIMIT", "000002"), "state_anchor"] == "FAILED_UPPER_LIMIT"
+    assert keyed.loc[("P2_FAILED_UPPER_LIMIT", "000002"), "signal_value"] == pytest.approx(-1.0)
+    assert keyed.loc[("P2_FAILED_UPPER_LIMIT", "000002"), "expected_sign"] == pytest.approx(-1.0)
+    assert keyed.loc[("P2_FAILED_UPPER_LIMIT", "000002"), "forward_return"] == pytest.approx(20.40 / 21.20 - 1.0)
+
+    assert keyed.loc[("P3_NEXT_DAY_AFTER_SEALED", "000001"), "mechanism_id"] == "M5"
+    assert keyed.loc[("P3_NEXT_DAY_AFTER_SEALED", "000001"), "state_anchor"] == "SEALED_UPPER_LIMIT"
+    assert keyed.loc[("P3_NEXT_DAY_AFTER_SEALED", "000001"), "signal_value"] == pytest.approx(1.0)
+    assert keyed.loc[("P3_NEXT_DAY_AFTER_SEALED", "000001"), "expected_sign"] == pytest.approx(1.0)
+    assert keyed.loc[("P3_NEXT_DAY_AFTER_SEALED", "000001"), "forward_return"] == pytest.approx(10.90 / 11.10 - 1.0)
+
+    assert keyed.loc[("P4_NEXT_DAY_AFTER_FAILED", "000002"), "mechanism_id"] == "M5"
+    assert keyed.loc[("P4_NEXT_DAY_AFTER_FAILED", "000002"), "state_anchor"] == "FAILED_UPPER_LIMIT"
+    assert keyed.loc[("P4_NEXT_DAY_AFTER_FAILED", "000002"), "signal_value"] == pytest.approx(-1.0)
+    assert keyed.loc[("P4_NEXT_DAY_AFTER_FAILED", "000002"), "expected_sign"] == pytest.approx(-1.0)
+    assert keyed.loc[("P4_NEXT_DAY_AFTER_FAILED", "000002"), "forward_return"] == pytest.approx(20.40 / 21.00 - 1.0)

@@ -156,8 +156,20 @@ Exit consequence:
 9. The next implementation object is not a full family miner; it is:
    - a dedicated `state-transition daily panel` contract plus daily-state taggers
 10. D2 implementation has now started with the first coding slice:
-   - `state-transition daily panel`
-   - `sealed / failed upper-limit` daily-state taggers
-   - active code path:
-     - `src/portfolio_os/alpha/state_transition_panel.py`
-11. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.
+    - `state-transition daily panel`
+    - `sealed / failed upper-limit` daily-state taggers
+    - active code path:
+      - `src/portfolio_os/alpha/state_transition_panel.py`
+11. The second D2 coding slice is now in place inside the same panel module:
+   - `next_intraday_return` decomposition field added
+   - first-wave upper-limit pilot expression builder added:
+     - `build_upper_limit_pilot_expression_frame(...)`
+   - emitted expression contract now covers:
+     - `P1_SEALED_UPPER_LIMIT`
+     - `P2_FAILED_UPPER_LIMIT`
+     - `P3_NEXT_DAY_AFTER_SEALED`
+     - `P4_NEXT_DAY_AFTER_FAILED`
+   - current practical read:
+     - D2 now has a deterministic event-to-expression expansion layer for the `M1/M2/M5` pilot
+     - matched controls, placebo checks, and event-conditioned nulls remain deferred to later D2 slices
+12. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.
