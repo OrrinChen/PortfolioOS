@@ -1,0 +1,24 @@
+name: low_liquidity_stress
+description: Stress calibration for low-liquidity names with strict participation and wider slippage
+market_curve:
+  buckets:
+    - label: open
+      volume_share: 0.35
+      slippage_multiplier: 1.45
+    - label: mid_morning
+      volume_share: 0.15
+      slippage_multiplier: 1.2
+    - label: midday
+      volume_share: 0.05
+      slippage_multiplier: 1.1
+    - label: afternoon
+      volume_share: 0.15
+      slippage_multiplier: 1.2
+    - label: close
+      volume_share: 0.30
+      slippage_multiplier: 1.4
+defaults:
+  participation_limit: 0.03
+  volume_shock_multiplier: 0.4
+  allow_partial_fill: true
+  force_completion: false

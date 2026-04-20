@@ -1,0 +1,8 @@
+ticker,industry,blacklist_buy,blacklist_sell,benchmark_weight,manager_aggregate_qty,issuer_total_shares
+000333,Industrials,False,False,0.17,7500.0,100000.0
+000858,Consumer,False,False,0.12,0.0,1250000000.0
+300750,Industrials,False,False,0.16,0.0,2440000000.0
+600276,Healthcare,False,False,0.11,0.0,8200000000.0
+600519,Consumer,False,False,0.13,0.0,1250000000.0
+601012,Industrials,True,False,0.17,0.0,27000000000.0
+601318,Financials,False,False,0.14,0.0,94000000000.0

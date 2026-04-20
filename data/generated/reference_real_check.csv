@@ -1,0 +1,8 @@
+ticker,industry,blacklist_buy,blacklist_sell,benchmark_weight,manager_aggregate_qty,issuer_total_shares
+000333,家用电器,False,False,,7500.0,7597000000.0
+000858,白酒,False,False,,0.0,3882000000.0
+300750,电气设备,False,False,,0.0,4564000000.0
+600276,化学制药,False,False,,0.0,6637000000.0
+600519,白酒,False,False,,0.0,1252000000.0
+601012,电气设备,True,False,,0.0,7578000000.0
+601318,保险,False,False,,0.0,18108000000.0

@@ -1,0 +1,30 @@
+{
+  "generated_at": "2026-03-25T15:34:06",
+  "market": "us",
+  "ticker_count": 12,
+  "tickers": [
+    "AAPL",
+    "AFRM",
+    "AMZN",
+    "GOOGL",
+    "META",
+    "MSFT",
+    "NVDA",
+    "PLTR",
+    "RIVN",
+    "SOFI",
+    "TSLA",
+    "UPST"
+  ],
+  "lookback_days": 252,
+  "actual_trading_days": 251,
+  "date_range": [
+    "2025-01-30",
+    "2026-01-29"
+  ],
+  "tickers_excluded_high_nan": [],
+  "failed_tickers": [],
+  "data_source": "yfinance",
+  "returns_long_rows": 3012,
+  "factor_exposure_rows": 48
+}

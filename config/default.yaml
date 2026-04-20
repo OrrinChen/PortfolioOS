@@ -1,0 +1,46 @@
+project:
+  name: PortfolioOS
+  disclaimer: "Auxiliary decision-support tool only. Not investment advice."
+
+trading:
+  market: cn
+  lot_size: 100
+  allow_fractional_shares_in_optimizer: true
+
+fees:
+  commission_rate: 0.0003
+  transfer_fee_rate: 0.00001
+  stamp_duty_rate: 0.001
+
+slippage:
+  k: 0.02
+  alpha: 0.6
+
+objective_weights:
+  risk_term: 1.0
+  tracking_error: 3.0
+  transaction_cost: 1.0
+  target_deviation: 100000.0
+  transaction_fee: 1.0
+  turnover_penalty: 0.03
+  slippage_penalty: 1.0
+
+risk_model:
+  enabled: false
+  integration_mode: replace
+  estimator: ledoit_wolf
+  returns_path: ../data/sample/returns_long_example.csv
+  factor_exposure_path: ../data/sample/factor_exposure_example.csv
+  lookback_days: 252
+  min_history_days: 120
+  annualization_factor: 252.0
+  diagonal_jitter: 0.00000001
+
+solver:
+  name: CLARABEL
+  max_iters: 5000
+  eps: 0.0001
+
+reporting:
+  top_weight_changes: 5
+  top_findings: 10

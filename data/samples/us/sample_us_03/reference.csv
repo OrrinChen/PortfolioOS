@@ -1,0 +1,6 @@
+ticker,industry,blacklist_buy,blacklist_sell,benchmark_weight,manager_aggregate_qty,issuer_total_shares
+PLTR,Technology,false,false,0.00,0,2200000000
+SOFI,Financial Services,false,false,0.00,0,920000000
+RIVN,Consumer Cyclical,false,false,0.00,0,1050000000
+UPST,Financial Services,false,false,0.00,0,92000000
+AFRM,Financial Services,false,false,0.00,0,124000000

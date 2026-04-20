@@ -1,0 +1,592 @@
+# US Alpha Discovery v2 Memory
+
+Short branch-local operating note for the active discovery-v2 lane.
+
+## Status
+
+- Worktree: `C:\Users\14574\Quant\PortfolioOS\.worktrees\codex-us-alpha-week1-freeze`
+- Branch: `codex/us-alpha-week1-freeze`
+- Last sync: `2026-04-17`
+- Active lane: discovery-v2 charter closeout complete
+- Old `US alpha core restart` sprint remains closed with no winner
+
+## Canonical References
+
+- Charter:
+  - `docs/strategy/alpha_discovery_charter_v2_2026_04_16.md`
+- Family selection memo:
+  - `docs/strategy/alpha_discovery_family_selection_memo_2026_04_16.md`
+- Calibration D1:
+  - `docs/strategy/us_residual_momentum_calibration_d1_2026_04_16.md`
+- Kickoff plan:
+  - `docs/superpowers/plans/2026-04-16-alpha-discovery-v2-kickoff.md`
+- Calibration setup note:
+  - `docs/strategy/us_residual_momentum_calibration_setup_note_2026_04_16.md`
+- Calibration failure taxonomy:
+  - `docs/strategy/calibration_machine_failure_taxonomy_2026_04_16.md`
+- Residualization confirmation closeout:
+  - `docs/strategy/us_residual_momentum_residualization_confirmation_note_2026_04_17.md`
+- A-share primary family Phase 0 memo:
+  - `docs/strategy/a_share_state_transition_phase0_memo_2026_04_17.md`
+- A-share primary family D1 Slice A:
+  - `docs/strategy/a_share_state_transition_mechanism_charter_2026_04_17.md`
+  - `docs/strategy/a_share_state_transition_expression_ledger_initial_2026_04_17.md`
+- A-share primary family D1 Slice B:
+  - `docs/strategy/a_share_state_transition_adversarial_and_data_plan_2026_04_17.md`
+- A-share primary family D2 pilot scope:
+  - `docs/strategy/a_share_state_transition_d2_pilot_scope_2026_04_17.md`
+- A-share primary family upper-limit slice closeout:
+  - `docs/strategy/a_share_state_transition_upper_limit_slice_closeout_2026_04_17.md`
+- A-share primary family final closeout:
+  - `docs/strategy/a_share_state_transition_family_closeout_2026_04_17.md`
+
+## Program Structure
+
+- Calibration family:
+  - `US residual momentum / residual reversal`
+- Primary mining family:
+  - `A-share state-transition microstructure`
+- Hard serial rule:
+  - no primary-family mining before the calibration-family closeout exists
+
+## Current Calibration Read
+
+- Harness state:
+  - `3` live expressions
+  - `3` controls
+  - persisted `100`-seed shuffled null distribution
+  - expression bootstrap ranking artifact
+  - expression spread-correlation artifact
+  - baseline-residualization artifact versus frozen baseline mimic
+  - exposure-conditioned residualized summary artifact
+- Best current live expression:
+  - `RM3_VOL_MANAGED`
+  - `mean_rank_ic ~ 0.0329`
+  - `rank_ic_t ~ 0.7371`
+  - shuffled-null percentiles only `~70-72%`
+  - bootstrap top-1 frequency only `~53.8%`
+  - baseline-residualized `rank_ic_t ~ 1.03`
+- Key interpretation:
+  - a single shuffled placebo draw is too noisy to judge alone on this short sample
+  - after moving to a null distribution, the stronger read is still negative:
+    - no live expression yet separates cleanly from the null/control envelope
+  - orthogonality is not the main issue:
+    - live-expression spread correlations stay modest (`max abs ~0.40`)
+  - baseline residualization now exposes a boundary behavior rather than a positive read:
+    - `RM3` and `RM1` strengthen after baseline removal
+    - `RM2` largely collapses
+    - `RM3` live residualized `rank_ic_t ~ 1.03` only reaches about the `81st` percentile of the residualization placebo null
+    - `19 / 100` placebo seeds match or exceed the live residualized `rank_ic_t`
+    - after exposure-conditioned adversarial hardening, `RM3` drops to about the `15th` percentile of the hardened null
+    - all live residualized expressions now sit low under the hardened null:
+      - `RM1 ~ 7%`
+      - `RM2 ~ 8%`
+      - `RM3 ~ 15%`
+    - residualized `RM3` strength is concentrated in the `mid/high` baseline-exposure terciles while the `low` tercile is negative
+    - practical read:
+      - the strengthening is not just null-consistent
+      - under a stricter, exposure-aware null it is plainly non-exceptional
+      - and is being treated as a residualization-calibration edge case, not as family evidence
+  - machine principle now recorded:
+    - `P-001: Exposure-Conditioned Adversarial Nulls`
+    - whenever expression generation changes exposure structure, the adversarial null must preserve that same structure
+  - the updated failure mode is:
+    - no clear null separation,
+    - no stable internal winner dominance,
+    - and a residualization step that still shows null-consistent strengthening under `RM3_VOL_MANAGED`
+  - this boundary behavior is now formalized as:
+    - `FM-001: Null-Consistent Residualization Strengthening`
+  - adversarial hardening status:
+    - complete for `FM-001`
+  - residualization review status:
+    - complete as a light confirmation review
+    - no broad residualization redesign justified
+    - `FM-001` now classified as `partially explained`
+  - calibration machine is therefore live and sufficiently validated for calibration exit
+
+## Calibration Exit Condition
+
+Calibration exits when all three conditions hold:
+
+1. adversarial layer can produce credible conditional-null reads for exposure-biased expressions,
+2. residualization layer has been reviewed and classified:
+   - either the main issue was null-layer miscalibration,
+   - or a residualization algorithm issue has been explicitly located,
+3. machine governance assets exist:
+   - at least one recorded failure-mode entry,
+   - and at least one reusable machine principle.
+
+Exit consequence:
+
+- open the primary family immediately after those conditions are met,
+- keep the calibration family's alpha conclusion permanently out of scope.
+- Current state:
+  - all calibration exit conditions are now satisfied
+  - next lane is `A-share state-transition microstructure`
+
+## Active Constraints
+
+- Do not reopen the calibration family as a winner search.
+- Do not reopen Branch A / fixed candidate tournament logic.
+- Do not escalate into optimizer redesign from this lane.
+
+## Prior Shift Before Primary Family
+
+- Calibration prior:
+  - suspicious reads are presumed machine-boundary behavior until proven otherwise
+- Primary-family prior:
+  1. first suspect family-specific event/data structure
+  2. then suspect a mismatch between the family and an existing machine principle
+  3. only then conclude that the family has no signal
+
+## Practical Next Work
+
+1. Treat calibration-family closeout as complete; do not reopen `US residual momentum / residual reversal` as a winner search.
+2. Preserve the shuffled-null benchmark and `P-001` as default machine principles for future families.
+3. Use `FM-001` as the first machine-taxonomy entry; classify similar residualization reads against it before making family claims.
+4. Phase 0 family-selection work for `A-share state-transition microstructure` is now recorded through:
+   - `docs/strategy/a_share_state_transition_phase0_memo_2026_04_17.md`
+5. `D1 Slice A` is now complete through:
+   - `docs/strategy/a_share_state_transition_mechanism_charter_2026_04_17.md`
+   - `docs/strategy/a_share_state_transition_expression_ledger_initial_2026_04_17.md`
+6. `D1 Slice B` is now complete through:
+   - `docs/strategy/a_share_state_transition_adversarial_and_data_plan_2026_04_17.md`
+7. `D2` is now narrowed through:
+   - `docs/strategy/a_share_state_transition_d2_pilot_scope_2026_04_17.md`
+8. The first live `D2` slice is:
+   - upper-limit daily-state pilot
+   - mechanisms `M1/M2/M5`
+   - admitted first-wave expressions `P1/P2/P3/P4`
+9. The next implementation object is not a full family miner; it is:
+   - a dedicated `state-transition daily panel` contract plus daily-state taggers
+10. D2 implementation has now started with the first coding slice:
+    - `state-transition daily panel`
+    - `sealed / failed upper-limit` daily-state taggers
+    - active code path:
+      - `src/portfolio_os/alpha/state_transition_panel.py`
+11. The second D2 coding slice is now in place inside the same panel module:
+   - `next_intraday_return` decomposition field added
+   - first-wave upper-limit pilot expression builder added:
+     - `build_upper_limit_pilot_expression_frame(...)`
+   - emitted expression contract now covers:
+     - `P1_SEALED_UPPER_LIMIT`
+     - `P2_FAILED_UPPER_LIMIT`
+     - `P3_NEXT_DAY_AFTER_SEALED`
+     - `P4_NEXT_DAY_AFTER_FAILED`
+   - current practical read:
+     - D2 now has a deterministic event-to-expression expansion layer for the `M1/M2/M5` pilot
+     - matched controls, placebo checks, and event-conditioned nulls remain deferred to later D2 slices
+12. The third D2 coding slice is now in place:
+   - minimal `NC-1` same-day matched non-event control selector added:
+     - `build_upper_limit_matched_non_event_control_frame(...)`
+   - current control-selection contract:
+     - coarse bucket filter on `industry`, `size_tercile`, `liquidity_tercile`
+     - nearest-neighbor tie-break on:
+       - `recent_realized_volatility`
+       - `recent_return_state`
+   - explicit boundary:
+     - this slice assumes matching covariates are already present on the input frame
+     - covariate derivation and no-replacement policies remain deferred
+13. The fourth D2 coding slice is now in place:
+   - `NC-1` matching-covariate enrichment helper added:
+     - `build_state_transition_matching_covariates(...)`
+   - current enrichment contract:
+     - merges static reference fields:
+       - `industry`
+       - `issuer_total_shares`
+     - derives:
+       - `float_market_cap`
+       - `recent_liquidity_amount`
+       - `size_tercile`
+       - `liquidity_tercile`
+       - `recent_realized_volatility`
+       - `recent_return_state`
+     - lookback is configurable, default `20`
+   - selector hardening:
+     - matched-control selection now skips rows with incomplete matching covariates
+   - explicit boundary:
+     - no-replacement matching policy still remains deferred
+     - placebo / event-conditioned nulls remain deferred
+14. The fifth D2 coding slice is now in place:
+   - matched event-vs-control comparison helper added:
+     - `build_upper_limit_matched_control_comparison_frame(...)`
+   - current comparison contract:
+     - joins first-wave pilot expressions against the `NC-1` matched-control map
+     - emits paired rows with:
+       - `event_forward_return`
+       - `control_forward_return`
+       - `excess_forward_return`
+     - horizon alignment is expression-specific:
+       - `P1/P2` compare on `next_close_return`
+       - `P3/P4` compare on `next_intraday_return`
+   - practical meaning:
+     - D2 now has a deterministic bridge from
+       - event-state tagging
+       - to expression emission
+       - to matched-control pairing
+       - to excess-return comparison
+   - verification status:
+     - targeted state-transition panel tests passed
+     - broader regression pack passed:
+       - `33 passed, 3 warnings`
+   - explicit boundary:
+     - no-replacement matching policy still remains deferred
+     - placebo / event-conditioned nulls remain deferred
+15. The sixth D2 coding slice is now in place:
+   - pre-event placebo comparison helper added:
+     - `build_upper_limit_pre_event_placebo_comparison_frame(...)`
+   - current placebo contract:
+     - keeps the same event names as the live `P1/P2/P3/P4` rows
+     - maps each event date to the immediately prior trading-day placebo window on the same ticker
+     - expression-specific horizon alignment is:
+       - `P1/P2` -> prior one-day close return
+       - `P3/P4` -> prior one-day intraday return
+     - emits:
+       - `event_forward_return`
+       - `placebo_forward_return`
+       - `placebo_excess_return`
+   - practical meaning:
+     - D2 now has both mandatory adversarial legs from `D1 Slice B` in live coding form:
+       - `NC-1` matched non-event control comparison
+       - `NC-2` pre-event placebo comparison
+   - verification status:
+     - targeted state-transition panel tests passed
+     - broader regression pack passed:
+       - `34 passed, 3 warnings`
+   - explicit boundary:
+     - no-replacement matching policy still remains deferred
+     - event-conditioned null generation under `P-001` remains deferred
+16. The seventh D2 coding slice is now in place:
+   - `P-001` event-conditioned null pool helper added:
+     - `build_upper_limit_event_conditioned_null_pool(...)`
+   - current null-pool contract:
+     - attaches required `P-001` minimum conditioning dimensions to live `P1/P2/P3/P4` rows:
+       - `event_type_bucket`
+       - `horizon_bucket`
+       - `size_tercile`
+       - `liquidity_tercile`
+     - materializes a deterministic resampling key:
+       - `conditioning_bucket_key`
+     - keeps the object at the pool layer only:
+       - no seed loop
+       - no shuffled null draw
+       - no percentile / summary logic
+   - practical meaning:
+     - D2 now has the full set of preregistered pilot ingredients needed before null sampling:
+       - live event expressions
+       - matched non-event comparisons
+       - pre-event placebo comparisons
+       - event-conditioned null strata
+   - verification status:
+     - targeted state-transition panel tests passed
+     - broader regression pack passed:
+       - `36 passed, 3 warnings`
+   - explicit boundary:
+     - seed-based event-conditioned null generation remains the next slice
+     - no-replacement matching policy still remains deferred
+17. The eighth D2 coding slice is now in place:
+   - seed-based `P-001` event-conditioned null draw helper added:
+     - `build_upper_limit_event_conditioned_null_draw(...)`
+   - current null-draw contract:
+     - consumes the live event-conditioned null pool
+     - reshuffles `forward_return` only within:
+       - `date`
+       - `conditioning_bucket_key`
+     - emits:
+       - `null_forward_return`
+       - `null_seed`
+   - practical meaning:
+     - D2 now has the first executable `P-001` null mechanism, not just null strata
+     - the upper-limit pilot can now produce:
+       - live event rows
+       - matched-control rows
+       - pre-event placebo rows
+       - one seeded event-conditioned null draw
+   - verification status:
+     - targeted state-transition panel tests passed
+     - broader regression pack passed:
+       - `38 passed, 3 warnings`
+   - explicit boundary:
+     - per-expression null summaries / percentiles remain deferred
+     - no-replacement matching policy still remains deferred
+18. The ninth D2 coding slice is now in place:
+   - per-expression `P-001` null summary helper added:
+     - `build_upper_limit_event_conditioned_null_summary(...)`
+   - current summary contract:
+     - runs repeated seed-based null draws over the event-conditioned null pool
+     - summarizes, for each live expression:
+       - `observed_mean_forward_return`
+       - `null_mean_forward_return_median`
+       - `null_mean_forward_return_std`
+       - `null_mean_forward_return_unique_count`
+       - `null_is_degenerate`
+       - `observed_mean_forward_return_null_percentile`
+   - current honesty rule:
+     - when the null draw is degenerate for an expression, percentile is reported as `NaN`
+     - this avoids treating an invariant null as positive evidence
+   - practical meaning:
+     - D2 can now produce its first direct `P-001` read at the expression level
+     - for the current first-wave binary upper-limit pilot, the machine is now able to surface whether the honest null is informative or degenerate
+   - verification status:
+     - targeted state-transition panel tests passed
+     - broader regression pack passed:
+       - `40 passed, 3 warnings`
+   - explicit boundary:
+     - no-replacement matching policy still remains deferred
+     - no higher-level D2 report / runner has been added yet
+19. The tenth D2 coding slice is now in place:
+   - per-expression upper-limit pilot read helper added:
+     - `build_upper_limit_pilot_read_frame(...)`
+   - current read-frame contract:
+     - joins:
+       - live expression means
+       - matched-control excess means
+       - pre-event placebo excess means
+       - `P-001` null summary fields
+     - emits one deterministic per-expression pilot row
+   - practical meaning:
+     - D2 now has its first end-to-end read object for the `M1/M2/M5` upper-limit pilot
+     - the pilot can now be inspected at the expression level without reconstructing each component by hand
+   - verification status:
+     - targeted state-transition panel tests passed
+     - broader regression pack passed:
+       - `42 passed, 3 warnings`
+   - explicit boundary:
+     - no-replacement matching policy still remains deferred
+     - no file-writing D2 runner / artifact bundle has been added yet
+20. The eleventh D2 coding slice is now in place:
+   - thin upper-limit pilot artifact runner added:
+     - `run_upper_limit_pilot_artifact_bundle(...)`
+     - module:
+       - `src/portfolio_os/alpha/state_transition_pilot.py`
+   - current runner contract:
+     - consumes existing D2 objects only:
+       - `expression_frame`
+       - `control_comparison_frame`
+       - `placebo_comparison_frame`
+       - `null_pool`
+       - `random_seeds`
+     - writes:
+       - `expression_frame.csv`
+       - `control_comparison.csv`
+       - `placebo_comparison.csv`
+       - `null_pool.csv`
+       - `null_summary.csv`
+       - `pilot_read_frame.csv`
+       - `summary.json`
+       - `note.md`
+   - practical meaning:
+     - D2 now has its first thin artifact layer for the `M1/M2/M5` upper-limit pilot
+     - the full pilot read chain can be snapshotted without rebuilding each component manually
+   - verification status:
+     - targeted state-transition panel tests passed
+     - broader regression pack passed:
+       - `43 passed, 3 warnings`
+   - explicit boundary:
+     - no real-data ingestion / provider wiring has been added yet
+     - no CLI entrypoint has been added yet
+21. The twelfth D2 coding slice is now in place:
+   - real-data upper-limit pilot CSV entry added:
+     - `load_upper_limit_pilot_daily_panel_csv(...)`
+     - `run_upper_limit_pilot_artifact_bundle_from_daily_csv(...)`
+   - current entry contract:
+     - consumes one daily CSV with:
+       - the state-transition daily panel base fields
+       - pilot reference fields:
+         - `industry`
+         - `issuer_total_shares`
+     - normalizes:
+       - `ticker`
+       - `tradable`
+       - reference-field consistency
+     - derives the full existing D2 chain from the raw daily panel:
+       - matching covariates
+       - upper-limit event slice
+       - `P1` through `P4` expression rows
+       - matched non-event controls
+       - pre-event placebo comparisons
+       - `P-001` event-conditioned null pool
+       - thin artifact bundle output
+   - practical meaning:
+     - D2 now has its first true data-entry path from contract-shaped daily CSV to full upper-limit pilot artifacts
+     - this unlocks real-data pilot snapshots without provider wiring or manual assembly of intermediate D2 objects
+   - verification status:
+     - targeted state-transition panel tests passed:
+       - `23 passed`
+     - broader regression pack passed:
+       - `46 passed, 3 warnings`
+   - explicit boundary:
+     - no provider / Tushare wiring has been added yet
+     - no CLI entrypoint has been added yet
+     - no additional pilot expressions beyond `P1` through `P4` have been added
+22. The thirteenth D2 coding slice is now in place:
+   - minimal upper-limit pilot CLI entrypoint added:
+     - command:
+       - `state-transition-pilot`
+     - implementation entry:
+       - `portfolio_os.api.cli.state_transition_pilot(...)`
+   - current CLI contract:
+     - consumes:
+       - `--daily-panel`
+       - `--output-dir`
+       - optional `--lookback-days`
+       - repeatable `--null-seed`
+     - delegates directly to the new CSV-entry runner:
+       - `run_upper_limit_pilot_artifact_bundle_from_daily_csv(...)`
+     - emits the paths for:
+       - `expression_frame.csv`
+       - `control_comparison.csv`
+       - `placebo_comparison.csv`
+       - `null_pool.csv`
+       - `null_summary.csv`
+       - `pilot_read_frame.csv`
+       - `summary.json`
+       - `note.md`
+   - practical meaning:
+     - D2 upper-limit pilot is now callable as a first-class research CLI, not just as an internal Python helper
+     - this makes the contract-shaped CSV path executable end to end for real pilot snapshots
+   - verification status:
+     - targeted CLI test passed
+     - combined regression pack passed:
+       - `64 passed, 4 warnings`
+   - explicit boundary:
+     - no provider / Tushare wiring has been added yet
+     - no family-wide miner or additional expression families have been added yet
+23. The fourteenth D2 coding slice is now in place:
+   - contract-shaped state-transition daily-panel builder added:
+     - `src/portfolio_os/data/builders/state_transition_builder.py`
+   - current builder contract:
+     - expects provider history support via:
+       - `get_state_transition_daily_panel(...)`
+     - validates and writes:
+       - `state_transition_daily_panel.csv`
+       - `state_transition_daily_panel_manifest.json`
+     - enforces:
+       - unique `(date, ticker)` rows
+       - positive price / limit / share fields
+       - non-negative volume / amount
+       - non-blank `industry`
+   - provider / CLI wiring added:
+     - root CLI command:
+       - `build-state-transition-panel`
+     - Tushare historical provider support now exists for:
+       - `trade_cal`
+       - per-day `daily`
+       - per-day `stk_limit`
+       - end-date `reference` join into the panel
+     - composite capability report now propagates to:
+       - `state_transition_daily_panel`
+   - practical meaning:
+     - D2 now has a real provider-backed path from Tushare history to a contract-shaped A-share state-transition daily panel
+     - the upper-limit pilot can now be driven from a true historical provider build, not only synthetic CSV fixtures
+   - verification status:
+     - targeted provider-history red test now passes
+     - state-transition test pack passed:
+       - `5 passed`
+     - broader regression pack passed:
+       - `68 passed, 4 warnings`
+   - explicit boundary:
+     - the first real live panel build and live upper-limit pilot read remain the next slice
+24. Keep calibration-family alpha conclusions permanently out of scope unless a future program explicitly redefines scope.
+25. Post-commit D2 hardening now exists but is not yet committed:
+   - Tushare history fallback now degrades honestly when:
+     - `trade_cal` permission is unavailable
+     - historical `stk_limit` is unavailable or partial
+   - `state-transition daily panel` live builds now succeed using:
+     - per-ticker `daily` fallback
+     - price-band approximation for missing historical `stk_limit`
+   - upper-limit pilot now handles:
+     - empty event sets
+     - incomplete-conditioning event rows
+     - non-degenerate `P-001` candidate-return null pools
+26. Real D2 live builds now exist for the primary family:
+   - sample panel:
+     - `data/generated/state_transition_daily_panel_sample_real.csv`
+   - growth universe:
+     - `data/generated/state_transition_daily_panel_growth40_long_real.csv`
+     - `data/generated/state_transition_daily_panel_growth60_long_real.csv`
+     - `data/generated/state_transition_daily_panel_growth60_2024_real.csv`
+27. The first thin-sample live upper-limit pilot (`growth60_long_real`) established:
+   - real event rows exist
+   - real control/placebo/null artifacts can be emitted
+   - but the null was still too thin to support a serious slice conclusion
+28. After `P-001` candidate-pool hardening and the wider `2024-01-02 -> 2026-04-17` growth60 panel:
+   - `P1/P2/P3/P4` upper-limit slice now has a non-degenerate conditioned null
+   - event counts on the wider panel are:
+     - upper-limit touched: `51`
+     - sealed upper-limit: `42`
+     - failed upper-limit: `9`
+     - lower-limit touched: `7`
+29. Current upper-limit slice read on `growth60_2024_real` is:
+   - `P1_SEALED_UPPER_LIMIT`
+     - observed mean `+0.9857%`
+     - excess vs control `+2.9016%`
+     - excess vs placebo `-19.0181%`
+     - null percentile `1.00`
+   - `P2_FAILED_UPPER_LIMIT`
+     - observed mean `+0.3270%`
+     - excess vs control `+1.1822%`
+     - excess vs placebo `-12.4534%`
+     - null percentile `0.00`
+   - `P3_NEXT_DAY_AFTER_SEALED`
+     - observed mean `-1.0570%`
+     - excess vs control `+0.8907%`
+     - excess vs placebo `-4.2665%`
+     - null percentile `0.00`
+   - `P4_NEXT_DAY_AFTER_FAILED`
+     - observed mean `+2.1166%`
+     - excess vs control `+2.7333%`
+     - excess vs placebo `-2.0556%`
+     - null percentile `1.00`
+30. Interpretation of the first upper-limit slice is now frozen in:
+   - `docs/strategy/a_share_state_transition_upper_limit_slice_closeout_2026_04_17.md`
+   - classification:
+     - `mechanism suggestive but unproven`
+   - not a family winner because:
+     - only `R3` regime is observed
+     - placebo contamination remains unresolved
+     - `M2/M5` do not survive cleanly as a portable cluster
+31. `M4` high-turnover exploratory read does not rescue the upper-limit branch:
+   - sealed high-turnover subset goes negative with null percentile `0.00`
+   - failed high-turnover subset turns positive with null percentile `1.00`
+   - practical read:
+     - do not open a dedicated `M4` winner lane from the current upper-limit universe
+32. A pre-`R3` history unlock was attempted through the current provider path:
+   - target:
+     - `40` growth tickers
+     - `2020-01-01 -> 2026-04-17`
+   - result:
+     - no artifact emitted inside a `20`-minute execution window
+   - practical implication:
+     - current Tushare history path is not operationally viable for multi-regime family closeout inside this cycle
+33. Primary-family final closeout is now recorded in:
+   - `docs/strategy/a_share_state_transition_family_closeout_2026_04_17.md`
+   - final classification:
+     - `mechanism suggestive but unproven`
+   - why not a winner:
+     - upper-limit slice produced mixed evidence with unresolved placebo contamination
+     - `M4` exploratory read did not rescue the branch
+     - `M3` remained too sparse in the live `R3` window
+     - the regime gate could not be honestly cleared with the current provider path
+34. Discovery-v2 charter consequence:
+   - no `D5` qualification handoff
+   - no active family-mining lane remains under this charter
+   - future reopening requires:
+     - richer pre-`R3` history
+     - a deliberately downside-rich `M3` universe
+     - or a new charter with different scope
+35. `Mechanism suggestive but unproven` is a real intermediate state, not a softened synonym for failure:
+   - it means the family produced local mechanism-linked evidence
+   - but strength and portability were still insufficient to clear the current cycle's family-winner gate
+   - future reopening should therefore inherit a bounded prior rather than restart from a blank slate
+36. The preserved inheritance points from this closeout are:
+   - `P1/P4` directionality is worth treating as a restart prior, but must be independently revalidated
+   - pre-event placebo contamination is now the first failure surface to defend against in any reopened state-transition null design
+   - a future `FM-002` placeholder should be reserved for state-transition-specific placebo contamination if the same pattern reappears under richer data
+   - the current provider path, not just the family read, was a hard cycle constraint; any honest reopening requires a stronger pre-`R3` data layer first
+37. Discovery-v2 closeout should not be remembered as `tried and failed`:
+   - it closed with:
+     - reusable machine assets (`P-001`, `FM-001`)
+     - a real provider-backed A-share state-transition panel path
+     - a bounded family-level conclusion that prevents false-winner inflation
+   - that combination is a successful discovery-cycle output even without a promotable winner

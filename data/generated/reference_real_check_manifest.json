@@ -1,0 +1,32 @@
+{
+  "provider": "tushare",
+  "provider_token_source": "env",
+  "as_of_date": "2026-03-23",
+  "request_parameters": {
+    "tickers_file": "data\\sample\\tickers.txt",
+    "overlay_path": "data\\sample\\reference_overlay_example.csv"
+  },
+  "output_path": "data\\generated\\reference_real_check.csv",
+  "output_sha256": "aabe57bf85285ed188d5cde76c402c68014c3b84f3294ef32f5d8242a098da13",
+  "row_count": 7,
+  "generated_at": "2026-03-24T17:13:11.888484+00:00",
+  "approximation_notes": [
+    "industry is sourced from stock_basic when available, otherwise from bak_basic.",
+    "issuer_total_shares is sourced from daily_basic.total_share when available, otherwise from bak_basic.total_share.",
+    "daily_basic.total_share is treated as 10k-share units and scaled into shares.",
+    "bak_basic.total_share is treated as 100m-share units and scaled into shares.",
+    "benchmark_weight is not populated by get_reference_snapshot and remains blank unless added downstream."
+  ],
+  "provider_capability_status": "degraded",
+  "fallback_notes": [
+    "stock_basic_unavailable_used_bak_basic",
+    "daily_basic_unavailable_used_bak_basic_or_blank_total_share"
+  ],
+  "permission_notes": [
+    "stock_basic_permission_missing_or_rate_limited",
+    "daily_basic_permission_missing_or_rate_limited"
+  ],
+  "recommended_alternative_path": "run_market_and_reference_builders_only",
+  "build_status": "success_with_degradation",
+  "error_message": null
+}

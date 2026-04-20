@@ -1,0 +1,47 @@
+name: standard
+description: Identity mapping for PortfolioOS native CSV schemas
+holdings:
+  required_fields:
+    - ticker
+    - quantity
+  columns:
+    ticker: ticker
+    quantity: quantity
+    avg_cost: avg_cost
+target:
+  required_fields:
+    - ticker
+    - target_weight
+  columns:
+    ticker: ticker
+    target_weight: target_weight
+market:
+  required_fields:
+    - ticker
+    - close
+    - adv_shares
+    - tradable
+    - upper_limit_hit
+    - lower_limit_hit
+  columns:
+    ticker: ticker
+    close: close
+    vwap: vwap
+    adv_shares: adv_shares
+    tradable: tradable
+    upper_limit_hit: upper_limit_hit
+    lower_limit_hit: lower_limit_hit
+reference:
+  required_fields:
+    - ticker
+    - industry
+    - blacklist_buy
+    - blacklist_sell
+  columns:
+    ticker: ticker
+    industry: industry
+    blacklist_buy: blacklist_buy
+    blacklist_sell: blacklist_sell
+    benchmark_weight: benchmark_weight
+    manager_aggregate_qty: manager_aggregate_qty
+    issuer_total_shares: issuer_total_shares

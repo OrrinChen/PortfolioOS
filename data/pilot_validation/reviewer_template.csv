@@ -1,0 +1,6 @@
+sample_id,reviewer_id,order_reasonableness_score,findings_explainability_score,scenario_tradeoff_score,approval_handoff_score,execution_credibility_score,notes
+sample_01,,,,,,,
+sample_02,,,,,,,
+sample_03,,,,,,,
+sample_04,,,,,,,
+sample_05,,,,,,,

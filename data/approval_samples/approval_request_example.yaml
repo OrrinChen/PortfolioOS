@@ -1,0 +1,27 @@
+name: demo_approval_request
+description: Approve a final execution package from scenario analysis
+scenario_output_dir: outputs/scenario_demo
+selected_scenario: private_flexible
+decision_maker: pm_demo
+decision_role: portfolio_manager
+rationale: >
+  Choose the flexible private-fund scenario because it preserves the current
+  cost advantage while keeping the blocked-trade burden low under today's
+  snapshot constraints.
+acknowledged_warning_codes:
+  - no_order_due_to_constraint
+  - manager_aggregate_limit
+override:
+  enabled: false
+  reason:
+  override_reason_code:
+  approver:
+  approved_at:
+handoff:
+  trader: trader_demo
+  reviewer: risk_demo
+  compliance_contact: compliance_demo
+tags:
+  - demo
+  - private_fund
+  - freeze

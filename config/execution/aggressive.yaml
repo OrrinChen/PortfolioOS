@@ -1,0 +1,4 @@
+urgency: high
+slice_ratio: 0.50
+max_child_orders: 2
+default_calibration_profile: config/calibration_profiles/liquid_midday.yaml

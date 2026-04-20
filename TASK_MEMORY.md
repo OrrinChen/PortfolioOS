@@ -1,0 +1,708 @@
+# TASK_MEMORY
+
+This file is the short handoff note for continuing PortfolioOS. It keeps only the current state, stable conclusions, and the next useful branch. Detailed artifacts remain in `docs/`, `outputs/`, and the external research workspaces.
+
+## Current Snapshot
+
+- PortfolioOS is a compliance-aware portfolio rebalance, scenario, approval, execution-simulation, backtest, TCA, and research CLI platform.
+- Core platform buildout through Phase 12 is implemented and stable.
+- The current project-wide meta stage is `research convergence + promotion contract`, not repo merge.
+- Project operating mode is now `paper-stage only`.
+- Default rule: freeze new research, new integrations, and new optimization work unless they are directly required by the live paper-stage path.
+- Canonical orchestration path: `src/portfolio_os/workflow/single_run.py`.
+- Historical backtests should run through library calls, not CLI subprocess chains.
+- Default execution simulation mode: `impact_aware`.
+- `participation_twap` is intentionally preserved in sample execution requests as the baseline comparison mode.
+- Latest full regression on this machine: `python -m pytest -q` -> `310 passed, 38 warnings`.
+
+## Active Worktree Topology
+
+- `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01` main research repo = home of the closed US WRDS method asset; read `docs/us_wrds_alpha_roadmap.md` and `docs/us_wrds_memory.md` there instead of treating US as an active worktree.
+- `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\ashare-a1` = the only active A-share research line.
+- `C:\Users\14574\Quant\PortfolioOS` main repo = shared platform changes only; do not leave branch-local research copies here.
+- `C:\Users\14574\Quant\PortfolioOS\.worktrees\codex-us-alpha-week1-freeze` = current strategy-doc worktree for closing the old US qualification sprint and drafting the next discovery charter; no active implementation should begin here before the new charter is reviewed.
+
+## Stable Platform State
+
+### Research Governance
+
+- The narrow `US alpha core restart` qualification sprint is formally closed with `no winner`:
+  - see `docs/strategy/us_alpha_core_week4_stop_go_note_2026_04_16.md`
+- The next research move is no longer "expand the old frozen candidate field".
+- The next active design object is a discovery-first charter:
+  - `docs/strategy/alpha_discovery_charter_v2_2026_04_16.md`
+- The new proposed order is:
+  - calibration family first = `US residual momentum / residual reversal`
+  - then a primary mining family = `A-share state-transition microstructure`
+- Current implementation slice = `Phase 0 + calibration-family D1 kickoff`
+- `docs/strategy/alpha_discovery_family_selection_memo_2026_04_16.md` now records why the primary family is chosen by structural edge rather than convenience
+- `docs/strategy/us_residual_momentum_calibration_d1_2026_04_16.md` is now the next document gate before any calibration-family implementation or experiment setup
+- No primary-family mining should begin before a calibration-family closeout exists
+- First executable calibration slice is now live:
+  - module = `src/portfolio_os/alpha/discovery_calibration.py`
+  - runner = `scripts/run_us_residual_momentum_calibration.py`
+  - tests = `tests/test_alpha_discovery_calibration.py`
+  - first artifacts = `outputs/us_residual_momentum_calibration/2026-04-16/`
+- Current calibration read:
+  - harness is operational
+  - but calibration is **not yet validated**
+  - strongest control (`CTRL1_SHUFFLED_PLACEBO`) currently reads stronger than the best live expression (`RM3_VOL_MANAGED`)
+  - therefore the discovery machine should be treated as still under calibration, not yet trusted for family-winner promotion
+- Primary-family mining remains blocked until calibration produces a credible closeout
+- Important methodological change:
+  - discovery is now organized around mechanism-bearing families, not frozen single-factor tournaments
+  - qualification becomes a downstream handoff phase rather than the discovery admission filter
+  - the primary family is selected by structural edge, not by code convenience or continuity with the failed US restart sprint
+
+### Data And Inputs
+
+- Provider/builder infrastructure for `market.csv`, `reference.csv`, `target.csv`, and snapshot bundles is complete.
+- Tushare permission-aware fallbacks are implemented.
+- Because current Tushare `index_weight` access is still limited, client-provided `target.csv` remains the official fallback when live snapshot generation is incomplete.
+- Frozen expanded-US research assets are the canonical US fundamentals workspace:
+  - `data/universe/us_equity_expanded_tickers.txt`
+  - `data/universe/us_universe_reference.csv`
+  - `data/universe/us_universe_market_2026-03-27.csv`
+  - `data/risk_inputs_us_expanded/`
+  - `C:\Users\14574\Quant\fmp_data_freeze`
+- Use the frozen FMP workspace for resumed US fundamentals or transcript work; do not reopen the old `yfinance` path.
+- Important FMP caveat: frozen analyst-estimate payloads are not PIT-safe for analyst-revision research because they do not include historical snapshot metadata.
+- WRDS bootstrap research infrastructure is now live in the external workspace under:
+  - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha\run_w1.py`
+  - `...\scripts\wrds_ibes_w3.py`
+  - `...\scripts\wrds_eval_adapter.py`
+  - `...\outputs\wrds_bootstrap\`
+- Stable WRDS research notes:
+  - `W1` dynamic universes were validated cleanly: `top_500_dynamic` stays at exactly `500` names and `rank_500_1500_dynamic` stays at exactly `1000`
+  - `wrds.iclink` is not available on this account; the working IBES-CRSP link uses local `ibes.idsum` CUSIP matching with `sdates`-aware validity handling
+  - for analyst and event research, WRDS is now the canonical PIT source; do not use the old FMP estimate history as a substitute
+
+### Execution, TCA, And Costs
+
+- Expanded-US replay/sample validation for `sample_us_04` to `sample_us_06` is already complete; the stack is healthy enough for further research work.
+- Fill collection preserves `reference_price` end to end.
+- BOM-tolerant JSON handling is required for some calibration and broker-state artifacts.
+- The constrained fill batch generator already supports broker positions, buying-power limits, and audit manifests.
+- Current account scale only supports realistic participation around `0-0.1%` on the frozen 50-name US universe.
+- Paper calibration sprint is now live as a platform-validation lane:
+  - dry-run contract path is implemented via `portfolio_os.api.cli paper-calibration`
+  - first neutral Alpaca paper run completed on `2026-04-15`
+  - canonical live calibration read is:
+    - `C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_live_2026-04-15_v3`
+    - `fill_rate = 100%`, `partial_count = 0`, `rejected_count = 0`
+    - dedicated pre-trade reference snapshot is now captured:
+      - `captured_ticker_count = 1`
+      - `fallback_reference_count = 0`
+      - `quoted_mid_price = 697.33`
+      - `quoted_spread_bps = 0.86`
+    - `requested_notional = 697.33`
+    - `filled_notional = 697.36`
+    - `reconciliation matched_count = 12`, `mismatched_count = 0`
+  - important scope rule:
+    - treat this as platform calibration, not alpha validation
+    - current sample is still tiny and not yet a stress / slippage distribution sample
+  - repeated-sampling tooling now exists:
+    - `paper-calibration --repeat N --interval-seconds X`
+    - `paper-calibration-aggregate --input-root ... --output-dir ...`
+  - current recommended next step on this lane:
+    - collect a small repeated `SPY x 1 share` tranche (`~30-50` runs)
+    - aggregate drift, half-spread scaling, latency slope, and time-of-day buckets
+    - then decide whether the result is:
+      - systematic staleness bias
+      - microstructure noise floor
+      - or paper-venue-specific quirk
+- Low-participation TCA closure is done:
+  - `overlay_readiness = sufficient`
+  - `candidate_k = 3.498400399110418`
+  - scope = paper overlay only
+- Do not extrapolate the calibration above `0.1%` participation.
+- Do not promote calibrated `k` into `config/us_expanded.yaml` yet.
+- Calibrated research config exists at `config/us_expanded_tca_calibrated.yaml`.
+- The main estimator follow-up is to include negative-signal eligible fills; useful, but not blocking the current low-participation closure.
+
+### Optimizer And Risk Conclusions
+
+- Cost-model sweeps show a structural problem, not just `k` tuning:
+  - without a real alpha / expected-return term, the optimizer mainly differentiates itself by suppressing trades
+  - under realistic costs, that suppression gives up more holding return than it saves
+- Risk-aversion tooling is implemented (`portfolio-os-risk-sweep`), but no Sharpe-improving sweet spot was found.
+- Conclusion: better alpha is the main bottleneck, not more optimizer tuning or a risk-aware default objective.
+- Project-level structural decision is now frozen in:
+  - `docs/strategy/single_period_vs_multi_period_structure_decision_memo_2026_04_15.md`
+- Current read from that memo:
+  - immediate full multi-period portfolio-construction work is **not** approved
+  - the present issue is a mix of alpha weakness, objective-shape limitations, and missing intertemporal allocation logic
+  - reopen multi-period only if a real alpha package later proves that single-period myopia is the next binding loss source
+- Immediate optimizer-interface design reference is now:
+  - `docs/strategy/objective_function_units_spec_2026_04_15.md`
+- Current implementation order from that spec:
+  - align alpha, cost, and covariance to one rebalance-period horizon
+  - remove `target_deviation` from the core economic objective
+  - treat cash deployment as a constraint design problem, not as a hidden objective anchor
+  - rerun continuous-solution ablations before reopening signal research or multi-period work
+- As of `2026-04-15`, the first objective-units implementation pass is now in code:
+  - default `transaction_cost_objective_mode` is `nav_fraction`
+  - risk-enabled objective paths now use the economic core only:
+    - `risk_term`
+    - `tracking_error`
+    - `transaction_cost`
+    - `alpha_reward`
+  - legacy `target_deviation` / fee / turnover / slippage penalties no longer re-enter the risk-enabled objective through `augment`
+  - walk-forward alpha snapshots now deannualize `annualized_top_bottom_spread` into a rebalance-period `expected_return`
+  - backtest alpha panels now carry:
+    - `period_top_bottom_spread`
+    - `decision_horizon_days`
+  - risk covariance is now scaled from annualized space to the same decision horizon when `decision_horizon_days` is supplied in-universe
+- First post-fix local sanity checks:
+  - on the frozen US expanded alpha sample at rebalance date `2025-10-31` with next rebalance `2025-11-28` (`decision_horizon_days = 19`):
+    - objective decomposition shares were approximately:
+      - `transaction_cost = 45.4%`
+      - `risk_term = 31.0%`
+      - `alpha_reward = 16.5%`
+      - `tracking_error = 7.2%`
+    - solver continuous gross traded notional was about `$452k`
+    - repair preserved `20` executable instructions
+  - practical read:
+    - the optimizer is no longer collapsing into near-zero continuous trades solely because of raw-currency cost vs annualized-alpha mismatch
+    - any remaining quality issues should now be treated as genuine portfolio-construction or signal problems, not as the old objective-unit bug
+- Optimizer-isolated synthetic-alpha proof is now also live:
+  - runner = `scripts/run_optimizer_isolated_acceptance.py`
+  - module = `src/portfolio_os/optimizer/acceptance_proof.py`
+  - artifacts live under:
+    - `outputs/optimizer_isolated_acceptance_2026-04-16/`
+  - current realistic-context proof read on rebalance date `2025-10-31`:
+    - positive synthetic scales `0.5x -> 1.0x -> 2.0x` all solved `optimal`
+    - `alpha_share_abs_weighted` rose monotonically from `0.1136 -> 0.2883 -> 0.4921`
+    - base-alpha alignment stayed strongly positive (`~0.96`, `~0.94`, `~0.86`)
+    - sign-flip case reversed relative to the same base-alpha ordering:
+      - `base_alignment_spearman ~ -0.93`
+      - `base_top_minus_bottom_weight_delta ~ -0.0300`
+    - repair retained most of the continuous solution gross notional (`~88%` at `0.5x`, `~96%` at `1.0x`, `~98%` at `2.0x`)
+  - practical interpretation:
+    - this is strong evidence that the optimizer can structurally receive alpha once alpha is injected directly into `expected_return`
+    - it is **not** yet proof of full time-series reception under the real bridge, because the real bottleneck still includes sparse alpha activation upstream
+- Alpha-bridge gating diagnosis is now also frozen in:
+  - note = `docs/strategy/alpha_bridge_spread_floor_investigation_note_2026_04_15.md`
+  - current `spread floor` is an intentional one-sided non-reversal guard from the original Phase 1.5 design, not an accidental implementation leftover
+  - on the corrected walk-forward sample:
+    - `alpha_ready_months = 4`
+    - `nonzero_alpha_months = 1`
+    - `spread_floor_to_zero_months = 3`
+  - practical implication:
+    - do not treat `risk_term = 0.3` time-series confirmation as the next irreversible step until spread-floor semantics are either kept explicitly or replaced explicitly
+- Alpha-bridge semantic closeout is now also frozen in:
+  - contract = `docs/strategy/alpha_bridge_semantic_contract.md`
+  - offline guard-event comparison artifacts live under:
+    - `outputs/alpha_bridge_semantic_comparison_2026-04-15/`
+  - three-event read:
+    - `floor_to_zero` and `explicit_abstain` were behaviorally identical under the current objective
+    - `signed_spread` was the only protocol that changed optimizer behavior materially
+    - it raised mean guard-event turnover from about `1.15%` to about `2.17%`
+  - semantic decision:
+    - selected contract = `explicit_abstain`
+    - rationale = cleaner "no alpha view" semantics with no current behavioral cost versus `floor_to_zero`
+  - implementation read:
+    - runtime can remain on `floor_to_zero` for now because current behavior matches `explicit_abstain`
+    - if later downstream consumers distinguish zero-valued alpha vectors from missing alpha coverage, align implementation to the contract explicitly before promotion
+- Real alpha package audit is now also live:
+  - runner = `scripts/run_real_alpha_package_audit.py`
+  - helper = `src/portfolio_os/alpha/package_audit.py`
+  - artifacts live under:
+    - `outputs/real_alpha_package_audit_2026-04-16/`
+  - current read on `manifest_us_expanded_alpha_phase_1_5.yaml`:
+    - `rebalance_count = 12`
+    - `alpha_ready_count = 6`
+    - `alpha_active_count = 2`
+    - corrected terminal-state taxonomy:
+      - `cold_start_count = 6`
+      - `insufficient_history_count = 1`
+      - `spread_floor_to_zero_count = 3`
+      - `guard_zero_count = 3`
+    - among active months, realized mapping is currently wrong on average:
+      - `mean_rank_ic ~ -0.1206`
+      - `positive_rank_ic_ratio = 0`
+      - `mean_realized_top_bottom_spread ~ -7.85%`
+      - `spread_sign_match_ratio = 0`
+    - thickness is not the first failure mode:
+      - gross active trading pnl `~ 562.35`
+      - trading cost pnl `~ -172.52`
+      - net active pnl `~ 389.82`
+      - gross-to-net retention `~ 69.3%`
+  - practical interpretation:
+    - the optimizer is now largely cleared as the first-order bottleneck
+    - the current real alpha package fails mainly because activation is sparse and the few active months currently map the wrong way
+    - however the wrong-way read remains low-confidence at `N=2`; treat it as an observation, not yet a structural conclusion
+    - the next justified work is alpha-package / signal-side diagnosis, not renewed optimizer tuning
+  - diagnostic-only counterfactual spread-floor audit is now also live:
+    - artifacts live under:
+      - `outputs/real_alpha_package_audit_counterfactual_signed_2026-04-16/`
+    - method:
+      - keep the same backtest and optimizer
+      - only replace `spread_floor_to_zero` months with a diagnostic `signed_spread` counterfactual
+      - do **not** treat this as a production recommendation
+    - current read:
+      - `counterfactual_promoted_count = 3`
+      - active sample expands from `2` to `5`
+      - realized mapping improves only modestly:
+        - `mean_rank_ic` moves from `~ -0.1206` to `~ -0.0686`
+        - `positive_rank_ic_ratio = 20%`
+        - `spread_sign_match_ratio = 20%`
+      - thickness worsens materially:
+        - gross active trading pnl drops to `~ 53.46`
+        - net active pnl turns negative at `~ -176.29`
+    - practical interpretation:
+      - opening the spread floor is useful diagnostically because it expands the sample
+      - but it does **not** rescue the package economically
+      - current evidence is therefore:
+      - sparse activation is definitely one bottleneck
+      - removing the floor does not reveal a hidden good package underneath
+      - any next step should stay diagnostic rather than promote a looser production guard
+  - pointwise production-vs-canonical consistency diagnostic is now also live:
+    - runner = `scripts/run_signal_consistency_diagnostic.py`
+    - module = `src/portfolio_os/alpha/signal_consistency_diagnostic.py`
+    - artifacts live under:
+      - `outputs/signal_consistency_diagnostic_2026-04-16/`
+    - provenance is now frozen per run:
+      - `portfolioos_head_sha` with dirty-state suffix
+      - canonical builder path/name
+      - canonical signal spec (`21/84/21`, momentum-only, `21d` forward)
+      - pooled method = `concat_then_correlate`
+    - current read:
+      - baseline production view preserves the canonical signal almost exactly on its two active months:
+        - pooled `alpha_score` vs canonical Spearman `~ 0.9982`
+        - pooled `expected_return` vs canonical Spearman `~ 0.9161`
+        - top/bottom overlap remains high
+      - signed-spread counterfactual preserves `alpha_score` ordering but breaks expected-return mapping on the three promoted months:
+        - pooled `alpha_score` vs canonical Spearman `~ 0.9983`
+        - pooled `expected_return` vs canonical Spearman `~ -0.0444`
+        - `2025-11-28`, `2025-12-31`, and `2026-01-30` each flip to near `-1.0` month-level expected-vs-canonical Spearman
+    - practical interpretation:
+      - baseline production does **not** appear to be mechanically distorting the signal on the months where it is active
+      - the signed-spread expansion mainly adds months whose expected-return mapping is misaligned with the canonical ordering
+      - this supports the current read that spread floor can be locally useful as a small-sample filter even though long-horizon work does **not** support a broader crash-protection interpretation
+      - next justified step is to accumulate more production sample before reopening signal re-engineering
+- Narrow US long-horizon signal extension is now also live:
+  - runner = `scripts/run_us_long_horizon_signal_extension.py`
+  - helper = `src/portfolio_os/alpha/long_horizon.py`
+  - artifacts live under:
+    - `outputs/us_long_horizon_signal_extension_2026-04-16/`
+  - important implementation correction:
+    - factor attribution is now period-aligned by calendar month, not by exact date equality between trading month-end and calendar month-end
+    - this materially weakens the old over-strong read that the operational package itself was just a standard momentum proxy
+  - current proxy read on the same frozen 50-name expanded-US universe:
+    - yfinance-adjusted close history covers all `50/50` names from roughly `2006-05-01` to `2026-04-15`
+    - native-horizon (`5d`) monthly top-bottom spread remains momentum-adjacent, but only moderately:
+      - `Mom beta ~ +0.2377`, `t ~ +2.69`
+      - post-2010 robustness drops materially:
+        - `Mom beta ~ +0.0633`, `t ~ +0.60`
+      - native spread still also carries non-MOM style tilt:
+        - `HML beta ~ +0.2848`
+        - `QMJ beta ~ -0.1764`
+    - deployable operational-horizon (`21d`) spread is **not** materially explained by MOM:
+      - full-sample `Mom beta ~ +0.0158`, `t ~ +0.13`
+      - post-2010 `Mom beta ~ -0.0206`, `t ~ -0.12`
+    - Layer B Stage 2 bad-month cohort decomposition is now also live on the raw operational `21d` spread:
+      - worst-quintile cohort size = `47` months
+      - split = `outer_half 23`, `inner_half 24`, `non_bad 187`
+      - temporal distribution is not identical:
+        - `outer_half median_year ~ 2019`
+        - `inner_half median_year ~ 2014.5`
+        - so the read still carries a real time-mix caveat
+      - pre-2010 historical size coverage is effectively unavailable from the current yfinance shares proxy:
+        - `historical_shares_coverage_ratio = 0` for all pre-2010 cohort rows
+        - treat size-bucket evidence as post-2010-heavy and only directional
+      - relative to non-bad bootstrap nulls, `outer_half` and `inner_half` look materially closer on:
+        - `pre_vol_bucket`
+        - `leg_hhi`
+        - `leg_effective_n`
+        - `long_short_attribution`
+      - sector and industry mixes also look more similar than random non-bad comparisons, but with the static-label caveat:
+        - labels are current-as-of-analysis-date, not historical classifications
+      - `pre_return_bucket` does **not** show the same clean same-type read:
+        - `outer_inner` distance is roughly at the non-bad null median
+        - this weakens any claim that left-tail months share one uniform winner/loser composition story
+      - practical interpretation:
+        - the current best framing is `broad left-tail vulnerability with partial structural consistency`, not `identified independent crash mode`
+        - B3 macro conditioning should stay deferred until there is either a cleaner same-type read or better data coverage
+    - operational-horizon (`21d`) monthly stress view still includes clear negative windows:
+      - `2009-03-31 spread ~ -19.7%`
+      - `2025-10-31 spread ~ -10.4%`
+      - worst observed month in this proxy sample was `2022-12-30` at `~ -35.5%`
+      - `2026-02-27` remains a weaker negative active month at roughly `-3.5%`
+    - conditional decomposition continues to weaken the old self-gating intuition:
+      - high trailing `12m` market state mean spread is roughly flat-to-negative (`~ -0.03%`)
+      - low trailing `12m` market state mean spread stays modestly positive (`~ +0.43%`)
+      - positive trailing signal-spread state actually underperforms nonpositive state on average (`~ -0.40%` vs `~ +0.88%`)
+    - MOM residual analysis on the three key crash windows (`2009-03`, `2022-12`, `2025-10`) now says:
+      - native `5d` mean matching absorption share is only `~ 15.1%`
+      - operational `21d` mean matching absorption share is only `~ 0.3%`
+      - both classify as `independent_residual`
+      - concrete examples:
+        - native `2009-03` is only partially momentum-absorbed (`~45%`)
+        - native `2022-12` and `2025-10` are not absorbed; `2022-12` is actually offset by positive MOM
+        - operational `2009-03`, `2022-12`, and `2025-10` are all almost entirely residual to MOM
+  - practical interpretation:
+    - this is now a two-layer read, not a one-layer label:
+      - the signal is momentum-adjacent at its native `5d` horizon
+      - but the current deployable `21d` package losses are mostly **not** explained away by standard MOM exposure
+    - the current `spread floor` should be treated as a weak semantic filter, not as real crash protection
+    - standard momentum crash protection is therefore **not** yet the default next template for this package
+    - if this line continues, the next research question is custom residual crash mode / regime handling, not direct BSC/DM porting
+    - this remains a fast proxy study until rerun on CRSP-grade history; do not over-upgrade it into a final research verdict
+
+## US Research State
+
+- Status: reopened as a tightly scoped US factor-layer qualification sprint under an 8-week charter; this is a new line, not a reopen of Branch A.
+- Last sync: `2026-04-16`
+- Branch-local references:
+  - roadmap = `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\docs\us_wrds_alpha_roadmap.md`
+  - memory = `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\docs\us_wrds_memory.md`
+  - charter = `C:\Users\14574\Quant\PortfolioOS\docs\strategy\us_alpha_core_restart_charter_2026_04_16.md`
+  - week1 checklist = `C:\Users\14574\Quant\PortfolioOS\docs\superpowers\plans\2026-04-16-us-alpha-core-restart-week1.md`
+  - week1 baseline registry = `C:\Users\14574\Quant\PortfolioOS\docs\strategy\us_alpha_core_week1_baseline_registry_2026_04_16.md`
+  - candidate definition sheet = `C:\Users\14574\Quant\PortfolioOS\docs\strategy\us_alpha_core_candidate_definition_sheet_2026_04_16.md`
+  - qualification artifact contract = `C:\Users\14574\Quant\PortfolioOS\docs\strategy\us_alpha_core_qualification_artifact_contract_2026_04_16.md`
+- Stable read:
+  - data quality and evaluation-horizon mismatch were both real bottlenecks
+  - `announcement-timed SUE` is the main US event alpha
+  - finalized event-aware `revision` is real, but fixed-horizon mainline ingestion does not recover most of its edge
+  - naive hybrid-v1 fallback is already rejected
+  - same-event package qualification also failed:
+    - same-event `SUE x revision` correlation stayed low
+    - but the simple `SUE + revision` package still underperformed pure `SUE`
+    - redesigned event-aligned mainline delta was not admitted from that branch
+  - package-local diagnosis is now closed:
+    - no package correctness bug was found
+    - `signed_spread` is a by-design abstain case, not a repair direction
+    - the only plausible package-side tweak is the small `min_evaluation_dates: 20 -> 19` coverage sidecar
+  - Week 1 freeze is now materially defined:
+    - the baseline registry explicitly separates:
+      - current platform-native comparable baselines
+      - external WRDS methodological benchmarks
+      - frozen family references without current-platform scorecards
+    - the eight-candidate field is frozen with exact formulas, direction, cadence, and PIT assumptions
+    - the qualification artifact bundle is frozen so Week 2-3 can run under one report shape
+  - Week 4 stop/go closeout is now also written:
+    - `C:\Users\14574\Quant\PortfolioOS\.worktrees\codex-us-alpha-week1-freeze\docs\strategy\us_alpha_core_week4_stop_go_note_2026_04_16.md`
+- Current active branch:
+  - US factor-layer restart has entered Week 2 under a new platform-native qualification engine:
+    - implementation path:
+      - `C:\Users\14574\Quant\PortfolioOS\.worktrees\codex-us-alpha-week1-freeze\src\portfolio_os\alpha\qualification.py`
+    - first-pass Family A artifacts now exist under:
+      - `C:\Users\14574\Quant\PortfolioOS\.worktrees\codex-us-alpha-week1-freeze\outputs\us_alpha_core_restart\A1\2026-04-16\`
+      - `C:\Users\14574\Quant\PortfolioOS\.worktrees\codex-us-alpha-week1-freeze\outputs\us_alpha_core_restart\A2\2026-04-16\`
+      - `C:\Users\14574\Quant\PortfolioOS\.worktrees\codex-us-alpha-week1-freeze\outputs\us_alpha_core_restart\A3\2026-04-16\`
+    - first-pass Family C artifacts now also exist under:
+      - `C:\Users\14574\Quant\PortfolioOS\.worktrees\codex-us-alpha-week1-freeze\outputs\us_alpha_core_restart\C1\2026-04-16\`
+      - `C:\Users\14574\Quant\PortfolioOS\.worktrees\codex-us-alpha-week1-freeze\outputs\us_alpha_core_restart\C2\2026-04-16\`
+    - Family B has now been unblocked on the checked-in sample via a local daily dollar-volume panel:
+      - generated liquidity input:
+        - `C:\Users\14574\Quant\PortfolioOS\.worktrees\codex-us-alpha-week1-freeze\outputs\us_alpha_core_restart\liquidity_inputs\2026-04-16\liquidity_long.csv`
+      - first-pass Family B artifacts now exist under:
+        - `C:\Users\14574\Quant\PortfolioOS\.worktrees\codex-us-alpha-week1-freeze\outputs\us_alpha_core_restart\B1\2026-04-16\`
+        - `C:\Users\14574\Quant\PortfolioOS\.worktrees\codex-us-alpha-week1-freeze\outputs\us_alpha_core_restart\B2\2026-04-16\`
+        - `C:\Users\14574\Quant\PortfolioOS\.worktrees\codex-us-alpha-week1-freeze\outputs\us_alpha_core_restart\B3\2026-04-16\`
+    - cross-family first-pass synthesis artifact:
+      - `C:\Users\14574\Quant\PortfolioOS\.worktrees\codex-us-alpha-week1-freeze\outputs\us_alpha_core_restart\week2_interim_synthesis\2026-04-16\week2_interim_synthesis.md`
+  - First-pass read on the checked-in platform-native sample (`50` expanded-US names, not full `rank_500_1500`):
+    - `A1`:
+      - `oos_mean_rank_ic ~ 0.0078`
+      - `oos_alpha_only_tstat ~ -0.07`
+      - fails admission, subperiod, and orthogonality
+    - `A2`:
+      - `oos_mean_rank_ic ~ 0.0358`
+      - `oos_alpha_only_tstat ~ 1.10`
+      - best Family A candidate so far
+      - passes orthogonality and winner-increment reads
+      - still fails admission (`rank_ic_tstat < 2`, `alpha_only_tstat < 2`, `gross_to_net_retention < 0.50`)
+      - narrowly misses subperiod gate because weakest slice is slightly negative
+    - `A3`:
+      - `oos_mean_rank_ic ~ 0.0240`
+      - `oos_alpha_only_tstat ~ -0.05`
+      - passes orthogonality and winner-increment reads
+      - fails admission and subperiod
+    - `C1`:
+      - `oos_mean_rank_ic ~ 0.1209`
+      - `oos_rank_ic_tstat ~ 1.45`
+      - `oos_alpha_only_tstat ~ 0.58`
+      - `gross_to_net_retention ~ 0.64`
+      - `spread_corr_vs_baseline ~ -0.28`
+      - strongest raw rank-IC read so far, but coverage is too thin (`coverage_median ~ 0.40`) and it still fails admission / subperiod
+    - `C2`:
+      - `oos_mean_rank_ic ~ -0.0784`
+      - `oos_rank_ic_tstat ~ -1.14`
+      - `oos_alpha_only_tstat ~ -1.22`
+      - `spread_corr_vs_baseline ~ 0.51`
+      - direction is wrong on the current sample and it fails admission / subperiod
+    - `B1`:
+      - `oos_mean_rank_ic ~ -0.0395`
+      - `oos_rank_ic_tstat ~ -0.49`
+      - `oos_alpha_only_tstat ~ -0.69`
+      - fails economically despite clean coverage (`coverage_median ~ 0.80`)
+    - `B2`:
+      - `oos_mean_rank_ic ~ 0.0215`
+      - `oos_rank_ic_tstat ~ 0.31`
+      - `oos_alpha_only_tstat ~ 1.20`
+      - `gross_to_net_retention ~ 0.45`
+      - best Family B candidate so far, but still misses admission / subperiod and does not clear the 50% retention line
+    - `B3`:
+      - `oos_mean_rank_ic ~ 0.0398`
+      - `oos_rank_ic_tstat ~ 0.58`
+      - `oos_alpha_only_tstat ~ -0.13`
+      - orthogonal enough, but economics stay too weak
+  - Interpretation boundary:
+    - Week 2 has genuinely started and produced comparable contract-shaped bundles
+    - and all three planned family directions (`A`, `B`, `C`) now have first-pass reads on the current 50-name platform-native sample
+    - but there is still no Family A / B / C winner yet
+    - current first-pass leaderboard is:
+      - raw rank-IC: `C1`
+      - alpha-only t-stat: `B2`
+      - closest all-around platform-native candidate: `A2`
+    - current results must be read as platform-native narrow-sample evidence, not full mid-cap qualification
+  - Week 4 stop/go decision on the current evidence base:
+    - `STOP`
+    - no candidate clears the chartered winner definition
+    - Weeks 5-8 do not continue under the frozen sprint
+- Next decision node:
+  - decide whether to:
+    - leave the US alpha core restart closed on the current platform-native evidence base
+    - or explicitly reopen under a new decision, for example:
+      - a full `rank_500_1500` rerun under the same contract
+      - a new charter with a different candidate field or data layer
+- Mainline constraints for this sprint:
+  - US only
+  - `rank_500_1500` mid-cap universe
+  - no Branch A reopen
+  - no label redesign
+  - no optimizer / multi-period redesign
+  - 3 family directions, at most 8 total candidates
+  - Week 4 is a hard stop/go gate
+
+## A-Share Research State
+
+- Status:
+  - frozen as a branch-local archive; main-repo memory is index-only for A-share
+- Last sync:
+  - `2026-04-08`
+- Branch-local canonical docs:
+  - memory:
+    - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\ashare-a1\ASHARE_MEMORY.md`
+  - roadmap:
+    - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\ashare-a1\docs\ashare_alpha_roadmap.md`
+  - ledger:
+    - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\ashare-a1\docs\superpowers\notes\2026-04-07-ashare-inefficiency-hypothesis-ledger.md`
+- Stable read:
+  - `anti_mom_21_5` remains the only audited A-share lead and is currently `partially_real`
+  - `pivot 1a` is already triggered
+  - A5 is closed as an execution / alpha-translation repair result, not as an alpha winner
+  - the current A-share line is sequencing-driven, with multiple honest negatives, several inconclusives, and no nearby-family reopen path
+  - the current tranche has now exported its first promotion-contract example bundle instead of trying to merge research code into PortfolioOS
+- Current active branch:
+  - none; frozen while paper stage is the only active project lane
+- Next decision node:
+  - none by default
+  - only reopen by explicit decision to start a new A-share tranche
+- Main-repo rule:
+  - do not use this section as the operating note for A-share work
+  - use the branch-local memory above
+
+## Recommended Next Steps
+
+1. Complete the Week 1 freeze for the US alpha core restart charter:
+   - frozen baseline registry
+   - frozen candidate definition sheet
+   - frozen artifact contract
+2. Run Week 2 on the highest-priority family first:
+   - residual momentum / residual reversal
+3. Treat `min_evaluation_dates: 20 -> 19` only as a sidecar backlog item, not as the mainline objective.
+4. Keep A-share as background maintenance; do not pull it into this 8-week US sprint.
+5. If Week 4 produces no winner, close the sprint honestly rather than broadening the search space.
+
+### Current SUE PEAD Read
+
+- Announcement-timed `SUE` PEAD mapping on `rank_500_1500_dynamic` is now live across:
+  - `[+2,+2]`
+  - `[+2,+3]`
+  - `[+2,+4]`
+  - `[+2,+5]`
+  - `[+2,+7]`
+  - `[+2,+10]`
+  - `[+2,+15]`
+  - `[+2,+22]`
+- Best clean / risk-adjusted ranking window is:
+  - `[+2,+2]`
+  - `rank_ic_t ~ 22.7`
+- Best alpha-only t-stat window is:
+  - `[+2,+3]`
+  - `alpha_only_t ~ 12.3`
+- Best mean alpha-only spread window is:
+  - `[+2,+22]`
+  - `mean_alpha_only_spread ~ 1.49%`
+- Rank-IC decays as the window lengthens, but mean alpha-only spread remains economically meaningful through roughly the 2-to-3 week range:
+  - practical read: the drift is front-loaded in purity / ranking power, but not fully exhausted immediately
+- Breadth remains stable across the dense grid:
+  - active months stay around `251-252`
+  - total event count stays around `78k`
+  - mean events per month stays around `312`
+- Half-sample split stays directionally positive:
+  - the result looks real
+  - later-half t-stats are generally lower, so the strongest window numbers should be treated as strong empirical reads rather than fixed constants
+- This reinforces the current US WRDS boundary:
+  - the main edge is announcement-timed `SUE`
+  - the CAR3 overlay is secondary and should stay closed as a modest delayed-entry confirmation result
+  - the next distinct branch after SUE mapping remains event-aware `revision`
+
+### Current Revision Event-Aware Read
+
+- FY1 `revision_1m` now has its own narrow Phase C runner:
+  - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha\scripts\run_revision_event_mapping.py`
+- Phase C is now closed with a final representative spec:
+  - signal date = `statpers`
+  - entry = next trading day after `statpers`
+  - label = **pure `to-next-announcement`**
+  - representation = **full panel**, not latest-snapshot-per-event
+  - aggregation = monthly cross-sectional evaluation by signal month on `rank_500_1500_dynamic`
+- Final representative result:
+  - `monthly_signal_count = 250`
+  - `total_signal_count = 218,766`
+  - `mean_signals_per_month = 875.1`
+  - `mean_rank_ic ~ 0.0166`
+  - `rank_ic_t ~ 3.61`
+  - `mean_alpha_only_spread ~ 0.42%`
+  - `alpha_only_t ~ 4.03`
+- Shared-event overlap with announcement-timed `SUE` is low:
+  - using the last revision snapshot before each earnings event, pooled rank correlation with `SUE` is only `~0.11`
+  - practical read: revision is not just a noisy SUE shadow
+- Closeout interpretation:
+  - the main problem in early Phase C was **horizon misspecification**, not snapshot dilution
+  - `last snapshot per event` did not win even after the horizon was corrected:
+    - pure full panel: `rank_ic_t ~ 3.61`, `alpha_only_t ~ 4.03`
+    - pure last snapshot: `rank_ic_t ~ 2.37`, `alpha_only_t ~ 0.79`
+  - final representative spec is therefore **full-panel pure `to-next-announcement` revision**
+  - announcement-timed `SUE` remains the primary event-driven alpha benchmark, but finalized revision is strong enough to treat as a real separate branch rather than a weak afterthought
+  - if the US WRDS line continues, the next question is whether this finalized revision branch adds enough marginal value relative to announcement-timed `SUE`; Phase C itself should not be reopened
+
+### Phase 3 Mainline Integration Pre-Registration
+
+- Next cheap discriminating experiment:
+  - wire finalized revision back into the Phase 3 Qlib / LightGBM mainline as a **feature**
+  - keep the current fixed-horizon training label unchanged on the first pass
+  - run a matching simple linear baseline in the same round
+- Revision feature spec for the first-pass mainline test:
+  - use **full-panel pure `to-next-announcement` revision** as the source signal
+  - feature timestamp is still `statpers`, not `announcement_date`
+  - align to the **next trading day** before the feature becomes visible in the daily model table
+  - use **latest-value carry-forward** between revision snapshots until a newer snapshot arrives
+  - practical caveat: this repeated carry-forward makes revision look more persistent in the training table than the number of truly independent revision events; do not over-interpret raw tree split counts
+- Mainline comparison must stay locked across runs:
+  - same universe
+  - same label
+  - same train/validation split
+  - same random seeds
+  - same feature-standardization fit window
+  - same early-stopping criterion
+  - compare **delta versus baseline**, not absolute one-off scores
+- Seed discipline:
+  - run at least `3` fixed seeds for baseline and `+revision`
+  - judge the result on mean delta and dispersion, not on a single lucky seed
+- Simple baseline definition for this round:
+  - use **signal-level** cross-sectional equal-weight combination, not portfolio-level strategy ensembling
+  - standardize features by **same-day cross-sectional z-score**
+  - then average the standardized signals into one composite score
+  - this is the sanity-check baseline that should be compared directly against LightGBM's score output
+- Importance/readout discipline:
+  - if revision appears important in LightGBM, cross-check with permutation importance or SHAP-style diagnostics
+  - do not treat raw split / gain importance alone as decisive because carry-forward can overstate visual prominence
+  - Pre-registered interpretation bands for the first-pass mainline test:
+    - **Clearly positive**:
+      - overall IC improves by `>= 15%`, or revision ranks stably in the top `5` features
+      - interpretation: fixed-horizon mainline is already able to absorb most of the revision edge; keep stacking validated features before touching labels
+  - **Intermediate**:
+    - overall IC improves by `5%` to `< 15%`, or revision lands in the top `10` but not stably
+    - interpretation: fixed-horizon mainline captures part of the edge; record the gain and keep label redesign as a later optimization path
+    - **Near-zero**:
+      - overall IC improves by `< 5%`
+      - interpretation: fixed-horizon labeling is likely leaving most of the revision value on the table; event-aligned label redesign becomes the next justified engineering step
+
+### Phase 3 Mainline Integration First-Pass Result
+
+- The cheap discriminating integration test is now partially complete:
+  - finalized WRDS revision was wired into the external Phase 3 Qlib mainline as `revision_1m_wrds`
+  - implementation lives in:
+    - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha\scripts\staging_to_qlib.py`
+    - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha\scripts\run_qlib_lgbm_walkforward.py`
+  - feature contract used:
+    - source = finalized full-panel FY1 `revision_1m`
+    - feature timestamp = `statpers`
+    - visibility = next trading day
+    - daily representation = latest-value carry-forward
+- Fixed-horizon mainline read on `expanded_liquid_core`:
+  - baseline seeds were all weak/negative:
+    - seed `7`: `mean_rank_ic ~ 0.0010`, `rank_ic_t ~ 0.07`, `alpha_only_t ~ -1.42`
+    - seed `17`: `mean_rank_ic ~ -0.0011`, `rank_ic_t ~ -0.08`, `alpha_only_t ~ -1.86`
+    - seed `29`: `mean_rank_ic ~ -0.0015`, `rank_ic_t ~ -0.11`, `alpha_only_t ~ -2.48`
+  - `+revision` seed `7` improved slightly but remained economically weak:
+    - `mean_rank_ic ~ 0.0021`
+    - `rank_ic_t ~ 0.15`
+    - `alpha_only_t ~ -1.22`
+  - practical read:
+    - fixed-horizon Qlib does appear to ingest **some** revision information
+    - but the realized lift is tiny relative to the size of the event-aware revision edge
+    - this did **not** turn the mainline model into a live signal
+- Simple linear sanity check reached the same conclusion:
+  - same-day cross-sectional z-score equal-weight custom-feature composite without revision:
+    - `rank_ic_t ~ -0.46`
+    - `alpha_only_t ~ 0.57`
+  - with revision added:
+    - `rank_ic_t ~ -0.46`
+    - `alpha_only_t ~ 0.60`
+  - practical read:
+    - adding revision helps only trivially in the fixed-horizon signal-level baseline too
+- Important model-usage nuance:
+  - on the completed `+revision` seed `7` run, `REVISION_1M_WRDS` ranked very high in raw tree usage:
+    - gain rank = `2`
+    - split rank = `1`
+  - do **not** over-read that as proof the mainline solved revision
+  - the carry-forward representation makes revision visually prominent in tree splits, but the realized holdout lift stayed small
+- Updated decision boundary:
+  - do **not** reopen a broad multi-seed fixed-horizon mainline sweep just for revision
+  - do **not** promote the fixed-horizon Phase 3 Qlib branch on the back of this result
+  - current best interpretation is:
+    - fixed-horizon mainline absorbs a little of revision
+    - most of the value remains tied to event-aware labeling
+  - if the US WRDS line returns to mainline model work, the justified next step is **event-aligned or hybrid label design**, not more feature-only stacking on the old fixed-horizon target
+
+## Key Paths And Docs
+
+- Main docs:
+  - `docs/execution_mode_decision_note.md`
+  - `docs/cost_model_decision_note.md`
+  - `docs/platform_ml_rl_roadmap.md`
+  - `docs/phase_1_alpha_closeout_note.md`
+  - `docs/strategy/single_period_vs_multi_period_structure_decision_memo_2026_04_15.md`
+  - `docs/strategy/objective_function_units_spec_2026_04_15.md`
+  - `docs/phase_1_5_alpha_decision_note.md`
+  - `docs/paper_calibration_runbook.md`
+  - `docs/paper_calibration_live_2026_04_15.md`
+- Core alpha implementation:
+  - `src/portfolio_os/alpha/`
+- Alpha CLIs:
+  - `portfolio-os-alpha-research`
+  - `portfolio-os-alpha-acceptance`
+- Canonical US freeze summary:
+  - `C:\Users\14574\Quant\fmp_data_freeze\summary\fmp_coverage_summary.json`
+- External research workspace:
+  - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01`
+- Latest WRDS US research artifacts:
+  - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha\outputs\wrds_bootstrap\`
+  - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha\docs\superpowers\notes\2026-04-06-car3-confirmation-closeout.md`
+  - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha\docs\superpowers\notes\2026-04-06-sue-pead-mapping-closeout.md`
+  - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha\docs\superpowers\notes\2026-04-07-revision-event-aware-initial.md`
+  - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\phase3-qlib-ml-alpha\docs\superpowers\notes\2026-04-07-revision-event-aware-closeout.md`
+
+## Workflow Notes
+
+- Commit every substantive change.
+- Default full regression on this machine: `python -m pytest -q`.
+- Generated artifacts under `outputs/` stay out of version control.
+

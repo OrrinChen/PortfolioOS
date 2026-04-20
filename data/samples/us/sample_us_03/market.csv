@@ -1,0 +1,6 @@
+ticker,close,vwap,adv_shares,tradable,upper_limit_hit,lower_limit_hit
+PLTR,26.4,26.3,41000000,true,false,false
+SOFI,7.9,7.9,52000000,true,false,false
+RIVN,10.8,10.7,18000000,true,false,false
+UPST,29.7,29.4,2800000,true,false,false
+AFRM,43.2,42.9,3500000,true,false,false

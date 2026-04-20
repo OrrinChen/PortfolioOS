@@ -1,0 +1,30 @@
+{
+  "provider": "tushare",
+  "provider_token_source": "cli",
+  "as_of_date": "2026-03-23",
+  "request_parameters": {
+    "index_code": "000300.SH",
+    "normalization_tolerance": 0.02
+  },
+  "output_path": "data\\generated\\snapshot_real\\target.csv",
+  "output_sha256": null,
+  "row_count": 0,
+  "generated_at": "2026-03-24T02:55:52.548159+00:00",
+  "approximation_notes": [
+    "index weights are sourced from index_weight.weight and scaled from percent to decimal by dividing by 100.",
+    "when the requested date has no exact index-weight sample, the latest available trade_date on or before as_of_date is used."
+  ],
+  "provider_capability_status": "unavailable",
+  "fallback_notes": [],
+  "permission_notes": [
+    "index_weight_permission_missing"
+  ],
+  "recommended_alternative_path": "provide_target_csv_and_continue",
+  "build_status": "failed_permission",
+  "error_message": "Tushare index_weight access is unavailable for this account. You can continue with client-provided target.csv.",
+  "index_code": "000300.SH",
+  "input_weight_sum": null,
+  "output_weight_sum": null,
+  "normalized": false,
+  "normalization_tolerance": 0.02
+}

@@ -1,0 +1,22 @@
+{
+  "provider": "mock",
+  "provider_token_source": null,
+  "as_of_date": "2026-03-23",
+  "request_parameters": {
+    "tickers_file": "data\\sample\\tickers.txt",
+    "overlay_path": "data\\sample\\reference_overlay_example.csv"
+  },
+  "output_path": "data\\generated\\snapshot_mock\\reference.csv",
+  "output_sha256": "381c85ed8fc6a431d47aadd86807ad582ee852643c2eaa75ba2ef1790ec32732",
+  "row_count": 7,
+  "generated_at": "2026-03-24T02:52:39.859152+00:00",
+  "approximation_notes": [
+    "Mock provider uses fixed local sample values."
+  ],
+  "provider_capability_status": "available",
+  "fallback_notes": [],
+  "permission_notes": [],
+  "recommended_alternative_path": null,
+  "build_status": "success",
+  "error_message": null
+}

@@ -1,0 +1,4 @@
+requests:
+  - sample_id: approval_demo
+    request_path: data/execution_samples/execution_request_impact_aware.yaml
+    notes: same frozen approval demo basket evaluated across both execution modes

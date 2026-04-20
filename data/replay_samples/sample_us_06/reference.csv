@@ -1,0 +1,16 @@
+ticker,industry,blacklist_buy,blacklist_sell,benchmark_weight,manager_aggregate_qty,issuer_total_shares
+PLTR,Software - Infrastructure,false,false,0.528496,0.000000,2291470751.000000
+SOFI,Credit Services,false,false,0.030454,0.000000,1275263850.000000
+AFRM,Credit Services,false,false,0.022819,0.000000,292409876.000000
+UPST,Credit Services,false,false,0.003787,0.000000,94867982.000000
+RIVN,Auto Manufacturers,false,false,0.028450,0.000000,1237077289.000000
+SNAP,Internet Content & Information,false,false,0.010749,0.000000,1434801757.000000
+ROKU,Entertainment,false,false,0.020576,0.000000,130717715.000000
+RKLB,Aerospace & Defense,false,false,0.051169,0.000000,569407668.000000
+MP,Other Industrial Metals & Mining,false,false,0.012973,0.000000,177667450.000000
+APA,Oil & Gas E&P,false,false,0.024437,0.000000,353251476.000000
+AES,Utilities - Diversified,false,false,0.015898,0.000000,713071623.000000
+CELH,Beverages - Non-Alcoholic,false,false,0.013753,0.000000,256975993.000000
+SBAC,REIT - Specialty,false,false,0.028688,0.000000,105654000.000000
+MRNA,Biotechnology,false,false,0.029975,0.000000,396586862.000000
+NEM,Gold,false,false,0.177775,0.000000,1079933130.000000

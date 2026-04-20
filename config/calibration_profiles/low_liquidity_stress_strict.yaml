@@ -1,0 +1,24 @@
+name: low_liquidity_stress_strict
+description: Strict stress calibration for thin-liquidity baskets and constrained participation
+market_curve:
+  buckets:
+    - label: open
+      volume_share: 0.35
+      slippage_multiplier: 1.55
+    - label: mid_morning
+      volume_share: 0.15
+      slippage_multiplier: 1.3
+    - label: midday
+      volume_share: 0.05
+      slippage_multiplier: 1.2
+    - label: afternoon
+      volume_share: 0.15
+      slippage_multiplier: 1.3
+    - label: close
+      volume_share: 0.30
+      slippage_multiplier: 1.5
+defaults:
+  participation_limit: 0.01
+  volume_shock_multiplier: 0.2
+  allow_partial_fill: true
+  force_completion: false

@@ -1,0 +1,49 @@
+ticker,factor,exposure
+AAPL,Communication Services,0.000000
+AAPL,Consumer Cyclical,0.000000
+AAPL,Financial Services,0.000000
+AAPL,Technology,1.000000
+AFRM,Communication Services,0.000000
+AFRM,Consumer Cyclical,0.000000
+AFRM,Financial Services,1.000000
+AFRM,Technology,0.000000
+AMZN,Communication Services,0.000000
+AMZN,Consumer Cyclical,1.000000
+AMZN,Financial Services,0.000000
+AMZN,Technology,0.000000
+GOOGL,Communication Services,1.000000
+GOOGL,Consumer Cyclical,0.000000
+GOOGL,Financial Services,0.000000
+GOOGL,Technology,0.000000
+META,Communication Services,1.000000
+META,Consumer Cyclical,0.000000
+META,Financial Services,0.000000
+META,Technology,0.000000
+MSFT,Communication Services,0.000000
+MSFT,Consumer Cyclical,0.000000
+MSFT,Financial Services,0.000000
+MSFT,Technology,1.000000
+NVDA,Communication Services,0.000000
+NVDA,Consumer Cyclical,0.000000
+NVDA,Financial Services,0.000000
+NVDA,Technology,1.000000
+PLTR,Communication Services,0.000000
+PLTR,Consumer Cyclical,0.000000
+PLTR,Financial Services,0.000000
+PLTR,Technology,1.000000
+RIVN,Communication Services,0.000000
+RIVN,Consumer Cyclical,1.000000
+RIVN,Financial Services,0.000000
+RIVN,Technology,0.000000
+SOFI,Communication Services,0.000000
+SOFI,Consumer Cyclical,0.000000
+SOFI,Financial Services,1.000000
+SOFI,Technology,0.000000
+TSLA,Communication Services,0.000000
+TSLA,Consumer Cyclical,1.000000
+TSLA,Financial Services,0.000000
+TSLA,Technology,0.000000
+UPST,Communication Services,0.000000
+UPST,Consumer Cyclical,0.000000
+UPST,Financial Services,1.000000
+UPST,Technology,0.000000

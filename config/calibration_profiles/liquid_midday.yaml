@@ -1,0 +1,23 @@
+name: liquid_midday
+description: More liquid day profile with stronger midday liquidity and higher default participation
+market_curve:
+  buckets:
+    - label: open
+      volume_share: 0.18
+      slippage_multiplier: 1.05
+    - label: mid_morning
+      volume_share: 0.22
+      slippage_multiplier: 0.95
+    - label: midday
+      volume_share: 0.20
+      slippage_multiplier: 0.85
+    - label: afternoon
+      volume_share: 0.20
+      slippage_multiplier: 0.95
+    - label: close
+      volume_share: 0.20
+      slippage_multiplier: 1.05
+defaults:
+  participation_limit: 0.25
+  allow_partial_fill: true
+  force_completion: false

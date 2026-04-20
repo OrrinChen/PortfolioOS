@@ -1,0 +1,73 @@
+# Information Technology
+AAPL
+MSFT
+NVDA
+AVGO
+ORCL
+PLTR
+
+# Health Care
+LLY
+UNH
+JNJ
+ABBV
+VRTX
+MRNA
+
+# Financials
+JPM
+BAC
+GS
+SOFI
+AFRM
+
+# Consumer Discretionary
+AMZN
+TSLA
+HD
+MCD
+RIVN
+
+# Communication Services
+GOOGL
+META
+NFLX
+SNAP
+ROKU
+
+# Industrials
+UBER
+GE
+CAT
+RTX
+RKLB
+
+# Materials
+LIN
+FCX
+NEM
+MP
+
+# Energy
+XOM
+CVX
+APA
+
+# Utilities
+NEE
+SO
+AES
+
+# Consumer Staples
+WMT
+COST
+KO
+CELH
+
+# Real Estate
+AMT
+PLD
+SBAC
+
+# Stress Pool
+UPST

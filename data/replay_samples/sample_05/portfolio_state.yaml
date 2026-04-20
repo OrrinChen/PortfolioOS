@@ -1,0 +1,5 @@
+account_id: replay_sample_05
+as_of_date: "2026-03-22"
+available_cash: 1300000.0
+min_cash_buffer: 50000.0
+account_type: public_fund

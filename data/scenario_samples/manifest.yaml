@@ -1,0 +1,48 @@
+name: demo_scenario_suite
+description: What-if scenarios for a single snapshot
+base_inputs:
+  holdings: data/scenario_samples/base_holdings.csv
+  target: data/sample/target_example.csv
+  market: data/sample/market_example.csv
+  reference: data/sample/reference_example.csv
+  portfolio_state: data/sample/portfolio_state_example.yaml
+  config: config/default.yaml
+scenarios:
+  - id: public_conservative
+    label: Public Fund / Conservative
+    constraints: config/constraints/public_fund.yaml
+    execution_profile: config/execution/conservative.yaml
+    overrides: {}
+  - id: public_aggressive
+    label: Public Fund / Aggressive
+    constraints: config/constraints/public_fund.yaml
+    execution_profile: config/execution/aggressive.yaml
+    overrides:
+      max_turnover: 0.80
+      participation_limit: 0.25
+      min_order_notional: 1000
+      min_cash_buffer: 10000
+  - id: private_flexible
+    label: Private Fund / Flexible
+    constraints: config/constraints/private_fund.yaml
+    execution_profile: config/execution/aggressive.yaml
+    overrides:
+      max_turnover: 0.95
+      participation_limit: 0.35
+      min_order_notional: 1000
+  - id: quant_execution
+    label: Quant / Execution Focus
+    constraints: config/constraints/quant_fund.yaml
+    execution_profile: config/execution/aggressive.yaml
+    overrides:
+      max_turnover: 0.90
+      participation_limit: 0.30
+      min_order_notional: 800
+  - id: public_high_cash_buffer
+    label: Public Fund / High Cash Buffer
+    constraints: config/constraints/public_fund.yaml
+    execution_profile: config/execution/conservative.yaml
+    overrides:
+      min_cash_buffer: 400000
+      min_order_notional: 15000
+      participation_limit: 0.05
