@@ -1,0 +1,22 @@
+project_name: agentic_alpha_hypothesis_triage_system
+live_api_calls_enabled: false
+
+data_sources:
+  sec:
+    enabled: true
+    note: Use timestamp-safe SEC availability fields before evaluation.
+  fmp:
+    enabled: false
+    api_key_env: FMP_API_KEY
+    note: Do not store paid FMP payloads in this repository.
+
+contracts:
+  require_hypothesis_schema: true
+  require_signal_contract: true
+  require_evaluation_contract: true
+  require_placebo_tests: true
+  require_leakage_tests: true
+
+export:
+  optional_q2_alpha_score_csv: projects/agentic_alpha_triage/outputs/alpha_score.csv
+  q2_dependency_required: false

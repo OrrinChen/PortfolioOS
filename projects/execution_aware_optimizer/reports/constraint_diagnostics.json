@@ -1,0 +1,19 @@
+{
+  "binding_constraints": [],
+  "rejected_symbols": [],
+  "alpha_lost_due_to_constraints": null,
+  "turnover_budget_usage": null,
+  "liquidity_budget_usage": null,
+  "cost_drag": null,
+  "sector_exposure_drift": {},
+  "infeasible_rebalance_dates": [],
+  "available_metrics": {
+    "row_count": 7,
+    "infeasible_row_count": 7
+  },
+  "todos": [
+    "PortfolioOS optimizer dual values / shadow prices are not exposed yet; report slack/usage metrics instead.",
+    "Add explicit liquidity constraint usage once PortfolioOS exports per-name participation slack.",
+    "Add risk exposure attribution once PortfolioOS exports rebalance-level factor exposures in a stable schema."
+  ]
+}

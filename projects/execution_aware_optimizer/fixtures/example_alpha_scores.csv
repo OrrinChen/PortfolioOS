@@ -1,0 +1,7 @@
+date,symbol,alpha_score,alpha_source,alpha_confidence
+2026-01-31,AAPL,0.82,example_fixture,0.90
+2026-01-31,MSFT,0.65,example_fixture,0.85
+2026-01-31,XOM,-0.40,example_fixture,0.70
+2026-02-28,AAPL,0.74,example_fixture,0.88
+2026-02-28,MSFT,0.57,example_fixture,0.83
+2026-02-28,XOM,-0.22,example_fixture,0.68

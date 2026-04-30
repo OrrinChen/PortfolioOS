@@ -5,6 +5,21 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 ## Current Snapshot
 
 - PortfolioOS is a compliance-aware portfolio rebalance, scenario, approval, execution-simulation, backtest, TCA, and research CLI platform.
+- Repository-level Codex workflow scaffold is now installed:
+  - `AGENTS.md` defines autonomous-agent rules, hard constraints, validation expectations, and stopping rules.
+  - `ROADMAP.md` defines the next incomplete phase and acceptance criteria.
+  - `VALIDATION.md` records test, smoke, and diff-check commands.
+  - `RUNBOOK.md` records common commands and troubleshooting.
+- Current standalone project shells:
+  - Q1 = `projects/agentic_alpha_triage`, asks "Is this alpha real?", and contains schemas/contracts only.
+  - Q2 = `projects/execution_aware_optimizer`, asks "Can this alpha survive execution?", and contains a PortfolioOS-aware project shell with explicit unavailable-layer reporting.
+- Phase 4 Q2 adapter hardening is complete:
+  - fixture-backed adapter test maps existing PortfolioOS `alpha_only_top_quintile` attribution into `raw_top_alpha_equal_weight` rows and `optimizer` attribution into `full_execution_aware_cost_adjusted` rows.
+  - independent Q2 alpha fixture lives at `projects/execution_aware_optimizer/fixtures/example_alpha_scores.csv`.
+  - non-mutating cost-sensitivity scenarios live in `projects/execution_aware_optimizer/src/execution_aware_optimizer/cost_sensitivity.py`.
+  - Q2 README documents each ladder layer as partial or unavailable.
+  - validation: Q2 tests `11 passed`; relevant PortfolioOS subset `64 passed, 36 warnings`; default Q2 smoke scripts passed without enabling PortfolioOS execution.
+- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 5, add Q1 contract examples without implementing agent loops.
 - Core platform buildout through Phase 12 is implemented and stable.
 - The current project-wide meta stage is `research convergence + promotion contract`, not repo merge.
 - Project operating mode is now `paper-stage only`.
@@ -705,4 +720,3 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - Commit every substantive change.
 - Default full regression on this machine: `python -m pytest -q`.
 - Generated artifacts under `outputs/` stay out of version control.
-
