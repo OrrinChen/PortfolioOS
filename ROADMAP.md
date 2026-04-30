@@ -9,10 +9,11 @@ Completed:
 - Phase 2: Q2 execution-aware optimizer project shell exists at `projects/execution_aware_optimizer`.
 - Phase 3: Repository-level Codex workflow scaffold is installed with `AGENTS.md`, `ROADMAP.md`, `VALIDATION.md`, and `RUNBOOK.md`.
 - Phase 4: Q2 PortfolioOS adapter hardening is complete with fixture-backed attribution mapping, independent alpha fixture, non-mutating cost-sensitivity scenarios, and layer-status documentation.
+- Phase 5: Q1 contract examples are installed with schema-backed validation and no agent loops.
 
 Current phase:
 
-- Phase 5: Add Q1 contract examples without implementing agent loops.
+- Phase 6: Choose the next narrow project increment.
 
 Deferred:
 
@@ -66,10 +67,10 @@ Q1 needs interview-readable examples that show the triage system is schema-first
 
 Tasks:
 
-- [ ] Add one valid example hypothesis artifact.
-- [ ] Add one valid signal contract artifact.
-- [ ] Add one valid evaluation contract artifact.
-- [ ] Add a validation script that checks examples against schemas.
+- [x] Add one valid example hypothesis artifact.
+- [x] Add one valid signal contract artifact.
+- [x] Add one valid evaluation contract artifact.
+- [x] Add a validation script that checks examples against schemas.
 
 Acceptance criteria:
 
@@ -80,7 +81,7 @@ Acceptance criteria:
 
 ## Next Phase
 
-After Phase 5, decide whether to:
+Phase 6 should decide whether to:
 
 - build richer Q2 report tables from real PortfolioOS outputs, or
 - continue with deeper Q1 evaluator contract examples.

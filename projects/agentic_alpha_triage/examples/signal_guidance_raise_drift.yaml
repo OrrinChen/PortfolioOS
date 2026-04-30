@@ -1,0 +1,12 @@
+signal_name: guidance_raise_drift
+input_fields:
+  - event_available_timestamp
+  - symbol
+  - guidance_delta
+  - prior_guidance_delta
+  - sector
+output_column: alpha_score
+valid_universe: US common stocks with timestamp-safe guidance events and liquid daily prices.
+timestamp_column: event_available_timestamp
+no_future_data_required: true
+implementation_path: null

@@ -11,15 +11,22 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - `VALIDATION.md` records test, smoke, and diff-check commands.
   - `RUNBOOK.md` records common commands and troubleshooting.
 - Current standalone project shells:
-  - Q1 = `projects/agentic_alpha_triage`, asks "Is this alpha real?", and contains schemas/contracts only.
+  - Q1 = `projects/agentic_alpha_triage`, asks "Is this alpha real?", and contains schemas/contracts plus validated example artifacts.
   - Q2 = `projects/execution_aware_optimizer`, asks "Can this alpha survive execution?", and contains a PortfolioOS-aware project shell with explicit unavailable-layer reporting.
+- Phase 5 Q1 contract examples are complete:
+  - one valid example hypothesis lives at `projects/agentic_alpha_triage/examples/hypothesis_guidance_raise_drift.yaml`.
+  - one valid example signal contract lives at `projects/agentic_alpha_triage/examples/signal_guidance_raise_drift.yaml`.
+  - one valid example evaluation contract lives at `projects/agentic_alpha_triage/examples/evaluation_guidance_raise_drift.yaml`.
+  - schema-backed validation lives in `projects/agentic_alpha_triage/src/agentic_alpha_triage/example_validation.py`.
+  - smoke command: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/agentic_alpha_triage/src poetry run python projects/agentic_alpha_triage/scripts/validate_examples.py`.
+  - validation: Q1 tests `8 passed`; example validation script passed.
 - Phase 4 Q2 adapter hardening is complete:
   - fixture-backed adapter test maps existing PortfolioOS `alpha_only_top_quintile` attribution into `raw_top_alpha_equal_weight` rows and `optimizer` attribution into `full_execution_aware_cost_adjusted` rows.
   - independent Q2 alpha fixture lives at `projects/execution_aware_optimizer/fixtures/example_alpha_scores.csv`.
   - non-mutating cost-sensitivity scenarios live in `projects/execution_aware_optimizer/src/execution_aware_optimizer/cost_sensitivity.py`.
   - Q2 README documents each ladder layer as partial or unavailable.
   - validation: Q2 tests `11 passed`; relevant PortfolioOS subset `64 passed, 36 warnings`; default Q2 smoke scripts passed without enabling PortfolioOS execution.
-- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 5, add Q1 contract examples without implementing agent loops.
+- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 6 and choose between richer Q2 real-output report tables or deeper Q1 evaluator examples.
 - Core platform buildout through Phase 12 is implemented and stable.
 - The current project-wide meta stage is `research convergence + promotion contract`, not repo merge.
 - Project operating mode is now `paper-stage only`.

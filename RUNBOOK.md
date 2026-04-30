@@ -30,6 +30,12 @@ Run Q1 tests:
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/agentic_alpha_triage/src poetry run pytest projects/agentic_alpha_triage/tests -q
 ```
 
+Validate Q1 contract examples:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/agentic_alpha_triage/src poetry run python projects/agentic_alpha_triage/scripts/validate_examples.py
+```
+
 Run Q2 tests:
 
 ```bash

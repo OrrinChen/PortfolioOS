@@ -16,7 +16,7 @@ Q1 may later export a standard `alpha_score.csv` file:
 date,symbol,alpha_score,alpha_source,alpha_confidence
 ```
 
-Q2 can read that file, but Q2 must not depend on Q1 agent loops, SEC/FMP ingestion, or hypothesis-generation code.
+Q2 can read that file as a plain input artifact, but Q2 must not depend on Q1 agent loops, SEC/FMP ingestion, schema modules, or hypothesis-generation code.
 
 ## Current Scope
 
@@ -28,6 +28,16 @@ This first integration only provides schemas and contracts:
 - `EventRegistryEntry`
 
 There are no LLM agent loops, no live API calls, and no paid data artifacts.
+
+## Example Artifacts
+
+The `examples/` directory contains one valid contract set:
+
+- `hypothesis_guidance_raise_drift.yaml`
+- `signal_guidance_raise_drift.yaml`
+- `evaluation_guidance_raise_drift.yaml`
+
+These examples are intentionally small. They show the required structure for a timestamp-safe hypothesis, signal contract, and leakage-aware evaluation contract. They are not evidence that the alpha works.
 
 ## Future Workflow
 
@@ -53,4 +63,10 @@ Run from the repository root:
 
 ```bash
 PYTHONPATH=projects/agentic_alpha_triage/src poetry run pytest projects/agentic_alpha_triage/tests -q
+```
+
+Validate the committed examples:
+
+```bash
+PYTHONPATH=projects/agentic_alpha_triage/src poetry run python projects/agentic_alpha_triage/scripts/validate_examples.py
 ```
