@@ -36,9 +36,21 @@ No alpha input was loaded. The project can accept CSV/parquet files with `date`,
 
 Gross and net rows are reported only when the underlying PortfolioOS adapter returns period attribution.
 
+| layer | observations | mean_gross_return | mean_net_return | mean_cost_drag | mean_turnover | unavailable_rows |
+|---|---:|---:|---:|---:|---:|---:|
+| raw_top_alpha_equal_weight | 0 | Not available | Not available | Not available | Not available | 1 |
+| risk_controlled | 0 | Not available | Not available | Not available | Not available | 1 |
+| sector_constrained | 0 | Not available | Not available | Not available | Not available | 1 |
+| position_constrained | 0 | Not available | Not available | Not available | Not available | 1 |
+| turnover_constrained | 0 | Not available | Not available | Not available | Not available | 1 |
+| liquidity_constrained | 0 | Not available | Not available | Not available | Not available | 1 |
+| full_execution_aware_cost_adjusted | 0 | Not available | Not available | Not available | Not available | 1 |
+
 ## 7. Alpha decay under constraints
 
 Alpha decay is not fabricated. Missing layers remain marked with `infeasibility_reason` until PortfolioOS exposes the required adapter hooks.
+
+Alpha decay cannot be summarized until the raw layer has net return observations.
 
 ## 8. Cost sensitivity
 

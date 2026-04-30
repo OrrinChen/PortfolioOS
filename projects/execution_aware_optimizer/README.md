@@ -85,6 +85,17 @@ Only do that when the configured manifest, data, and cost assumptions are intent
 
 `src/execution_aware_optimizer/cost_sensitivity.py` builds one cloned Q2 config per configured cost level. It returns planned PortfolioOS overrides such as `fees.commission_rate`, `execution.backtest_fixed_half_spread_bps`, and `objective_weights.transaction_cost_objective_mode` as data. The base config is not mutated, and no global PortfolioOS config is changed by default.
 
+## Reports
+
+The markdown report includes:
+
+- the full ladder row table
+- gross vs net summary by layer
+- alpha-decay summary versus `raw_top_alpha_equal_weight`
+- cost-sensitivity rows when they are supplied to the report builder
+
+Summary tables use only observed row values. If a layer is unavailable or a PortfolioOS hook does not expose the required attribution, the report writes `Not available` rather than filling in synthetic performance numbers.
+
 ## Current Missing Hooks
 
 The project records these as TODOs rather than faking diagnostics:

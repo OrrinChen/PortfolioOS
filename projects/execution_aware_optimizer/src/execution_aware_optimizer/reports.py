@@ -19,6 +19,38 @@ def _fmt_optional(value: object) -> str:
     return str(value)
 
 
+def _fmt_float(value: float | None) -> str:
+    """Format report floats with stable precision."""
+
+    if value is None:
+        return "Not available"
+    return f"{value:.6f}"
+
+
+def _mean(values: Iterable[float | None]) -> float | None:
+    """Return the mean of available values, or None when no values exist."""
+
+    available = [value for value in values if value is not None]
+    if not available:
+        return None
+    return sum(available) / len(available)
+
+
+def _cost_drag(row: LadderResultRow) -> float | None:
+    """Return cost drag from row attribution without fabricating missing values."""
+
+    if row.gross_return is not None and row.net_return is not None:
+        return row.gross_return - row.net_return
+    return row.estimated_transaction_cost
+
+
+def _group_rows_by_layer(rows: Iterable[LadderResultRow]) -> dict[str, list[LadderResultRow]]:
+    grouped: dict[str, list[LadderResultRow]] = {}
+    for row in rows:
+        grouped.setdefault(row.layer_name, []).append(row)
+    return grouped
+
+
 def _render_ladder_table(rows: Iterable[LadderResultRow]) -> list[str]:
     """Render a compact ladder table."""
 
@@ -36,6 +68,72 @@ def _render_ladder_table(rows: Iterable[LadderResultRow]) -> list[str]:
                 turnover=_fmt_optional(row.turnover),
                 cost=_fmt_optional(row.estimated_transaction_cost),
                 reason=row.infeasibility_reason or "",
+            )
+        )
+    return lines
+
+
+def _render_gross_net_summary_table(rows: Iterable[LadderResultRow]) -> list[str]:
+    """Render layer-level gross/net summary statistics from observed rows."""
+
+    lines = [
+        "| layer | observations | mean_gross_return | mean_net_return | mean_cost_drag | mean_turnover | unavailable_rows |",
+        "|---|---:|---:|---:|---:|---:|---:|",
+    ]
+    for layer_name, layer_rows in _group_rows_by_layer(rows).items():
+        observed_rows = [
+            row
+            for row in layer_rows
+            if any(
+                value is not None
+                for value in (
+                    row.gross_return,
+                    row.net_return,
+                    row.turnover,
+                    row.estimated_transaction_cost,
+                    row.realized_transaction_cost,
+                )
+            )
+        ]
+        unavailable_count = sum(1 for row in layer_rows if row.infeasibility_reason)
+        lines.append(
+            "| {layer} | {observations} | {gross} | {net} | {drag} | {turnover} | {unavailable} |".format(
+                layer=layer_name,
+                observations=len(observed_rows),
+                gross=_fmt_float(_mean(row.gross_return for row in observed_rows)),
+                net=_fmt_float(_mean(row.net_return for row in observed_rows)),
+                drag=_fmt_float(_mean(_cost_drag(row) for row in observed_rows)),
+                turnover=_fmt_float(_mean(row.turnover for row in observed_rows)),
+                unavailable=unavailable_count,
+            )
+        )
+    return lines
+
+
+def _render_alpha_decay_table(rows: Iterable[LadderResultRow]) -> list[str]:
+    """Render net-return decay versus the raw-alpha layer when available."""
+
+    grouped = _group_rows_by_layer(rows)
+    raw_rows = grouped.get("raw_top_alpha_equal_weight", [])
+    raw_mean_net = _mean(row.net_return for row in raw_rows)
+    if raw_mean_net is None:
+        return ["Alpha decay cannot be summarized until the raw layer has net return observations."]
+
+    lines = [
+        "| layer | mean_net_return | net_decay_vs_raw | mean_cost_drag |",
+        "|---|---:|---:|---:|",
+    ]
+    for layer_name, layer_rows in grouped.items():
+        layer_mean_net = _mean(row.net_return for row in layer_rows)
+        if layer_mean_net is None:
+            lines.append(f"| {layer_name} | Not available | Not available | Not available |")
+            continue
+        lines.append(
+            "| {layer} | {net} | {decay} | {drag} |".format(
+                layer=layer_name,
+                net=_fmt_float(layer_mean_net),
+                decay=_fmt_float(raw_mean_net - layer_mean_net),
+                drag=_fmt_float(_mean(_cost_drag(row) for row in layer_rows)),
             )
         )
     return lines
@@ -88,9 +186,13 @@ def render_execution_aware_optimizer_report(
         "",
         "Gross and net rows are reported only when the underlying PortfolioOS adapter returns period attribution.",
         "",
+        *_render_gross_net_summary_table(ladder_rows),
+        "",
         "## 7. Alpha decay under constraints",
         "",
         "Alpha decay is not fabricated. Missing layers remain marked with `infeasibility_reason` until PortfolioOS exposes the required adapter hooks.",
+        "",
+        *_render_alpha_decay_table(ladder_rows),
         "",
         "## 8. Cost sensitivity",
         "",

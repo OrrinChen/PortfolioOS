@@ -10,10 +10,11 @@ Completed:
 - Phase 3: Repository-level Codex workflow scaffold is installed with `AGENTS.md`, `ROADMAP.md`, `VALIDATION.md`, and `RUNBOOK.md`.
 - Phase 4: Q2 PortfolioOS adapter hardening is complete with fixture-backed attribution mapping, independent alpha fixture, non-mutating cost-sensitivity scenarios, and layer-status documentation.
 - Phase 5: Q1 contract examples are installed with schema-backed validation and no agent loops.
+- Phase 6: Q2 report tables summarize observed PortfolioOS-backed ladder rows without fabricating unavailable values.
 
 Current phase:
 
-- Phase 6: Choose the next narrow project increment.
+- Phase 7: Q2 Cost-Sensitivity Report Reader.
 
 Deferred:
 
@@ -79,9 +80,54 @@ Acceptance criteria:
 - README explains how Q1 can export alpha scores to Q2 without creating a dependency.
 - No live API calls are added.
 
+## Phase 6: Q2 Real-Output Report Tables
+
+Goal:
+Make the Execution-Aware Portfolio Optimizer report more interview-readable by summarizing actual ladder rows into gross/net and alpha-decay tables.
+
+Why now:
+Q2 already records partial PortfolioOS-backed rows and explicit unavailable layers. The next useful polish is to make the generated report explain observed decay without inventing missing performance numbers.
+
+Tasks:
+
+- [x] Add gross vs net summary tables grouped by ladder layer.
+- [x] Add alpha-decay summary versus `raw_top_alpha_equal_weight`.
+- [x] Preserve explicit `Not available` values for unavailable rows.
+- [x] Add tests proving report summaries do not fabricate unavailable layer values.
+
+Acceptance criteria:
+
+- Q2 tests pass.
+- Q2 smoke scripts pass.
+- Generated report includes the new summary tables.
+- README and `TASK_MEMORY.md` are updated.
+- No PortfolioOS core trading behavior is changed.
+
 ## Next Phase
 
-Phase 6 should decide whether to:
+## Phase 7: Q2 Cost-Sensitivity Report Reader
 
-- build richer Q2 report tables from real PortfolioOS outputs, or
-- continue with deeper Q1 evaluator contract examples.
+Goal:
+Let the Q2 markdown report consume cost-sensitivity CSV rows and summarize gross/net, turnover, and cost drag by cost assumption when executed results exist.
+
+Why next:
+The cost-sensitivity script already emits planned rows with explicit cost levels. The next useful increment is to make the report understand those rows without running PortfolioOS by default or fabricating unavailable results.
+
+Tasks:
+
+- [ ] Add a typed reader for Q2 cost-sensitivity result CSVs.
+- [ ] Render a cost-sensitivity summary grouped by cost bps and layer.
+- [ ] Preserve unavailable rows as `Not available`.
+- [ ] Add tests for executed rows and default non-execution rows.
+
+Acceptance criteria:
+
+- Q2 tests pass.
+- Q2 smoke scripts pass.
+- Existing default cost-sensitivity CSV remains honest and unavailable until explicit execution is enabled.
+- README and `TASK_MEMORY.md` are updated.
+- No PortfolioOS core trading behavior is changed.
+
+## Next Phase
+
+After Phase 7, consider deeper Q1 evaluator examples if Q2 reporting is sufficiently interview-readable.

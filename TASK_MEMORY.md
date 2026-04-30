@@ -13,6 +13,11 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - Current standalone project shells:
   - Q1 = `projects/agentic_alpha_triage`, asks "Is this alpha real?", and contains schemas/contracts plus validated example artifacts.
   - Q2 = `projects/execution_aware_optimizer`, asks "Can this alpha survive execution?", and contains a PortfolioOS-aware project shell with explicit unavailable-layer reporting.
+- Phase 6 Q2 real-output report tables are complete:
+  - `projects/execution_aware_optimizer/src/execution_aware_optimizer/reports.py` renders gross/net summary tables from observed ladder rows.
+  - alpha-decay summary is computed versus `raw_top_alpha_equal_weight` only when raw net-return observations exist.
+  - unavailable layers remain `Not available` and count as unavailable rows instead of receiving synthetic numbers.
+  - validation: Q2 tests `13 passed`; default Q2 smoke scripts passed.
 - Phase 5 Q1 contract examples are complete:
   - one valid example hypothesis lives at `projects/agentic_alpha_triage/examples/hypothesis_guidance_raise_drift.yaml`.
   - one valid example signal contract lives at `projects/agentic_alpha_triage/examples/signal_guidance_raise_drift.yaml`.
@@ -26,7 +31,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - non-mutating cost-sensitivity scenarios live in `projects/execution_aware_optimizer/src/execution_aware_optimizer/cost_sensitivity.py`.
   - Q2 README documents each ladder layer as partial or unavailable.
   - validation: Q2 tests `11 passed`; relevant PortfolioOS subset `64 passed, 36 warnings`; default Q2 smoke scripts passed without enabling PortfolioOS execution.
-- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 6 and choose between richer Q2 real-output report tables or deeper Q1 evaluator examples.
+- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 7 and add a Q2 cost-sensitivity report reader that consumes executed cost-sensitivity CSV rows without running PortfolioOS by default.
 - Core platform buildout through Phase 12 is implemented and stable.
 - The current project-wide meta stage is `research convergence + promotion contract`, not repo merge.
 - Project operating mode is now `paper-stage only`.
