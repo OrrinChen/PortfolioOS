@@ -15,6 +15,7 @@ for path in (PROJECT_ROOT / "src", REPO_ROOT / "src"):
         sys.path.insert(0, str(path))
 
 from execution_aware_optimizer.alpha_input import load_alpha_scores
+from execution_aware_optimizer.cost_sensitivity import load_cost_sensitivity_results
 from execution_aware_optimizer.diagnostics import build_constraint_diagnostics
 from execution_aware_optimizer.experiment_config import load_experiment_config
 from execution_aware_optimizer.ladder import ladder_rows_to_frame, run_alpha_decay_ladder
@@ -42,6 +43,11 @@ def main() -> None:
     parser.add_argument("--config", default=str(PROJECT_ROOT / "configs" / "alpha_decay_ladder.yaml"))
     parser.add_argument("--output", default=str(PROJECT_ROOT / "reports" / "alpha_decay_ladder_results.csv"))
     parser.add_argument("--report", default=None)
+    parser.add_argument(
+        "--cost-sensitivity-results",
+        default=str(PROJECT_ROOT / "reports" / "cost_sensitivity_results.csv"),
+        help="Optional Q2 cost-sensitivity CSV to summarize in the markdown report when present.",
+    )
     args = parser.parse_args()
 
     config = load_experiment_config(args.config)
@@ -62,6 +68,11 @@ def main() -> None:
     ladder_rows_to_frame(rows).to_csv(output_path, index=False)
 
     diagnostics = build_constraint_diagnostics(rows)
+    cost_sensitivity_rows = None
+    cost_sensitivity_path = _resolve_path(args.cost_sensitivity_results)
+    if cost_sensitivity_path is not None and cost_sensitivity_path.exists():
+        cost_sensitivity_rows = load_cost_sensitivity_results(cost_sensitivity_path)
+
     report_path = Path(args.report or config.report_path)
     if not report_path.is_absolute():
         report_path = REPO_ROOT / report_path
@@ -71,6 +82,7 @@ def main() -> None:
         alpha_report=alpha_result.report if alpha_result is not None else None,
         ladder_rows=rows,
         diagnostics=diagnostics,
+        cost_sensitivity_rows=cost_sensitivity_rows,
     )
     print(f"ladder_results_csv: {output_path}")
     print(f"report_markdown: {report_path}")

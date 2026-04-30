@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import date
 
+from execution_aware_optimizer.cost_sensitivity import CostSensitivityResultRow
 from execution_aware_optimizer.diagnostics import ConstraintDiagnostics
 from execution_aware_optimizer.experiment_config import ExperimentConfig
 from execution_aware_optimizer.ladder import LadderResultRow
@@ -73,3 +74,48 @@ def test_report_does_not_fabricate_summary_values_for_unavailable_rows() -> None
 
     assert "| turnover_constrained | 0 | Not available | Not available | Not available | Not available | 1 |" in report
     assert "Alpha decay cannot be summarized until the raw layer has net return observations." in report
+
+
+def test_report_renders_cost_sensitivity_summary_for_executed_rows() -> None:
+    config = ExperimentConfig.model_validate({})
+    cost_rows = [
+        CostSensitivityResultRow(
+            cost_bps=5,
+            transaction_cost_objective_mode="nav_fraction",
+            layer_name="full_execution_aware_cost_adjusted",
+            date=date(2026, 2, 28),
+            gross_return=0.020,
+            net_return=0.018,
+            turnover=0.21,
+            estimated_transaction_cost=0.002,
+        ),
+        CostSensitivityResultRow(
+            cost_bps=25,
+            transaction_cost_objective_mode="nav_fraction",
+            layer_name="full_execution_aware_cost_adjusted",
+            date=date(2026, 2, 28),
+            gross_return=0.015,
+            net_return=0.010,
+            turnover=0.18,
+            estimated_transaction_cost=0.005,
+        ),
+        CostSensitivityResultRow(
+            cost_bps=50,
+            transaction_cost_objective_mode="nav_fraction",
+            layer_name="full_execution_aware_cost_adjusted",
+            infeasibility_reason="Configured but not executed.",
+        ),
+    ]
+
+    report = render_execution_aware_optimizer_report(
+        config=config,
+        alpha_report=None,
+        ladder_rows=[],
+        diagnostics=ConstraintDiagnostics(),
+        cost_sensitivity_rows=cost_rows,
+    )
+
+    assert "| cost_bps | layer | observations | mean_gross_return | mean_net_return | mean_cost_drag | mean_turnover | unavailable_rows |" in report
+    assert "| 5 | full_execution_aware_cost_adjusted | 1 | 0.020000 | 0.018000 | 0.002000 | 0.210000 | 0 |" in report
+    assert "| 25 | full_execution_aware_cost_adjusted | 1 | 0.015000 | 0.010000 | 0.005000 | 0.180000 | 0 |" in report
+    assert "| 50 | full_execution_aware_cost_adjusted | 0 | Not available | Not available | Not available | Not available | 1 |" in report

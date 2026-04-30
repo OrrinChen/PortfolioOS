@@ -11,10 +11,11 @@ Completed:
 - Phase 4: Q2 PortfolioOS adapter hardening is complete with fixture-backed attribution mapping, independent alpha fixture, non-mutating cost-sensitivity scenarios, and layer-status documentation.
 - Phase 5: Q1 contract examples are installed with schema-backed validation and no agent loops.
 - Phase 6: Q2 report tables summarize observed PortfolioOS-backed ladder rows without fabricating unavailable values.
+- Phase 7: Q2 cost-sensitivity CSV rows are parsed into typed records and summarized in markdown reports.
 
 Current phase:
 
-- Phase 7: Q2 Cost-Sensitivity Report Reader.
+- Phase 8: Q1 Evaluator Example Fixtures.
 
 Deferred:
 
@@ -103,8 +104,6 @@ Acceptance criteria:
 - README and `TASK_MEMORY.md` are updated.
 - No PortfolioOS core trading behavior is changed.
 
-## Next Phase
-
 ## Phase 7: Q2 Cost-Sensitivity Report Reader
 
 Goal:
@@ -115,10 +114,10 @@ The cost-sensitivity script already emits planned rows with explicit cost levels
 
 Tasks:
 
-- [ ] Add a typed reader for Q2 cost-sensitivity result CSVs.
-- [ ] Render a cost-sensitivity summary grouped by cost bps and layer.
-- [ ] Preserve unavailable rows as `Not available`.
-- [ ] Add tests for executed rows and default non-execution rows.
+- [x] Add a typed reader for Q2 cost-sensitivity result CSVs.
+- [x] Render a cost-sensitivity summary grouped by cost bps and layer.
+- [x] Preserve unavailable rows as `Not available`.
+- [x] Add tests for executed rows and default non-execution rows.
 
 Acceptance criteria:
 
@@ -128,6 +127,28 @@ Acceptance criteria:
 - README and `TASK_MEMORY.md` are updated.
 - No PortfolioOS core trading behavior is changed.
 
+## Phase 8: Q1 Evaluator Example Fixtures
+
+Goal:
+Add small Q1 evaluator fixture examples that demonstrate leakage and placebo-test expectations without implementing agent loops or live data ingestion.
+
+Why next:
+Q2 reporting is now interview-readable enough for default non-execution flows. Q1 can next become clearer by showing how evaluator contracts should be represented before any autonomous hypothesis loop exists.
+
+Tasks:
+
+- [ ] Add one valid evaluator fixture that references the existing guidance-raise example.
+- [ ] Add one invalid/leakage-risk fixture for schema or contract-negative testing.
+- [ ] Add tests that validate the fixture loader rejects unsafe evaluator examples.
+- [ ] Document how Q1 evaluator examples differ from Q2 execution checks.
+
+Acceptance criteria:
+
+- Q1 tests pass.
+- Q1 example validation script passes.
+- README and `TASK_MEMORY.md` are updated.
+- No live API calls, agent loops, or trading workflow execution are added.
+
 ## Next Phase
 
-After Phase 7, consider deeper Q1 evaluator examples if Q2 reporting is sufficiently interview-readable.
+After Phase 8, consider whether Q1 needs event-registry examples or whether Q2 needs executed PortfolioOS adapter fixtures.

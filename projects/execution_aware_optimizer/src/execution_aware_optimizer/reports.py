@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Iterable
 
 from execution_aware_optimizer.alpha_input import AlphaInputReport
+from execution_aware_optimizer.cost_sensitivity import CostSensitivityResultRow
 from execution_aware_optimizer.diagnostics import ConstraintDiagnostics
 from execution_aware_optimizer.experiment_config import ExperimentConfig
 from execution_aware_optimizer.ladder import LadderResultRow
@@ -139,13 +140,55 @@ def _render_alpha_decay_table(rows: Iterable[LadderResultRow]) -> list[str]:
     return lines
 
 
+def _render_cost_sensitivity_summary_table(rows: Iterable[CostSensitivityResultRow]) -> list[str]:
+    """Render cost-sensitivity results grouped by cost assumption and layer."""
+
+    grouped: dict[tuple[int, str], list[CostSensitivityResultRow]] = {}
+    for row in rows:
+        grouped.setdefault((row.cost_bps, row.layer_name), []).append(row)
+
+    lines = [
+        "| cost_bps | layer | observations | mean_gross_return | mean_net_return | mean_cost_drag | mean_turnover | unavailable_rows |",
+        "|---:|---|---:|---:|---:|---:|---:|---:|",
+    ]
+    for (cost_bps, layer_name), layer_rows in sorted(grouped.items()):
+        observed_rows = [
+            row
+            for row in layer_rows
+            if any(
+                value is not None
+                for value in (
+                    row.gross_return,
+                    row.net_return,
+                    row.turnover,
+                    row.estimated_transaction_cost,
+                    row.realized_transaction_cost,
+                )
+            )
+        ]
+        unavailable_count = sum(1 for row in layer_rows if row.infeasibility_reason)
+        lines.append(
+            "| {cost_bps} | {layer} | {observations} | {gross} | {net} | {drag} | {turnover} | {unavailable} |".format(
+                cost_bps=cost_bps,
+                layer=layer_name,
+                observations=len(observed_rows),
+                gross=_fmt_float(_mean(row.gross_return for row in observed_rows)),
+                net=_fmt_float(_mean(row.net_return for row in observed_rows)),
+                drag=_fmt_float(_mean(_cost_drag(row) for row in observed_rows)),
+                turnover=_fmt_float(_mean(row.turnover for row in observed_rows)),
+                unavailable=unavailable_count,
+            )
+        )
+    return lines
+
+
 def render_execution_aware_optimizer_report(
     *,
     config: ExperimentConfig,
     alpha_report: AlphaInputReport | None,
     ladder_rows: list[LadderResultRow],
     diagnostics: ConstraintDiagnostics,
-    cost_sensitivity_rows: list[LadderResultRow] | None = None,
+    cost_sensitivity_rows: list[CostSensitivityResultRow] | None = None,
 ) -> str:
     """Render the required project report sections."""
 
@@ -198,7 +241,11 @@ def render_execution_aware_optimizer_report(
         "",
     ]
     if cost_sensitivity_rows:
-        lines.extend(_render_ladder_table(cost_sensitivity_rows))
+        lines.append(
+            "Cost-sensitivity rows are summarized only from supplied CSV results. "
+            "Unavailable rows remain unavailable until an explicit PortfolioOS execution path produces attribution."
+        )
+        lines.extend(["", *_render_cost_sensitivity_summary_table(cost_sensitivity_rows)])
     else:
         lines.append("Cost-sensitivity output is not available yet.")
     lines.extend(
@@ -228,7 +275,7 @@ def write_execution_aware_optimizer_report(
     alpha_report: AlphaInputReport | None,
     ladder_rows: list[LadderResultRow],
     diagnostics: ConstraintDiagnostics,
-    cost_sensitivity_rows: list[LadderResultRow] | None = None,
+    cost_sensitivity_rows: list[CostSensitivityResultRow] | None = None,
 ) -> Path:
     """Write the markdown report and return its path."""
 

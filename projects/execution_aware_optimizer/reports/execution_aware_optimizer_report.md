@@ -54,7 +54,15 @@ Alpha decay cannot be summarized until the raw layer has net return observations
 
 ## 8. Cost sensitivity
 
-Cost-sensitivity output is not available yet.
+Cost-sensitivity rows are summarized only from supplied CSV results. Unavailable rows remain unavailable until an explicit PortfolioOS execution path produces attribution.
+
+| cost_bps | layer | observations | mean_gross_return | mean_net_return | mean_cost_drag | mean_turnover | unavailable_rows |
+|---:|---|---:|---:|---:|---:|---:|---:|
+| 0 | full_execution_aware_cost_adjusted | 0 | Not available | Not available | Not available | Not available | 1 |
+| 5 | full_execution_aware_cost_adjusted | 0 | Not available | Not available | Not available | Not available | 1 |
+| 10 | full_execution_aware_cost_adjusted | 0 | Not available | Not available | Not available | Not available | 1 |
+| 25 | full_execution_aware_cost_adjusted | 0 | Not available | Not available | Not available | Not available | 1 |
+| 50 | full_execution_aware_cost_adjusted | 0 | Not available | Not available | Not available | Not available | 1 |
 
 ## 9. Infeasibility / failure cases
 

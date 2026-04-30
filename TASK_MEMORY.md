@@ -13,6 +13,11 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - Current standalone project shells:
   - Q1 = `projects/agentic_alpha_triage`, asks "Is this alpha real?", and contains schemas/contracts plus validated example artifacts.
   - Q2 = `projects/execution_aware_optimizer`, asks "Can this alpha survive execution?", and contains a PortfolioOS-aware project shell with explicit unavailable-layer reporting.
+- Phase 7 Q2 cost-sensitivity report reader is complete:
+  - `projects/execution_aware_optimizer/src/execution_aware_optimizer/cost_sensitivity.py` loads cost-sensitivity CSV rows into typed `CostSensitivityResultRow` records.
+  - `projects/execution_aware_optimizer/src/execution_aware_optimizer/reports.py` renders cost-bps/layer summaries for supplied cost-sensitivity rows.
+  - default non-execution rows remain unavailable in both CSV and report output.
+  - validation: Q2 tests `16 passed`; default Q2 smoke scripts passed.
 - Phase 6 Q2 real-output report tables are complete:
   - `projects/execution_aware_optimizer/src/execution_aware_optimizer/reports.py` renders gross/net summary tables from observed ladder rows.
   - alpha-decay summary is computed versus `raw_top_alpha_equal_weight` only when raw net-return observations exist.
@@ -31,7 +36,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - non-mutating cost-sensitivity scenarios live in `projects/execution_aware_optimizer/src/execution_aware_optimizer/cost_sensitivity.py`.
   - Q2 README documents each ladder layer as partial or unavailable.
   - validation: Q2 tests `11 passed`; relevant PortfolioOS subset `64 passed, 36 warnings`; default Q2 smoke scripts passed without enabling PortfolioOS execution.
-- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 7 and add a Q2 cost-sensitivity report reader that consumes executed cost-sensitivity CSV rows without running PortfolioOS by default.
+- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 8 and add Q1 evaluator example fixtures without agent loops or live data ingestion.
 - Core platform buildout through Phase 12 is implemented and stable.
 - The current project-wide meta stage is `research convergence + promotion contract`, not repo merge.
 - Project operating mode is now `paper-stage only`.
