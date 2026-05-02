@@ -9,7 +9,9 @@ from agentic_alpha_triage.evaluator_fixture import (
 from agentic_alpha_triage.evaluator_plan_batch import (
     EvaluatorPlanBatchEntryResult,
     EvaluatorPlanBatchResult,
+    EvaluatorPlanBatchSummary,
     run_evaluator_plan_manifest,
+    summarize_evaluator_plan_batch,
 )
 from agentic_alpha_triage.evaluator_planner import (
     EvaluatorPlan,
@@ -36,6 +38,7 @@ __all__ = [
     "EvaluatorFixture",
     "EvaluatorPlanBatchEntryResult",
     "EvaluatorPlanBatchResult",
+    "EvaluatorPlanBatchSummary",
     "EvaluatorPlan",
     "EvaluatorPlanManifest",
     "EvaluatorPlanManifestEntry",
@@ -51,6 +54,7 @@ __all__ = [
     "load_evaluator_fixtures",
     "load_evaluator_plan_manifest",
     "run_evaluator_plan_manifest",
+    "summarize_evaluator_plan_batch",
     "build_evaluator_plan",
     "validate_example_directory",
 ]

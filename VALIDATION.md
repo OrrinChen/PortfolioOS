@@ -38,6 +38,12 @@ Batch manifest dry-run smoke, when touching Q1 evaluator manifest wrappers:
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/agentic_alpha_triage/src poetry run python projects/agentic_alpha_triage/scripts/plan_evaluator_manifest.py --manifest projects/agentic_alpha_triage/examples/evaluator_plan_manifest.yaml --indent 0
 ```
 
+Batch manifest summary smoke, when touching Q1 evaluator manifest summary output:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/agentic_alpha_triage/src poetry run python projects/agentic_alpha_triage/scripts/plan_evaluator_manifest.py --manifest projects/agentic_alpha_triage/examples/evaluator_plan_manifest.yaml --summary --indent 0
+```
+
 ## Q2 Project
 
 Run when touching `projects/execution_aware_optimizer`:

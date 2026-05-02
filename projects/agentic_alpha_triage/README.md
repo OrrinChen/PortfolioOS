@@ -107,6 +107,14 @@ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/agentic_alpha_triage/src poetry ru
 
 The batch output is an ordered JSON object with one ready or rejected planner payload per manifest entry. It is still local audit metadata only; it contains no realized returns, alpha performance, orders, trading instructions, PortfolioOS workflow output, or Q2 export.
 
+Batch summary:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/agentic_alpha_triage/src poetry run python projects/agentic_alpha_triage/scripts/plan_evaluator_manifest.py --manifest projects/agentic_alpha_triage/examples/evaluator_plan_manifest.yaml --summary
+```
+
+The summary output includes only manifest id, total entry count, ready count, rejected count, expected-status mismatch count, and mismatched entry ids.
+
 ## Future Workflow
 
 The intended path is:
@@ -158,4 +166,10 @@ Print the committed batch evaluator-plan manifest payload:
 
 ```bash
 PYTHONPATH=projects/agentic_alpha_triage/src poetry run python projects/agentic_alpha_triage/scripts/plan_evaluator_manifest.py --manifest projects/agentic_alpha_triage/examples/evaluator_plan_manifest.yaml
+```
+
+Print the committed batch evaluator-plan manifest summary:
+
+```bash
+PYTHONPATH=projects/agentic_alpha_triage/src poetry run python projects/agentic_alpha_triage/scripts/plan_evaluator_manifest.py --manifest projects/agentic_alpha_triage/examples/evaluator_plan_manifest.yaml --summary
 ```

@@ -23,10 +23,11 @@ Completed:
 - Phase 16: Q1 rejected-plan JSON audit output lets the dry-run CLI emit structured local rejection metadata behind an explicit flag.
 - Phase 17: Q1 evaluator-plan fixture manifest lists ready and rejected local dry-run targets without executing them.
 - Phase 18: Q1 batch dry-run manifest wrapper emits ordered ready/rejected planner JSON for local manifest entries.
+- Phase 19: Q1 manifest summary report counts ready, rejected, and expected-status mismatched entries without evaluator execution.
 
 Current phase:
 
-- Phase 19: Q1 Manifest Summary Report.
+- Phase 20: Q1 Evaluator Batch Contract Note.
 
 Deferred:
 
@@ -389,10 +390,10 @@ Phase 18 emits detailed batch payloads. A concise summary will make local audit 
 
 Tasks:
 
-- [ ] Add a summary builder over `EvaluatorPlanBatchResult`.
-- [ ] Include manifest id, total entries, ready count, rejected count, and expected-status mismatch count.
-- [ ] Add tests and update Q1 README plus `TASK_MEMORY.md`.
-- [ ] Keep the output free of realized returns, alpha performance, orders, trading outputs, PortfolioOS workflow output, and Q2 exports.
+- [x] Add a summary builder over `EvaluatorPlanBatchResult`.
+- [x] Include manifest id, total entries, ready count, rejected count, and expected-status mismatch count.
+- [x] Add tests and update Q1 README plus `TASK_MEMORY.md`.
+- [x] Keep the output free of realized returns, alpha performance, orders, trading outputs, PortfolioOS workflow output, and Q2 exports.
 
 Acceptance criteria:
 
@@ -401,6 +402,28 @@ Acceptance criteria:
 - Summary output contains only local manifest/planner audit metadata.
 - No live FMP/SEC calls, LLM agent loops, PortfolioOS workflows, trading outputs, or Q2 exports are added.
 
+## Phase 20: Q1 Evaluator Batch Contract Note
+
+Goal:
+Document the Q1 batch dry-run contract before any real evaluator implementation is considered.
+
+Why next:
+Q1 now has local single-plan, rejected-plan, manifest, batch, and summary audit paths. The next useful increment is to freeze the batch boundary in prose so future evaluator work cannot accidentally become an agent loop or trading workflow.
+
+Tasks:
+
+- [ ] Add a docs note defining allowed inputs, outputs, and non-responsibilities for batch dry-run wrappers.
+- [ ] Explain how batch audit output differs from real evaluator results.
+- [ ] Update Q1 README and `TASK_MEMORY.md`.
+- [ ] Add tests only if the docs note changes validation behavior.
+
+Acceptance criteria:
+
+- Q1 tests pass if code changes.
+- Q1 example validation script passes.
+- Contract note states no live FMP/SEC calls, LLM agent loops, PortfolioOS workflows, trading outputs, or Q2 exports.
+- No evaluator execution or new data ingestion is added.
+
 ## Next Phase
 
-After Phase 19, consider whether Q1 needs a docs-only evaluator batch contract note before any real evaluator implementation.
+After Phase 20, decide whether Q1 should pause feature work or add a minimal local evaluator stub behind strict TODOs.
