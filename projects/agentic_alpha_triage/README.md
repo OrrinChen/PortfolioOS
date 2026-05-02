@@ -76,6 +76,12 @@ plan = build_evaluator_plan(
 )
 ```
 
+CLI dry-run:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/agentic_alpha_triage/src poetry run python projects/agentic_alpha_triage/scripts/plan_evaluator.py --fixture projects/agentic_alpha_triage/examples/evaluator_fixtures/valid/guidance_raise_drift.yaml --event-registry-dir projects/agentic_alpha_triage/examples/event_registry/valid
+```
+
 ## Future Workflow
 
 The intended path is:
@@ -107,4 +113,10 @@ Validate the committed examples:
 
 ```bash
 PYTHONPATH=projects/agentic_alpha_triage/src poetry run python projects/agentic_alpha_triage/scripts/validate_examples.py
+```
+
+Print the committed local dry-run evaluator plan:
+
+```bash
+PYTHONPATH=projects/agentic_alpha_triage/src poetry run python projects/agentic_alpha_triage/scripts/plan_evaluator.py --fixture projects/agentic_alpha_triage/examples/evaluator_fixtures/valid/guidance_raise_drift.yaml --event-registry-dir projects/agentic_alpha_triage/examples/event_registry/valid
 ```

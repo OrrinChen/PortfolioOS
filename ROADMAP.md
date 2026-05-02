@@ -19,10 +19,11 @@ Completed:
 - Phase 12: Q2 executed fixture report polish adds explicit adapter status, layer coverage, and an opt-in local executed report smoke path.
 - Phase 13: Q1 evaluator runner design defines the local-only dry-run planner boundary without adding agent loops or live ingestion.
 - Phase 14: Q1 dry-run evaluator planner assembles the valid guidance-raise fixture family into a non-executing plan and rejects contract disagreements.
+- Phase 15: Q1 evaluator CLI dry-run wrapper prints local evaluator plans as JSON from explicit fixture paths.
 
 Current phase:
 
-- Phase 15: Q1 Evaluator CLI Dry-Run Wrapper.
+- Phase 16: Q1 Rejected-Plan JSON Audit Output.
 
 Deferred:
 
@@ -297,10 +298,10 @@ Phase 14 exposed a library planner. A CLI dry-run wrapper would make the planner
 
 Tasks:
 
-- [ ] Add a script that calls `build_evaluator_plan` for explicit local fixture paths.
-- [ ] Print the plan JSON without realized returns, alpha performance, or trading outputs.
-- [ ] Add tests or smoke validation for the wrapper.
-- [ ] Update Q1 README and `TASK_MEMORY.md`.
+- [x] Add a script that calls `build_evaluator_plan` for explicit local fixture paths.
+- [x] Print the plan JSON without realized returns, alpha performance, or trading outputs.
+- [x] Add tests or smoke validation for the wrapper.
+- [x] Update Q1 README and `TASK_MEMORY.md`.
 
 Acceptance criteria:
 
@@ -309,6 +310,28 @@ Acceptance criteria:
 - CLI dry-run uses only local files supplied by path.
 - No live FMP/SEC calls, LLM agent loops, PortfolioOS workflows, or trading outputs are added.
 
+## Phase 16: Q1 Rejected-Plan JSON Audit Output
+
+Goal:
+Let the Q1 dry-run CLI emit explicit rejected-plan JSON for local contract disagreements.
+
+Why next:
+The Phase 15 CLI prints ready plans. The next useful increment is to make rejection paths auditable without throwing away structured context.
+
+Tasks:
+
+- [ ] Add a rejected-plan JSON schema or response wrapper.
+- [ ] Convert planner `ValueError` failures into CLI JSON when an explicit flag is set.
+- [ ] Preserve nonzero exit behavior unless the user opts into audit JSON.
+- [ ] Update Q1 README and `TASK_MEMORY.md`.
+
+Acceptance criteria:
+
+- Q1 tests pass.
+- Q1 example validation script passes.
+- CLI rejected output contains no realized returns, alpha performance, orders, or trading outputs.
+- No live FMP/SEC calls, LLM agent loops, PortfolioOS workflows, or Q2 exports are added.
+
 ## Next Phase
 
-After Phase 15, consider adding rejected-plan JSON audit output.
+After Phase 16, consider a tiny local evaluator-plan fixture manifest.
