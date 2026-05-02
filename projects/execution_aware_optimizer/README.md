@@ -81,14 +81,16 @@ portfolioos:
 
 Only do that when the configured manifest, data, and cost assumptions are intentional for the experiment.
 
-## Executed Adapter Fixture Plan
+## Executed Adapter Fixture
 
-The next safe Q2 fixture is documented in `docs/executed_adapter_fixture_plan.md`. The decision is to add one small, local-only PortfolioOS-backed fixture that calls `run_alpha_decay_ladder` through the library API, uses the existing local backtest manifest, and maps only the two layers PortfolioOS currently exposes through stable period attribution:
+A focused local-only PortfolioOS-backed fixture now lives in `tests/test_portfolioos_adapter.py`. It calls `run_alpha_decay_ladder` through the library API, uses the existing local backtest manifest, and maps only the two layers PortfolioOS currently exposes through stable period attribution:
 
 - `raw_top_alpha_equal_weight`
 - `full_execution_aware_cost_adjusted`
 
-Default Q2 configs must stay non-execution. The fixture must not enable live services, run arbitrary CLI workflow chains, or fabricate intermediate layer diagnostics.
+The fixture sets `portfolioos.allow_portfolioos_run=true` only inside the test config. It also asserts that a representative intermediate layer remains explicitly unavailable and that default Q2 configs keep `allow_portfolioos_run=false`.
+
+Default Q2 configs stay non-execution. The fixture does not enable live services, run arbitrary CLI workflow chains, write report artifacts, or fabricate intermediate layer diagnostics.
 
 ## Cost Sensitivity
 

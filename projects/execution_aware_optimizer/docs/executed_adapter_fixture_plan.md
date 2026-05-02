@@ -2,7 +2,9 @@
 
 ## Decision
 
-Q2 should add one tiny executed PortfolioOS adapter fixture in the next implementation phase.
+Q2 should keep one tiny executed PortfolioOS adapter fixture.
+
+Phase 11 implemented this as `test_local_portfolioos_fixture_maps_executed_rows_without_report_writes` in `projects/execution_aware_optimizer/tests/test_portfolioos_adapter.py`.
 
 The fixture scope is deliberately narrow:
 
@@ -14,6 +16,16 @@ The fixture scope is deliberately narrow:
   - `full_execution_aware_cost_adjusted`
 - keep intermediate layers explicit as unavailable unless stable PortfolioOS stage hooks are added
 - write no default report artifacts and do not mutate Q2 default configs
+
+## Implementation Status
+
+Implemented. The fixture:
+
+- uses `portfolio_os.backtest.engine.run_backtest` against the local sample manifest
+- asserts observed raw and full execution-aware `net_return` rows
+- asserts the representative intermediate layer remains unavailable with an explicit reason
+- separately verifies default Q2 configs keep `allow_portfolioos_run=false`
+- writes no report artifacts
 
 ## Evidence From Inspection
 
@@ -40,9 +52,9 @@ This fixture must not:
 - claim binding constraints, dual values, liquidity slack, or risk exposure diagnostics that PortfolioOS does not expose
 - store paid data or generated research payloads in the repository
 
-## Recommended Implementation
+## Implemented Test Contract
 
-Add a focused Q2 test that:
+The focused Q2 test:
 
 1. builds an `ExperimentConfig` with `allow_portfolioos_run=true`
 2. uses the local manifest `data/backtest_samples/manifest_us_expanded_alpha_phase_1_5.yaml`

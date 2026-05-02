@@ -1,12 +1,18 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 
 import pandas as pd
 import pytest
 
-from execution_aware_optimizer.experiment_config import ExperimentConfig
+from execution_aware_optimizer.experiment_config import ExperimentConfig, load_experiment_config
 from execution_aware_optimizer.ladder import run_alpha_decay_ladder
+from portfolio_os.backtest.engine import run_backtest
+
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
+Q2_CONFIG_DIR = REPO_ROOT / "projects" / "execution_aware_optimizer" / "configs"
 
 
 @dataclass(frozen=True)
@@ -79,3 +85,43 @@ def test_portfolioos_backtest_adapter_maps_available_strategies_to_ladder_rows()
     assert full_row.estimated_transaction_cost == pytest.approx(0.002)
     assert unavailable_row.infeasibility_reason is not None
     assert "No stable PortfolioOS adapter" in unavailable_row.infeasibility_reason
+
+
+def test_q2_default_configs_do_not_enable_portfolioos_runs() -> None:
+    for config_name in ("base.yaml", "alpha_decay_ladder.yaml", "cost_sensitivity.yaml"):
+        config = load_experiment_config(Q2_CONFIG_DIR / config_name)
+
+        assert config.portfolioos.allow_portfolioos_run is False
+
+
+def test_local_portfolioos_fixture_maps_executed_rows_without_report_writes(tmp_path: Path) -> None:
+    config = ExperimentConfig.model_validate(
+        {
+            "portfolioos": {
+                "allow_portfolioos_run": True,
+                "backtest_manifest": "data/backtest_samples/manifest_us_expanded_alpha_phase_1_5.yaml",
+                "output_dir": str(tmp_path),
+            },
+            "layers": [
+                {"layer_name": "raw_top_alpha_equal_weight"},
+                {"layer_name": "risk_controlled"},
+                {"layer_name": "full_execution_aware_cost_adjusted"},
+            ],
+        }
+    )
+
+    rows = run_alpha_decay_ladder(config, backtest_runner=run_backtest)
+
+    raw_rows = [row for row in rows if row.layer_name == "raw_top_alpha_equal_weight"]
+    full_rows = [row for row in rows if row.layer_name == "full_execution_aware_cost_adjusted"]
+    unavailable_rows = [row for row in rows if row.layer_name == "risk_controlled"]
+
+    assert raw_rows
+    assert full_rows
+    assert any(row.net_return is not None for row in raw_rows)
+    assert any(row.net_return is not None for row in full_rows)
+    assert all(row.infeasibility_reason is None for row in raw_rows + full_rows)
+    assert len(unavailable_rows) == 1
+    assert unavailable_rows[0].infeasibility_reason is not None
+    assert "No stable PortfolioOS adapter" in unavailable_rows[0].infeasibility_reason
+    assert list(tmp_path.iterdir()) == []

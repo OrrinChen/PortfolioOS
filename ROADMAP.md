@@ -15,10 +15,11 @@ Completed:
 - Phase 8: Q1 evaluator example fixtures demonstrate leakage-safe evaluator expectations and rejected unsafe examples.
 - Phase 9: Q1 event-registry examples demonstrate timestamp-safe event representation and rejected unsafe timestamps.
 - Phase 10: Q2 executed adapter fixture planning identified a safe local-only PortfolioOS-backed fixture scope.
+- Phase 11: Q2 executed adapter fixture verifies local PortfolioOS-backed raw and full execution-aware rows through an explicit library call.
 
 Current phase:
 
-- Phase 11: Q2 Executed Adapter Fixture.
+- Phase 12: Q2 Executed Fixture Report Polish.
 
 Deferred:
 
@@ -204,11 +205,11 @@ Phase 10 confirmed a safe fixture path: a direct library call to `run_alpha_deca
 
 Tasks:
 
-- [ ] Add one focused Q2 test that runs the local PortfolioOS backtest adapter through `run_alpha_decay_ladder`.
-- [ ] Assert raw and full execution-aware rows have observed values.
-- [ ] Assert intermediate layers remain explicitly unavailable.
-- [ ] Confirm default Q2 configs still keep `allow_portfolioos_run=false`.
-- [ ] Update Q2 README and `TASK_MEMORY.md`.
+- [x] Add one focused Q2 test that runs the local PortfolioOS backtest adapter through `run_alpha_decay_ladder`.
+- [x] Assert raw and full execution-aware rows have observed values.
+- [x] Assert intermediate layers remain explicitly unavailable.
+- [x] Confirm default Q2 configs still keep `allow_portfolioos_run=false`.
+- [x] Update Q2 README and `TASK_MEMORY.md`.
 
 Acceptance criteria:
 
@@ -217,6 +218,28 @@ Acceptance criteria:
 - No live API calls, paid data, broker calls, or arbitrary CLI workflow execution are added.
 - No fabricated intermediate layer diagnostics are introduced.
 
+## Phase 12: Q2 Executed Fixture Report Polish
+
+Goal:
+Make the Q2 report path clearer for explicitly executed local fixture rows without enabling PortfolioOS execution by default.
+
+Why next:
+Phase 11 proves the adapter can map real local PortfolioOS attribution rows for the raw and full execution-aware layers. The next useful increment is to make that evidence easy to inspect in reports while still marking intermediate layers unavailable.
+
+Tasks:
+
+- [ ] Add or document a local-only report smoke path for explicit executed fixture rows.
+- [ ] Ensure report tables clearly distinguish observed rows from unavailable layers.
+- [ ] Keep default configs and smoke scripts non-execution.
+- [ ] Update Q2 README and `TASK_MEMORY.md`.
+
+Acceptance criteria:
+
+- Q2 tests pass.
+- Q2 default smoke scripts pass.
+- Any executed report fixture uses only local sample data and explicit opt-in config.
+- No fabricated intermediate diagnostics are introduced.
+
 ## Next Phase
 
-After Phase 11, consider Q1 evaluator runner design or Q2 report polish for executed fixture rows.
+After Phase 12, consider Q1 evaluator runner design.
