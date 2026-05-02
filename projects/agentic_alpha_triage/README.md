@@ -62,6 +62,7 @@ Q2 execution checks are separate. They ask whether an already-produced `alpha_sc
 ## Evaluator Runner Boundary
 
 The local evaluator runner contract is documented in `docs/evaluator_runner_contract.md`.
+The batch dry-run boundary is documented in `docs/evaluator_batch_contract.md`.
 
 The implemented runner in `src/agentic_alpha_triage/evaluator_planner.py` is a dry-run planner only. It assembles local schema-backed Q1 artifacts into a leakage-safe evaluation plan, but it does not call live SEC/FMP services, run LLM agent loops, execute PortfolioOS workflows, compute trading results, or export directly to Q2.
 
@@ -114,6 +115,8 @@ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/agentic_alpha_triage/src poetry ru
 ```
 
 The summary output includes only manifest id, total entry count, ready count, rejected count, expected-status mismatch count, and mismatched entry ids.
+
+The batch contract explicitly forbids realized returns, alpha performance, orders, trading instructions, PortfolioOS workflow output, and Q2 exports in Q1 batch artifacts.
 
 ## Future Workflow
 

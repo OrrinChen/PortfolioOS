@@ -44,6 +44,12 @@ Batch manifest summary smoke, when touching Q1 evaluator manifest summary output
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/agentic_alpha_triage/src poetry run python projects/agentic_alpha_triage/scripts/plan_evaluator_manifest.py --manifest projects/agentic_alpha_triage/examples/evaluator_plan_manifest.yaml --summary --indent 0
 ```
 
+Q1 batch contract note is guarded by:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/agentic_alpha_triage/src poetry run pytest projects/agentic_alpha_triage/tests/test_evaluator_batch_contract_doc.py -q
+```
+
 ## Q2 Project
 
 Run when touching `projects/execution_aware_optimizer`:

@@ -62,6 +62,12 @@ Print Q1 batch evaluator-plan manifest summary:
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/agentic_alpha_triage/src poetry run python projects/agentic_alpha_triage/scripts/plan_evaluator_manifest.py --manifest projects/agentic_alpha_triage/examples/evaluator_plan_manifest.yaml --summary
 ```
 
+Read the Q1 batch dry-run contract:
+
+```bash
+sed -n '1,220p' projects/agentic_alpha_triage/docs/evaluator_batch_contract.md
+```
+
 Run Q2 tests:
 
 ```bash

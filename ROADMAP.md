@@ -24,10 +24,11 @@ Completed:
 - Phase 17: Q1 evaluator-plan fixture manifest lists ready and rejected local dry-run targets without executing them.
 - Phase 18: Q1 batch dry-run manifest wrapper emits ordered ready/rejected planner JSON for local manifest entries.
 - Phase 19: Q1 manifest summary report counts ready, rejected, and expected-status mismatched entries without evaluator execution.
+- Phase 20: Q1 evaluator batch contract note freezes the local dry-run boundary before real evaluator work.
 
 Current phase:
 
-- Phase 20: Q1 Evaluator Batch Contract Note.
+- Phase 21: Evidence Bundle Schema.
 
 Deferred:
 
@@ -39,6 +40,56 @@ Deferred:
 - full optimizer dual-value reporting until PortfolioOS exposes it
 - liquidity slack reporting until PortfolioOS exports stable per-name participation diagnostics
 - cloud automation setup
+
+## Strategic Direction: Audit-Ready Decision Evaluation Platform
+
+PortfolioOS should be packaged as:
+
+**PortfolioOS: Audit-Ready Decision Evaluation Platform**
+
+The story is not "a quant strategy." The story is a typed, auditable, reproducible, execution-aware evaluation system for high-risk ML/quant decision workflows.
+
+The product spine is:
+
+```text
+Q1 Alpha Triage
+  -> Evidence Bundle
+  -> Promotion Gate
+  -> Q2 Execution-Aware Evaluation
+  -> Audit Report
+  -> Reproducible Demo
+```
+
+Q1 asks: **Is this alpha real?**
+
+Q2 asks: **Can this alpha survive execution?**
+
+The roadmap should prioritize ML evaluation, workflow orchestration, data contracts, governance, simulation, observability, and reliability engineering. It should not reopen alpha mining as the main thread.
+
+Do not:
+
+- continue adding new alpha ideas as the primary roadmap objective
+- add live broker or auto-trading paths as a near-term goal
+- merge A-share, US WRDS, Qlib, optimizer, Q1, and Q2 into one unfocused story
+- add LLM agent loops as trusted evaluators
+- describe the project as a production trading system
+
+Preferred framing:
+
+- research-to-execution evaluation platform
+- audit-ready simulation platform
+- contract-first ML/quant decision evaluation workflow
+
+## Forward Roadmap Overview
+
+| Phase | Focus | Interview Value |
+| --- | --- | --- |
+| Phase 20-22 | Q1 batch boundary, evidence bundle, promotion contract | Data contracts / governance |
+| Phase 23-25 | Q2 evaluation matrix, explainability, unified audit report | ML evaluation pipeline |
+| Phase 26-28 | Provenance, structured traces, CI hardening | Production engineering |
+| Phase 29-30 | Local orchestration and content-addressed cache | Batch systems / reproducibility |
+| Phase 31-32 | Read-only service layer and demo dashboard | System design polish |
+| Phase 33-34 | One-command demo, architecture docs, case study | Interview-ready artifact |
 
 ## Phase 4: Q2 Adapter Hardening
 
@@ -412,18 +463,342 @@ Q1 now has local single-plan, rejected-plan, manifest, batch, and summary audit 
 
 Tasks:
 
-- [ ] Add a docs note defining allowed inputs, outputs, and non-responsibilities for batch dry-run wrappers.
-- [ ] Explain how batch audit output differs from real evaluator results.
-- [ ] Update Q1 README and `TASK_MEMORY.md`.
-- [ ] Add tests only if the docs note changes validation behavior.
+- [x] Add `projects/agentic_alpha_triage/docs/evaluator_batch_contract.md`.
+- [x] Define batch input and output schemas in prose, including manifest path, fixture paths, event-registry directories, ready count, rejected count, mismatch count, rejection reasons, and referenced fixture paths.
+- [x] Explicitly state that batch dry-run wrappers may output only planning/audit metadata.
+- [x] Explicitly forbid realized returns, alpha performance, orders, trading instructions, PortfolioOS workflow output, and Q2 exports.
+- [x] Update Q1 README, `RUNBOOK.md`, `VALIDATION.md`, and `TASK_MEMORY.md`.
+- [x] Add or keep tests that verify forbidden fields do not appear in summary JSON.
 
 Acceptance criteria:
 
-- Q1 tests pass if code changes.
+- Q1 tests pass.
 - Q1 example validation script passes.
+- Q1 batch summary smoke passes:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/agentic_alpha_triage/src poetry run python projects/agentic_alpha_triage/scripts/plan_evaluator_manifest.py --manifest projects/agentic_alpha_triage/examples/evaluator_plan_manifest.yaml --summary --indent 0
+```
+
 - Contract note states no live FMP/SEC calls, LLM agent loops, PortfolioOS workflows, trading outputs, or Q2 exports.
 - No evaluator execution or new data ingestion is added.
 
-## Next Phase
+## Phase 21: Evidence Bundle Schema
 
-After Phase 20, decide whether Q1 should pause feature work or add a minimal local evaluator stub behind strict TODOs.
+Goal:
+Turn Q1 planning output into a typed evidence package rather than scattered JSON/YAML/CLI artifacts.
+
+Why next:
+After Q1 batch boundaries are documented, the next platform step is a stable evidence object that can be validated, audited, and reviewed before any promotion to execution evaluation.
+
+Tasks:
+
+- [ ] Create `projects/evidence_bundle/` as a standalone project area.
+- [ ] Add schema modules for evidence bundle metadata, PIT-safety checks, leakage checks, planned tests, coverage requirements, rejection reasons, and promotion eligibility.
+- [ ] Add valid and rejected example bundles, including forward-return leakage and missing/unsafe timestamp cases.
+- [ ] Add validation and deterministic JSON serialization tests.
+- [ ] Document that evidence bundles must not contain trading recommendations, orders, broker output, live performance, or hidden Q2 results.
+
+Acceptance criteria:
+
+- Valid bundle validates.
+- Forward-return leakage bundle is rejected.
+- Missing timestamp bundle is rejected.
+- Event anchor before signal visibility is rejected.
+- Deterministic JSON output is tested.
+- No live services, broker calls, trading instructions, or Q2 execution are added.
+
+## Phase 22: Promotion Gate Contract
+
+Goal:
+Separate Q1 research validation from Q2 execution evaluation with an explicit promotion contract.
+
+Why next:
+Q1 readiness should be necessary but not sufficient for execution-aware evaluation. A promotion gate prevents unsafe coupling between research validation and trading simulation.
+
+Tasks:
+
+- [ ] Create `projects/promotion_gate/` as a standalone project area.
+- [ ] Define `PromotionDecision` and `Q2InputContract` schemas.
+- [ ] Implement gate checks for PIT safety, leakage safety, minimum coverage, event timestamp alignment, horizon sanity, and cost-assumption presence.
+- [ ] Ensure passing decisions generate only Q2 input contracts and do not run Q2.
+- [ ] Add promoted and rejected examples plus tests.
+
+Acceptance criteria:
+
+- Ready Q1 evidence can produce `promote_to_execution_eval` only when all gate checks pass.
+- Unsafe evidence produces `reject` or `needs_more_evidence`.
+- Forbidden outputs are checked and recorded.
+- Q1 does not import or execute Q2 workflows.
+
+## Phase 23: Q2 Execution Evaluation Matrix
+
+Goal:
+Extend Q2 from a single execution-aware report into a scenario matrix across cost, liquidity, participation, and constraint settings.
+
+Why next:
+The platform should answer whether a promoted signal survives execution assumptions, not just whether one backtest row looks acceptable.
+
+Tasks:
+
+- [ ] Add `execution_matrix.py`, `scenario_grid.py`, and `robustness_summary.py` under `projects/execution_aware_optimizer/src/execution_aware_optimizer/`.
+- [ ] Support scenario dimensions for cost bps, participation rate, liquidity bucket, constraint level, and execution mode.
+- [ ] Emit `execution_matrix.csv`, `robustness_summary.json`, and markdown report sections.
+- [ ] Record source config hash for every scenario.
+- [ ] Return structured unavailable reasons when a layer or scenario cannot execute.
+
+Acceptance criteria:
+
+- Unavailable layers remain explicit and are never filled with fabricated results.
+- Scenario rows include config hashes and status.
+- Robustness summary handles observed and unavailable rows.
+- Default project behavior remains non-execution unless explicitly opted in.
+
+## Phase 24: Decision Explainability Layer
+
+Goal:
+Make every rejection, promotion, unavailable status, and execution-risk decision explainable.
+
+Why next:
+Audit-ready systems should turn failed experiments into actionable records rather than silent failures or opaque statuses.
+
+Tasks:
+
+- [ ] Add explanation taxonomy modules for leakage, timestamp, coverage, promotion, Q2 availability, cost retention, and execution risk.
+- [ ] Produce structured explanations with decision, primary reason, severity, human-readable message, and fix hint.
+- [ ] Integrate explanations with Q1 rejections, promotion decisions, and Q2 unavailable rows where stable hooks exist.
+- [ ] Add tests for critical rejection categories.
+
+Acceptance criteria:
+
+- Forward-return leakage has a critical explanation.
+- Missing timestamp and unsafe anchor cases have deterministic explanations.
+- Q2 unavailable rows can carry structured reason metadata.
+- Explanation output contains no trading instructions or fabricated performance.
+
+## Phase 25: Unified Audit Report
+
+Goal:
+Generate one interview-readable report that follows a candidate from hypothesis to Q1 checks, promotion decision, Q2 execution evaluation, and final audit record.
+
+Why next:
+The project needs a single report that communicates the platform in three minutes without relying on scattered artifacts.
+
+Tasks:
+
+- [ ] Add a report builder for `reports/demo_audit_report.md`.
+- [ ] Include sections for hypothesis, signal contract, PIT safety, leakage checks, evaluation plan, promotion decision, execution-aware evaluation, cost sensitivity, constraint diagnostics, final decision, and reproducibility manifest placeholder.
+- [ ] Add deterministic fixture data for one promoted-like case and one rejected leakage case.
+- [ ] Add snapshot or golden-output tests.
+
+Acceptance criteria:
+
+- Report generation runs without live services or broker calls.
+- Rejected cases do not enter Q2 execution.
+- Report does not fabricate numbers.
+- Output is deterministic.
+
+## Phase 26: Run Provenance / Reproducibility Manifest
+
+Goal:
+Make every evaluation run traceable to code, config, inputs, environment, command, and artifacts.
+
+Why next:
+Audit readiness depends on explaining exactly how a result was produced and whether it can be replayed.
+
+Tasks:
+
+- [ ] Add provenance modules for manifest writing, hashing, environment capture, and artifact indexing.
+- [ ] Record git SHA, dirty state, command, config path/hash, input hashes, output hashes, Python version, dependency snapshot, timestamp, runner version, random seed, and schema version.
+- [ ] Attach manifest summaries to reports where applicable.
+- [ ] Add tests for stable hashes and invalidation when config or inputs change.
+
+Acceptance criteria:
+
+- Same fixture and config produce stable manifest hash.
+- Config changes alter manifest hash.
+- Input changes alter manifest hash.
+- No secrets, credentials, or paid data payloads are captured.
+
+## Phase 27: Observability / Structured Trace
+
+Goal:
+Add structured event traces for evaluation workflows.
+
+Why next:
+The platform should be debuggable like a real service, not just a collection of scripts.
+
+Tasks:
+
+- [ ] Add structured event, logger, metrics, and trace-writer modules.
+- [ ] Support trace events such as `bundle_loaded`, `schema_validated`, `leakage_check_failed`, `promotion_decision_created`, `q2_scenario_unavailable`, and `report_written`.
+- [ ] Add `--trace-jsonl` support to relevant local CLIs.
+- [ ] Add tests that assert key events appear and forbidden sensitive/trading fields do not.
+
+Acceptance criteria:
+
+- Trace JSONL is deterministic for fixture runs aside from allowed timestamps.
+- Critical Q1/Q2 audit events are represented.
+- Trace output contains no credentials, orders, or trading instructions.
+
+## Phase 28: CI / Regression Hardening
+
+Goal:
+Make the repository validate like a maintainable team project.
+
+Why next:
+Before one-command demos and broader packaging, the validation surface should be explicit and repeatable.
+
+Tasks:
+
+- [ ] Add `make test`, `make lint`, `make validate-examples`, `make demo`, and `make audit-report` targets where compatible with the repo.
+- [ ] Add golden-output regression tests for key reports.
+- [ ] Add schema backward-compatibility tests.
+- [ ] Add no-network safety checks for local validation.
+- [ ] Add forbidden-output tests across Q1, promotion, Q2, and reports.
+
+Acceptance criteria:
+
+- `make validate` or documented equivalent runs unit tests, example validation, CLI smoke checks, report generation, diff checks, and no-network guard.
+- Golden outputs fail on unintended report drift.
+- No-network mode blocks live external service use.
+
+## Phase 29: Batch Scaling / Local Orchestrator
+
+Goal:
+Evaluate multiple candidate bundles deterministically with failure isolation and aggregation.
+
+Why next:
+This turns the platform from single-candidate demos into a local batch evaluation system without introducing distributed-system overhead.
+
+Tasks:
+
+- [ ] Add a local batch runner, scheduler, retry policy, and result store.
+- [ ] Support deterministic ordering, partial reruns, failure isolation, and aggregation.
+- [ ] Classify rejected, promoted, unavailable, and failed candidates.
+- [ ] Write one provenance manifest per run.
+
+Acceptance criteria:
+
+- Batch runs continue after individual candidate failures.
+- Partial reruns are deterministic.
+- Aggregated summaries include candidate-level statuses and failure reasons.
+- No Kubernetes, cloud service, broker path, or live data dependency is added.
+
+## Phase 30: Incremental Rerun / Content-Addressed Cache
+
+Goal:
+Avoid rerunning unchanged candidate evaluations while preserving auditability.
+
+Why next:
+Reproducible evaluation systems should be efficient without hiding when inputs, configs, or code changed.
+
+Tasks:
+
+- [ ] Add content-addressed cache modules for cache key generation, storage, and invalidation.
+- [ ] Include schema version, code version, input hash, config hash, runner version, and relevant seed in cache keys.
+- [ ] Surface cache hit/miss in reports and provenance.
+- [ ] Add tests for miss, hit, config invalidation, and bundle invalidation.
+
+Acceptance criteria:
+
+- First run is a cache miss.
+- Identical second run is a cache hit.
+- Config changes invalidate cache.
+- Bundle/input changes invalidate cache.
+
+## Phase 31: Read-Only Service Layer
+
+Goal:
+Expose evaluation artifacts through a read-only API without creating trading or execution endpoints.
+
+Why next:
+A service layer helps system-design discussion while preserving compliance boundaries.
+
+Tasks:
+
+- [ ] Add a small read-only service package if dependencies are justified.
+- [ ] Provide endpoints for health, runs, bundles, reports, and decisions.
+- [ ] Use fixture artifact storage in tests.
+- [ ] Document forbidden endpoints such as trade, order, and broker actions.
+
+Acceptance criteria:
+
+- API only reads artifacts.
+- API does not trigger live services, brokers, Q2 runs, or trading workflows.
+- OpenAPI docs are generated if using FastAPI.
+- Tests use local fixture artifacts.
+
+## Phase 32: Demo Dashboard
+
+Goal:
+Provide a lightweight UI for browsing evaluation runs and reports.
+
+Why next:
+This is optional polish for interviews after the core pipeline and artifacts are stable.
+
+Tasks:
+
+- [ ] Build a small dashboard over local artifacts.
+- [ ] Show candidate list, Q1 status, promotion decision, Q2 execution matrix, cost sensitivity, audit report, and reproducibility manifest.
+- [ ] Keep the dashboard read-only.
+
+Acceptance criteria:
+
+- Dashboard reads local artifacts only.
+- No live services, broker calls, or workflow-triggering actions are exposed.
+- Demo fixtures render without manual setup beyond documented commands.
+
+## Phase 33: One-Command PortfolioOS Demo
+
+Goal:
+Package the platform into one deterministic local demo command.
+
+Why next:
+The final interview artifact should produce all key outputs from one command.
+
+Tasks:
+
+- [ ] Add `make demo` or an equivalent script.
+- [ ] Generate Q1 summary, evidence bundle, promotion decision, Q2 execution matrix, audit report, run manifest, and trace JSONL.
+- [ ] Include one valid/promoted-like case and one invalid forward-return leakage case.
+- [ ] Add smoke and snapshot tests.
+
+Acceptance criteria:
+
+- One command writes outputs under `outputs/demo/`.
+- Valid case reaches execution-aware evaluation only through the promotion contract.
+- Invalid leakage case is rejected before Q2.
+- Demo is deterministic and local-only.
+
+## Phase 34: README / Architecture / Case Study
+
+Goal:
+Package the project for review, interviews, and portfolio presentation.
+
+Why next:
+After the platform has deterministic outputs, the top-level explanation should make the engineering story obvious.
+
+Tasks:
+
+- [ ] Rewrite top-level README around the audit-ready decision evaluation platform framing.
+- [ ] Add architecture diagram for Q1 alpha triage -> evidence bundle -> promotion gate -> Q2 execution evaluation -> audit report.
+- [ ] Add quickstart, example outputs, safety boundaries, and validation commands.
+- [ ] Add concise case studies for promoted-like and rejected candidates.
+- [ ] Preserve clear warnings that this is not a production trading system.
+
+Acceptance criteria:
+
+- README explains the problem, solution, architecture, quickstart, example outputs, safety boundaries, and validation.
+- Case studies can be reproduced locally.
+- No claims of production trading or alpha discovery success are added.
+
+## Optional Later Phases
+
+Potential follow-on work after Phase 34:
+
+- service hardening
+- dashboard polish
+- batch scaling beyond local fixtures
+- additional read-only artifact APIs
+- broader provenance integration across legacy PortfolioOS CLIs

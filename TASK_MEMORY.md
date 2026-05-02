@@ -13,6 +13,12 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - Current standalone project shells:
   - Q1 = `projects/agentic_alpha_triage`, asks "Is this alpha real?", and contains schemas/contracts plus validated example artifacts.
   - Q2 = `projects/execution_aware_optimizer`, asks "Can this alpha survive execution?", and contains a PortfolioOS-aware project shell with explicit unavailable-layer reporting.
+- Phase 20 Q1 evaluator batch contract note is complete:
+  - `projects/agentic_alpha_triage/docs/evaluator_batch_contract.md` defines the local batch dry-run purpose, allowed schema-backed inputs, allowed detailed output, allowed summary output, forbidden output, forbidden behavior, real-evaluation boundary, and Q2 boundary.
+  - the contract explicitly allows only planning/audit metadata such as ready count, rejected count, mismatch count, rejection reasons, and referenced fixture paths.
+  - the contract explicitly forbids realized return, alpha performance, orders, trading instructions, PortfolioOS workflow output, Q2 exports, live FMP/SEC calls, LLM agent loops, PortfolioOS workflows, evaluator execution, and new data ingestion.
+  - `projects/agentic_alpha_triage/tests/test_evaluator_batch_contract_doc.py` guards the key allowed/forbidden contract terms.
+  - validation: Q1 tests `30 passed`; Q1 example validation script passed with `evaluator_plan_manifests=1`; Q1 batch manifest summary CLI smoke passed; Q1 batch manifest detail CLI smoke passed.
 - Phase 19 Q1 manifest summary report is complete:
   - `projects/agentic_alpha_triage/src/agentic_alpha_triage/evaluator_plan_batch.py` now defines `EvaluatorPlanBatchSummary` plus `summarize_evaluator_plan_batch`.
   - `projects/agentic_alpha_triage/scripts/plan_evaluator_manifest.py` accepts `--summary` to print manifest id, total entries, ready count, rejected count, expected-status mismatch count, and mismatched entry ids.
@@ -108,7 +114,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - non-mutating cost-sensitivity scenarios live in `projects/execution_aware_optimizer/src/execution_aware_optimizer/cost_sensitivity.py`.
   - Q2 README documents each ladder layer as partial or unavailable.
   - validation: Q2 tests `11 passed`; relevant PortfolioOS subset `64 passed, 36 warnings`; default Q2 smoke scripts passed without enabling PortfolioOS execution.
-- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 20 and add a Q1 evaluator batch contract note without live services, agent loops, PortfolioOS workflows, trading outputs, or Q2 exports.
+- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 21 and add an evidence bundle schema without live services, broker calls, trading instructions, or Q2 execution.
 - Core platform buildout through Phase 12 is implemented and stable.
 - The current project-wide meta stage is `research convergence + promotion contract`, not repo merge.
 - Project operating mode is now `paper-stage only`.
