@@ -12,10 +12,11 @@ Completed:
 - Phase 5: Q1 contract examples are installed with schema-backed validation and no agent loops.
 - Phase 6: Q2 report tables summarize observed PortfolioOS-backed ladder rows without fabricating unavailable values.
 - Phase 7: Q2 cost-sensitivity CSV rows are parsed into typed records and summarized in markdown reports.
+- Phase 8: Q1 evaluator example fixtures demonstrate leakage-safe evaluator expectations and rejected unsafe examples.
 
 Current phase:
 
-- Phase 8: Q1 Evaluator Example Fixtures.
+- Phase 9: Q1 Event Registry Example Fixtures.
 
 Deferred:
 
@@ -137,10 +138,10 @@ Q2 reporting is now interview-readable enough for default non-execution flows. Q
 
 Tasks:
 
-- [ ] Add one valid evaluator fixture that references the existing guidance-raise example.
-- [ ] Add one invalid/leakage-risk fixture for schema or contract-negative testing.
-- [ ] Add tests that validate the fixture loader rejects unsafe evaluator examples.
-- [ ] Document how Q1 evaluator examples differ from Q2 execution checks.
+- [x] Add one valid evaluator fixture that references the existing guidance-raise example.
+- [x] Add one invalid/leakage-risk fixture for schema or contract-negative testing.
+- [x] Add tests that validate the fixture loader rejects unsafe evaluator examples.
+- [x] Document how Q1 evaluator examples differ from Q2 execution checks.
 
 Acceptance criteria:
 
@@ -149,6 +150,27 @@ Acceptance criteria:
 - README and `TASK_MEMORY.md` are updated.
 - No live API calls, agent loops, or trading workflow execution are added.
 
+## Phase 9: Q1 Event Registry Example Fixtures
+
+Goal:
+Add small event-registry examples that show how timestamped Q1 events should be represented before evaluator fixtures consume them.
+
+Why next:
+Phase 8 documents evaluator expectations. The next missing Q1 artifact is a concrete event registry example that makes event availability, source timestamps, and tradability anchors explicit.
+
+Tasks:
+
+- [ ] Add one valid event-registry example for the guidance-raise story.
+- [ ] Add one invalid event-registry example that demonstrates a missing or unsafe timestamp.
+- [ ] Add validation tests for event-registry examples.
+- [ ] Update Q1 README and `TASK_MEMORY.md`.
+
+Acceptance criteria:
+
+- Q1 tests pass.
+- Q1 example validation script passes.
+- No live API calls, agent loops, or trading workflow execution are added.
+
 ## Next Phase
 
-After Phase 8, consider whether Q1 needs event-registry examples or whether Q2 needs executed PortfolioOS adapter fixtures.
+After Phase 9, consider whether Q2 needs executed PortfolioOS adapter fixtures.

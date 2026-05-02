@@ -1,0 +1,37 @@
+fixture_id: EV-GUIDANCE-RAISE-DRIFT-001
+hypothesis_id: H-SEC-GUIDANCE-RAISE-001
+hypothesis_path: ../../hypothesis_guidance_raise_drift.yaml
+signal_name: guidance_raise_drift
+signal_contract_path: ../../signal_guidance_raise_drift.yaml
+evaluation_contract_path: ../../evaluation_guidance_raise_drift.yaml
+description: Leakage-safe evaluator fixture for guidance-raise drift events after timestamp visibility.
+event_source: SEC or press-release guidance raise events with market-visible timestamps.
+required_input_columns:
+  - event_available_timestamp
+  - anchor_trade_date
+  - symbol
+  - guidance_delta
+  - prior_guidance_delta
+  - sector
+  - alpha_score
+feature_columns:
+  - guidance_delta
+  - prior_guidance_delta
+  - sector
+event_available_timestamp_column: event_available_timestamp
+anchor_trade_date_column: anchor_trade_date
+label_column: realized_forward_return_5d
+leakage_checks:
+  - event_available_timestamp must be earlier than anchor_trade_date.
+  - feature_columns must exclude realized_forward_return_5d and any post-anchor returns.
+  - event revisions after anchor_trade_date must be excluded from signal inputs.
+placebo_tests:
+  - randomly permute event dates within sector and month
+  - flip guidance_delta sign while preserving event timestamps
+  - compare against non-event sector-neutral cohorts
+cost_assumption_keys:
+  - commission_bps
+  - half_spread_bps
+  - slippage_bps
+uses_future_data_as_feature: false
+entry_after_event_available: true

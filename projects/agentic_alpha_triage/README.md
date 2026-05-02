@@ -36,8 +36,17 @@ The `examples/` directory contains one valid contract set:
 - `hypothesis_guidance_raise_drift.yaml`
 - `signal_guidance_raise_drift.yaml`
 - `evaluation_guidance_raise_drift.yaml`
+- `evaluator_fixtures/valid/guidance_raise_drift.yaml`
 
 These examples are intentionally small. They show the required structure for a timestamp-safe hypothesis, signal contract, and leakage-aware evaluation contract. They are not evidence that the alpha works.
+
+The `examples/evaluator_fixtures/invalid/` directory contains negative fixtures that must be rejected by the loader. These are committed as guardrails for leakage-risk examples, not as runnable research inputs.
+
+## Evaluator Fixtures Versus Q2 Checks
+
+Q1 evaluator fixtures describe whether an alpha idea can be evaluated without timestamp leakage or placebo-test shortcuts. They focus on event availability, anchor dates, allowed feature columns, required placebo tests, and cost assumptions.
+
+Q2 execution checks are separate. They ask whether an already-produced `alpha_score` panel survives risk, sector, turnover, liquidity, and transaction-cost constraints. Q2 may read a Q1-exported CSV as a plain artifact, but it does not import Q1 evaluator fixtures or execute Q1 hypothesis logic.
 
 ## Future Workflow
 

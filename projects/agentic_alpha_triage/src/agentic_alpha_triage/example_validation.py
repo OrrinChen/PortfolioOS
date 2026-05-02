@@ -5,9 +5,10 @@ from __future__ import annotations
 from pathlib import Path
 
 import yaml
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 
 from agentic_alpha_triage.evaluator_contract import EvaluationContract
+from agentic_alpha_triage.evaluator_fixture import load_evaluator_fixture, load_evaluator_fixtures
 from agentic_alpha_triage.hypothesis_schema import Hypothesis
 from agentic_alpha_triage.signal_contract import SignalContract
 
@@ -18,6 +19,8 @@ class ExampleValidationResult(BaseModel):
     hypothesis_count: int
     signal_contract_count: int
     evaluation_contract_count: int
+    evaluator_fixture_count: int = 0
+    rejected_evaluator_fixture_count: int = 0
     validated_paths: list[str] = Field(default_factory=list)
 
 
@@ -57,11 +60,23 @@ def validate_example_directory(examples_dir: str | Path) -> ExampleValidationRes
     hypothesis_paths = _validate_pattern(resolved_dir, "hypothesis_*.yaml", Hypothesis)
     signal_paths = _validate_pattern(resolved_dir, "signal_*.yaml", SignalContract)
     evaluation_paths = _validate_pattern(resolved_dir, "evaluation_*.yaml", EvaluationContract)
+    valid_evaluator_fixtures = load_evaluator_fixtures(resolved_dir / "evaluator_fixtures" / "valid")
+
+    rejected_evaluator_fixture_count = 0
+    for invalid_path in sorted((resolved_dir / "evaluator_fixtures" / "invalid").glob("*.yaml")):
+        try:
+            load_evaluator_fixture(invalid_path)
+        except (ValidationError, ValueError):
+            rejected_evaluator_fixture_count += 1
+        else:
+            raise ValueError(f"Unsafe evaluator fixture unexpectedly validated: {invalid_path}")
 
     validated_paths = [str(path) for path in hypothesis_paths + signal_paths + evaluation_paths]
     return ExampleValidationResult(
         hypothesis_count=len(hypothesis_paths),
         signal_contract_count=len(signal_paths),
         evaluation_contract_count=len(evaluation_paths),
+        evaluator_fixture_count=len(valid_evaluator_fixtures),
+        rejected_evaluator_fixture_count=rejected_evaluator_fixture_count,
         validated_paths=validated_paths,
     )
