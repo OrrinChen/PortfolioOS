@@ -17,10 +17,11 @@ Completed:
 - Phase 10: Q2 executed adapter fixture planning identified a safe local-only PortfolioOS-backed fixture scope.
 - Phase 11: Q2 executed adapter fixture verifies local PortfolioOS-backed raw and full execution-aware rows through an explicit library call.
 - Phase 12: Q2 executed fixture report polish adds explicit adapter status, layer coverage, and an opt-in local executed report smoke path.
+- Phase 13: Q1 evaluator runner design defines the local-only dry-run planner boundary without adding agent loops or live ingestion.
 
 Current phase:
 
-- Phase 13: Q1 Evaluator Runner Design.
+- Phase 14: Q1 Dry-Run Evaluator Planner.
 
 Deferred:
 
@@ -251,10 +252,10 @@ Q2 now has a narrow PortfolioOS-backed executed fixture path. The next useful in
 
 Tasks:
 
-- [ ] Inspect existing Q1 schemas, examples, and validation script.
-- [ ] Document a local-only evaluator runner contract.
-- [ ] Add tests only if implementing a narrow fixture loader or dry-run planner.
-- [ ] Update Q1 README and `TASK_MEMORY.md`.
+- [x] Inspect existing Q1 schemas, examples, and validation script.
+- [x] Document a local-only evaluator runner contract.
+- [x] Add tests only if implementing a narrow fixture loader or dry-run planner.
+- [x] Update Q1 README and `TASK_MEMORY.md`.
 
 Acceptance criteria:
 
@@ -263,6 +264,28 @@ Acceptance criteria:
 - No live FMP/SEC calls, LLM agent loops, or trading workflow execution are added.
 - Q1 remains independent from Q2.
 
+## Phase 14: Q1 Dry-Run Evaluator Planner
+
+Goal:
+Implement a tiny local dry-run planner that assembles validated Q1 fixture artifacts into a non-executing evaluation plan.
+
+Why next:
+Phase 13 defined the runner boundary. The next useful step is to prove the boundary with one schema-backed dry-run plan while continuing to reject unsafe fixtures.
+
+Tasks:
+
+- [ ] Add a planner result schema for local dry-run evaluation plans.
+- [ ] Load the existing valid guidance-raise fixture family into one plan.
+- [ ] Reject plans when fixture, signal, event, or evaluation contracts disagree.
+- [ ] Update Q1 README and `TASK_MEMORY.md`.
+
+Acceptance criteria:
+
+- Q1 tests pass.
+- Q1 example validation script passes.
+- No live FMP/SEC calls, LLM agent loops, PortfolioOS workflows, or trading outputs are added.
+- Planner output contains no realized returns or fabricated alpha results.
+
 ## Next Phase
 
-After Phase 13, consider whether a tiny Q1 dry-run evaluator planner is warranted.
+After Phase 14, consider a Q1 evaluator CLI dry-run wrapper.

@@ -57,6 +57,12 @@ Q1 evaluator fixtures describe whether an alpha idea can be evaluated without ti
 
 Q2 execution checks are separate. They ask whether an already-produced `alpha_score` panel survives risk, sector, turnover, liquidity, and transaction-cost constraints. Q2 may read a Q1-exported CSV as a plain artifact, but it does not import Q1 evaluator fixtures or execute Q1 hypothesis logic.
 
+## Evaluator Runner Boundary
+
+The local evaluator runner contract is documented in `docs/evaluator_runner_contract.md`.
+
+The planned runner is a dry-run planner only. It may assemble local schema-backed Q1 artifacts into a leakage-safe evaluation plan, but it must not call live SEC/FMP services, run LLM agent loops, execute PortfolioOS workflows, compute trading results, or export directly to Q2.
+
 ## Future Workflow
 
 The intended path is:
