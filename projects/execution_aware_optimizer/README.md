@@ -81,6 +81,15 @@ portfolioos:
 
 Only do that when the configured manifest, data, and cost assumptions are intentional for the experiment.
 
+## Executed Adapter Fixture Plan
+
+The next safe Q2 fixture is documented in `docs/executed_adapter_fixture_plan.md`. The decision is to add one small, local-only PortfolioOS-backed fixture that calls `run_alpha_decay_ladder` through the library API, uses the existing local backtest manifest, and maps only the two layers PortfolioOS currently exposes through stable period attribution:
+
+- `raw_top_alpha_equal_weight`
+- `full_execution_aware_cost_adjusted`
+
+Default Q2 configs must stay non-execution. The fixture must not enable live services, run arbitrary CLI workflow chains, or fabricate intermediate layer diagnostics.
+
 ## Cost Sensitivity
 
 `src/execution_aware_optimizer/cost_sensitivity.py` builds one cloned Q2 config per configured cost level. It returns planned PortfolioOS overrides such as `fees.commission_rate`, `execution.backtest_fixed_half_spread_bps`, and `objective_weights.transaction_cost_objective_mode` as data. The base config is not mutated, and no global PortfolioOS config is changed by default.

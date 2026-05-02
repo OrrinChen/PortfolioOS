@@ -14,10 +14,11 @@ Completed:
 - Phase 7: Q2 cost-sensitivity CSV rows are parsed into typed records and summarized in markdown reports.
 - Phase 8: Q1 evaluator example fixtures demonstrate leakage-safe evaluator expectations and rejected unsafe examples.
 - Phase 9: Q1 event-registry examples demonstrate timestamp-safe event representation and rejected unsafe timestamps.
+- Phase 10: Q2 executed adapter fixture planning identified a safe local-only PortfolioOS-backed fixture scope.
 
 Current phase:
 
-- Phase 10: Q2 Executed Adapter Fixture Planning.
+- Phase 11: Q2 Executed Adapter Fixture.
 
 Deferred:
 
@@ -172,8 +173,6 @@ Acceptance criteria:
 - Q1 example validation script passes.
 - No live API calls, agent loops, or trading workflow execution are added.
 
-## Next Phase
-
 ## Phase 10: Q2 Executed Adapter Fixture Planning
 
 Goal:
@@ -184,10 +183,10 @@ Q1 now has schema-backed hypothesis, signal, evaluation, evaluator, and event-re
 
 Tasks:
 
-- [ ] Inspect existing Q2 adapter tests and smoke scripts.
-- [ ] Identify one safe fixture path, or document why executed fixtures remain deferred.
-- [ ] Update Q2 README and `TASK_MEMORY.md` with the decision.
-- [ ] Add tests only if the chosen fixture path is implemented.
+- [x] Inspect existing Q2 adapter tests and smoke scripts.
+- [x] Identify one safe fixture path, or document why executed fixtures remain deferred.
+- [x] Update Q2 README and `TASK_MEMORY.md` with the decision.
+- [x] Add tests only if the chosen fixture path is implemented.
 
 Acceptance criteria:
 
@@ -195,6 +194,29 @@ Acceptance criteria:
 - No live API calls, paid data, or arbitrary PortfolioOS workflow execution are added.
 - No fabricated performance numbers are introduced.
 
+## Phase 11: Q2 Executed Adapter Fixture
+
+Goal:
+Implement the selected local-only Q2 executed adapter fixture without changing default non-execution project behavior.
+
+Why next:
+Phase 10 confirmed a safe fixture path: a direct library call to `run_alpha_decay_ladder` using the existing local backtest manifest and only PortfolioOS period-attribution-backed layers.
+
+Tasks:
+
+- [ ] Add one focused Q2 test that runs the local PortfolioOS backtest adapter through `run_alpha_decay_ladder`.
+- [ ] Assert raw and full execution-aware rows have observed values.
+- [ ] Assert intermediate layers remain explicitly unavailable.
+- [ ] Confirm default Q2 configs still keep `allow_portfolioos_run=false`.
+- [ ] Update Q2 README and `TASK_MEMORY.md`.
+
+Acceptance criteria:
+
+- Q2 tests pass.
+- Q2 default smoke scripts pass.
+- No live API calls, paid data, broker calls, or arbitrary CLI workflow execution are added.
+- No fabricated intermediate layer diagnostics are introduced.
+
 ## Next Phase
 
-After Phase 10, implement the selected Q2 fixture or return to Q1 evaluator runner design.
+After Phase 11, consider Q1 evaluator runner design or Q2 report polish for executed fixture rows.
