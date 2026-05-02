@@ -36,6 +36,8 @@ Validate Q1 contract examples:
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/agentic_alpha_triage/src poetry run python projects/agentic_alpha_triage/scripts/validate_examples.py
 ```
 
+This command also validates the committed Q1 evaluator-plan manifest.
+
 Print Q1 dry-run evaluator plan JSON:
 
 ```bash

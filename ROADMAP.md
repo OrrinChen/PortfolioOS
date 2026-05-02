@@ -21,10 +21,11 @@ Completed:
 - Phase 14: Q1 dry-run evaluator planner assembles the valid guidance-raise fixture family into a non-executing plan and rejects contract disagreements.
 - Phase 15: Q1 evaluator CLI dry-run wrapper prints local evaluator plans as JSON from explicit fixture paths.
 - Phase 16: Q1 rejected-plan JSON audit output lets the dry-run CLI emit structured local rejection metadata behind an explicit flag.
+- Phase 17: Q1 evaluator-plan fixture manifest lists ready and rejected local dry-run targets without executing them.
 
 Current phase:
 
-- Phase 17: Q1 Evaluator Plan Fixture Manifest.
+- Phase 18: Q1 Batch Dry-Run Manifest Wrapper.
 
 Deferred:
 
@@ -343,10 +344,10 @@ Phase 16 makes individual ready and rejected planner outputs auditable. The next
 
 Tasks:
 
-- [ ] Define a minimal manifest schema for local evaluator fixture paths and event-registry directories.
-- [ ] Add one committed manifest that includes the valid guidance-raise fixture family and at least one rejected audit example.
-- [ ] Add tests that validate manifest loading without running live services, PortfolioOS workflows, or Q2 exports.
-- [ ] Update Q1 README and `TASK_MEMORY.md`.
+- [x] Define a minimal manifest schema for local evaluator fixture paths and event-registry directories.
+- [x] Add one committed manifest that includes the valid guidance-raise fixture family and at least one rejected audit example.
+- [x] Add tests that validate manifest loading without running live services, PortfolioOS workflows, or Q2 exports.
+- [x] Update Q1 README and `TASK_MEMORY.md`.
 
 Acceptance criteria:
 
@@ -355,6 +356,28 @@ Acceptance criteria:
 - Manifest output remains local planning/audit metadata only.
 - No live FMP/SEC calls, LLM agent loops, PortfolioOS workflows, trading outputs, or Q2 exports are added.
 
+## Phase 18: Q1 Batch Dry-Run Manifest Wrapper
+
+Goal:
+Add a local-only batch wrapper that consumes the evaluator-plan manifest and emits one ready or rejected JSON payload per entry.
+
+Why next:
+Phase 17 can enumerate local dry-run targets. The next useful increment is a deterministic batch inspection command that reuses the existing single-entry planner and rejected audit wrapper.
+
+Tasks:
+
+- [ ] Add a script or library function that iterates manifest entries deterministically.
+- [ ] Emit JSON Lines or a list payload containing only ready/rejected planner metadata.
+- [ ] Preserve explicit local-only behavior and never run live services, agent loops, PortfolioOS workflows, or Q2 exports.
+- [ ] Add tests and update Q1 README plus `TASK_MEMORY.md`.
+
+Acceptance criteria:
+
+- Q1 tests pass.
+- Q1 example validation script passes.
+- Batch output contains no realized returns, alpha performance, orders, or trading outputs.
+- No live FMP/SEC calls, LLM agent loops, PortfolioOS workflows, or Q2 exports are added.
+
 ## Next Phase
 
-After Phase 17, consider a local batch dry-run wrapper that consumes the manifest and emits one ready/rejected JSON payload per fixture.
+After Phase 18, consider a tiny manifest summary report that counts ready and rejected entries without adding execution.

@@ -90,6 +90,15 @@ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/agentic_alpha_triage/src poetry ru
 
 The rejected JSON is audit-only. It includes fixture paths, event-registry paths, status, and rejection reasons; it does not include realized returns, alpha performance, orders, trading instructions, PortfolioOS workflow output, or Q2 exports.
 
+## Evaluator Plan Manifest
+
+`examples/evaluator_plan_manifest.yaml` lists local evaluator-plan dry-run targets. It currently includes:
+
+- one valid guidance-raise fixture expected to produce `ready_for_local_evaluation`
+- one negative leakage fixture expected to produce `rejected`
+
+The manifest is only an index of local fixture paths and expected planner statuses. Loading it validates the manifest schema and referenced local paths, but it does not execute evaluations, call live services, run agent loops, run PortfolioOS workflows, produce trading results, or export anything to Q2.
+
 ## Future Workflow
 
 The intended path is:
@@ -122,6 +131,8 @@ Validate the committed examples:
 ```bash
 PYTHONPATH=projects/agentic_alpha_triage/src poetry run python projects/agentic_alpha_triage/scripts/validate_examples.py
 ```
+
+This also validates `examples/evaluator_plan_manifest.yaml`.
 
 Print the committed local dry-run evaluator plan:
 

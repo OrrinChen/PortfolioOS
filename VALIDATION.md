@@ -18,6 +18,8 @@ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/agentic_alpha_triage/src poetry ru
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/agentic_alpha_triage/src poetry run python projects/agentic_alpha_triage/scripts/validate_examples.py
 ```
 
+The Q1 example validation script also validates committed evaluator-plan manifests.
+
 CLI dry-run smoke, when touching the Q1 evaluator planner or wrapper:
 
 ```bash

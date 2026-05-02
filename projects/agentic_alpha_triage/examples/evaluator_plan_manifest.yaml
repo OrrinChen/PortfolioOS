@@ -1,0 +1,13 @@
+manifest_id: MANIFEST-Q1-EVALUATOR-PLAN-001
+description: Local-only Q1 evaluator-plan dry-run targets for ready and rejected audit inspection.
+entries:
+  - entry_id: ready_guidance_raise_drift
+    fixture_path: evaluator_fixtures/valid/guidance_raise_drift.yaml
+    event_registry_dir: event_registry/valid
+    expected_status: ready_for_local_evaluation
+    description: Valid guidance-raise evaluator fixture family expected to build a ready dry-run plan.
+  - entry_id: rejected_guidance_raise_forward_return_leakage
+    fixture_path: evaluator_fixtures/invalid/guidance_raise_forward_return_leakage.yaml
+    event_registry_dir: event_registry/valid
+    expected_status: rejected
+    description: Negative evaluator fixture expected to produce audit-only rejection metadata.
