@@ -20,10 +20,11 @@ Completed:
 - Phase 13: Q1 evaluator runner design defines the local-only dry-run planner boundary without adding agent loops or live ingestion.
 - Phase 14: Q1 dry-run evaluator planner assembles the valid guidance-raise fixture family into a non-executing plan and rejects contract disagreements.
 - Phase 15: Q1 evaluator CLI dry-run wrapper prints local evaluator plans as JSON from explicit fixture paths.
+- Phase 16: Q1 rejected-plan JSON audit output lets the dry-run CLI emit structured local rejection metadata behind an explicit flag.
 
 Current phase:
 
-- Phase 16: Q1 Rejected-Plan JSON Audit Output.
+- Phase 17: Q1 Evaluator Plan Fixture Manifest.
 
 Deferred:
 
@@ -320,10 +321,10 @@ The Phase 15 CLI prints ready plans. The next useful increment is to make reject
 
 Tasks:
 
-- [ ] Add a rejected-plan JSON schema or response wrapper.
-- [ ] Convert planner `ValueError` failures into CLI JSON when an explicit flag is set.
-- [ ] Preserve nonzero exit behavior unless the user opts into audit JSON.
-- [ ] Update Q1 README and `TASK_MEMORY.md`.
+- [x] Add a rejected-plan JSON schema or response wrapper.
+- [x] Convert planner `ValueError` failures into CLI JSON when an explicit flag is set.
+- [x] Preserve nonzero exit behavior unless the user opts into audit JSON.
+- [x] Update Q1 README and `TASK_MEMORY.md`.
 
 Acceptance criteria:
 
@@ -332,6 +333,28 @@ Acceptance criteria:
 - CLI rejected output contains no realized returns, alpha performance, orders, or trading outputs.
 - No live FMP/SEC calls, LLM agent loops, PortfolioOS workflows, or Q2 exports are added.
 
+## Phase 17: Q1 Evaluator Plan Fixture Manifest
+
+Goal:
+Add a tiny local manifest that lists Q1 evaluator-plan fixtures for batch dry-run inspection without adding live ingestion or agent loops.
+
+Why next:
+Phase 16 makes individual ready and rejected planner outputs auditable. The next useful increment is a local-only manifest so multiple committed fixtures can be enumerated deterministically.
+
+Tasks:
+
+- [ ] Define a minimal manifest schema for local evaluator fixture paths and event-registry directories.
+- [ ] Add one committed manifest that includes the valid guidance-raise fixture family and at least one rejected audit example.
+- [ ] Add tests that validate manifest loading without running live services, PortfolioOS workflows, or Q2 exports.
+- [ ] Update Q1 README and `TASK_MEMORY.md`.
+
+Acceptance criteria:
+
+- Q1 tests pass.
+- Q1 example validation script passes.
+- Manifest output remains local planning/audit metadata only.
+- No live FMP/SEC calls, LLM agent loops, PortfolioOS workflows, trading outputs, or Q2 exports are added.
+
 ## Next Phase
 
-After Phase 16, consider a tiny local evaluator-plan fixture manifest.
+After Phase 17, consider a local batch dry-run wrapper that consumes the manifest and emits one ready/rejected JSON payload per fixture.

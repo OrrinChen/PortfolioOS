@@ -13,6 +13,13 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - Current standalone project shells:
   - Q1 = `projects/agentic_alpha_triage`, asks "Is this alpha real?", and contains schemas/contracts plus validated example artifacts.
   - Q2 = `projects/execution_aware_optimizer`, asks "Can this alpha survive execution?", and contains a PortfolioOS-aware project shell with explicit unavailable-layer reporting.
+- Phase 16 Q1 rejected-plan JSON audit output is complete:
+  - `projects/agentic_alpha_triage/src/agentic_alpha_triage/evaluator_planner.py` now defines `RejectedEvaluatorPlan` as an audit-only rejected response wrapper.
+  - `projects/agentic_alpha_triage/scripts/plan_evaluator.py` accepts `--emit-rejected-json` and converts local schema/contract failures into structured rejected-plan JSON only when the flag is explicit.
+  - default planner CLI rejection behavior remains nonzero without the flag.
+  - rejected-plan JSON contains fixture path, event-registry path, status, and rejection reasons only; it does not contain realized returns, alpha performance, orders, trading instructions, PortfolioOS workflow output, or Q2 exports.
+  - `projects/agentic_alpha_triage/tests/test_evaluator_plan_cli.py` covers ready output, default nonzero rejection, and opt-in rejected audit JSON.
+  - validation: Q1 tests `22 passed`; Q1 example validation script passed with `evaluator_fixtures=1`, `rejected_evaluator_fixtures=1`, `event_registry_examples=1`, and `rejected_event_registry_examples=2`; Q1 ready-plan CLI smoke passed; Q1 rejected-plan audit JSON smoke passed.
 - Phase 15 Q1 evaluator CLI dry-run wrapper is complete:
   - `projects/agentic_alpha_triage/scripts/plan_evaluator.py` prints a local `EvaluatorPlan` JSON payload from explicit fixture and event-registry paths.
   - the CLI delegates to `build_evaluator_plan`; it does not call live services, run agent loops, execute PortfolioOS workflows, compute returns, produce orders, or export to Q2.
@@ -84,7 +91,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - non-mutating cost-sensitivity scenarios live in `projects/execution_aware_optimizer/src/execution_aware_optimizer/cost_sensitivity.py`.
   - Q2 README documents each ladder layer as partial or unavailable.
   - validation: Q2 tests `11 passed`; relevant PortfolioOS subset `64 passed, 36 warnings`; default Q2 smoke scripts passed without enabling PortfolioOS execution.
-- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 16 and add rejected-plan JSON audit output without live services, agent loops, PortfolioOS workflows, trading outputs, or Q2 exports.
+- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 17 and add a tiny local evaluator-plan fixture manifest without live services, agent loops, PortfolioOS workflows, trading outputs, or Q2 exports.
 - Core platform buildout through Phase 12 is implemented and stable.
 - The current project-wide meta stage is `research convergence + promotion contract`, not repo merge.
 - Project operating mode is now `paper-stage only`.

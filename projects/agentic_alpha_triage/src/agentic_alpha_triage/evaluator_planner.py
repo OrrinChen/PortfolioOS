@@ -42,6 +42,16 @@ class EvaluatorPlan(BaseModel):
     rejection_reasons: list[str] = Field(default_factory=list)
 
 
+class RejectedEvaluatorPlan(BaseModel):
+    """Audit-only Q1 planner response for local contract disagreement."""
+
+    plan_id: None = None
+    fixture_path: str
+    event_registry_dir: str
+    status: Literal["rejected"] = "rejected"
+    rejection_reasons: list[str] = Field(min_length=1)
+
+
 def build_evaluator_plan(
     fixture_path: str | Path,
     *,

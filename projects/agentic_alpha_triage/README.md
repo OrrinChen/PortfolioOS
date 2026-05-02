@@ -82,6 +82,14 @@ CLI dry-run:
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/agentic_alpha_triage/src poetry run python projects/agentic_alpha_triage/scripts/plan_evaluator.py --fixture projects/agentic_alpha_triage/examples/evaluator_fixtures/valid/guidance_raise_drift.yaml --event-registry-dir projects/agentic_alpha_triage/examples/event_registry/valid
 ```
 
+By default, local contract disagreements still exit nonzero. For audit workflows that need structured rejection metadata, add `--emit-rejected-json`:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/agentic_alpha_triage/src poetry run python projects/agentic_alpha_triage/scripts/plan_evaluator.py --fixture projects/agentic_alpha_triage/examples/evaluator_fixtures/invalid/guidance_raise_forward_return_leakage.yaml --event-registry-dir projects/agentic_alpha_triage/examples/event_registry/valid --emit-rejected-json
+```
+
+The rejected JSON is audit-only. It includes fixture paths, event-registry paths, status, and rejection reasons; it does not include realized returns, alpha performance, orders, trading instructions, PortfolioOS workflow output, or Q2 exports.
+
 ## Future Workflow
 
 The intended path is:
@@ -119,4 +127,10 @@ Print the committed local dry-run evaluator plan:
 
 ```bash
 PYTHONPATH=projects/agentic_alpha_triage/src poetry run python projects/agentic_alpha_triage/scripts/plan_evaluator.py --fixture projects/agentic_alpha_triage/examples/evaluator_fixtures/valid/guidance_raise_drift.yaml --event-registry-dir projects/agentic_alpha_triage/examples/event_registry/valid
+```
+
+Print an audit-only rejected evaluator-plan payload:
+
+```bash
+PYTHONPATH=projects/agentic_alpha_triage/src poetry run python projects/agentic_alpha_triage/scripts/plan_evaluator.py --fixture projects/agentic_alpha_triage/examples/evaluator_fixtures/invalid/guidance_raise_forward_return_leakage.yaml --event-registry-dir projects/agentic_alpha_triage/examples/event_registry/valid --emit-rejected-json
 ```
