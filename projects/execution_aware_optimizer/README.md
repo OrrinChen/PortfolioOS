@@ -92,6 +92,12 @@ The fixture sets `portfolioos.allow_portfolioos_run=true` only inside the test c
 
 Default Q2 configs stay non-execution. The fixture does not enable live services, run arbitrary CLI workflow chains, write report artifacts, or fabricate intermediate layer diagnostics.
 
+For a local-only executed report smoke, use the explicit opt-in config and write outputs outside the tracked report directory:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:projects/execution_aware_optimizer/src poetry run python projects/execution_aware_optimizer/scripts/run_alpha_decay_ladder.py --config projects/execution_aware_optimizer/configs/local_executed_fixture_report.yaml --output /tmp/portfolioos_q2_local_executed_fixture/alpha_decay_ladder_results.csv --report /tmp/portfolioos_q2_local_executed_fixture/local_executed_fixture_report.md
+```
+
 ## Cost Sensitivity
 
 `src/execution_aware_optimizer/cost_sensitivity.py` builds one cloned Q2 config per configured cost level. It returns planned PortfolioOS overrides such as `fees.commission_rate`, `execution.backtest_fixed_half_spread_bps`, and `objective_weights.transaction_cost_objective_mode` as data. The base config is not mutated, and no global PortfolioOS config is changed by default.
@@ -102,6 +108,7 @@ The same module can read a generated `cost_sensitivity_results.csv` into typed r
 
 The markdown report includes:
 
+- PortfolioOS adapter execution status and layer coverage
 - the full ladder row table
 - gross vs net summary by layer
 - alpha-decay summary versus `raw_top_alpha_equal_weight`

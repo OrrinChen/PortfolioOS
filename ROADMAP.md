@@ -16,10 +16,11 @@ Completed:
 - Phase 9: Q1 event-registry examples demonstrate timestamp-safe event representation and rejected unsafe timestamps.
 - Phase 10: Q2 executed adapter fixture planning identified a safe local-only PortfolioOS-backed fixture scope.
 - Phase 11: Q2 executed adapter fixture verifies local PortfolioOS-backed raw and full execution-aware rows through an explicit library call.
+- Phase 12: Q2 executed fixture report polish adds explicit adapter status, layer coverage, and an opt-in local executed report smoke path.
 
 Current phase:
 
-- Phase 12: Q2 Executed Fixture Report Polish.
+- Phase 13: Q1 Evaluator Runner Design.
 
 Deferred:
 
@@ -228,10 +229,10 @@ Phase 11 proves the adapter can map real local PortfolioOS attribution rows for 
 
 Tasks:
 
-- [ ] Add or document a local-only report smoke path for explicit executed fixture rows.
-- [ ] Ensure report tables clearly distinguish observed rows from unavailable layers.
-- [ ] Keep default configs and smoke scripts non-execution.
-- [ ] Update Q2 README and `TASK_MEMORY.md`.
+- [x] Add or document a local-only report smoke path for explicit executed fixture rows.
+- [x] Ensure report tables clearly distinguish observed rows from unavailable layers.
+- [x] Keep default configs and smoke scripts non-execution.
+- [x] Update Q2 README and `TASK_MEMORY.md`.
 
 Acceptance criteria:
 
@@ -240,6 +241,28 @@ Acceptance criteria:
 - Any executed report fixture uses only local sample data and explicit opt-in config.
 - No fabricated intermediate diagnostics are introduced.
 
+## Phase 13: Q1 Evaluator Runner Design
+
+Goal:
+Design the next Q1 evaluator runner boundary without adding autonomous agent loops or live data ingestion.
+
+Why next:
+Q2 now has a narrow PortfolioOS-backed executed fixture path. The next useful increment is to make Q1 clearer by defining how schema-backed hypothesis, signal, event, and evaluation fixtures should be assembled into a leakage-safe local evaluator runner.
+
+Tasks:
+
+- [ ] Inspect existing Q1 schemas, examples, and validation script.
+- [ ] Document a local-only evaluator runner contract.
+- [ ] Add tests only if implementing a narrow fixture loader or dry-run planner.
+- [ ] Update Q1 README and `TASK_MEMORY.md`.
+
+Acceptance criteria:
+
+- Q1 tests pass.
+- Q1 example validation script passes.
+- No live FMP/SEC calls, LLM agent loops, or trading workflow execution are added.
+- Q1 remains independent from Q2.
+
 ## Next Phase
 
-After Phase 12, consider Q1 evaluator runner design.
+After Phase 13, consider whether a tiny Q1 dry-run evaluator planner is warranted.

@@ -119,3 +119,49 @@ def test_report_renders_cost_sensitivity_summary_for_executed_rows() -> None:
     assert "| 5 | full_execution_aware_cost_adjusted | 1 | 0.020000 | 0.018000 | 0.002000 | 0.210000 | 0 |" in report
     assert "| 25 | full_execution_aware_cost_adjusted | 1 | 0.015000 | 0.010000 | 0.005000 | 0.180000 | 0 |" in report
     assert "| 50 | full_execution_aware_cost_adjusted | 0 | Not available | Not available | Not available | Not available | 1 |" in report
+
+
+def test_report_renders_adapter_status_and_layer_coverage_for_executed_fixture_rows() -> None:
+    config = ExperimentConfig.model_validate(
+        {
+            "portfolioos": {
+                "allow_portfolioos_run": True,
+                "backtest_manifest": "data/backtest_samples/manifest_us_expanded_alpha_phase_1_5.yaml",
+            }
+        }
+    )
+    rows = [
+        LadderResultRow(
+            layer_name="raw_top_alpha_equal_weight",
+            date=date(2026, 2, 28),
+            gross_return=0.030,
+            net_return=0.025,
+            turnover=0.40,
+            estimated_transaction_cost=0.005,
+        ),
+        LadderResultRow(
+            layer_name="risk_controlled",
+            infeasibility_reason="No stable PortfolioOS adapter exists yet.",
+        ),
+        LadderResultRow(
+            layer_name="full_execution_aware_cost_adjusted",
+            date=date(2026, 2, 28),
+            gross_return=0.022,
+            net_return=0.020,
+            turnover=0.21,
+            estimated_transaction_cost=0.002,
+        ),
+    ]
+
+    report = render_execution_aware_optimizer_report(
+        config=config,
+        alpha_report=None,
+        ladder_rows=rows,
+        diagnostics=ConstraintDiagnostics(),
+    )
+
+    assert "- PortfolioOS adapter execution: `enabled`" in report
+    assert "| layer | observed_rows | unavailable_rows | coverage_status |" in report
+    assert "| raw_top_alpha_equal_weight | 1 | 0 | observed |" in report
+    assert "| risk_controlled | 0 | 1 | unavailable |" in report
+    assert "| full_execution_aware_cost_adjusted | 1 | 0 | observed |" in report

@@ -12,6 +12,10 @@ from execution_aware_optimizer.experiment_config import (
 from execution_aware_optimizer.ladder import build_unavailable_ladder_rows
 
 
+REPO_ROOT = Path(__file__).resolve().parents[3]
+Q2_CONFIG_DIR = REPO_ROOT / "projects" / "execution_aware_optimizer" / "configs"
+
+
 def test_ladder_config_builds_default_layer_sequence() -> None:
     config = ExperimentConfig()
 
@@ -64,3 +68,17 @@ def test_unavailable_ladder_rows_use_standard_failure_schema() -> None:
     assert rows[0].infeasibility_reason == "adapter not wired"
     assert rows[0].estimated_transaction_cost is None
     assert rows[0].model_dump(mode="json")["binding_constraints"] == []
+
+
+def test_local_executed_fixture_report_config_is_explicit_opt_in() -> None:
+    config = load_experiment_config(Q2_CONFIG_DIR / "local_executed_fixture_report.yaml")
+
+    assert config.experiment_name == "local_executed_fixture_report"
+    assert config.portfolioos.allow_portfolioos_run is True
+    assert config.portfolioos.backtest_manifest == "data/backtest_samples/manifest_us_expanded_alpha_phase_1_5.yaml"
+    assert [layer.layer_name for layer in config.layers] == [
+        "raw_top_alpha_equal_weight",
+        "risk_controlled",
+        "full_execution_aware_cost_adjusted",
+    ]
+    assert config.report_path.endswith("local_executed_fixture_report.md")

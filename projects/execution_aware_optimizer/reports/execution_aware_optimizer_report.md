@@ -10,6 +10,21 @@ No alpha input was loaded. The project can accept CSV/parquet files with `date`,
 
 ## 3. Portfolio construction ladder
 
+- PortfolioOS adapter execution: `disabled`
+- Backtest manifest: `data/backtest_samples/manifest_us_expanded_alpha_phase_1_5.yaml`
+
+Layer coverage distinguishes observed attribution rows from unavailable adapter rows.
+
+| layer | observed_rows | unavailable_rows | coverage_status |
+|---|---:|---:|---|
+| raw_top_alpha_equal_weight | 0 | 1 | unavailable |
+| risk_controlled | 0 | 1 | unavailable |
+| sector_constrained | 0 | 1 | unavailable |
+| position_constrained | 0 | 1 | unavailable |
+| turnover_constrained | 0 | 1 | unavailable |
+| liquidity_constrained | 0 | 1 | unavailable |
+| full_execution_aware_cost_adjusted | 0 | 1 | unavailable |
+
 | layer | date | gross_return | net_return | turnover | cost | infeasibility_reason |
 |---|---:|---:|---:|---:|---:|---|
 | raw_top_alpha_equal_weight | Not available | Not available | Not available | Not available | Not available | PortfolioOS run disabled by config. Set portfolioos.allow_portfolioos_run=true to execute the configured backtest adapter explicitly. |

@@ -13,6 +13,12 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - Current standalone project shells:
   - Q1 = `projects/agentic_alpha_triage`, asks "Is this alpha real?", and contains schemas/contracts plus validated example artifacts.
   - Q2 = `projects/execution_aware_optimizer`, asks "Can this alpha survive execution?", and contains a PortfolioOS-aware project shell with explicit unavailable-layer reporting.
+- Phase 12 Q2 executed fixture report polish is complete:
+  - `projects/execution_aware_optimizer/src/execution_aware_optimizer/reports.py` now renders PortfolioOS adapter execution status and layer coverage before the detailed ladder table.
+  - `projects/execution_aware_optimizer/configs/local_executed_fixture_report.yaml` is an explicit opt-in local fixture config for the executed report smoke path.
+  - `projects/execution_aware_optimizer/README.md`, `RUNBOOK.md`, and `VALIDATION.md` document the local-only executed report command with outputs under `/tmp`.
+  - default Q2 configs remain non-execution, and the default Q2 smoke scripts still produce unavailable rows rather than fabricated results.
+  - validation: Q2 tests `20 passed`; default Q2 alpha-decay, cost-sensitivity, and constraint-diagnostics smoke scripts passed; explicit local executed fixture report smoke passed.
 - Phase 11 Q2 executed adapter fixture is complete:
   - `projects/execution_aware_optimizer/tests/test_portfolioos_adapter.py` now includes a local PortfolioOS-backed fixture that calls `run_alpha_decay_ladder` with `portfolio_os.backtest.engine.run_backtest`.
   - the fixture uses `data/backtest_samples/manifest_us_expanded_alpha_phase_1_5.yaml` and requires explicit `allow_portfolioos_run=true` inside the test config.
@@ -60,7 +66,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - non-mutating cost-sensitivity scenarios live in `projects/execution_aware_optimizer/src/execution_aware_optimizer/cost_sensitivity.py`.
   - Q2 README documents each ladder layer as partial or unavailable.
   - validation: Q2 tests `11 passed`; relevant PortfolioOS subset `64 passed, 36 warnings`; default Q2 smoke scripts passed without enabling PortfolioOS execution.
-- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 12 and polish Q2 executed fixture report visibility without enabling default execution.
+- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 13 and design the Q1 evaluator runner boundary without adding agent loops or live data ingestion.
 - Core platform buildout through Phase 12 is implemented and stable.
 - The current project-wide meta stage is `research convergence + promotion contract`, not repo merge.
 - Project operating mode is now `paper-stage only`.

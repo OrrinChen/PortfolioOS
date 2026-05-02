@@ -45,6 +45,21 @@ def _cost_drag(row: LadderResultRow) -> float | None:
     return row.estimated_transaction_cost
 
 
+def _row_has_observed_values(row: LadderResultRow) -> bool:
+    """Return whether a ladder row carries observed attribution values."""
+
+    return any(
+        value is not None
+        for value in (
+            row.gross_return,
+            row.net_return,
+            row.turnover,
+            row.estimated_transaction_cost,
+            row.realized_transaction_cost,
+        )
+    )
+
+
 def _group_rows_by_layer(rows: Iterable[LadderResultRow]) -> dict[str, list[LadderResultRow]]:
     grouped: dict[str, list[LadderResultRow]] = {}
     for row in rows:
@@ -74,6 +89,28 @@ def _render_ladder_table(rows: Iterable[LadderResultRow]) -> list[str]:
     return lines
 
 
+def _render_layer_coverage_table(rows: Iterable[LadderResultRow]) -> list[str]:
+    """Render observed/unavailable coverage by layer."""
+
+    lines = [
+        "| layer | observed_rows | unavailable_rows | coverage_status |",
+        "|---|---:|---:|---|",
+    ]
+    for layer_name, layer_rows in _group_rows_by_layer(rows).items():
+        observed_count = sum(1 for row in layer_rows if _row_has_observed_values(row))
+        unavailable_count = sum(1 for row in layer_rows if row.infeasibility_reason)
+        if observed_count and unavailable_count:
+            status = "mixed"
+        elif observed_count:
+            status = "observed"
+        elif unavailable_count:
+            status = "unavailable"
+        else:
+            status = "not_observed"
+        lines.append(f"| {layer_name} | {observed_count} | {unavailable_count} | {status} |")
+    return lines
+
+
 def _render_gross_net_summary_table(rows: Iterable[LadderResultRow]) -> list[str]:
     """Render layer-level gross/net summary statistics from observed rows."""
 
@@ -82,20 +119,7 @@ def _render_gross_net_summary_table(rows: Iterable[LadderResultRow]) -> list[str
         "|---|---:|---:|---:|---:|---:|---:|",
     ]
     for layer_name, layer_rows in _group_rows_by_layer(rows).items():
-        observed_rows = [
-            row
-            for row in layer_rows
-            if any(
-                value is not None
-                for value in (
-                    row.gross_return,
-                    row.net_return,
-                    row.turnover,
-                    row.estimated_transaction_cost,
-                    row.realized_transaction_cost,
-                )
-            )
-        ]
+        observed_rows = [row for row in layer_rows if _row_has_observed_values(row)]
         unavailable_count = sum(1 for row in layer_rows if row.infeasibility_reason)
         lines.append(
             "| {layer} | {observations} | {gross} | {net} | {drag} | {turnover} | {unavailable} |".format(
@@ -210,6 +234,13 @@ def render_execution_aware_optimizer_report(
         ),
         "",
         "## 3. Portfolio construction ladder",
+        "",
+        f"- PortfolioOS adapter execution: `{'enabled' if config.portfolioos.allow_portfolioos_run else 'disabled'}`",
+        f"- Backtest manifest: `{config.portfolioos.backtest_manifest or 'Not configured'}`",
+        "",
+        "Layer coverage distinguishes observed attribution rows from unavailable adapter rows.",
+        "",
+        *_render_layer_coverage_table(ladder_rows),
         "",
         *_render_ladder_table(ladder_rows),
         "",

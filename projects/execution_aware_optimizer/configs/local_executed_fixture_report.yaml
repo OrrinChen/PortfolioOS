@@ -1,0 +1,26 @@
+experiment_name: local_executed_fixture_report
+
+alpha_input:
+  path: null
+  rank_normalize_by_date: true
+  winsorize_quantile: 0.01
+
+portfolioos:
+  backtest_manifest: data/backtest_samples/manifest_us_expanded_alpha_phase_1_5.yaml
+  allow_portfolioos_run: true
+  transaction_cost_objective_mode: nav_fraction
+  output_dir: projects/execution_aware_optimizer/reports
+
+layers:
+  - layer_name: raw_top_alpha_equal_weight
+  - layer_name: risk_controlled
+  - layer_name: full_execution_aware_cost_adjusted
+
+cost_sensitivity_bps:
+  - 0
+  - 5
+  - 10
+  - 25
+  - 50
+
+report_path: projects/execution_aware_optimizer/reports/local_executed_fixture_report.md
