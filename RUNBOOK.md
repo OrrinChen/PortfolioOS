@@ -74,6 +74,12 @@ Run Q2 tests:
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:projects/execution_aware_optimizer/src poetry run pytest projects/execution_aware_optimizer/tests -q
 ```
 
+Run Evidence Bundle tests:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/evidence_bundle/src poetry run pytest projects/evidence_bundle/tests -q
+```
+
 Run Q2 report smoke path:
 
 ```bash

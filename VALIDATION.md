@@ -72,6 +72,14 @@ Explicit local executed fixture report smoke, only when touching that opt-in fix
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:projects/execution_aware_optimizer/src poetry run python projects/execution_aware_optimizer/scripts/run_alpha_decay_ladder.py --config projects/execution_aware_optimizer/configs/local_executed_fixture_report.yaml --output /tmp/portfolioos_q2_local_executed_fixture/alpha_decay_ladder_results.csv --report /tmp/portfolioos_q2_local_executed_fixture/local_executed_fixture_report.md
 ```
 
+## Evidence Bundle Project
+
+Run when touching `projects/evidence_bundle`:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/evidence_bundle/src poetry run pytest projects/evidence_bundle/tests -q
+```
+
 ## PortfolioOS Core
 
 Run a focused subset when touching optimizer, cost, execution, backtest, replay, scenario, or alpha bridge code:

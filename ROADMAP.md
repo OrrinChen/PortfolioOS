@@ -25,10 +25,11 @@ Completed:
 - Phase 18: Q1 batch dry-run manifest wrapper emits ordered ready/rejected planner JSON for local manifest entries.
 - Phase 19: Q1 manifest summary report counts ready, rejected, and expected-status mismatched entries without evaluator execution.
 - Phase 20: Q1 evaluator batch contract note freezes the local dry-run boundary before real evaluator work.
+- Phase 21: Evidence bundle schema validates PIT safety, leakage checks, planned tests, and deterministic JSON without trading outputs.
 
 Current phase:
 
-- Phase 21: Evidence Bundle Schema.
+- Phase 22: Promotion Gate Contract.
 
 Deferred:
 
@@ -493,11 +494,11 @@ After Q1 batch boundaries are documented, the next platform step is a stable evi
 
 Tasks:
 
-- [ ] Create `projects/evidence_bundle/` as a standalone project area.
-- [ ] Add schema modules for evidence bundle metadata, PIT-safety checks, leakage checks, planned tests, coverage requirements, rejection reasons, and promotion eligibility.
-- [ ] Add valid and rejected example bundles, including forward-return leakage and missing/unsafe timestamp cases.
-- [ ] Add validation and deterministic JSON serialization tests.
-- [ ] Document that evidence bundles must not contain trading recommendations, orders, broker output, live performance, or hidden Q2 results.
+- [x] Create `projects/evidence_bundle/` as a standalone project area.
+- [x] Add schema modules for evidence bundle metadata, PIT-safety checks, leakage checks, planned tests, coverage requirements, rejection reasons, and promotion eligibility.
+- [x] Add valid and rejected example bundles, including forward-return leakage and missing/unsafe timestamp cases.
+- [x] Add validation and deterministic JSON serialization tests.
+- [x] Document that evidence bundles must not contain trading recommendations, orders, broker output, live performance, or hidden Q2 results.
 
 Acceptance criteria:
 

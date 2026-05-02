@@ -1,0 +1,42 @@
+bundle_id: EB-GUIDANCE-RAISE-DRIFT-001
+hypothesis_id: H-SEC-GUIDANCE-RAISE-001
+signal_id: guidance_raise_drift
+evaluation_id: EV-GUIDANCE-RAISE-DRIFT-001
+status: ready
+pit_safety:
+  event_available_timestamp_present: true
+  signal_timestamp_present: true
+  anchor_trade_date_present: true
+  anchor_not_before_event_available: true
+  anchor_not_before_signal_timestamp: true
+  point_in_time_inputs_only: true
+leakage_checks:
+  - check_name: no_forward_return_features
+    passed: true
+    severity: critical
+    details: Required signal inputs exclude realized or forward return labels.
+  - check_name: timestamp_alignment
+    passed: true
+    severity: critical
+    details: Event availability and signal timestamps are no later than the anchor trade date.
+required_columns:
+  - event_available_timestamp
+  - signal_timestamp
+  - anchor_trade_date
+  - symbol
+  - guidance_delta
+  - prior_guidance_delta
+  - sector
+  - alpha_score
+planned_tests:
+  - test_name: placebo_event_date_permutation
+    description: Randomly permute event dates within sector and month.
+    required: true
+  - test_name: leakage_timestamp_check
+    description: Verify every feature timestamp is no later than signal timestamp.
+    required: true
+coverage_requirements:
+  - minimum event coverage must be declared before promotion.
+  - sector-neutral benchmark coverage must be available.
+rejection_reasons: []
+promotion_eligibility: eligible_for_promotion_review
