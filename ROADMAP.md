@@ -18,10 +18,11 @@ Completed:
 - Phase 11: Q2 executed adapter fixture verifies local PortfolioOS-backed raw and full execution-aware rows through an explicit library call.
 - Phase 12: Q2 executed fixture report polish adds explicit adapter status, layer coverage, and an opt-in local executed report smoke path.
 - Phase 13: Q1 evaluator runner design defines the local-only dry-run planner boundary without adding agent loops or live ingestion.
+- Phase 14: Q1 dry-run evaluator planner assembles the valid guidance-raise fixture family into a non-executing plan and rejects contract disagreements.
 
 Current phase:
 
-- Phase 14: Q1 Dry-Run Evaluator Planner.
+- Phase 15: Q1 Evaluator CLI Dry-Run Wrapper.
 
 Deferred:
 
@@ -274,10 +275,10 @@ Phase 13 defined the runner boundary. The next useful step is to prove the bound
 
 Tasks:
 
-- [ ] Add a planner result schema for local dry-run evaluation plans.
-- [ ] Load the existing valid guidance-raise fixture family into one plan.
-- [ ] Reject plans when fixture, signal, event, or evaluation contracts disagree.
-- [ ] Update Q1 README and `TASK_MEMORY.md`.
+- [x] Add a planner result schema for local dry-run evaluation plans.
+- [x] Load the existing valid guidance-raise fixture family into one plan.
+- [x] Reject plans when fixture, signal, event, or evaluation contracts disagree.
+- [x] Update Q1 README and `TASK_MEMORY.md`.
 
 Acceptance criteria:
 
@@ -286,6 +287,28 @@ Acceptance criteria:
 - No live FMP/SEC calls, LLM agent loops, PortfolioOS workflows, or trading outputs are added.
 - Planner output contains no realized returns or fabricated alpha results.
 
+## Phase 15: Q1 Evaluator CLI Dry-Run Wrapper
+
+Goal:
+Add a tiny CLI wrapper that prints the Q1 dry-run evaluator plan as local JSON.
+
+Why next:
+Phase 14 exposed a library planner. A CLI dry-run wrapper would make the planner easier to inspect without introducing live services, agent loops, or evaluation results.
+
+Tasks:
+
+- [ ] Add a script that calls `build_evaluator_plan` for explicit local fixture paths.
+- [ ] Print the plan JSON without realized returns, alpha performance, or trading outputs.
+- [ ] Add tests or smoke validation for the wrapper.
+- [ ] Update Q1 README and `TASK_MEMORY.md`.
+
+Acceptance criteria:
+
+- Q1 tests pass.
+- Q1 example validation script passes.
+- CLI dry-run uses only local files supplied by path.
+- No live FMP/SEC calls, LLM agent loops, PortfolioOS workflows, or trading outputs are added.
+
 ## Next Phase
 
-After Phase 14, consider a Q1 evaluator CLI dry-run wrapper.
+After Phase 15, consider adding rejected-plan JSON audit output.

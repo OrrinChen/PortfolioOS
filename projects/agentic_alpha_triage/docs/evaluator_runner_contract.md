@@ -39,7 +39,7 @@ A runner plan must verify:
 
 ## Planned Output Schema
 
-The future dry-run planner should return a plain local record with:
+The dry-run planner returns a plain local record with:
 
 | field | meaning |
 |---|---|
@@ -61,6 +61,8 @@ The future dry-run planner should return a plain local record with:
 
 This schema is a planning artifact only. It must not contain realized returns, backtest performance, or trading instructions.
 
+The current `build_evaluator_plan` function raises `ValueError` for rejected plans. A future CLI wrapper may serialize those failures into `status: rejected` records for audit logs.
+
 ## Non-Responsibilities
 
 The runner must not:
@@ -79,6 +81,6 @@ The runner must not:
 
 Q1 may later write a plain `alpha_score.csv` artifact after a separate evaluation phase succeeds. Q2 can consume that file as ordinary input, but Q2 must not import this runner or depend on Q1 schemas.
 
-## Phase 14 Candidate
+## Phase 14 Implementation
 
-A small future implementation can add a dry-run planner that loads the valid fixture family and emits the planned output schema above. That implementation should be test-first and should continue rejecting the committed leakage and timestamp negative fixtures.
+The Phase 14 implementation lives in `src/agentic_alpha_triage/evaluator_planner.py`. It loads the valid fixture family and emits the planned output schema above. It rejects contract disagreements before any evaluation can run.

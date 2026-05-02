@@ -13,6 +13,12 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - Current standalone project shells:
   - Q1 = `projects/agentic_alpha_triage`, asks "Is this alpha real?", and contains schemas/contracts plus validated example artifacts.
   - Q2 = `projects/execution_aware_optimizer`, asks "Can this alpha survive execution?", and contains a PortfolioOS-aware project shell with explicit unavailable-layer reporting.
+- Phase 14 Q1 dry-run evaluator planner is complete:
+  - `projects/agentic_alpha_triage/src/agentic_alpha_triage/evaluator_planner.py` defines `EvaluatorPlan` and `build_evaluator_plan`.
+  - the planner loads the valid guidance-raise evaluator fixture, referenced hypothesis, signal, evaluation contract, and compatible event registry examples into one non-executing plan.
+  - planner checks reject signal-name mismatches, event-registry hypothesis mismatches, and evaluation timestamp-field mismatches before any evaluation can run.
+  - planner output contains only local planning metadata, required columns, feature columns, holding windows, benchmark, cost assumptions, leakage checks, and placebo tests; it contains no realized returns, performance, orders, or Q2 export.
+  - validation: Q1 tests `19 passed`; Q1 example validation script passed with `evaluator_fixtures=1`, `rejected_evaluator_fixtures=1`, `event_registry_examples=1`, and `rejected_event_registry_examples=2`.
 - Phase 13 Q1 evaluator runner design is complete:
   - `projects/agentic_alpha_triage/docs/evaluator_runner_contract.md` defines the local-only dry-run planner boundary.
   - the contract specifies allowed local inputs, required assembly checks, planned output fields, and explicit non-responsibilities.
@@ -72,7 +78,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - non-mutating cost-sensitivity scenarios live in `projects/execution_aware_optimizer/src/execution_aware_optimizer/cost_sensitivity.py`.
   - Q2 README documents each ladder layer as partial or unavailable.
   - validation: Q2 tests `11 passed`; relevant PortfolioOS subset `64 passed, 36 warnings`; default Q2 smoke scripts passed without enabling PortfolioOS execution.
-- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 14 and implement a tiny Q1 dry-run evaluator planner without live services, agent loops, PortfolioOS workflows, or trading outputs.
+- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 15 and add a tiny Q1 evaluator CLI dry-run wrapper without live services, agent loops, PortfolioOS workflows, or trading outputs.
 - Core platform buildout through Phase 12 is implemented and stable.
 - The current project-wide meta stage is `research convergence + promotion contract`, not repo merge.
 - Project operating mode is now `paper-stage only`.

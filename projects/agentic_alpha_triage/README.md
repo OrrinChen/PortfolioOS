@@ -20,13 +20,15 @@ Q2 can read that file as a plain input artifact, but Q2 must not depend on Q1 ag
 
 ## Current Scope
 
-This first integration only provides schemas and contracts:
+This integration provides schemas, contracts, static examples, and a local dry-run planner:
 
 - `Hypothesis`
 - `SignalContract`
 - `EvaluationContract`
 - `EventRegistryEntry`
 - `EventRegistryExample`
+- `EvaluatorFixture`
+- `EvaluatorPlan`
 
 There are no LLM agent loops, no live API calls, and no paid data artifacts.
 
@@ -61,7 +63,18 @@ Q2 execution checks are separate. They ask whether an already-produced `alpha_sc
 
 The local evaluator runner contract is documented in `docs/evaluator_runner_contract.md`.
 
-The planned runner is a dry-run planner only. It may assemble local schema-backed Q1 artifacts into a leakage-safe evaluation plan, but it must not call live SEC/FMP services, run LLM agent loops, execute PortfolioOS workflows, compute trading results, or export directly to Q2.
+The implemented runner in `src/agentic_alpha_triage/evaluator_planner.py` is a dry-run planner only. It assembles local schema-backed Q1 artifacts into a leakage-safe evaluation plan, but it does not call live SEC/FMP services, run LLM agent loops, execute PortfolioOS workflows, compute trading results, or export directly to Q2.
+
+Minimal local usage:
+
+```python
+from agentic_alpha_triage import build_evaluator_plan
+
+plan = build_evaluator_plan(
+    "projects/agentic_alpha_triage/examples/evaluator_fixtures/valid/guidance_raise_drift.yaml",
+    event_registry_dir="projects/agentic_alpha_triage/examples/event_registry/valid",
+)
+```
 
 ## Future Workflow
 
@@ -70,9 +83,10 @@ The intended path is:
 1. Generate alpha hypotheses from timestamp-safe SEC/FMP or other point-in-time sources.
 2. Express each hypothesis under the strict `Hypothesis` schema.
 3. Implement a signal only if it satisfies `SignalContract`.
-4. Evaluate through `EvaluationContract` with required leakage and placebo tests.
-5. Reject hypotheses that fail timestamp, placebo, cost, liquidity, or stability checks.
-6. Optionally export an `alpha_score.csv` artifact for Q2.
+4. Build a local `EvaluatorPlan` from compatible hypothesis, signal, evaluation, event, and evaluator fixture artifacts.
+5. Evaluate through `EvaluationContract` with required leakage and placebo tests.
+6. Reject hypotheses that fail timestamp, placebo, cost, liquidity, or stability checks.
+7. Optionally export an `alpha_score.csv` artifact for Q2.
 
 ## Safety Notes
 

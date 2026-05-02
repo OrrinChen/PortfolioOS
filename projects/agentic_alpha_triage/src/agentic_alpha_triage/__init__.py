@@ -6,6 +6,7 @@ from agentic_alpha_triage.evaluator_fixture import (
     load_evaluator_fixture,
     load_evaluator_fixtures,
 )
+from agentic_alpha_triage.evaluator_planner import EvaluatorPlan, build_evaluator_plan
 from agentic_alpha_triage.event_registry_schema import (
     EventRegistryEntry,
     EventRegistryExample,
@@ -19,6 +20,7 @@ from agentic_alpha_triage.signal_contract import SignalContract
 __all__ = [
     "EvaluationContract",
     "EvaluatorFixture",
+    "EvaluatorPlan",
     "EventRegistryEntry",
     "EventRegistryExample",
     "ExampleValidationResult",
@@ -28,5 +30,6 @@ __all__ = [
     "load_event_registry_examples",
     "load_evaluator_fixture",
     "load_evaluator_fixtures",
+    "build_evaluator_plan",
     "validate_example_directory",
 ]
