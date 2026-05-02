@@ -99,6 +99,14 @@ The rejected JSON is audit-only. It includes fixture paths, event-registry paths
 
 The manifest is only an index of local fixture paths and expected planner statuses. Loading it validates the manifest schema and referenced local paths, but it does not execute evaluations, call live services, run agent loops, run PortfolioOS workflows, produce trading results, or export anything to Q2.
 
+Batch dry-run:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/agentic_alpha_triage/src poetry run python projects/agentic_alpha_triage/scripts/plan_evaluator_manifest.py --manifest projects/agentic_alpha_triage/examples/evaluator_plan_manifest.yaml
+```
+
+The batch output is an ordered JSON object with one ready or rejected planner payload per manifest entry. It is still local audit metadata only; it contains no realized returns, alpha performance, orders, trading instructions, PortfolioOS workflow output, or Q2 export.
+
 ## Future Workflow
 
 The intended path is:
@@ -144,4 +152,10 @@ Print an audit-only rejected evaluator-plan payload:
 
 ```bash
 PYTHONPATH=projects/agentic_alpha_triage/src poetry run python projects/agentic_alpha_triage/scripts/plan_evaluator.py --fixture projects/agentic_alpha_triage/examples/evaluator_fixtures/invalid/guidance_raise_forward_return_leakage.yaml --event-registry-dir projects/agentic_alpha_triage/examples/event_registry/valid --emit-rejected-json
+```
+
+Print the committed batch evaluator-plan manifest payload:
+
+```bash
+PYTHONPATH=projects/agentic_alpha_triage/src poetry run python projects/agentic_alpha_triage/scripts/plan_evaluator_manifest.py --manifest projects/agentic_alpha_triage/examples/evaluator_plan_manifest.yaml
 ```

@@ -22,10 +22,11 @@ Completed:
 - Phase 15: Q1 evaluator CLI dry-run wrapper prints local evaluator plans as JSON from explicit fixture paths.
 - Phase 16: Q1 rejected-plan JSON audit output lets the dry-run CLI emit structured local rejection metadata behind an explicit flag.
 - Phase 17: Q1 evaluator-plan fixture manifest lists ready and rejected local dry-run targets without executing them.
+- Phase 18: Q1 batch dry-run manifest wrapper emits ordered ready/rejected planner JSON for local manifest entries.
 
 Current phase:
 
-- Phase 18: Q1 Batch Dry-Run Manifest Wrapper.
+- Phase 19: Q1 Manifest Summary Report.
 
 Deferred:
 
@@ -366,10 +367,10 @@ Phase 17 can enumerate local dry-run targets. The next useful increment is a det
 
 Tasks:
 
-- [ ] Add a script or library function that iterates manifest entries deterministically.
-- [ ] Emit JSON Lines or a list payload containing only ready/rejected planner metadata.
-- [ ] Preserve explicit local-only behavior and never run live services, agent loops, PortfolioOS workflows, or Q2 exports.
-- [ ] Add tests and update Q1 README plus `TASK_MEMORY.md`.
+- [x] Add a script or library function that iterates manifest entries deterministically.
+- [x] Emit JSON Lines or a list payload containing only ready/rejected planner metadata.
+- [x] Preserve explicit local-only behavior and never run live services, agent loops, PortfolioOS workflows, or Q2 exports.
+- [x] Add tests and update Q1 README plus `TASK_MEMORY.md`.
 
 Acceptance criteria:
 
@@ -378,6 +379,28 @@ Acceptance criteria:
 - Batch output contains no realized returns, alpha performance, orders, or trading outputs.
 - No live FMP/SEC calls, LLM agent loops, PortfolioOS workflows, or Q2 exports are added.
 
+## Phase 19: Q1 Manifest Summary Report
+
+Goal:
+Add a tiny local summary that counts ready, rejected, and expected-status mismatched manifest entries without adding evaluator execution.
+
+Why next:
+Phase 18 emits detailed batch payloads. A concise summary will make local audit output easier to scan while preserving the non-executing Q1 boundary.
+
+Tasks:
+
+- [ ] Add a summary builder over `EvaluatorPlanBatchResult`.
+- [ ] Include manifest id, total entries, ready count, rejected count, and expected-status mismatch count.
+- [ ] Add tests and update Q1 README plus `TASK_MEMORY.md`.
+- [ ] Keep the output free of realized returns, alpha performance, orders, trading outputs, PortfolioOS workflow output, and Q2 exports.
+
+Acceptance criteria:
+
+- Q1 tests pass.
+- Q1 example validation script passes.
+- Summary output contains only local manifest/planner audit metadata.
+- No live FMP/SEC calls, LLM agent loops, PortfolioOS workflows, trading outputs, or Q2 exports are added.
+
 ## Next Phase
 
-After Phase 18, consider a tiny manifest summary report that counts ready and rejected entries without adding execution.
+After Phase 19, consider whether Q1 needs a docs-only evaluator batch contract note before any real evaluator implementation.

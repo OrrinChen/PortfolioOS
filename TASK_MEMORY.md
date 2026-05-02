@@ -13,6 +13,12 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - Current standalone project shells:
   - Q1 = `projects/agentic_alpha_triage`, asks "Is this alpha real?", and contains schemas/contracts plus validated example artifacts.
   - Q2 = `projects/execution_aware_optimizer`, asks "Can this alpha survive execution?", and contains a PortfolioOS-aware project shell with explicit unavailable-layer reporting.
+- Phase 18 Q1 batch dry-run manifest wrapper is complete:
+  - `projects/agentic_alpha_triage/src/agentic_alpha_triage/evaluator_plan_batch.py` iterates committed evaluator-plan manifest entries deterministically and emits ordered ready/rejected planner payloads.
+  - `projects/agentic_alpha_triage/scripts/plan_evaluator_manifest.py` prints the batch payload as JSON for an explicit local manifest path.
+  - each batch entry records entry id, expected status, observed status, whether the expected status matched, manifest-relative fixture path, manifest-relative event-registry directory, and the underlying ready/rejected planner payload.
+  - the batch wrapper reuses local schema-backed planner and rejection handling only; it does not call live SEC/FMP services, run LLM agent loops, run PortfolioOS workflows, produce trading outputs, or export to Q2.
+  - validation: Q1 tests `27 passed`; Q1 example validation script passed with `evaluator_plan_manifests=1`; Q1 ready-plan CLI smoke passed; Q1 rejected-plan audit JSON smoke passed; Q1 batch manifest CLI smoke passed.
 - Phase 17 Q1 evaluator-plan fixture manifest is complete:
   - `projects/agentic_alpha_triage/src/agentic_alpha_triage/evaluator_plan_manifest.py` defines a local-only manifest schema and loader for evaluator fixture paths, event-registry directories, expected statuses, and descriptions.
   - `projects/agentic_alpha_triage/examples/evaluator_plan_manifest.yaml` lists one ready guidance-raise fixture target and one rejected forward-return-leakage target.
@@ -97,7 +103,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - non-mutating cost-sensitivity scenarios live in `projects/execution_aware_optimizer/src/execution_aware_optimizer/cost_sensitivity.py`.
   - Q2 README documents each ladder layer as partial or unavailable.
   - validation: Q2 tests `11 passed`; relevant PortfolioOS subset `64 passed, 36 warnings`; default Q2 smoke scripts passed without enabling PortfolioOS execution.
-- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 18 and add a local batch dry-run manifest wrapper without live services, agent loops, PortfolioOS workflows, trading outputs, or Q2 exports.
+- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 19 and add a local manifest summary report without live services, agent loops, PortfolioOS workflows, trading outputs, or Q2 exports.
 - Core platform buildout through Phase 12 is implemented and stable.
 - The current project-wide meta stage is `research convergence + promotion contract`, not repo merge.
 - Project operating mode is now `paper-stage only`.
