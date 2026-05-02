@@ -9,6 +9,10 @@ from pydantic import BaseModel, Field, ValidationError
 
 from agentic_alpha_triage.evaluator_contract import EvaluationContract
 from agentic_alpha_triage.evaluator_fixture import load_evaluator_fixture, load_evaluator_fixtures
+from agentic_alpha_triage.event_registry_schema import (
+    load_event_registry_example,
+    load_event_registry_examples,
+)
 from agentic_alpha_triage.hypothesis_schema import Hypothesis
 from agentic_alpha_triage.signal_contract import SignalContract
 
@@ -21,6 +25,8 @@ class ExampleValidationResult(BaseModel):
     evaluation_contract_count: int
     evaluator_fixture_count: int = 0
     rejected_evaluator_fixture_count: int = 0
+    event_registry_example_count: int = 0
+    rejected_event_registry_example_count: int = 0
     validated_paths: list[str] = Field(default_factory=list)
 
 
@@ -61,6 +67,7 @@ def validate_example_directory(examples_dir: str | Path) -> ExampleValidationRes
     signal_paths = _validate_pattern(resolved_dir, "signal_*.yaml", SignalContract)
     evaluation_paths = _validate_pattern(resolved_dir, "evaluation_*.yaml", EvaluationContract)
     valid_evaluator_fixtures = load_evaluator_fixtures(resolved_dir / "evaluator_fixtures" / "valid")
+    valid_event_registry_examples = load_event_registry_examples(resolved_dir / "event_registry" / "valid")
 
     rejected_evaluator_fixture_count = 0
     for invalid_path in sorted((resolved_dir / "evaluator_fixtures" / "invalid").glob("*.yaml")):
@@ -71,6 +78,15 @@ def validate_example_directory(examples_dir: str | Path) -> ExampleValidationRes
         else:
             raise ValueError(f"Unsafe evaluator fixture unexpectedly validated: {invalid_path}")
 
+    rejected_event_registry_example_count = 0
+    for invalid_path in sorted((resolved_dir / "event_registry" / "invalid").glob("*.yaml")):
+        try:
+            load_event_registry_example(invalid_path)
+        except (ValidationError, ValueError):
+            rejected_event_registry_example_count += 1
+        else:
+            raise ValueError(f"Unsafe event registry example unexpectedly validated: {invalid_path}")
+
     validated_paths = [str(path) for path in hypothesis_paths + signal_paths + evaluation_paths]
     return ExampleValidationResult(
         hypothesis_count=len(hypothesis_paths),
@@ -78,5 +94,7 @@ def validate_example_directory(examples_dir: str | Path) -> ExampleValidationRes
         evaluation_contract_count=len(evaluation_paths),
         evaluator_fixture_count=len(valid_evaluator_fixtures),
         rejected_evaluator_fixture_count=rejected_evaluator_fixture_count,
+        event_registry_example_count=len(valid_event_registry_examples),
+        rejected_event_registry_example_count=rejected_event_registry_example_count,
         validated_paths=validated_paths,
     )

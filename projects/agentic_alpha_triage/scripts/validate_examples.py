@@ -35,7 +35,9 @@ def main() -> None:
         f"signals={result.signal_contract_count} "
         f"evaluations={result.evaluation_contract_count} "
         f"evaluator_fixtures={result.evaluator_fixture_count} "
-        f"rejected_evaluator_fixtures={result.rejected_evaluator_fixture_count}"
+        f"rejected_evaluator_fixtures={result.rejected_evaluator_fixture_count} "
+        f"event_registry_examples={result.event_registry_example_count} "
+        f"rejected_event_registry_examples={result.rejected_event_registry_example_count}"
     )
     for path in result.validated_paths:
         print(f"validated_path: {path}")

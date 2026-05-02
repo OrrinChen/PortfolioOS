@@ -15,6 +15,8 @@ def test_committed_examples_validate_against_contracts() -> None:
     assert result.evaluation_contract_count == 1
     assert result.evaluator_fixture_count == 1
     assert result.rejected_evaluator_fixture_count == 1
+    assert result.event_registry_example_count == 1
+    assert result.rejected_event_registry_example_count == 2
     assert sorted(Path(path).name for path in result.validated_paths) == [
         "evaluation_guidance_raise_drift.yaml",
         "hypothesis_guidance_raise_drift.yaml",

@@ -26,6 +26,7 @@ This first integration only provides schemas and contracts:
 - `SignalContract`
 - `EvaluationContract`
 - `EventRegistryEntry`
+- `EventRegistryExample`
 
 There are no LLM agent loops, no live API calls, and no paid data artifacts.
 
@@ -36,11 +37,19 @@ The `examples/` directory contains one valid contract set:
 - `hypothesis_guidance_raise_drift.yaml`
 - `signal_guidance_raise_drift.yaml`
 - `evaluation_guidance_raise_drift.yaml`
+- `event_registry/valid/guidance_raise_event.yaml`
 - `evaluator_fixtures/valid/guidance_raise_drift.yaml`
 
 These examples are intentionally small. They show the required structure for a timestamp-safe hypothesis, signal contract, and leakage-aware evaluation contract. They are not evidence that the alpha works.
 
-The `examples/evaluator_fixtures/invalid/` directory contains negative fixtures that must be rejected by the loader. These are committed as guardrails for leakage-risk examples, not as runnable research inputs.
+The `examples/event_registry/invalid/` and `examples/evaluator_fixtures/invalid/` directories contain negative fixtures that must be rejected by the loaders. These are committed as guardrails for timestamp and leakage-risk examples, not as runnable research inputs.
+
+## Event Registry Examples
+
+Q1 event registry examples describe timestamped events before any evaluator consumes them. They make the market-visible timestamp, source record, and anchor trade date explicit. The committed negative examples show two unsafe cases:
+
+- missing `event_available_timestamp`
+- `anchor_trade_date` before event visibility
 
 ## Evaluator Fixtures Versus Q2 Checks
 

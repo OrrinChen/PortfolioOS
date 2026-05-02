@@ -13,6 +13,12 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - Current standalone project shells:
   - Q1 = `projects/agentic_alpha_triage`, asks "Is this alpha real?", and contains schemas/contracts plus validated example artifacts.
   - Q2 = `projects/execution_aware_optimizer`, asks "Can this alpha survive execution?", and contains a PortfolioOS-aware project shell with explicit unavailable-layer reporting.
+- Phase 9 Q1 event-registry example fixtures are complete:
+  - `projects/agentic_alpha_triage/src/agentic_alpha_triage/event_registry_schema.py` now includes `EventRegistryExample` plus YAML loaders for static examples.
+  - `projects/agentic_alpha_triage/examples/event_registry/valid/guidance_raise_event.yaml` records a timestamp-safe guidance-raise event for the existing Q1 story.
+  - `projects/agentic_alpha_triage/examples/event_registry/invalid/` contains missing-timestamp and anchor-before-event negative examples that must be rejected.
+  - Q1 example validation now reports `event_registry_examples=1` and `rejected_event_registry_examples=2`.
+  - validation: Q1 tests `15 passed`; Q1 example validation script passed.
 - Phase 8 Q1 evaluator example fixtures are complete:
   - `projects/agentic_alpha_triage/src/agentic_alpha_triage/evaluator_fixture.py` defines a schema-backed evaluator fixture loader.
   - `projects/agentic_alpha_triage/examples/evaluator_fixtures/valid/guidance_raise_drift.yaml` references the existing guidance-raise hypothesis, signal, and evaluation examples.
@@ -42,7 +48,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - non-mutating cost-sensitivity scenarios live in `projects/execution_aware_optimizer/src/execution_aware_optimizer/cost_sensitivity.py`.
   - Q2 README documents each ladder layer as partial or unavailable.
   - validation: Q2 tests `11 passed`; relevant PortfolioOS subset `64 passed, 36 warnings`; default Q2 smoke scripts passed without enabling PortfolioOS execution.
-- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 9 and add Q1 event-registry example fixtures without agent loops or live data ingestion.
+- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 10 and decide the safe scope for a tiny Q2 executed adapter fixture, without enabling arbitrary PortfolioOS workflow execution.
 - Core platform buildout through Phase 12 is implemented and stable.
 - The current project-wide meta stage is `research convergence + promotion contract`, not repo merge.
 - Project operating mode is now `paper-stage only`.

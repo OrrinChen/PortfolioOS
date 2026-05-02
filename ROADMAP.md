@@ -13,10 +13,11 @@ Completed:
 - Phase 6: Q2 report tables summarize observed PortfolioOS-backed ladder rows without fabricating unavailable values.
 - Phase 7: Q2 cost-sensitivity CSV rows are parsed into typed records and summarized in markdown reports.
 - Phase 8: Q1 evaluator example fixtures demonstrate leakage-safe evaluator expectations and rejected unsafe examples.
+- Phase 9: Q1 event-registry examples demonstrate timestamp-safe event representation and rejected unsafe timestamps.
 
 Current phase:
 
-- Phase 9: Q1 Event Registry Example Fixtures.
+- Phase 10: Q2 Executed Adapter Fixture Planning.
 
 Deferred:
 
@@ -160,10 +161,10 @@ Phase 8 documents evaluator expectations. The next missing Q1 artifact is a conc
 
 Tasks:
 
-- [ ] Add one valid event-registry example for the guidance-raise story.
-- [ ] Add one invalid event-registry example that demonstrates a missing or unsafe timestamp.
-- [ ] Add validation tests for event-registry examples.
-- [ ] Update Q1 README and `TASK_MEMORY.md`.
+- [x] Add one valid event-registry example for the guidance-raise story.
+- [x] Add one invalid event-registry example that demonstrates a missing or unsafe timestamp.
+- [x] Add validation tests for event-registry examples.
+- [x] Update Q1 README and `TASK_MEMORY.md`.
 
 Acceptance criteria:
 
@@ -173,4 +174,27 @@ Acceptance criteria:
 
 ## Next Phase
 
-After Phase 9, consider whether Q2 needs executed PortfolioOS adapter fixtures.
+## Phase 10: Q2 Executed Adapter Fixture Planning
+
+Goal:
+Decide whether Q2 should add a tiny executed PortfolioOS adapter fixture, and if yes, document the exact safe non-live fixture scope before implementation.
+
+Why next:
+Q1 now has schema-backed hypothesis, signal, evaluation, evaluator, and event-registry examples. The next useful increment is to determine whether Q2 needs one small executed fixture to demonstrate PortfolioOS-backed rows without opening arbitrary workflow execution.
+
+Tasks:
+
+- [ ] Inspect existing Q2 adapter tests and smoke scripts.
+- [ ] Identify one safe fixture path, or document why executed fixtures remain deferred.
+- [ ] Update Q2 README and `TASK_MEMORY.md` with the decision.
+- [ ] Add tests only if the chosen fixture path is implemented.
+
+Acceptance criteria:
+
+- Relevant Q2 tests pass if Q2 code changes.
+- No live API calls, paid data, or arbitrary PortfolioOS workflow execution are added.
+- No fabricated performance numbers are introduced.
+
+## Next Phase
+
+After Phase 10, implement the selected Q2 fixture or return to Q1 evaluator runner design.
