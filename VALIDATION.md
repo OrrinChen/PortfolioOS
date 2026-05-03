@@ -9,6 +9,21 @@ git status --short
 git diff --check
 ```
 
+## CI-Style Local Validation
+
+Run the hardened local validation target when touching workflow, report,
+schema, provenance, observability, or validation infrastructure:
+
+```bash
+make validate
+```
+
+No-network guard:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src poetry run python scripts/devtools/no_network_guard.py
+```
+
 ## Q1 Project
 
 Run when touching `projects/agentic_alpha_triage`:

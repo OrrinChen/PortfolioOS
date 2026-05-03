@@ -13,6 +13,11 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - Current standalone project shells:
   - Q1 = `projects/agentic_alpha_triage`, asks "Is this alpha real?", and contains schemas/contracts plus validated example artifacts.
   - Q2 = `projects/execution_aware_optimizer`, asks "Can this alpha survive execution?", and contains a PortfolioOS-aware project shell with explicit unavailable-layer reporting.
+- Phase 28 CI / Regression Hardening is complete:
+  - `Makefile` now defines `test`, `lint`, `validate-examples`, `audit-report`, `demo`, `no-network`, and `validate` targets.
+  - `src/portfolio_os/validation/no_network.py` blocks socket connection attempts during local validation; `scripts/devtools/no_network_guard.py` self-tests the guard without live service calls.
+  - regression tests cover Makefile target presence, audit report golden-output coverage, schema compatibility for committed Evidence Bundle and Promotion Gate examples, no-network blocking, and forbidden-output guards across Q1 summary, promotion decisions, Q2 matrix rows, and the audit report.
+  - validation: CI hardening tests `8 passed`; `make validate` passed.
 - Phase 27 Observability / Structured Trace is complete:
   - `src/portfolio_os/observability/` now provides `TraceEvent`, `TraceWriter`, `StructuredTraceLogger`, and trace-event metrics.
   - trace payload sanitization drops secret-like keys and trading-output keys such as API keys, tokens, passwords, broker output, orders, live performance, and trading instructions.
@@ -162,7 +167,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - non-mutating cost-sensitivity scenarios live in `projects/execution_aware_optimizer/src/execution_aware_optimizer/cost_sensitivity.py`.
   - Q2 README documents each ladder layer as partial or unavailable.
   - validation: Q2 tests `11 passed`; relevant PortfolioOS subset `64 passed, 36 warnings`; default Q2 smoke scripts passed without enabling PortfolioOS execution.
-- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 28 and harden CI-style validation targets, golden outputs, schema compatibility, and no-network guards.
+- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 29 and add a deterministic local batch orchestrator with failure isolation and per-run provenance.
 - Core platform buildout through Phase 12 is implemented and stable.
 - The current project-wide meta stage is `research convergence + promotion contract`, not repo merge.
 - Project operating mode is now `paper-stage only`.

@@ -218,6 +218,12 @@ python3 scripts/devtools/run_engineering_gate.py
 python3 scripts/devtools/run_engineering_gate.py --full-pytest
 ```
 
+Local CI-style validation:
+
+```bash
+make validate
+```
+
 Pilot operations helper:
 
 ```bash

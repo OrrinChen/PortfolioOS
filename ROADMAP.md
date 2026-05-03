@@ -32,10 +32,11 @@ Completed:
 - Phase 25: Unified audit report generates a deterministic local demo report across Q1 checks, promotion, Q2 matrix, diagnostics, and reproducibility placeholders.
 - Phase 26: Provenance manifests record command, git, config, input, output, environment, seed, schema, and stable content hashes.
 - Phase 27: Structured trace events record local evaluation workflow milestones without credentials, orders, or trading instructions.
+- Phase 28: CI-style validation targets, no-network guard, schema compatibility tests, and forbidden-output guards harden local regression checks.
 
 Current phase:
 
-- Phase 28: CI / Regression Hardening.
+- Phase 29: Batch Scaling / Local Orchestrator.
 
 Deferred:
 
@@ -658,11 +659,11 @@ Before one-command demos and broader packaging, the validation surface should be
 
 Tasks:
 
-- [ ] Add `make test`, `make lint`, `make validate-examples`, `make demo`, and `make audit-report` targets where compatible with the repo.
-- [ ] Add golden-output regression tests for key reports.
-- [ ] Add schema backward-compatibility tests.
-- [ ] Add no-network safety checks for local validation.
-- [ ] Add forbidden-output tests across Q1, promotion, Q2, and reports.
+- [x] Add `make test`, `make lint`, `make validate-examples`, `make demo`, and `make audit-report` targets where compatible with the repo.
+- [x] Add golden-output regression tests for key reports.
+- [x] Add schema backward-compatibility tests.
+- [x] Add no-network safety checks for local validation.
+- [x] Add forbidden-output tests across Q1, promotion, Q2, and reports.
 
 Acceptance criteria:
 

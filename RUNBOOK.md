@@ -24,6 +24,18 @@ Run all tests:
 PYTHONDONTWRITEBYTECODE=1 poetry run pytest -q
 ```
 
+Run the CI-style local validation target:
+
+```bash
+make validate
+```
+
+Run the no-network guard self-test:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src poetry run python scripts/devtools/no_network_guard.py
+```
+
 Run Q1 tests:
 
 ```bash
