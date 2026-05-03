@@ -42,7 +42,7 @@ Completed:
 
 Current phase:
 
-- Optional later phases only.
+- Phase 35: Typed Alpha View Contract.
 
 Deferred:
 
@@ -51,6 +51,7 @@ Deferred:
 - paid API calls
 - broker routing
 - production deployment
+- live paper overlay calibration runs unless explicitly requested
 - full optimizer dual-value reporting until PortfolioOS exposes it
 - liquidity slack reporting until PortfolioOS exports stable per-name participation diagnostics
 - cloud automation setup
@@ -94,6 +95,48 @@ Preferred framing:
 - audit-ready simulation platform
 - contract-first ML/quant decision evaluation workflow
 
+## Next Strategic Direction: Typed Alpha View / Research-to-Paper Closed Loop
+
+The Phase 20-34 platform packaging roadmap is complete. The next roadmap should
+not continue horizontal platform polish. The next useful buildout is to make the
+alpha layer more realistic by changing alpha from a static score into a typed
+predictive claim with mechanism, timestamps, horizon, coverage, abstain,
+decay, confidence, capacity, cost sensitivity, PIT safety, and provenance.
+
+New spine:
+
+```text
+Mechanism Alpha
+  -> Typed Alpha View
+  -> Event / State / Fixed Horizon Evidence
+  -> Promotion Gate v2
+  -> Optimizer Projection
+  -> Q2 Execution Survival
+  -> Paper Overlay Readiness
+  -> Audit Dashboard v2
+```
+
+The core rule is:
+
+```text
+no_view != zero_alpha
+```
+
+Missing alpha coverage must be represented as explicit abstain, not silently
+encoded as zero alpha. This preserves the difference between "no predictive
+view exists" and "the expected return view is neutral."
+
+Do not:
+
+- keep adding README, dashboard, or generic demo polish as the main work
+- rerun near-identical model retries as the primary roadmap
+- treat FMP estimate history as PIT-safe analyst revision data
+- bring A-share back into the mainline without an explicit new tranche decision
+- promote calibrated paper-overlay parameters into production configs
+- treat paper calibration as alpha validation
+- convert SUE or revision evidence into live trading recommendations
+- let typed alpha work call brokers, place orders, or bypass promotion gates
+
 ## Forward Roadmap Overview
 
 | Phase | Focus | Interview Value |
@@ -104,6 +147,8 @@ Preferred framing:
 | Phase 29-30 | Local orchestration and content-addressed cache | Batch systems / reproducibility |
 | Phase 31-32 | Read-only service layer and demo dashboard | System design polish |
 | Phase 33-34 | One-command demo, architecture docs, case study | Interview-ready artifact |
+| Phase 35-38 | Typed alpha view, event evidence, projection, promotion v2 | Alpha realism / contracts |
+| Phase 39-42 | Typed Q2 matrix, paper overlay, pilot, dashboard v2 | Research-to-paper closed loop |
 
 ## Phase 4: Q2 Adapter Hardening
 
@@ -807,12 +852,371 @@ Acceptance criteria:
 - Case studies can be reproduced locally.
 - No claims of production trading or alpha discovery success are added.
 
+## Phase 35: Typed Alpha View Contract
+
+Status:
+Next.
+
+Goal:
+Define alpha as a typed predictive view, not a static score.
+
+Why next:
+Q1, Evidence Bundle, Promotion Gate, Q2, audit reporting, provenance, trace,
+batch, cache, service, dashboard, and one-command demo are now packaged. The
+weak point is that alpha still enters the platform as `alpha_score`. The next
+system boundary should make the alpha expression itself typed, timestamped,
+PIT-safe, horizon-aware, and abstain-aware.
+
+Target files:
+
+- `projects/alpha_view_contract/`
+- `src/portfolio_os/alpha/view_contract.py`
+- `tests/test_alpha_view_contract.py`
+
+Core schema:
+
+```text
+AlphaView
+  alpha_view_id
+  family_id
+  mechanism_type: event | state_transition | fixed_horizon | residual_factor
+  universe_id
+  signal_timestamp
+  visibility_timestamp
+  tradable_timestamp
+  anchor_event_timestamp
+  horizon_type: event_window | to_next_event | rebalance_period | state_exit
+  holding_window
+  decay_policy
+  coverage_mask
+  abstain_policy
+  expected_return_view
+  confidence_view
+  capacity_view
+  cost_sensitivity_view
+  pit_safety_report
+  provenance
+```
+
+Tasks:
+
+- [ ] Add `AlphaView` schema and deterministic JSON load/dump helpers.
+- [ ] Add valid fixtures for event SUE, revision-to-next-announcement, and residual momentum calibration views.
+- [ ] Add rejected forward-return leakage fixture.
+- [ ] Represent explicit abstain separately from zero-alpha.
+- [ ] Forbid orders, broker output, live performance, and trading recommendations.
+- [ ] Document the contract boundary.
+
+Acceptance criteria:
+
+- AlphaView JSON load/dump is deterministic.
+- Valid event, revision, residual, and rejected leakage fixtures are covered.
+- `explicit_abstain` cannot be serialized as ordinary zero alpha.
+- Forbidden trading/live-output fields are rejected.
+- `make validate` passes.
+
+Do not:
+
+- write an evaluator before the AlphaView contract exists
+- use FMP estimate history as PIT-safe revision data
+- generate trading instructions
+
+## Phase 36: Event-Aware Evaluation Kernel
+
+Goal:
+Evaluate event alpha with event-time and to-next-event horizons instead of
+forcing event mechanisms through fixed monthly horizon logic.
+
+Why next:
+SUE and analyst revision mechanisms need event-aware labels, timestamp
+visibility, entry offsets, half-life diagnostics, placebo checks, and overlap
+diagnostics. This kernel should answer whether an event mechanism is real before
+projection or Q2 execution survival.
+
+Target files:
+
+- `src/portfolio_os/alpha/event_evaluation.py`
+- `projects/alpha_view_contract/examples/event_sue_pead_view.json`
+- `projects/alpha_view_contract/examples/event_revision_view.json`
+- `tests/test_event_alpha_evaluation_contract.py`
+
+Outputs:
+
+- `event_evidence_bundle.json`
+- `event_window_grid.csv`
+- `event_half_life_summary.json`
+- `event_overlap_diagnostics.json`
+- `pit_visibility_report.json`
+- `placebo_report.json`
+
+Tasks:
+
+- [ ] Support `event_window` labels such as SUE `[+2,+2]`, `[+2,+3]`, and `[+2,+22]`.
+- [ ] Support `to_next_announcement` labels such as revision signal date `statpers` to next trading day to next announcement.
+- [ ] Record `signal_timestamp`, `visibility_timestamp`, `tradable_timestamp`, and `anchor_event_timestamp`.
+- [ ] Add PIT visibility checks and placebo/null-test declarations.
+- [ ] Add overlap diagnostics so revision can be tested as marginal value rather than assumed independent.
+
+Acceptance criteria:
+
+- SUE fixture expresses event-window evaluation.
+- Revision fixture expresses `statpers -> next trading day -> to-next-announcement`.
+- Event evidence artifacts are deterministic.
+- FMP analyst-estimate history is explicitly disallowed as PIT-safe analyst revision source.
+- `make validate` passes.
+
+## Phase 37: Alpha Projection Bridge v2
+
+Goal:
+Project typed alpha views into rebalance-period `expected_return` panels without
+losing mechanism, horizon, decay, coverage, confidence, or abstain semantics.
+
+Why next:
+The optimizer can respond when expected return is injected. The missing layer is
+the bridge from typed predictive claims to rebalance-period expected returns.
+
+Target files:
+
+- `src/portfolio_os/alpha/projection.py`
+- `src/portfolio_os/alpha/projection_diagnostics.py`
+- `tests/test_alpha_projection_bridge_v2.py`
+
+Inputs:
+
+- `alpha_views.json`
+- `rebalance_calendar.csv`
+- `universe_reference.csv`
+- `cost_assumptions.json`
+- `risk_horizon_days`
+
+Outputs:
+
+- `expected_return_panel.csv`
+- `alpha_projection_manifest.json`
+- `alpha_projection_diagnostics.json`
+- `alpha_abstain_report.json`
+
+Tasks:
+
+- [ ] Select active typed alpha views by rebalance date.
+- [ ] Align event-window, to-next-event, fixed-horizon, and state-exit horizons.
+- [ ] Apply decay and confidence weighting.
+- [ ] Emit explicit abstain for missing/stale/low-coverage views.
+- [ ] Generate projection diagnostics per rebalance date.
+- [ ] Add synthetic sign-flip fixture that changes optimizer ranking direction.
+
+Acceptance criteria:
+
+- SUE event view projects into rebalance-period expected return.
+- Revision to-next-announcement view projects until the next event.
+- Explicit abstain is not interpreted as zero alpha.
+- Projection diagnostics explain active views, abstained views, coverage count,
+  horizon conversion, decay, and expected-return scale.
+- `make validate` passes.
+
+## Phase 38: Promotion Gate v2
+
+Goal:
+Promote only typed, PIT-safe, bounded-horizon alpha views to Q2 through an
+expected-return-panel contract.
+
+Why next:
+The existing Promotion Gate separates Q1 from Q2. v2 should keep that boundary
+while consuming `EvidenceBundle + AlphaView + ProjectionManifest` instead of a
+plain alpha-score contract.
+
+Outputs:
+
+- `promotion_decision_v2.json`
+- `q2_input_contract_v2.json`
+- `promotion_explanation_v2.md`
+
+Tasks:
+
+- [ ] Validate AlphaView type and mechanism.
+- [ ] Check horizon type against evaluation label.
+- [ ] Require visibility timestamp no later than tradable timestamp.
+- [ ] Confirm projection did not change mechanism semantics.
+- [ ] Require explicit abstain semantics and active coverage reporting.
+- [ ] Require event overlap / collinearity disclosure.
+- [ ] Emit Q2InputContract v2 without running Q2.
+
+Acceptance criteria:
+
+- SUE AlphaView can reach `needs_more_evidence` or `promote_to_execution_eval`, but not direct portfolio construction.
+- Forward-return leakage fixture is rejected.
+- Revision fixture passes schema/horizon checks while requiring marginal-value disclosure.
+- Q2InputContract v2 contains no orders, broker output, or live performance.
+- `make validate` passes.
+
+## Phase 39: Q2 Typed Alpha Execution Matrix
+
+Goal:
+Evaluate whether typed projected alpha survives cost, liquidity, participation,
+coverage, abstain, and constraints.
+
+Why next:
+Q2 already has a scenario matrix. This phase upgrades the input from generic
+`alpha_score` to projected expected-return panels and typed alpha diagnostics.
+
+New dimensions:
+
+```text
+projection_policy:
+  - event_window_only
+  - event_window_decay
+  - to_next_event
+  - rebalance_period_projection
+
+abstain_policy:
+  - explicit_abstain
+  - coverage_threshold
+  - stale_view_abstain
+
+alpha_family:
+  - SUE
+  - revision
+  - SUE_plus_revision
+```
+
+Readouts:
+
+- active rebalance count
+- active name count
+- gross-to-net retention
+- turnover
+- expected-return used share
+- cost drag
+- constraint repair retention
+- abstain count
+- sign consistency
+- view overlap
+
+Acceptance criteria:
+
+- Q2 can consume `q2_input_contract_v2`.
+- Unavailable rows remain explicit and never fabricate returns.
+- Cost, participation, constraint, and projection scenarios retain source config hashes.
+- Q2 report explains where typed alpha is consumed by cost, constraints, coverage, or abstain.
+- `make validate` passes.
+
+## Phase 40: Paper Overlay Calibration Lane
+
+Goal:
+Calibrate the paper execution environment, not alpha.
+
+Why next:
+Paper-stage calibration is useful for execution plumbing and venue behavior,
+but it must not be treated as alpha validation or live alpha approval.
+
+Target files:
+
+- `src/portfolio_os/paper/overlay_readiness.py`
+- `scripts/run_paper_overlay_calibration_batch.py`
+- `tests/test_paper_overlay_readiness.py`
+
+Outputs:
+
+- `paper_overlay_calibration_summary.json`
+- `paper_overlay_latency_buckets.csv`
+- `paper_overlay_spread_capture.csv`
+- `paper_overlay_readiness.md`
+
+Tasks:
+
+- [ ] Add paper-overlay readiness schema and local aggregation contract.
+- [ ] Keep repeated SPY one-share sampling behind explicit user command.
+- [ ] Separate staleness bias, noise floor, and paper venue quirks.
+- [ ] Document that paper overlay is execution environment calibration only.
+
+Acceptance criteria:
+
+- Paper overlay calibration does not imply alpha promotion.
+- Calibrated parameters are not pushed into production configs.
+- Participation scope is not extrapolated above validated paper-overlay range.
+- No live alpha orders are generated.
+- `make validate` passes.
+
+## Phase 41: First Real Typed Alpha Pilot
+
+Goal:
+Run SUE as the canonical event-alpha integration benchmark and revision as a
+marginal-value shadow branch.
+
+Why next:
+The pilot should test the whole typed-alpha chain on a real mechanism without
+turning it into production approval.
+
+Pilot order:
+
+```text
+Pilot A: SUE event alpha as canonical integration benchmark
+Pilot B: revision as marginal-value shadow branch
+Pilot C: residual momentum calibration only after calibration closeout
+```
+
+Pilot A outputs:
+
+- `us_sue_event_alpha_view.json`
+- `us_sue_event_evidence_bundle.json`
+- `us_sue_projection_panel.csv`
+- `us_sue_q2_matrix.csv`
+- `us_sue_audit_report.md`
+
+Acceptance criteria:
+
+- SUE AlphaView schema passes.
+- Event evidence bundle passes.
+- Projection Bridge v2 generates expected-return panel.
+- Promotion Gate v2 does not reject PIT, horizon, or visibility checks.
+- Q2 matrix explains gross-to-net, turnover, coverage, and abstain.
+- Audit Report v2 connects discovery to Q2.
+- No live trading instruction is generated.
+
+Stop conditions:
+
+- Event alpha projection is too sparse.
+- Projection sign consistency breaks.
+- Q2 gross-to-net retention is consumed by costs.
+- Coverage turns mostly into abstain.
+- Event evidence and rebalance projection cannot be reconciled.
+
+## Phase 42: Typed Alpha Demo v2
+
+Goal:
+Extend the read-only demo/dashboard for typed alpha artifacts without building a
+new app or exposing workflow-triggering actions.
+
+New sections:
+
+- Typed Alpha View
+- Event Evidence
+- Projection Diagnostics
+- Abstain Report
+- Q2 Typed Alpha Matrix
+- Paper Overlay Calibration
+
+Tasks:
+
+- [ ] Add `make demo-v2` or equivalent.
+- [ ] Generate deterministic local typed-alpha artifacts.
+- [ ] Render AlphaView -> Evidence -> Projection -> Promotion -> Q2 -> Paper Overlay in the static dashboard.
+- [ ] Keep read-only service and dashboard free of trade/order/broker routes.
+
+Acceptance criteria:
+
+- `make demo-v2` writes deterministic local artifacts.
+- Dashboard shows typed-alpha artifact chain.
+- Read-only service remains read-only.
+- `make validate` passes.
+
 ## Optional Later Phases
 
-Potential follow-on work after Phase 34:
+Potential follow-on work after Phase 42:
 
-- service hardening
+- typed alpha service hardening
 - dashboard polish
 - batch scaling beyond local fixtures
 - additional read-only artifact APIs
 - broader provenance integration across legacy PortfolioOS CLIs
+- real data refresh workflows only under explicit credential and data-governance approval

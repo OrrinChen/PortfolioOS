@@ -13,6 +13,13 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - Current standalone project shells:
   - Q1 = `projects/agentic_alpha_triage`, asks "Is this alpha real?", and contains schemas/contracts plus validated example artifacts.
   - Q2 = `projects/execution_aware_optimizer`, asks "Can this alpha survive execution?", and contains a PortfolioOS-aware project shell with explicit unavailable-layer reporting.
+- New Phase 35-42 roadmap has been added:
+  - the completed Phase 20-34 platform packaging work remains closed.
+  - the new active direction is `Typed Alpha View / Research-to-Paper Closed Loop`.
+  - next phase is Phase 35 Typed Alpha View Contract.
+  - core rule: `no_view != zero_alpha`; missing alpha coverage must be explicit abstain, not silently encoded as zero alpha.
+  - the new roadmap keeps Q1, Evidence Bundle, Promotion Gate, Q2, paper overlay, and dashboard boundaries separate.
+  - live paper overlay calibration, live data refreshes, and broker paths remain explicit opt-in work only.
 - Phase 34 README / Architecture / Case Study is complete:
   - top-level `README.md` now frames PortfolioOS as an audit-ready ML/quant decision evaluation platform.
   - README includes Problem, Solution, Architecture, Quickstart, Example Outputs, Safety Boundaries, Case Studies, and Validation sections.
@@ -203,7 +210,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - non-mutating cost-sensitivity scenarios live in `projects/execution_aware_optimizer/src/execution_aware_optimizer/cost_sensitivity.py`.
   - Q2 README documents each ladder layer as partial or unavailable.
   - validation: Q2 tests `11 passed`; relevant PortfolioOS subset `64 passed, 36 warnings`; default Q2 smoke scripts passed without enabling PortfolioOS execution.
-- Next recommended repo workflow phase: optional later phases only; the interview-ready audit workflow through Phase 34 is packaged.
+- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 35 and implement the Typed Alpha View Contract before writing event evaluators or projection code.
 - Core platform buildout through Phase 12 is implemented and stable.
 - The current project-wide meta stage is `research convergence + promotion contract`, not repo merge.
 - Project operating mode is now `paper-stage only`.
