@@ -38,10 +38,11 @@ Completed:
 - Phase 31: Framework-neutral read-only artifact service exposes local runs, bundles, reports, and decisions without write or trading routes.
 - Phase 32: Static read-only dashboard renderer displays local demo artifacts without service dependencies or workflow triggers.
 - Phase 33: One-command local demo writes Q1, promotion, Q2, audit, manifest, trace, and dashboard artifacts under `outputs/demo/`.
+- Phase 34: README now packages the audit-ready decision evaluation platform with architecture, quickstart, safety boundaries, and case studies.
 
 Current phase:
 
-- Phase 34: README / Architecture / Case Study.
+- Optional later phases only.
 
 Deferred:
 
@@ -794,11 +795,11 @@ After the platform has deterministic outputs, the top-level explanation should m
 
 Tasks:
 
-- [ ] Rewrite top-level README around the audit-ready decision evaluation platform framing.
-- [ ] Add architecture diagram for Q1 alpha triage -> evidence bundle -> promotion gate -> Q2 execution evaluation -> audit report.
-- [ ] Add quickstart, example outputs, safety boundaries, and validation commands.
-- [ ] Add concise case studies for promoted-like and rejected candidates.
-- [ ] Preserve clear warnings that this is not a production trading system.
+- [x] Rewrite top-level README around the audit-ready decision evaluation platform framing.
+- [x] Add architecture diagram for Q1 alpha triage -> evidence bundle -> promotion gate -> Q2 execution evaluation -> audit report.
+- [x] Add quickstart, example outputs, safety boundaries, and validation commands.
+- [x] Add concise case studies for promoted-like and rejected candidates.
+- [x] Preserve clear warnings that this is not a production trading system.
 
 Acceptance criteria:
 

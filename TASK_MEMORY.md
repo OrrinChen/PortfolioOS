@@ -13,6 +13,12 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - Current standalone project shells:
   - Q1 = `projects/agentic_alpha_triage`, asks "Is this alpha real?", and contains schemas/contracts plus validated example artifacts.
   - Q2 = `projects/execution_aware_optimizer`, asks "Can this alpha survive execution?", and contains a PortfolioOS-aware project shell with explicit unavailable-layer reporting.
+- Phase 34 README / Architecture / Case Study is complete:
+  - top-level `README.md` now frames PortfolioOS as an audit-ready ML/quant decision evaluation platform.
+  - README includes Problem, Solution, Architecture, Quickstart, Example Outputs, Safety Boundaries, Case Studies, and Validation sections.
+  - architecture explicitly preserves Q1 -> Evidence Bundle -> Promotion Gate -> Q2 -> Audit Report boundaries.
+  - case studies cover the promoted-like guidance-raise path and the rejected forward-return leakage path without claiming alpha success.
+  - validation: README packaging tests `3 passed`; `make validate` passed.
 - Phase 33 One-Command PortfolioOS Demo is complete:
   - `scripts/run_portfolioos_demo.py` now writes the deterministic local demo artifact set under `outputs/demo/`.
   - `make demo` generates `q1_summary.json`, `evidence_bundle.json`, `promotion_decision.json`, `q2_execution_matrix.csv`, `audit_report.md`, `run_manifest.json`, `trace.jsonl`, `cost_sensitivity.csv`, and `dashboard.html`.
@@ -197,7 +203,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - non-mutating cost-sensitivity scenarios live in `projects/execution_aware_optimizer/src/execution_aware_optimizer/cost_sensitivity.py`.
   - Q2 README documents each ladder layer as partial or unavailable.
   - validation: Q2 tests `11 passed`; relevant PortfolioOS subset `64 passed, 36 warnings`; default Q2 smoke scripts passed without enabling PortfolioOS execution.
-- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 34 and tighten README, architecture diagram, quickstart, safety boundaries, and case-study presentation.
+- Next recommended repo workflow phase: optional later phases only; the interview-ready audit workflow through Phase 34 is packaged.
 - Core platform buildout through Phase 12 is implemented and stable.
 - The current project-wide meta stage is `research convergence + promotion contract`, not repo merge.
 - Project operating mode is now `paper-stage only`.

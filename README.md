@@ -1,8 +1,119 @@
 # PortfolioOS
 
-PortfolioOS is a compliance-aware portfolio rebalancing and execution MVP for A-share and US equity workflows. It turns a target portfolio into executable orders, applies pre-trade constraints, estimates simple trading costs, and leaves a full local audit trail.
+PortfolioOS is an audit-ready ML/quant decision evaluation platform with
+portfolio rebalance, scenario, approval, execution-simulation, TCA, and
+research CLI components. It turns risky research artifacts into typed,
+reproducible, execution-aware evaluation records.
 
 This MVP is an auxiliary decision-support tool only. It does not constitute investment advice.
+
+## Problem
+
+ML/quant research workflows often fail silently through point-in-time mistakes,
+forward-return leakage, unrealistic execution assumptions, non-reproducible
+scripts, or hidden handoffs from research to portfolio construction. A single
+backtest score is not enough to decide whether a signal should move forward.
+
+## Solution
+
+PortfolioOS packages the workflow as a contract-first evaluation system:
+
+- Q1 asks: "Is this alpha real?"
+- Q2 asks: "Can this alpha survive execution?"
+- Evidence bundles, promotion gates, provenance manifests, structured traces,
+  and audit reports keep those questions separate and reproducible.
+
+The project is not an autonomous trading bot and does not claim alpha quality.
+It is a local, audit-oriented platform for evaluating whether a candidate is
+safe enough to study further.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    Q1["Q1 Alpha Triage<br/>Is this alpha real?"]
+    EB["Evidence Bundle<br/>PIT and leakage checks"]
+    PG["Promotion Gate<br/>Typed Q2 input contract"]
+    Q2["Q2 Execution-Aware Evaluation<br/>Can this alpha survive execution?"]
+    AR["Audit Report<br/>Manifest, trace, dashboard"]
+
+    Q1 --> EB --> PG --> Q2 --> AR
+```
+
+Key boundaries:
+
+- Q1 validates schemas, timestamps, leakage risk, and planned tests.
+- Promotion Gate can allow a plain Q2 input contract, but it does not run Q2.
+- Q2 reports unavailable layers honestly when PortfolioOS hooks are missing.
+- Audit artifacts record what happened without fabricating results.
+
+## Quickstart
+
+```bash
+poetry install
+make demo
+make validate
+```
+
+`make demo` writes ignored local artifacts under `outputs/demo/`. `make
+validate` runs the local validation target with no-network guard, example
+validation, report generation, focused regression tests, and audit report tests.
+
+## Example Outputs
+
+`outputs/demo/` contains:
+
+- `q1_summary.json`
+- `evidence_bundle.json`
+- `promotion_decision.json`
+- `q2_execution_matrix.csv`
+- `cost_sensitivity.csv`
+- `audit_report.md`
+- `run_manifest.json`
+- `trace.jsonl`
+- `dashboard.html`
+
+These artifacts are generated locally and ignored by git.
+
+## Safety Boundaries
+
+- No broker route is exposed by Q1, Q2, the promotion gate, the artifact service,
+  or the dashboard.
+- No live SEC/FMP/Alpaca/WRDS/Tushare workflow is part of the default demo.
+- No orders, trading instructions, broker output, or live performance are
+  written by the Q1/Q2 audit pipeline.
+- No Q1 agent loop can directly modify trading code or trigger arbitrary
+  PortfolioOS workflows.
+- Missing optimizer diagnostics, liquidity slack, and risk exposure hooks remain
+  explicit TODOs rather than synthetic numbers.
+
+## Case Studies
+
+Promoted-like guidance-raise case:
+
+- Q1 validates the local guidance-raise fixture family and evidence bundle.
+- Promotion Gate emits `promote_to_execution_eval` with a typed Q2 input
+  contract.
+- Q2 runs the default execution matrix in non-execution mode and records the
+  relevant layer as unavailable rather than inventing returns.
+
+Rejected forward-return leakage case:
+
+- The evidence bundle includes a forward-return feature.
+- Promotion Gate rejects it before any Q2 execution-aware evaluation.
+- The audit report records that Q2 was skipped for this case.
+
+## Validation
+
+```bash
+make validate
+PYTHONDONTWRITEBYTECODE=1 poetry run pytest -q
+```
+
+The focused validation target covers schema compatibility, forbidden-output
+guards, no-network safety, provenance, structured traces, local batch
+orchestration, content-addressed cache, read-only service routes, static
+dashboard rendering, one-command demo generation, and audit report snapshots.
 
 ## Product Overview
 

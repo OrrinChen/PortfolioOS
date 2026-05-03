@@ -185,6 +185,12 @@ One-command demo tests:
 PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_one_command_demo.py -q
 ```
 
+README packaging tests:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_readme_packaging.py -q
+```
+
 Run a focused subset when touching optimizer, cost, execution, backtest, replay, scenario, or alpha bridge code:
 
 ```bash

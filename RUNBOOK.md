@@ -188,6 +188,12 @@ Run one-command demo tests:
 PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_one_command_demo.py -q
 ```
 
+Run README packaging tests:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_readme_packaging.py -q
+```
+
 Run PortfolioOS backtest CLI:
 
 ```bash
