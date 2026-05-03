@@ -35,10 +35,11 @@ Completed:
 - Phase 28: CI-style validation targets, no-network guard, schema compatibility tests, and forbidden-output guards harden local regression checks.
 - Phase 29: Local batch orchestrator evaluates candidates deterministically with failure isolation, partial reruns, retries, aggregation, and per-run provenance.
 - Phase 30: Content-addressed cache keys and store support incremental local reruns with hit/miss status and config/input invalidation.
+- Phase 31: Framework-neutral read-only artifact service exposes local runs, bundles, reports, and decisions without write or trading routes.
 
 Current phase:
 
-- Phase 31: Read-Only Service Layer.
+- Phase 32: Demo Dashboard.
 
 Deferred:
 
@@ -727,10 +728,10 @@ A service layer helps system-design discussion while preserving compliance bound
 
 Tasks:
 
-- [ ] Add a small read-only service package if dependencies are justified.
-- [ ] Provide endpoints for health, runs, bundles, reports, and decisions.
-- [ ] Use fixture artifact storage in tests.
-- [ ] Document forbidden endpoints such as trade, order, and broker actions.
+- [x] Add a small read-only service package if dependencies are justified.
+- [x] Provide endpoints for health, runs, bundles, reports, and decisions.
+- [x] Use fixture artifact storage in tests.
+- [x] Document forbidden endpoints such as trade, order, and broker actions.
 
 Acceptance criteria:
 

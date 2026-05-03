@@ -34,6 +34,9 @@ Q1 Alpha Triage -> Evidence Bundle -> Promotion Gate -> Q2 Execution-Aware Evalu
 - Content-addressed cache helpers live under `src/portfolio_os/cache` and let
   local batch runs skip unchanged candidate evaluations while surfacing cache
   hit/miss status in candidate result artifacts.
+- Read-only artifact service helpers live under `src/portfolio_os/service`
+  and expose local runs, bundles, reports, and decisions without write routes
+  or workflow-triggering endpoints.
 
 These project areas are intentionally separate. They do not create a trading bot, place orders, call brokers, or fabricate backtest output.
 

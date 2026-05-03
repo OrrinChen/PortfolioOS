@@ -13,6 +13,12 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - Current standalone project shells:
   - Q1 = `projects/agentic_alpha_triage`, asks "Is this alpha real?", and contains schemas/contracts plus validated example artifacts.
   - Q2 = `projects/execution_aware_optimizer`, asks "Can this alpha survive execution?", and contains a PortfolioOS-aware project shell with explicit unavailable-layer reporting.
+- Phase 31 Read-Only Service Layer is complete:
+  - `src/portfolio_os/service/` now provides a framework-neutral `ReadOnlyArtifactService` over local artifact directories.
+  - supported routes are `GET /health`, `GET /runs`, `GET /runs/{run_id}`, `GET /bundles/{bundle_id}`, `GET /reports/{run_id}`, and `GET /decisions/{bundle_id}`.
+  - non-GET requests return a read-only error; trade/order/broker routes are not exposed.
+  - no FastAPI or server dependency was added because the current requirement is a local artifact access boundary rather than a network service.
+  - validation: read-only service tests `4 passed`; `make validate` passed.
 - Phase 30 Incremental Rerun / Content-Addressed Cache is complete:
   - `src/portfolio_os/cache/` now provides cache-key construction, JSON content-addressed storage, and field-level invalidation explanations.
   - cache keys include schema version, code version, input hash, optional config hash, runner version, seed, and optional extra fields.
@@ -179,7 +185,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - non-mutating cost-sensitivity scenarios live in `projects/execution_aware_optimizer/src/execution_aware_optimizer/cost_sensitivity.py`.
   - Q2 README documents each ladder layer as partial or unavailable.
   - validation: Q2 tests `11 passed`; relevant PortfolioOS subset `64 passed, 36 warnings`; default Q2 smoke scripts passed without enabling PortfolioOS execution.
-- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 31 and add a read-only artifact service only if its dependency footprint is justified.
+- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 32 only if a read-only demo dashboard is still worth the added surface; otherwise move directly to Phase 33 one-command demo packaging.
 - Core platform buildout through Phase 12 is implemented and stable.
 - The current project-wide meta stage is `research convergence + promotion contract`, not repo merge.
 - Project operating mode is now `paper-stage only`.
