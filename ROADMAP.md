@@ -27,10 +27,11 @@ Completed:
 - Phase 20: Q1 evaluator batch contract note freezes the local dry-run boundary before real evaluator work.
 - Phase 21: Evidence bundle schema validates PIT safety, leakage checks, planned tests, and deterministic JSON without trading outputs.
 - Phase 22: Promotion gate contract creates a typed Q1-to-Q2 handoff decision without direct Q2 execution.
+- Phase 23: Q2 execution evaluation matrix records scenario robustness across cost, participation, liquidity, constraints, and execution modes.
 
 Current phase:
 
-- Phase 23: Q2 Execution Evaluation Matrix.
+- Phase 24: Decision Explainability Layer.
 
 Deferred:
 
@@ -543,11 +544,11 @@ The platform should answer whether a promoted signal survives execution assumpti
 
 Tasks:
 
-- [ ] Add `execution_matrix.py`, `scenario_grid.py`, and `robustness_summary.py` under `projects/execution_aware_optimizer/src/execution_aware_optimizer/`.
-- [ ] Support scenario dimensions for cost bps, participation rate, liquidity bucket, constraint level, and execution mode.
-- [ ] Emit `execution_matrix.csv`, `robustness_summary.json`, and markdown report sections.
-- [ ] Record source config hash for every scenario.
-- [ ] Return structured unavailable reasons when a layer or scenario cannot execute.
+- [x] Add `execution_matrix.py`, `scenario_grid.py`, and `robustness_summary.py` under `projects/execution_aware_optimizer/src/execution_aware_optimizer/`.
+- [x] Support scenario dimensions for cost bps, participation rate, liquidity bucket, constraint level, and execution mode.
+- [x] Emit `execution_matrix.csv`, `robustness_summary.json`, and markdown report sections.
+- [x] Record source config hash for every scenario.
+- [x] Return structured unavailable reasons when a layer or scenario cannot execute.
 
 Acceptance criteria:
 

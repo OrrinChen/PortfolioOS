@@ -13,6 +13,13 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - Current standalone project shells:
   - Q1 = `projects/agentic_alpha_triage`, asks "Is this alpha real?", and contains schemas/contracts plus validated example artifacts.
   - Q2 = `projects/execution_aware_optimizer`, asks "Can this alpha survive execution?", and contains a PortfolioOS-aware project shell with explicit unavailable-layer reporting.
+- Phase 23 Q2 execution evaluation matrix is complete:
+  - `projects/execution_aware_optimizer/src/execution_aware_optimizer/scenario_grid.py` builds deterministic scenario ids and source config hashes across cost, participation, liquidity, constraint, and execution-mode dimensions.
+  - `projects/execution_aware_optimizer/src/execution_aware_optimizer/execution_matrix.py` delegates scenario/layer runs to the existing ladder adapter and records observed vs unavailable matrix rows.
+  - `projects/execution_aware_optimizer/src/execution_aware_optimizer/robustness_summary.py` summarizes total scenarios, rows, observed rows, unavailable rows, unique config hashes, and unavailable reasons.
+  - `projects/execution_aware_optimizer/scripts/run_execution_matrix.py` writes `execution_matrix.csv`, `robustness_summary.json`, and an execution-matrix markdown report.
+  - default matrix config stays non-execution; the smoke produced 270 scenarios and 1,890 structured unavailable layer rows under `/tmp`, with no fabricated returns.
+  - validation: Q2 tests `24 passed`; Q2 execution matrix smoke passed.
 - Phase 22 Promotion Gate contract is complete:
   - `projects/promotion_gate/` is now a standalone contract layer between Evidence Bundle validation and Q2 execution-aware evaluation.
   - `projects/promotion_gate/src/promotion_gate/schema.py` defines `PromotionDecision` and `Q2InputContract`.
@@ -129,7 +136,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - non-mutating cost-sensitivity scenarios live in `projects/execution_aware_optimizer/src/execution_aware_optimizer/cost_sensitivity.py`.
   - Q2 README documents each ladder layer as partial or unavailable.
   - validation: Q2 tests `11 passed`; relevant PortfolioOS subset `64 passed, 36 warnings`; default Q2 smoke scripts passed without enabling PortfolioOS execution.
-- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 23 and add a Q2 execution evaluation matrix with explicit unavailable reasons and config hashes.
+- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 24 and add a decision explainability layer for Q1 rejections, promotion decisions, and Q2 unavailable rows.
 - Core platform buildout through Phase 12 is implemented and stable.
 - The current project-wide meta stage is `research convergence + promotion contract`, not repo merge.
 - Project operating mode is now `paper-stage only`.

@@ -73,6 +73,7 @@ class ExperimentConfig(BaseModel):
     portfolioos: PortfolioOSAdapterConfig = Field(default_factory=PortfolioOSAdapterConfig)
     layers: list[LayerConfig] = Field(default_factory=default_ladder_layers)
     cost_sensitivity_bps: list[int] = Field(default_factory=lambda: [0, 5, 10, 25, 50])
+    execution_matrix: dict[str, Any] = Field(default_factory=dict)
     report_path: str = "projects/execution_aware_optimizer/reports/execution_aware_optimizer_report.md"
 
     @field_validator("cost_sensitivity_bps")

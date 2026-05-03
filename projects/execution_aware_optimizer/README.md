@@ -104,6 +104,26 @@ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:projects/execution_aware_optimizer/src 
 
 The same module can read a generated `cost_sensitivity_results.csv` into typed result rows. Executed rows can then be summarized in the markdown report by cost level and ladder layer. Default non-execution rows remain marked unavailable and are not treated as performance.
 
+## Execution Evaluation Matrix
+
+Phase 23 adds an execution matrix over:
+
+- cost bps: `1`, `5`, `10`, `25`, `50`
+- participation rate: `0.001`, `0.005`, `0.01`
+- liquidity bucket: `high`, `medium`, `low`
+- constraint level: `raw`, `risk_aware`, `full_execution_aware`
+- execution mode: `impact_aware`, `participation_twap`
+
+Each scenario records a deterministic `source_config_hash`. The matrix delegates
+portfolio construction to the existing ladder adapter, so default configs still
+produce structured unavailable rows rather than fake scenario returns.
+
+Run the matrix without enabling PortfolioOS execution:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:projects/execution_aware_optimizer/src poetry run python projects/execution_aware_optimizer/scripts/run_execution_matrix.py --config projects/execution_aware_optimizer/configs/execution_matrix.yaml --output /tmp/portfolioos_q2_execution_matrix/execution_matrix.csv --summary-output /tmp/portfolioos_q2_execution_matrix/robustness_summary.json --report /tmp/portfolioos_q2_execution_matrix/execution_report.md
+```
+
 ## Reports
 
 The markdown report includes:
