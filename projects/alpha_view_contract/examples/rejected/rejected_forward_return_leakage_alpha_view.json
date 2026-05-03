@@ -1,0 +1,54 @@
+{
+  "abstain_policy": {
+    "coverage_threshold": 0.8,
+    "mode": "explicit_abstain"
+  },
+  "alpha_view_id": "AV-REJECT-FWD-RET-001",
+  "anchor_event_timestamp": "2025-02-05T21:05:00Z",
+  "capacity_view": {
+    "adv_participation_cap": 0.001
+  },
+  "confidence_view": {
+    "confidence_score": 0.99
+  },
+  "cost_sensitivity_view": {
+    "expected_cost_bps": 5.0
+  },
+  "coverage_mask": {
+    "covered_symbols": [
+      "AAPL"
+    ],
+    "mode": "explicit_abstain"
+  },
+  "decay_policy": {
+    "mode": "none"
+  },
+  "expected_return_view": {
+    "AAPL": {
+      "source_column": "realized_forward_return_5d",
+      "state": "active_view",
+      "value": 0.05
+    }
+  },
+  "family_id": "REJECTED_FORWARD_RETURN",
+  "holding_window": {
+    "days": 5
+  },
+  "horizon_type": "event_window",
+  "mechanism_type": "event",
+  "pit_safety_report": {
+    "anchor_not_before_visibility": true,
+    "no_future_data": false,
+    "pit_source": "invalid_fixture",
+    "visibility_not_after_tradable": true
+  },
+  "provenance": {
+    "created_by": "fixture",
+    "source": "invalid_forward_return_fixture",
+    "version": "v1"
+  },
+  "signal_timestamp": "2025-02-05T21:05:00Z",
+  "tradable_timestamp": "2025-02-06T14:30:00Z",
+  "universe_id": "US_LARGE_CAP_FIXTURE",
+  "visibility_timestamp": "2025-02-05T21:10:00Z"
+}

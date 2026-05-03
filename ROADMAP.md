@@ -39,10 +39,11 @@ Completed:
 - Phase 32: Static read-only dashboard renderer displays local demo artifacts without service dependencies or workflow triggers.
 - Phase 33: One-command local demo writes Q1, promotion, Q2, audit, manifest, trace, and dashboard artifacts under `outputs/demo/`.
 - Phase 34: README now packages the audit-ready decision evaluation platform with architecture, quickstart, safety boundaries, and case studies.
+- Phase 35: Typed AlphaView contract defines alpha as timestamped, PIT-safe, horizon-aware predictive view with explicit abstain semantics.
 
 Current phase:
 
-- Phase 35: Typed Alpha View Contract.
+- Phase 36: Event-Aware Evaluation Kernel.
 
 Deferred:
 
@@ -900,12 +901,12 @@ AlphaView
 
 Tasks:
 
-- [ ] Add `AlphaView` schema and deterministic JSON load/dump helpers.
-- [ ] Add valid fixtures for event SUE, revision-to-next-announcement, and residual momentum calibration views.
-- [ ] Add rejected forward-return leakage fixture.
-- [ ] Represent explicit abstain separately from zero-alpha.
-- [ ] Forbid orders, broker output, live performance, and trading recommendations.
-- [ ] Document the contract boundary.
+- [x] Add `AlphaView` schema and deterministic JSON load/dump helpers.
+- [x] Add valid fixtures for event SUE, revision-to-next-announcement, and residual momentum calibration views.
+- [x] Add rejected forward-return leakage fixture.
+- [x] Represent explicit abstain separately from zero-alpha.
+- [x] Forbid orders, broker output, live performance, and trading recommendations.
+- [x] Document the contract boundary.
 
 Acceptance criteria:
 

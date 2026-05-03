@@ -16,10 +16,16 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - New Phase 35-42 roadmap has been added:
   - the completed Phase 20-34 platform packaging work remains closed.
   - the new active direction is `Typed Alpha View / Research-to-Paper Closed Loop`.
-  - next phase is Phase 35 Typed Alpha View Contract.
+  - Phase 35 Typed Alpha View Contract is now complete.
   - core rule: `no_view != zero_alpha`; missing alpha coverage must be explicit abstain, not silently encoded as zero alpha.
   - the new roadmap keeps Q1, Evidence Bundle, Promotion Gate, Q2, paper overlay, and dashboard boundaries separate.
   - live paper overlay calibration, live data refreshes, and broker paths remain explicit opt-in work only.
+- Phase 35 Typed Alpha View Contract is complete:
+  - `src/portfolio_os/alpha/view_contract.py` defines `AlphaView`, PIT safety, coverage mask, abstain policy, expected-return entries, deterministic JSON load/dump helpers, and contract-level validation errors.
+  - `projects/alpha_view_contract/` contains valid fixtures for SUE event view, revision-to-next-announcement view, and residual momentum calibration view plus a rejected forward-return leakage fixture.
+  - `no_view` entries must carry a reason and cannot carry a value; zero expected-return values are allowed only as explicit `active_view` entries.
+  - AlphaView rejects forbidden trading/live-output fields including orders, broker output, live performance, trading recommendations, trading instructions, and hidden Q2 results.
+  - validation: AlphaView contract tests `6 passed`; `make validate` passed.
 - Phase 34 README / Architecture / Case Study is complete:
   - top-level `README.md` now frames PortfolioOS as an audit-ready ML/quant decision evaluation platform.
   - README includes Problem, Solution, Architecture, Quickstart, Example Outputs, Safety Boundaries, Case Studies, and Validation sections.
@@ -210,7 +216,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - non-mutating cost-sensitivity scenarios live in `projects/execution_aware_optimizer/src/execution_aware_optimizer/cost_sensitivity.py`.
   - Q2 README documents each ladder layer as partial or unavailable.
   - validation: Q2 tests `11 passed`; relevant PortfolioOS subset `64 passed, 36 warnings`; default Q2 smoke scripts passed without enabling PortfolioOS execution.
-- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 35 and implement the Typed Alpha View Contract before writing event evaluators or projection code.
+- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 36 and implement the Event-Aware Evaluation Kernel on top of AlphaView fixtures.
 - Core platform buildout through Phase 12 is implemented and stable.
 - The current project-wide meta stage is `research convergence + promotion contract`, not repo merge.
 - Project operating mode is now `paper-stage only`.

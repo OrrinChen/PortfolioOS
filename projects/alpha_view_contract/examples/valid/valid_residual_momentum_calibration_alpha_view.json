@@ -1,0 +1,65 @@
+{
+  "abstain_policy": {
+    "coverage_threshold": 0.9,
+    "mode": "explicit_abstain",
+    "stale_after_days": 30
+  },
+  "alpha_view_id": "AV-US-RESIDUAL-MOM-CAL-001",
+  "anchor_event_timestamp": null,
+  "capacity_view": {
+    "adv_participation_cap": 0.001,
+    "capacity_bucket": "medium"
+  },
+  "confidence_view": {
+    "confidence_score": 0.4,
+    "evidence_strength": "calibration_only"
+  },
+  "cost_sensitivity_view": {
+    "expected_cost_bps": 10.0,
+    "sensitivity_bucket": "medium"
+  },
+  "coverage_mask": {
+    "covered_symbols": [
+      "AAPL"
+    ],
+    "mode": "explicit_abstain",
+    "uncovered_symbols": [
+      "MSFT"
+    ]
+  },
+  "decay_policy": {
+    "half_life_days": 20,
+    "mode": "fixed_decay"
+  },
+  "expected_return_view": {
+    "AAPL": {
+      "state": "active_view",
+      "value": 0.003
+    },
+    "MSFT": {
+      "reason": "calibration_not_validated",
+      "state": "no_view"
+    }
+  },
+  "family_id": "US_RESIDUAL_MOMENTUM_CALIBRATION",
+  "holding_window": {
+    "days": 21
+  },
+  "horizon_type": "rebalance_period",
+  "mechanism_type": "residual_factor",
+  "pit_safety_report": {
+    "anchor_not_before_visibility": true,
+    "no_future_data": true,
+    "pit_source": "local_fixture",
+    "visibility_not_after_tradable": true
+  },
+  "provenance": {
+    "created_by": "fixture",
+    "source": "synthetic_residual_momentum_contract",
+    "version": "v1"
+  },
+  "signal_timestamp": "2025-04-30T20:00:00Z",
+  "tradable_timestamp": "2025-05-01T13:30:00Z",
+  "universe_id": "US_LARGE_CAP_FIXTURE",
+  "visibility_timestamp": "2025-04-30T20:05:00Z"
+}

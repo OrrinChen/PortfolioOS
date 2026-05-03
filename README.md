@@ -150,6 +150,9 @@ Q1 Alpha Triage -> Evidence Bundle -> Promotion Gate -> Q2 Execution-Aware Evalu
   or workflow-triggering endpoints.
 - Static dashboard helpers live under `src/portfolio_os/dashboard` and render
   local artifact snapshots into read-only HTML.
+- Typed AlphaView contract helpers live under
+  `src/portfolio_os/alpha/view_contract.py` and define alpha as a typed
+  predictive view rather than a static score.
 
 These project areas are intentionally separate. They do not create a trading bot, place orders, call brokers, or fabricate backtest output.
 

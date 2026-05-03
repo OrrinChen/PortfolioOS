@@ -30,6 +30,12 @@ One-command demo smoke:
 make demo
 ```
 
+Typed AlphaView contract tests:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_alpha_view_contract.py -q
+```
+
 ## Q1 Project
 
 Run when touching `projects/agentic_alpha_triage`:

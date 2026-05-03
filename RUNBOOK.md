@@ -36,6 +36,12 @@ Run the one-command local demo:
 make demo
 ```
 
+Run AlphaView contract tests:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_alpha_view_contract.py -q
+```
+
 Run the no-network guard self-test:
 
 ```bash
