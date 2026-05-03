@@ -31,6 +31,9 @@ Q1 Alpha Triage -> Evidence Bundle -> Promotion Gate -> Q2 Execution-Aware Evalu
 - Local batch orchestration helpers live under `src/portfolio_os/orchestration`
   and provide deterministic, failure-isolated candidate runs with per-run
   provenance manifests.
+- Content-addressed cache helpers live under `src/portfolio_os/cache` and let
+  local batch runs skip unchanged candidate evaluations while surfacing cache
+  hit/miss status in candidate result artifacts.
 
 These project areas are intentionally separate. They do not create a trading bot, place orders, call brokers, or fabricate backtest output.
 

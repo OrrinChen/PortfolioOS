@@ -34,10 +34,11 @@ Completed:
 - Phase 27: Structured trace events record local evaluation workflow milestones without credentials, orders, or trading instructions.
 - Phase 28: CI-style validation targets, no-network guard, schema compatibility tests, and forbidden-output guards harden local regression checks.
 - Phase 29: Local batch orchestrator evaluates candidates deterministically with failure isolation, partial reruns, retries, aggregation, and per-run provenance.
+- Phase 30: Content-addressed cache keys and store support incremental local reruns with hit/miss status and config/input invalidation.
 
 Current phase:
 
-- Phase 30: Incremental Rerun / Content-Addressed Cache.
+- Phase 31: Read-Only Service Layer.
 
 Deferred:
 
@@ -704,10 +705,10 @@ Reproducible evaluation systems should be efficient without hiding when inputs, 
 
 Tasks:
 
-- [ ] Add content-addressed cache modules for cache key generation, storage, and invalidation.
-- [ ] Include schema version, code version, input hash, config hash, runner version, and relevant seed in cache keys.
-- [ ] Surface cache hit/miss in reports and provenance.
-- [ ] Add tests for miss, hit, config invalidation, and bundle invalidation.
+- [x] Add content-addressed cache modules for cache key generation, storage, and invalidation.
+- [x] Include schema version, code version, input hash, config hash, runner version, and relevant seed in cache keys.
+- [x] Surface cache hit/miss in reports and provenance.
+- [x] Add tests for miss, hit, config invalidation, and bundle invalidation.
 
 Acceptance criteria:
 

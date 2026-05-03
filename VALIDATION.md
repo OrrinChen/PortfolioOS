@@ -155,6 +155,12 @@ Local batch orchestrator tests:
 PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_local_batch_orchestrator.py -q
 ```
 
+Content-addressed cache tests:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_content_addressed_cache.py -q
+```
+
 Run a focused subset when touching optimizer, cost, execution, backtest, replay, scenario, or alpha bridge code:
 
 ```bash
