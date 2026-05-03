@@ -11,6 +11,21 @@ This MVP is an auxiliary decision-support tool only. It does not constitute inve
 - Scope: local CLI, CSV/YAML input, CSV/JSON/Markdown output, plus optional Alpaca paper trading adapter for US pilot loops.
 - Market focus: A-share cash equities and US equities (market-switched behavior).
 
+## Audit-Ready Evaluation Projects
+
+The current project packaging separates research validation from execution evaluation:
+
+```text
+Q1 Alpha Triage -> Evidence Bundle -> Promotion Gate -> Q2 Execution-Aware Evaluation
+```
+
+- Q1 lives under `projects/agentic_alpha_triage` and asks: "Is this alpha real?"
+- Evidence Bundle lives under `projects/evidence_bundle` and records PIT-safe, leakage-checked research evidence.
+- Promotion Gate lives under `projects/promotion_gate` and produces typed Q2 input contracts without running Q2 workflows.
+- Q2 lives under `projects/execution_aware_optimizer` and asks: "Can this alpha survive execution?"
+
+These project areas are intentionally separate. They do not create a trading bot, place orders, call brokers, or fabricate backtest output.
+
 ## MVP Scope
 
 - Single-account daily or batch rebalance.

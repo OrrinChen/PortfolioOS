@@ -80,6 +80,14 @@ Run when touching `projects/evidence_bundle`:
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/evidence_bundle/src poetry run pytest projects/evidence_bundle/tests -q
 ```
 
+## Promotion Gate Project
+
+Run when touching `projects/promotion_gate` or the Q1-to-Q2 handoff contract:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/promotion_gate/src:projects/evidence_bundle/src poetry run pytest projects/promotion_gate/tests -q
+```
+
 ## PortfolioOS Core
 
 Run a focused subset when touching optimizer, cost, execution, backtest, replay, scenario, or alpha bridge code:

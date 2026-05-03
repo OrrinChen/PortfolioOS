@@ -80,6 +80,12 @@ Run Evidence Bundle tests:
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/evidence_bundle/src poetry run pytest projects/evidence_bundle/tests -q
 ```
 
+Run Promotion Gate tests:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/promotion_gate/src:projects/evidence_bundle/src poetry run pytest projects/promotion_gate/tests -q
+```
+
 Run Q2 report smoke path:
 
 ```bash

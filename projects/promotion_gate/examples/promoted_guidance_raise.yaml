@@ -1,0 +1,15 @@
+bundle_id: EB-GUIDANCE-RAISE-DRIFT-001
+decision: promote_to_execution_eval
+reasons:
+  - all promotion preconditions satisfied
+q2_allowed_inputs:
+  bundle_id: EB-GUIDANCE-RAISE-DRIFT-001
+  alpha_score_columns:
+    - date
+    - symbol
+    - alpha_score
+    - alpha_source
+    - alpha_confidence
+  allowed_consumer: projects/execution_aware_optimizer
+  direct_q2_execution_allowed: false
+forbidden_outputs_checked: true

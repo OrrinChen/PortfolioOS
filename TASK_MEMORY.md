@@ -13,11 +13,19 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - Current standalone project shells:
   - Q1 = `projects/agentic_alpha_triage`, asks "Is this alpha real?", and contains schemas/contracts plus validated example artifacts.
   - Q2 = `projects/execution_aware_optimizer`, asks "Can this alpha survive execution?", and contains a PortfolioOS-aware project shell with explicit unavailable-layer reporting.
+- Phase 22 Promotion Gate contract is complete:
+  - `projects/promotion_gate/` is now a standalone contract layer between Evidence Bundle validation and Q2 execution-aware evaluation.
+  - `projects/promotion_gate/src/promotion_gate/schema.py` defines `PromotionDecision` and `Q2InputContract`.
+  - `projects/promotion_gate/src/promotion_gate/gate.py` evaluates local evidence bundles for reject, needs-more-evidence, or promote-to-execution-eval decisions.
+  - the gate checks Evidence Bundle PIT/leakage validation, coverage requirements, cost-assumption presence, bounded evaluation horizon, forbidden output keys, and the no-direct-Q2-execution boundary.
+  - passing decisions produce only a Q2 input contract with alpha-score columns; they do not import Q2 workflows, run PortfolioOS, create orders, or generate trading output.
+  - validation: Promotion Gate tests `7 passed`; Evidence Bundle tests `4 passed`; Q1 tests `30 passed`; Q1 example validation script passed; Q1 batch manifest summary CLI smoke passed.
 - Phase 21 Evidence Bundle schema is complete:
   - `projects/evidence_bundle/` is now a standalone project area for typed Q1 evidence packages.
   - `projects/evidence_bundle/src/evidence_bundle/schema.py` defines `EvidenceBundle`, `PitSafetyReport`, `LeakageCheck`, and `PlannedTest`.
   - `projects/evidence_bundle/src/evidence_bundle/validation.py` provides `load_evidence_bundle` and deterministic JSON serialization.
   - committed examples cover one valid guidance-raise bundle plus rejected forward-return leakage, missing timestamp, and anchor-before-signal-timestamp cases.
+  - valid evidence bundles now include promotion-review cost assumptions and a bounded evaluation horizon for the Phase 22 gate.
   - evidence bundles explicitly exclude trading recommendations, orders, broker output, live performance, hidden Q2 results, and direct Q2 execution output.
   - validation: Evidence Bundle tests `4 passed`; Q1 tests `30 passed`; Q1 example validation script passed; Q1 batch manifest summary CLI smoke passed.
 - Phase 20 Q1 evaluator batch contract note is complete:
@@ -121,7 +129,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - non-mutating cost-sensitivity scenarios live in `projects/execution_aware_optimizer/src/execution_aware_optimizer/cost_sensitivity.py`.
   - Q2 README documents each ladder layer as partial or unavailable.
   - validation: Q2 tests `11 passed`; relevant PortfolioOS subset `64 passed, 36 warnings`; default Q2 smoke scripts passed without enabling PortfolioOS execution.
-- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 22 and add a promotion gate contract without direct Q2 execution.
+- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 23 and add a Q2 execution evaluation matrix with explicit unavailable reasons and config hashes.
 - Core platform buildout through Phase 12 is implemented and stable.
 - The current project-wide meta stage is `research convergence + promotion contract`, not repo merge.
 - Project operating mode is now `paper-stage only`.

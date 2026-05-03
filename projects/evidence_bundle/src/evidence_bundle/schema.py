@@ -93,6 +93,8 @@ class EvidenceBundle(BaseModel):
     required_columns: list[str] = Field(min_length=1)
     planned_tests: list[PlannedTest] = Field(min_length=1)
     coverage_requirements: list[str] = Field(default_factory=list)
+    cost_assumptions: list[str] = Field(default_factory=list)
+    evaluation_horizon: str | None = None
     rejection_reasons: list[str] = Field(default_factory=list)
     promotion_eligibility: PromotionEligibility
 
@@ -104,13 +106,28 @@ class EvidenceBundle(BaseModel):
             raise ValueError("field cannot be blank")
         return text
 
-    @field_validator("required_columns", "coverage_requirements", "rejection_reasons")
+    @field_validator(
+        "required_columns",
+        "coverage_requirements",
+        "cost_assumptions",
+        "rejection_reasons",
+    )
     @classmethod
     def clean_text_list(cls, values: list[str]) -> list[str]:
         cleaned = [str(value).strip() for value in values]
         if any(not value for value in cleaned):
             raise ValueError("list entries cannot be blank")
         return cleaned
+
+    @field_validator("evaluation_horizon")
+    @classmethod
+    def clean_optional_text(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        text = str(value).strip()
+        if not text:
+            raise ValueError("evaluation_horizon cannot be blank")
+        return text
 
     @model_validator(mode="after")
     def require_safe_bundle(self) -> Self:
@@ -122,7 +139,9 @@ class EvidenceBundle(BaseModel):
             if _looks_like_forward_return_column(column)
         ]
         if forbidden_columns:
-            raise ValueError("forward-return leakage in required_columns: " + ", ".join(forbidden_columns))
+            raise ValueError(
+                "forward-return leakage in required_columns: " + ", ".join(forbidden_columns)
+            )
 
         failed_critical_checks = [
             check.check_name

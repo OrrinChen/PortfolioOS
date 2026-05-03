@@ -26,10 +26,11 @@ Completed:
 - Phase 19: Q1 manifest summary report counts ready, rejected, and expected-status mismatched entries without evaluator execution.
 - Phase 20: Q1 evaluator batch contract note freezes the local dry-run boundary before real evaluator work.
 - Phase 21: Evidence bundle schema validates PIT safety, leakage checks, planned tests, and deterministic JSON without trading outputs.
+- Phase 22: Promotion gate contract creates a typed Q1-to-Q2 handoff decision without direct Q2 execution.
 
 Current phase:
 
-- Phase 22: Promotion Gate Contract.
+- Phase 23: Q2 Execution Evaluation Matrix.
 
 Deferred:
 
@@ -519,11 +520,11 @@ Q1 readiness should be necessary but not sufficient for execution-aware evaluati
 
 Tasks:
 
-- [ ] Create `projects/promotion_gate/` as a standalone project area.
-- [ ] Define `PromotionDecision` and `Q2InputContract` schemas.
-- [ ] Implement gate checks for PIT safety, leakage safety, minimum coverage, event timestamp alignment, horizon sanity, and cost-assumption presence.
-- [ ] Ensure passing decisions generate only Q2 input contracts and do not run Q2.
-- [ ] Add promoted and rejected examples plus tests.
+- [x] Create `projects/promotion_gate/` as a standalone project area.
+- [x] Define `PromotionDecision` and `Q2InputContract` schemas.
+- [x] Implement gate checks for PIT safety, leakage safety, minimum coverage, event timestamp alignment, horizon sanity, and cost-assumption presence.
+- [x] Ensure passing decisions generate only Q2 input contracts and do not run Q2.
+- [x] Add promoted and rejected examples plus tests.
 
 Acceptance criteria:
 

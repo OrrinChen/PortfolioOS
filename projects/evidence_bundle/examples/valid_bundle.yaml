@@ -38,5 +38,8 @@ planned_tests:
 coverage_requirements:
   - minimum event coverage must be declared before promotion.
   - sector-neutral benchmark coverage must be available.
+cost_assumptions:
+  - 5 bps one-way planning cost; Q2 must rerun explicit cost sensitivity.
+evaluation_horizon: 5 trading days after anchor_trade_date
 rejection_reasons: []
 promotion_eligibility: eligible_for_promotion_review

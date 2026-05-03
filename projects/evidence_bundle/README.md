@@ -24,6 +24,8 @@ The Phase 21 schema includes:
 - `required_columns`
 - `planned_tests`
 - `coverage_requirements`
+- `cost_assumptions`
+- `evaluation_horizon`
 - `rejection_reasons`
 - `promotion_eligibility`
 
