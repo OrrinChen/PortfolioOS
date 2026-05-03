@@ -30,10 +30,11 @@ Completed:
 - Phase 23: Q2 execution evaluation matrix records scenario robustness across cost, participation, liquidity, constraints, and execution modes.
 - Phase 24: Decision explainability taxonomy maps rejection, promotion, and Q2 unavailable statuses to structured audit explanations.
 - Phase 25: Unified audit report generates a deterministic local demo report across Q1 checks, promotion, Q2 matrix, diagnostics, and reproducibility placeholders.
+- Phase 26: Provenance manifests record command, git, config, input, output, environment, seed, schema, and stable content hashes.
 
 Current phase:
 
-- Phase 26: Run Provenance / Reproducibility Manifest.
+- Phase 27: Observability / Structured Trace.
 
 Deferred:
 
@@ -613,10 +614,10 @@ Audit readiness depends on explaining exactly how a result was produced and whet
 
 Tasks:
 
-- [ ] Add provenance modules for manifest writing, hashing, environment capture, and artifact indexing.
-- [ ] Record git SHA, dirty state, command, config path/hash, input hashes, output hashes, Python version, dependency snapshot, timestamp, runner version, random seed, and schema version.
-- [ ] Attach manifest summaries to reports where applicable.
-- [ ] Add tests for stable hashes and invalidation when config or inputs change.
+- [x] Add provenance modules for manifest writing, hashing, environment capture, and artifact indexing.
+- [x] Record git SHA, dirty state, command, config path/hash, input hashes, output hashes, Python version, dependency snapshot, timestamp, runner version, random seed, and schema version.
+- [x] Attach manifest summaries to reports where applicable.
+- [x] Add tests for stable hashes and invalidation when config or inputs change.
 
 Acceptance criteria:
 

@@ -13,6 +13,12 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - Current standalone project shells:
   - Q1 = `projects/agentic_alpha_triage`, asks "Is this alpha real?", and contains schemas/contracts plus validated example artifacts.
   - Q2 = `projects/execution_aware_optimizer`, asks "Can this alpha survive execution?", and contains a PortfolioOS-aware project shell with explicit unavailable-layer reporting.
+- Phase 26 Run Provenance / Reproducibility Manifest is complete:
+  - `src/portfolio_os/provenance/` now provides hashing, artifact indexing, environment capture, manifest construction, command redaction, and sorted JSON writing.
+  - provenance manifests record schema version, run id, runner version, timestamp, sanitized command, git SHA/dirty state, Python/platform environment, dependency snapshot placeholder, random seed, config artifact, input artifacts, output artifacts, and stable `content_hash`.
+  - `content_hash` excludes runtime timestamp and uses sanitized commands so repeated fixture runs stay stable while config/input changes invalidate the hash.
+  - `projects/audit_report/scripts/build_demo_audit_report.py` writes a provenance sidecar for the demo audit report; validation writes that sidecar under `/tmp` to avoid committing machine-specific timestamps.
+  - validation: provenance manifest tests `4 passed`; audit report tests `4 passed`; demo audit report smoke with provenance sidecar passed.
 - Phase 25 Unified Audit Report is complete:
   - `projects/audit_report/` builds the deterministic local demo report for the current Q1 -> Evidence Bundle -> Promotion Gate -> Q2 matrix pipeline.
   - `projects/audit_report/examples/demo_audit_manifest.yaml` defines one promoted-like guidance-raise case and one rejected forward-return-leakage case.
@@ -150,7 +156,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - non-mutating cost-sensitivity scenarios live in `projects/execution_aware_optimizer/src/execution_aware_optimizer/cost_sensitivity.py`.
   - Q2 README documents each ladder layer as partial or unavailable.
   - validation: Q2 tests `11 passed`; relevant PortfolioOS subset `64 passed, 36 warnings`; default Q2 smoke scripts passed without enabling PortfolioOS execution.
-- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 26 and add reproducibility manifests with config, input, code, environment, and artifact hashes.
+- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 27 and add structured trace events for evaluation workflows.
 - Core platform buildout through Phase 12 is implemented and stable.
 - The current project-wide meta stage is `research convergence + promotion contract`, not repo merge.
 - Project operating mode is now `paper-stage only`.

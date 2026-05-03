@@ -38,6 +38,7 @@ def test_demo_audit_report_contains_required_sections_and_boundaries() -> None:
         assert section in report.markdown
     assert "Rejected leakage case" in report.markdown
     assert "Q2 execution evaluation: skipped because promotion decision is `reject`." in report.markdown
+    assert "sidecar_path: `reports/demo_run_manifest.json`" in report.markdown
     assert "Not available" in report.markdown
     assert _has_no_forbidden_outputs(report.markdown)
 
@@ -170,7 +171,9 @@ Rejected leakage case explanation:
 
 ## 11. Reproducibility Manifest
 
-- manifest_status: `placeholder_for_phase_26`
+- manifest_status: `available_as_sidecar_after_script_run`
+- sidecar_path: `reports/demo_run_manifest.json`
+- recorded_fields: `git, command, config, inputs, outputs, environment, random_seed, schema_version`
 - command: `PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:projects/audit_report/src:projects/agentic_alpha_triage/src:projects/evidence_bundle/src:projects/promotion_gate/src:projects/execution_aware_optimizer/src poetry run python projects/audit_report/scripts/build_demo_audit_report.py --manifest projects/audit_report/examples/demo_audit_manifest.yaml --output reports/demo_audit_report.md`
 - live_services: `not used`
 """

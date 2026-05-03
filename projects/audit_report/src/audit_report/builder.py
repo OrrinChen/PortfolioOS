@@ -248,7 +248,10 @@ def _render_report(
         "",
         "## 11. Reproducibility Manifest",
         "",
-        "- manifest_status: `placeholder_for_phase_26`",
+        "- manifest_status: `available_as_sidecar_after_script_run`",
+        "- sidecar_path: `reports/demo_run_manifest.json`",
+        "- recorded_fields: `git, command, config, inputs, outputs, environment, "
+        "random_seed, schema_version`",
         "- command: `"
         "PYTHONDONTWRITEBYTECODE=1 "
         "PYTHONPATH=src:projects/audit_report/src:projects/agentic_alpha_triage/src:"
