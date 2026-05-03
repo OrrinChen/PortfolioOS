@@ -1,0 +1,33 @@
+report_title: PortfolioOS Demo Audit Report
+
+promoted_case:
+  case_label: Promoted-like case
+  hypothesis_path: projects/agentic_alpha_triage/examples/hypothesis_guidance_raise_drift.yaml
+  signal_contract_path: projects/agentic_alpha_triage/examples/signal_guidance_raise_drift.yaml
+  evaluation_contract_path: projects/agentic_alpha_triage/examples/evaluation_guidance_raise_drift.yaml
+  evidence_bundle_path: projects/evidence_bundle/examples/valid_bundle.yaml
+
+rejected_case:
+  case_label: Rejected leakage case
+  evidence_bundle_path: projects/evidence_bundle/examples/rejected_bundle_forward_leakage.yaml
+
+q2_execution:
+  cost_sensitivity_bps:
+    - 5
+  portfolioos:
+    allow_portfolioos_run: false
+    transaction_cost_objective_mode: nav_fraction
+    backtest_manifest: data/backtest_samples/manifest_us_expanded_alpha_phase_1_5.yaml
+  layers:
+    - layer_name: full_execution_aware_cost_adjusted
+  execution_matrix:
+    cost_bps:
+      - 5
+    participation_rates:
+      - 0.001
+    liquidity_buckets:
+      - high
+    constraint_levels:
+      - full_execution_aware
+    execution_modes:
+      - impact_aware

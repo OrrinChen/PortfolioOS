@@ -23,6 +23,8 @@ Q1 Alpha Triage -> Evidence Bundle -> Promotion Gate -> Q2 Execution-Aware Evalu
 - Evidence Bundle lives under `projects/evidence_bundle` and records PIT-safe, leakage-checked research evidence.
 - Promotion Gate lives under `projects/promotion_gate` and produces typed Q2 input contracts without running Q2 workflows.
 - Q2 lives under `projects/execution_aware_optimizer` and asks: "Can this alpha survive execution?"
+- Demo Audit Report lives under `projects/audit_report` and writes a deterministic
+  local report to `reports/demo_audit_report.md`.
 
 These project areas are intentionally separate. They do not create a trading bot, place orders, call brokers, or fabricate backtest output.
 

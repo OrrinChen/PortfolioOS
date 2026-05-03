@@ -13,6 +13,13 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - Current standalone project shells:
   - Q1 = `projects/agentic_alpha_triage`, asks "Is this alpha real?", and contains schemas/contracts plus validated example artifacts.
   - Q2 = `projects/execution_aware_optimizer`, asks "Can this alpha survive execution?", and contains a PortfolioOS-aware project shell with explicit unavailable-layer reporting.
+- Phase 25 Unified Audit Report is complete:
+  - `projects/audit_report/` builds the deterministic local demo report for the current Q1 -> Evidence Bundle -> Promotion Gate -> Q2 matrix pipeline.
+  - `projects/audit_report/examples/demo_audit_manifest.yaml` defines one promoted-like guidance-raise case and one rejected forward-return-leakage case.
+  - `projects/audit_report/src/audit_report/builder.py` loads local Q1 schemas, evidence bundles, promotion decisions, Q2 execution matrix rows, constraint diagnostics, and explanation tables into one markdown report.
+  - rejected leakage cases are recorded as skipped before Q2 execution evaluation; default Q2 output remains structured unavailable rows without fabricated returns.
+  - `reports/demo_audit_report.md` is generated from the committed manifest.
+  - validation: audit report tests `4 passed`; demo audit report smoke passed.
 - Phase 24 Decision Explainability layer is complete:
   - `src/portfolio_os/explain/rejection_taxonomy.py` defines `DecisionExplanation` plus deterministic explanations for forward-return leakage, timestamp/PIT failures, unsafe anchors, missing coverage, missing costs, unbounded horizons, Q2 adapter gaps, cost retention, and execution risk.
   - `src/portfolio_os/explain/promotion_explainer.py` explains promotion-gate decisions without importing project-specific schemas.
@@ -143,7 +150,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - non-mutating cost-sensitivity scenarios live in `projects/execution_aware_optimizer/src/execution_aware_optimizer/cost_sensitivity.py`.
   - Q2 README documents each ladder layer as partial or unavailable.
   - validation: Q2 tests `11 passed`; relevant PortfolioOS subset `64 passed, 36 warnings`; default Q2 smoke scripts passed without enabling PortfolioOS execution.
-- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 25 and add a unified audit report that connects Q1 checks, promotion decisions, Q2 execution evaluation, and reproducibility placeholders.
+- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 26 and add reproducibility manifests with config, input, code, environment, and artifact hashes.
 - Core platform buildout through Phase 12 is implemented and stable.
 - The current project-wide meta stage is `research convergence + promotion contract`, not repo merge.
 - Project operating mode is now `paper-stage only`.

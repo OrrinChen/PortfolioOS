@@ -29,10 +29,11 @@ Completed:
 - Phase 22: Promotion gate contract creates a typed Q1-to-Q2 handoff decision without direct Q2 execution.
 - Phase 23: Q2 execution evaluation matrix records scenario robustness across cost, participation, liquidity, constraints, and execution modes.
 - Phase 24: Decision explainability taxonomy maps rejection, promotion, and Q2 unavailable statuses to structured audit explanations.
+- Phase 25: Unified audit report generates a deterministic local demo report across Q1 checks, promotion, Q2 matrix, diagnostics, and reproducibility placeholders.
 
 Current phase:
 
-- Phase 25: Unified Audit Report.
+- Phase 26: Run Provenance / Reproducibility Manifest.
 
 Deferred:
 
@@ -590,10 +591,10 @@ The project needs a single report that communicates the platform in three minute
 
 Tasks:
 
-- [ ] Add a report builder for `reports/demo_audit_report.md`.
-- [ ] Include sections for hypothesis, signal contract, PIT safety, leakage checks, evaluation plan, promotion decision, execution-aware evaluation, cost sensitivity, constraint diagnostics, final decision, and reproducibility manifest placeholder.
-- [ ] Add deterministic fixture data for one promoted-like case and one rejected leakage case.
-- [ ] Add snapshot or golden-output tests.
+- [x] Add a report builder for `reports/demo_audit_report.md`.
+- [x] Include sections for hypothesis, signal contract, PIT safety, leakage checks, evaluation plan, promotion decision, execution-aware evaluation, cost sensitivity, constraint diagnostics, final decision, and reproducibility manifest placeholder.
+- [x] Add deterministic fixture data for one promoted-like case and one rejected leakage case.
+- [x] Add snapshot or golden-output tests.
 
 Acceptance criteria:
 
