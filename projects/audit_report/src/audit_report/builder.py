@@ -49,6 +49,9 @@ class DemoAuditReport(BaseModel):
     markdown: str
     promoted_case_ran_q2: bool
     rejected_case_ran_q2: bool
+    promoted_decision: PromotionDecision
+    rejected_decision: PromotionDecision
+    q2_rows: list[ExecutionMatrixRow] = Field(default_factory=list)
 
 
 def load_demo_audit_manifest(path: str | Path) -> DemoAuditManifest:
@@ -96,6 +99,9 @@ def build_demo_audit_report(
         markdown=markdown,
         promoted_case_ran_q2=promoted_case_ran_q2,
         rejected_case_ran_q2=False,
+        promoted_decision=promoted_decision,
+        rejected_decision=rejected_decision,
+        q2_rows=q2_rows,
     )
 
 

@@ -31,10 +31,11 @@ Completed:
 - Phase 24: Decision explainability taxonomy maps rejection, promotion, and Q2 unavailable statuses to structured audit explanations.
 - Phase 25: Unified audit report generates a deterministic local demo report across Q1 checks, promotion, Q2 matrix, diagnostics, and reproducibility placeholders.
 - Phase 26: Provenance manifests record command, git, config, input, output, environment, seed, schema, and stable content hashes.
+- Phase 27: Structured trace events record local evaluation workflow milestones without credentials, orders, or trading instructions.
 
 Current phase:
 
-- Phase 27: Observability / Structured Trace.
+- Phase 28: CI / Regression Hardening.
 
 Deferred:
 
@@ -636,10 +637,10 @@ The platform should be debuggable like a real service, not just a collection of 
 
 Tasks:
 
-- [ ] Add structured event, logger, metrics, and trace-writer modules.
-- [ ] Support trace events such as `bundle_loaded`, `schema_validated`, `leakage_check_failed`, `promotion_decision_created`, `q2_scenario_unavailable`, and `report_written`.
-- [ ] Add `--trace-jsonl` support to relevant local CLIs.
-- [ ] Add tests that assert key events appear and forbidden sensitive/trading fields do not.
+- [x] Add structured event, logger, metrics, and trace-writer modules.
+- [x] Support trace events such as `bundle_loaded`, `schema_validated`, `leakage_check_failed`, `promotion_decision_created`, `q2_scenario_unavailable`, and `report_written`.
+- [x] Add `--trace-jsonl` support to relevant local CLIs.
+- [x] Add tests that assert key events appear and forbidden sensitive/trading fields do not.
 
 Acceptance criteria:
 

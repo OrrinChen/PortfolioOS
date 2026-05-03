@@ -25,6 +25,9 @@ Q1 Alpha Triage -> Evidence Bundle -> Promotion Gate -> Q2 Execution-Aware Evalu
 - Q2 lives under `projects/execution_aware_optimizer` and asks: "Can this alpha survive execution?"
 - Demo Audit Report lives under `projects/audit_report` and writes a deterministic
   local report to `reports/demo_audit_report.md`.
+- Provenance and structured-trace helpers live under `src/portfolio_os/provenance`
+  and `src/portfolio_os/observability`; the demo audit CLI can write local
+  manifest and JSONL trace sidecars for reproducibility and debugging.
 
 These project areas are intentionally separate. They do not create a trading bot, place orders, call brokers, or fabricate backtest output.
 
