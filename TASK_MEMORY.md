@@ -13,6 +13,12 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - Current standalone project shells:
   - Q1 = `projects/agentic_alpha_triage`, asks "Is this alpha real?", and contains schemas/contracts plus validated example artifacts.
   - Q2 = `projects/execution_aware_optimizer`, asks "Can this alpha survive execution?", and contains a PortfolioOS-aware project shell with explicit unavailable-layer reporting.
+- Phase 33 One-Command PortfolioOS Demo is complete:
+  - `scripts/run_portfolioos_demo.py` now writes the deterministic local demo artifact set under `outputs/demo/`.
+  - `make demo` generates `q1_summary.json`, `evidence_bundle.json`, `promotion_decision.json`, `q2_execution_matrix.csv`, `audit_report.md`, `run_manifest.json`, `trace.jsonl`, `cost_sensitivity.csv`, and `dashboard.html`.
+  - the valid guidance-raise case reaches Q2 only through the promotion contract; the forward-return leakage case is rejected before Q2 and recorded in the audit report.
+  - generated demo artifacts are under ignored `outputs/` and are not committed.
+  - validation: one-command demo tests `2 passed`; `make demo` passed; `make validate` passed.
 - Phase 32 Demo Dashboard is complete:
   - `src/portfolio_os/dashboard/` now renders a static read-only HTML dashboard from local artifact files.
   - dashboard sections cover candidate list, Q1 status, promotion decision, Q2 execution matrix, cost sensitivity, audit report, and reproducibility manifest.
@@ -191,7 +197,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - non-mutating cost-sensitivity scenarios live in `projects/execution_aware_optimizer/src/execution_aware_optimizer/cost_sensitivity.py`.
   - Q2 README documents each ladder layer as partial or unavailable.
   - validation: Q2 tests `11 passed`; relevant PortfolioOS subset `64 passed, 36 warnings`; default Q2 smoke scripts passed without enabling PortfolioOS execution.
-- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 33 and package the deterministic one-command demo under `outputs/demo/`.
+- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 34 and tighten README, architecture diagram, quickstart, safety boundaries, and case-study presentation.
 - Core platform buildout through Phase 12 is implemented and stable.
 - The current project-wide meta stage is `research convergence + promotion contract`, not repo merge.
 - Project operating mode is now `paper-stage only`.

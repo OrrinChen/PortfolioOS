@@ -24,6 +24,12 @@ No-network guard:
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src poetry run python scripts/devtools/no_network_guard.py
 ```
 
+One-command demo smoke:
+
+```bash
+make demo
+```
+
 ## Q1 Project
 
 Run when touching `projects/agentic_alpha_triage`:
@@ -171,6 +177,12 @@ Static dashboard tests:
 
 ```bash
 PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_static_dashboard.py -q
+```
+
+One-command demo tests:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_one_command_demo.py -q
 ```
 
 Run a focused subset when touching optimizer, cost, execution, backtest, replay, scenario, or alpha bridge code:

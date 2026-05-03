@@ -37,10 +37,11 @@ Completed:
 - Phase 30: Content-addressed cache keys and store support incremental local reruns with hit/miss status and config/input invalidation.
 - Phase 31: Framework-neutral read-only artifact service exposes local runs, bundles, reports, and decisions without write or trading routes.
 - Phase 32: Static read-only dashboard renderer displays local demo artifacts without service dependencies or workflow triggers.
+- Phase 33: One-command local demo writes Q1, promotion, Q2, audit, manifest, trace, and dashboard artifacts under `outputs/demo/`.
 
 Current phase:
 
-- Phase 33: One-Command PortfolioOS Demo.
+- Phase 34: README / Architecture / Case Study.
 
 Deferred:
 
@@ -771,10 +772,10 @@ The final interview artifact should produce all key outputs from one command.
 
 Tasks:
 
-- [ ] Add `make demo` or an equivalent script.
-- [ ] Generate Q1 summary, evidence bundle, promotion decision, Q2 execution matrix, audit report, run manifest, and trace JSONL.
-- [ ] Include one valid/promoted-like case and one invalid forward-return leakage case.
-- [ ] Add smoke and snapshot tests.
+- [x] Add `make demo` or an equivalent script.
+- [x] Generate Q1 summary, evidence bundle, promotion decision, Q2 execution matrix, audit report, run manifest, and trace JSONL.
+- [x] Include one valid/promoted-like case and one invalid forward-return leakage case.
+- [x] Add smoke and snapshot tests.
 
 Acceptance criteria:
 

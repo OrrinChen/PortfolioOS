@@ -30,6 +30,12 @@ Run the CI-style local validation target:
 make validate
 ```
 
+Run the one-command local demo:
+
+```bash
+make demo
+```
+
 Run the no-network guard self-test:
 
 ```bash
@@ -174,6 +180,12 @@ Run static dashboard tests:
 
 ```bash
 PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_static_dashboard.py -q
+```
+
+Run one-command demo tests:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_one_command_demo.py -q
 ```
 
 Run PortfolioOS backtest CLI:

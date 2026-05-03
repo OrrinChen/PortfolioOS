@@ -235,6 +235,16 @@ Local CI-style validation:
 make validate
 ```
 
+One-command local demo:
+
+```bash
+make demo
+```
+
+The demo writes ignored local artifacts under `outputs/demo/`, including Q1
+summary, evidence bundle, promotion decision, Q2 execution matrix, audit
+report, run manifest, trace JSONL, and static dashboard HTML.
+
 Pilot operations helper:
 
 ```bash
