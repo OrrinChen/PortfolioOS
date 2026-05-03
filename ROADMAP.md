@@ -36,10 +36,11 @@ Completed:
 - Phase 29: Local batch orchestrator evaluates candidates deterministically with failure isolation, partial reruns, retries, aggregation, and per-run provenance.
 - Phase 30: Content-addressed cache keys and store support incremental local reruns with hit/miss status and config/input invalidation.
 - Phase 31: Framework-neutral read-only artifact service exposes local runs, bundles, reports, and decisions without write or trading routes.
+- Phase 32: Static read-only dashboard renderer displays local demo artifacts without service dependencies or workflow triggers.
 
 Current phase:
 
-- Phase 32: Demo Dashboard.
+- Phase 33: One-Command PortfolioOS Demo.
 
 Deferred:
 
@@ -750,9 +751,9 @@ This is optional polish for interviews after the core pipeline and artifacts are
 
 Tasks:
 
-- [ ] Build a small dashboard over local artifacts.
-- [ ] Show candidate list, Q1 status, promotion decision, Q2 execution matrix, cost sensitivity, audit report, and reproducibility manifest.
-- [ ] Keep the dashboard read-only.
+- [x] Build a small dashboard over local artifacts.
+- [x] Show candidate list, Q1 status, promotion decision, Q2 execution matrix, cost sensitivity, audit report, and reproducibility manifest.
+- [x] Keep the dashboard read-only.
 
 Acceptance criteria:
 

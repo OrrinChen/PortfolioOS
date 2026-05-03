@@ -167,6 +167,12 @@ Read-only artifact service tests:
 PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_read_only_service.py -q
 ```
 
+Static dashboard tests:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_static_dashboard.py -q
+```
+
 Run a focused subset when touching optimizer, cost, execution, backtest, replay, scenario, or alpha bridge code:
 
 ```bash

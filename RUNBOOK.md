@@ -170,6 +170,12 @@ Run read-only artifact service tests:
 PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_read_only_service.py -q
 ```
 
+Run static dashboard tests:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_static_dashboard.py -q
+```
+
 Run PortfolioOS backtest CLI:
 
 ```bash

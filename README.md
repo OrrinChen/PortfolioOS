@@ -37,6 +37,8 @@ Q1 Alpha Triage -> Evidence Bundle -> Promotion Gate -> Q2 Execution-Aware Evalu
 - Read-only artifact service helpers live under `src/portfolio_os/service`
   and expose local runs, bundles, reports, and decisions without write routes
   or workflow-triggering endpoints.
+- Static dashboard helpers live under `src/portfolio_os/dashboard` and render
+  local artifact snapshots into read-only HTML.
 
 These project areas are intentionally separate. They do not create a trading bot, place orders, call brokers, or fabricate backtest output.
 
