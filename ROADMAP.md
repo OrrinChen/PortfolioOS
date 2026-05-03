@@ -33,10 +33,11 @@ Completed:
 - Phase 26: Provenance manifests record command, git, config, input, output, environment, seed, schema, and stable content hashes.
 - Phase 27: Structured trace events record local evaluation workflow milestones without credentials, orders, or trading instructions.
 - Phase 28: CI-style validation targets, no-network guard, schema compatibility tests, and forbidden-output guards harden local regression checks.
+- Phase 29: Local batch orchestrator evaluates candidates deterministically with failure isolation, partial reruns, retries, aggregation, and per-run provenance.
 
 Current phase:
 
-- Phase 29: Batch Scaling / Local Orchestrator.
+- Phase 30: Incremental Rerun / Content-Addressed Cache.
 
 Deferred:
 
@@ -681,10 +682,10 @@ This turns the platform from single-candidate demos into a local batch evaluatio
 
 Tasks:
 
-- [ ] Add a local batch runner, scheduler, retry policy, and result store.
-- [ ] Support deterministic ordering, partial reruns, failure isolation, and aggregation.
-- [ ] Classify rejected, promoted, unavailable, and failed candidates.
-- [ ] Write one provenance manifest per run.
+- [x] Add a local batch runner, scheduler, retry policy, and result store.
+- [x] Support deterministic ordering, partial reruns, failure isolation, and aggregation.
+- [x] Classify rejected, promoted, unavailable, and failed candidates.
+- [x] Write one provenance manifest per run.
 
 Acceptance criteria:
 

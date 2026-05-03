@@ -152,6 +152,12 @@ Run structured trace tests:
 PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_observability_trace.py -q
 ```
 
+Run local batch orchestrator tests:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_local_batch_orchestrator.py -q
+```
+
 Run PortfolioOS backtest CLI:
 
 ```bash

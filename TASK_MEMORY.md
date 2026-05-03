@@ -13,6 +13,12 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - Current standalone project shells:
   - Q1 = `projects/agentic_alpha_triage`, asks "Is this alpha real?", and contains schemas/contracts plus validated example artifacts.
   - Q2 = `projects/execution_aware_optimizer`, asks "Can this alpha survive execution?", and contains a PortfolioOS-aware project shell with explicit unavailable-layer reporting.
+- Phase 29 Batch Scaling / Local Orchestrator is complete:
+  - `src/portfolio_os/orchestration/` now provides a deterministic local batch scheduler, bounded retry policy, JSON result store, and injected-runner batch executor.
+  - batch runs sort candidate ids, support deterministic partial reruns, isolate per-candidate failures, classify `promoted`, `rejected`, `unavailable`, and `failed`, and aggregate status counts.
+  - each candidate result writes a local JSON artifact plus a provenance manifest using the Phase 26 provenance machinery.
+  - the orchestrator is generic and uses an injected runner, so it does not import Q1/Q2 workflows, call live services, trigger broker paths, or create trading instructions.
+  - validation: local batch orchestrator tests `4 passed`; `make validate` passed.
 - Phase 28 CI / Regression Hardening is complete:
   - `Makefile` now defines `test`, `lint`, `validate-examples`, `audit-report`, `demo`, `no-network`, and `validate` targets.
   - `src/portfolio_os/validation/no_network.py` blocks socket connection attempts during local validation; `scripts/devtools/no_network_guard.py` self-tests the guard without live service calls.
@@ -167,7 +173,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - non-mutating cost-sensitivity scenarios live in `projects/execution_aware_optimizer/src/execution_aware_optimizer/cost_sensitivity.py`.
   - Q2 README documents each ladder layer as partial or unavailable.
   - validation: Q2 tests `11 passed`; relevant PortfolioOS subset `64 passed, 36 warnings`; default Q2 smoke scripts passed without enabling PortfolioOS execution.
-- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 29 and add a deterministic local batch orchestrator with failure isolation and per-run provenance.
+- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 30 and add content-addressed cache keys/store/invalidation for incremental reruns.
 - Core platform buildout through Phase 12 is implemented and stable.
 - The current project-wide meta stage is `research convergence + promotion contract`, not repo merge.
 - Project operating mode is now `paper-stage only`.

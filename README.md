@@ -28,6 +28,9 @@ Q1 Alpha Triage -> Evidence Bundle -> Promotion Gate -> Q2 Execution-Aware Evalu
 - Provenance and structured-trace helpers live under `src/portfolio_os/provenance`
   and `src/portfolio_os/observability`; the demo audit CLI can write local
   manifest and JSONL trace sidecars for reproducibility and debugging.
+- Local batch orchestration helpers live under `src/portfolio_os/orchestration`
+  and provide deterministic, failure-isolated candidate runs with per-run
+  provenance manifests.
 
 These project areas are intentionally separate. They do not create a trading bot, place orders, call brokers, or fabricate backtest output.
 

@@ -149,6 +149,12 @@ Structured trace tests:
 PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_observability_trace.py -q
 ```
 
+Local batch orchestrator tests:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_local_batch_orchestrator.py -q
+```
+
 Run a focused subset when touching optimizer, cost, execution, backtest, replay, scenario, or alpha bridge code:
 
 ```bash
