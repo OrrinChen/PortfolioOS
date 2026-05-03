@@ -28,10 +28,11 @@ Completed:
 - Phase 21: Evidence bundle schema validates PIT safety, leakage checks, planned tests, and deterministic JSON without trading outputs.
 - Phase 22: Promotion gate contract creates a typed Q1-to-Q2 handoff decision without direct Q2 execution.
 - Phase 23: Q2 execution evaluation matrix records scenario robustness across cost, participation, liquidity, constraints, and execution modes.
+- Phase 24: Decision explainability taxonomy maps rejection, promotion, and Q2 unavailable statuses to structured audit explanations.
 
 Current phase:
 
-- Phase 24: Decision Explainability Layer.
+- Phase 25: Unified Audit Report.
 
 Deferred:
 
@@ -567,10 +568,10 @@ Audit-ready systems should turn failed experiments into actionable records rathe
 
 Tasks:
 
-- [ ] Add explanation taxonomy modules for leakage, timestamp, coverage, promotion, Q2 availability, cost retention, and execution risk.
-- [ ] Produce structured explanations with decision, primary reason, severity, human-readable message, and fix hint.
-- [ ] Integrate explanations with Q1 rejections, promotion decisions, and Q2 unavailable rows where stable hooks exist.
-- [ ] Add tests for critical rejection categories.
+- [x] Add explanation taxonomy modules for leakage, timestamp, coverage, promotion, Q2 availability, cost retention, and execution risk.
+- [x] Produce structured explanations with decision, primary reason, severity, human-readable message, and fix hint.
+- [x] Integrate explanations with Q1 rejections, promotion decisions, and Q2 unavailable rows where stable hooks exist.
+- [x] Add tests for critical rejection categories.
 
 Acceptance criteria:
 

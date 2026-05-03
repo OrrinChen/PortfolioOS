@@ -96,6 +96,12 @@ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/promotion_gate/src:projects/eviden
 
 ## PortfolioOS Core
 
+Decision explainability tests:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_decision_explainability.py -q
+```
+
 Run a focused subset when touching optimizer, cost, execution, backtest, replay, scenario, or alpha bridge code:
 
 ```bash

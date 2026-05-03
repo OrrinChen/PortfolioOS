@@ -117,6 +117,9 @@ Phase 23 adds an execution matrix over:
 Each scenario records a deterministic `source_config_hash`. The matrix delegates
 portfolio construction to the existing ladder adapter, so default configs still
 produce structured unavailable rows rather than fake scenario returns.
+Unavailable rows also carry structured explanation metadata from
+`portfolio_os.explain`, including `primary_reason`, `severity`,
+`human_readable`, and `fix_hint`.
 
 Run the matrix without enabling PortfolioOS execution:
 

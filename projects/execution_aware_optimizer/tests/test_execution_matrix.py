@@ -64,6 +64,9 @@ def test_execution_matrix_preserves_unavailable_rows_and_scenario_metadata() -> 
     assert row.status == "unavailable"
     assert row.unavailable_reason == row.infeasibility_reason
     assert "PortfolioOS run disabled by config" in row.unavailable_reason
+    assert row.explanation is not None
+    assert row.explanation["primary_reason"] == "q2_adapter_unavailable"
+    assert row.explanation["decision"] == "unavailable"
     assert row.net_return is None
 
 

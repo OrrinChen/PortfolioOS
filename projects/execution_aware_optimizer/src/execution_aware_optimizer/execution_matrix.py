@@ -6,6 +6,8 @@ from typing import Literal
 
 import pandas as pd
 
+from portfolio_os.explain import explain_q2_unavailable
+
 from execution_aware_optimizer.experiment_config import ExperimentConfig
 from execution_aware_optimizer.ladder import BacktestRunner, LadderResultRow, run_alpha_decay_ladder
 from execution_aware_optimizer.scenario_grid import (
@@ -32,6 +34,7 @@ class ExecutionMatrixRow(LadderResultRow):
     execution_mode: ExecutionMode
     status: MatrixRowStatus
     unavailable_reason: str | None = None
+    explanation: dict[str, str] | None = None
 
 
 def run_execution_matrix(
@@ -71,6 +74,9 @@ def _matrix_row_from_ladder(
     row: LadderResultRow,
 ) -> ExecutionMatrixRow:
     status: MatrixRowStatus = "observed" if _has_observed_values(row) else "unavailable"
+    explanation = None
+    if status == "unavailable" and row.infeasibility_reason:
+        explanation = explain_q2_unavailable(row.infeasibility_reason).model_dump(mode="json")
     return ExecutionMatrixRow(
         **row.model_dump(mode="json"),
         scenario_id=scenario.scenario_id,
@@ -82,6 +88,7 @@ def _matrix_row_from_ladder(
         execution_mode=scenario.execution_mode,
         status=status,
         unavailable_reason=row.infeasibility_reason if status == "unavailable" else None,
+        explanation=explanation,
     )
 
 

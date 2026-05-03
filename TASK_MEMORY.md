@@ -13,6 +13,13 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - Current standalone project shells:
   - Q1 = `projects/agentic_alpha_triage`, asks "Is this alpha real?", and contains schemas/contracts plus validated example artifacts.
   - Q2 = `projects/execution_aware_optimizer`, asks "Can this alpha survive execution?", and contains a PortfolioOS-aware project shell with explicit unavailable-layer reporting.
+- Phase 24 Decision Explainability layer is complete:
+  - `src/portfolio_os/explain/rejection_taxonomy.py` defines `DecisionExplanation` plus deterministic explanations for forward-return leakage, timestamp/PIT failures, unsafe anchors, missing coverage, missing costs, unbounded horizons, Q2 adapter gaps, cost retention, and execution risk.
+  - `src/portfolio_os/explain/promotion_explainer.py` explains promotion-gate decisions without importing project-specific schemas.
+  - `src/portfolio_os/explain/optimizer_explainer.py` explains Q2 unavailable rows.
+  - `src/portfolio_os/explain/report_sections.py` renders deterministic markdown explanation tables.
+  - Q2 execution matrix rows now carry structured explanation metadata for unavailable rows.
+  - validation: decision explainability tests `5 passed`; Q2 execution matrix tests `4 passed`.
 - Phase 23 Q2 execution evaluation matrix is complete:
   - `projects/execution_aware_optimizer/src/execution_aware_optimizer/scenario_grid.py` builds deterministic scenario ids and source config hashes across cost, participation, liquidity, constraint, and execution-mode dimensions.
   - `projects/execution_aware_optimizer/src/execution_aware_optimizer/execution_matrix.py` delegates scenario/layer runs to the existing ladder adapter and records observed vs unavailable matrix rows.
@@ -136,7 +143,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - non-mutating cost-sensitivity scenarios live in `projects/execution_aware_optimizer/src/execution_aware_optimizer/cost_sensitivity.py`.
   - Q2 README documents each ladder layer as partial or unavailable.
   - validation: Q2 tests `11 passed`; relevant PortfolioOS subset `64 passed, 36 warnings`; default Q2 smoke scripts passed without enabling PortfolioOS execution.
-- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 24 and add a decision explainability layer for Q1 rejections, promotion decisions, and Q2 unavailable rows.
+- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 25 and add a unified audit report that connects Q1 checks, promotion decisions, Q2 execution evaluation, and reproducibility placeholders.
 - Core platform buildout through Phase 12 is implemented and stable.
 - The current project-wide meta stage is `research convergence + promotion contract`, not repo merge.
 - Project operating mode is now `paper-stage only`.
