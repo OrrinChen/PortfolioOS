@@ -54,6 +54,18 @@ Run Alpha Projection Bridge v2 tests:
 PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_alpha_projection_bridge_v2.py -q
 ```
 
+Run paper overlay readiness tests:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_paper_overlay_readiness.py -q
+```
+
+Build paper overlay readiness artifacts from local observations only:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src poetry run python scripts/run_paper_overlay_calibration_batch.py --observations outputs/paper_calibration_aggregate/drift_observations.csv --output-dir /tmp/portfolioos_paper_overlay_readiness
+```
+
 Run the no-network guard self-test:
 
 ```bash

@@ -165,6 +165,9 @@ Q1 Alpha Triage -> Evidence Bundle -> Promotion Gate -> Q2 Execution-Aware Evalu
   `projects/execution_aware_optimizer/src/execution_aware_optimizer/typed_execution_matrix.py`
   and consume Q2InputContract v2 plus projection artifacts without fabricating
   execution results.
+- Paper overlay readiness helpers live under
+  `src/portfolio_os/paper/overlay_readiness.py` and summarize paper execution
+  observations as environment calibration only, not alpha validation.
 
 These project areas are intentionally separate. They do not create a trading bot, place orders, call brokers, or fabricate backtest output.
 

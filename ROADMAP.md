@@ -44,10 +44,11 @@ Completed:
 - Phase 37: Alpha Projection Bridge v2 projects typed AlphaViews into rebalance-period expected-return panels with diagnostics and explicit abstain reports.
 - Phase 38: Promotion Gate v2 emits expected-return-panel Q2 input contracts from EvidenceBundle, AlphaView, and projection manifests without running Q2.
 - Phase 39: Q2 typed alpha execution matrix consumes Q2InputContract v2 and projection artifacts while keeping execution rows explicitly unavailable.
+- Phase 40: Paper overlay readiness aggregates local paper observations as execution-environment calibration only.
 
 Current phase:
 
-- Phase 40: Paper Overlay Calibration Lane.
+- Phase 41: First Real Typed Alpha Pilot.
 
 Deferred:
 
@@ -1129,10 +1130,10 @@ Outputs:
 
 Tasks:
 
-- [ ] Add paper-overlay readiness schema and local aggregation contract.
-- [ ] Keep repeated SPY one-share sampling behind explicit user command.
-- [ ] Separate staleness bias, noise floor, and paper venue quirks.
-- [ ] Document that paper overlay is execution environment calibration only.
+- [x] Add paper-overlay readiness schema and local aggregation contract.
+- [x] Keep repeated SPY one-share sampling behind explicit user command.
+- [x] Separate staleness bias, noise floor, and paper venue quirks.
+- [x] Document that paper overlay is execution environment calibration only.
 
 Acceptance criteria:
 

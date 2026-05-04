@@ -48,6 +48,12 @@ Alpha Projection Bridge v2 tests:
 PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_alpha_projection_bridge_v2.py -q
 ```
 
+Paper overlay readiness tests:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_paper_overlay_readiness.py -q
+```
+
 ## Q1 Project
 
 Run when touching `projects/agentic_alpha_triage`:
