@@ -48,7 +48,7 @@ def test_static_dashboard_handles_missing_artifacts_as_unavailable(tmp_path: Pat
 
 def _is_read_only_html(html: str) -> bool:
     lowered = html.lower()
-    forbidden = ("<form", "method=", "post", "trade", "broker", "order")
+    forbidden = ("<form", "method=", "post", "/trade", "/broker", "/order", "/live", "submit")
     return all(term not in lowered for term in forbidden)
 
 

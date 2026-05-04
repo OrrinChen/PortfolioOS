@@ -32,8 +32,15 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - Phase 43 locks demo-v2 artifact contracts, typed-alpha schema versions, forbidden-output guard coverage, and release-candidate notes.
   - Phase 44 Demo v2 Golden Snapshot Tests is now complete.
   - Phase 45 Typed Alpha Closeout Report is now complete.
-  - Phase 46 Dashboard Readability Polish is the next optional phase.
+  - Phase 46 Dashboard Readability Polish is now complete.
+  - Current roadmap status is optional later phases complete.
   - forbidden next work remains new alpha research, live data refreshes, broker/order paths, production approval language, fake Q2 metrics, and optimizer retuning.
+- Phase 46 Dashboard Readability Polish is complete:
+  - `src/portfolio_os/dashboard/static_dashboard.py` now renders a first-screen typed-alpha status summary, typed-alpha chain, artifact links, manifest summary, clearer safety boundaries, and missing-artifact unavailable messaging.
+  - Dashboard wording explicitly distinguishes integration benchmark, unavailable/local paper-overlay execution state, no broker/orders/live workflow, and not-approved production state.
+  - The dashboard remains static read-only and exposes no forms, POST methods, route-like broker/order/trade/live paths, submit controls, or workflow triggers.
+  - `tests/test_typed_alpha_dashboard_readability.py` guards the readability surface and missing-artifact behavior.
+  - validation: typed alpha dashboard readability tests `2 passed`; demo-v2/static/golden dashboard focused tests `8 passed`.
 - Phase 45 Typed Alpha Closeout Report is complete:
   - `scripts/build_typed_alpha_closeout_report.py` writes a deterministic local closeout memo.
   - `reports/typed_alpha_closeout_report.md` records Phase 35-42 scope, what the typed-alpha work proves, what it does not prove, known limitations, reproducibility commands, and next allowed work.

@@ -95,6 +95,9 @@ These artifacts are generated locally and ignored by git.
 
 The demo-v2 release manifest records local-only status, schema versions, the
 typed-alpha chain, and explicit non-approval flags.
+The demo-v2 dashboard includes a first-screen status summary, typed-alpha chain,
+artifact links, manifest summary, unavailable-artifact handling, and safety
+boundaries while remaining static and read-only.
 
 `reports/typed_alpha_closeout_report.md` is the deterministic closeout memo for
 Phase 35-42 plus release hardening. It states what the typed-alpha chain proves,

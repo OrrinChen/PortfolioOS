@@ -61,6 +61,12 @@ make typed-alpha-closeout
 PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_typed_alpha_closeout_report.py -q
 ```
 
+Run typed alpha dashboard readability tests:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_typed_alpha_dashboard_readability.py -q
+```
+
 Run AlphaView contract tests:
 
 ```bash

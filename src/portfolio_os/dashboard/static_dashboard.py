@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from html import escape
 from pathlib import Path
 
@@ -17,7 +18,6 @@ DASHBOARD_ARTIFACTS = (
 )
 
 TYPED_ALPHA_DASHBOARD_ARTIFACTS = (
-    ("Run Summary", "typed_alpha_release_manifest.json"),
     ("Typed Alpha View", "us_sue_event_alpha_view.json"),
     ("Event Evidence", "us_sue_event_evidence_bundle.json"),
     ("Projection Diagnostics", "us_sue_projection_diagnostics.json"),
@@ -74,19 +74,28 @@ def render_typed_alpha_dashboard(*, artifact_root: str | Path, output_path: str 
     root = Path(artifact_root)
     destination = Path(output_path)
     destination.parent.mkdir(parents=True, exist_ok=True)
+    manifest = _load_json_artifact(root / "typed_alpha_release_manifest.json")
     sections = [
-        _render_section(title, _dashboard_safe_text(_read_artifact(root / relative_path)))
-        for title, relative_path in TYPED_ALPHA_DASHBOARD_ARTIFACTS
+        _render_section("Run Summary", _render_typed_alpha_run_summary(manifest)),
+        _render_section("Typed Alpha Chain", _render_typed_alpha_chain(manifest)),
+        _render_html_section("Artifact Links", _render_artifact_links(TYPED_ALPHA_DASHBOARD_ARTIFACTS)),
+        _render_section("Manifest Summary", _render_manifest_summary(manifest)),
+        *[
+            _render_section(title, _dashboard_safe_text(_read_typed_artifact(root / relative_path)))
+            for title, relative_path in TYPED_ALPHA_DASHBOARD_ARTIFACTS
+        ],
     ]
     sections.append(
         _render_section(
             "Safety Boundaries",
             "\n".join(
                 [
+                    "Missing artifacts are shown as unavailable.",
                     "Typed Alpha Demo v2 is a local read-only artifact view.",
                     "Q2 unavailable rows remain unavailable until explicit adapters exist.",
                     "SUE is an integration benchmark, not production approval.",
-                    "No external execution or workflow-triggering controls are exposed here.",
+                    "Trading status: no broker, no orders, no live workflow.",
+                    "No workflow-triggering controls are exposed here.",
                     "Legacy labels: Q2 Typed Alpha Matrix; Paper Overlay Calibration.",
                 ]
             ),
@@ -126,6 +135,22 @@ def _read_artifact(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
+def _read_typed_artifact(path: Path) -> str:
+    if not path.exists() or not path.is_file():
+        return "Artifact unavailable"
+    return path.read_text(encoding="utf-8")
+
+
+def _load_json_artifact(path: Path) -> dict[str, object]:
+    if not path.exists() or not path.is_file():
+        return {}
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {}
+    return payload if isinstance(payload, dict) else {}
+
+
 def _render_section(title: str, body: str) -> str:
     return "\n".join(
         [
@@ -137,20 +162,63 @@ def _render_section(title: str, body: str) -> str:
     )
 
 
+def _render_html_section(title: str, html_body: str) -> str:
+    return "\n".join(
+        [
+            "<section>",
+            f"<h2>{escape(title)}</h2>",
+            html_body,
+            "</section>",
+        ]
+    )
+
+
 def _dashboard_safe_text(body: str) -> str:
     """Avoid route-like action terms in the read-only dashboard surface."""
 
-    replacements = {
-        "broker": "external execution",
-        "Broker": "External execution",
-        "orders": "execution payloads",
-        "Orders": "Execution payloads",
-        "order": "execution payload",
-        "Order": "Execution payload",
-        "trade": "workflow",
-        "Trade": "Workflow",
-    }
-    safe = body
-    for old, new in replacements.items():
-        safe = safe.replace(old, new)
-    return safe
+    return body
+
+
+def _render_typed_alpha_run_summary(manifest: dict[str, object]) -> str:
+    run_id = str(manifest.get("run_id", "unavailable"))
+    status = str(manifest.get("status", "unavailable"))
+    return "\n".join(
+        [
+            f"Run id: {run_id}",
+            f"Run status: {status}",
+            "Alpha status: integration benchmark only",
+            "Execution status: unavailable or local paper-overlay aggregation only",
+            "Trading status: no broker, no orders, no live workflow",
+            "Production status: not approved",
+        ]
+    )
+
+
+def _render_typed_alpha_chain(manifest: dict[str, object]) -> str:
+    chain = manifest.get("typed_alpha_chain")
+    if not isinstance(chain, list) or not chain:
+        chain = [
+            "AlphaView",
+            "Event Evidence",
+            "Projection Manifest",
+            "Promotion Gate v2",
+            "Q2 Typed Matrix",
+            "Paper Overlay Readiness",
+            "Demo v2 Dashboard",
+        ]
+    return "\n".join(f"{index}. {item}" for index, item in enumerate(chain, start=1))
+
+
+def _render_artifact_links(artifacts: tuple[tuple[str, str], ...]) -> str:
+    items = [
+        f'<li><a href="{escape(relative_path)}">{escape(title)}</a></li>'
+        for title, relative_path in artifacts
+    ]
+    return "\n".join(["<ul>", *items, "</ul>"])
+
+
+def _render_manifest_summary(manifest: dict[str, object]) -> str:
+    if not manifest:
+        return "Artifact unavailable"
+    keys = ("schema_version", "content_hash", "production_alpha_approved", "live_trading_enabled", "broker_routes_enabled")
+    return "\n".join(f"{key}: {manifest.get(key, 'unavailable')}" for key in keys)

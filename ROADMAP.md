@@ -50,10 +50,11 @@ Completed:
 - Phase 43: Typed Alpha Release Candidate Hardening locks demo-v2 schema versions, release manifest, forbidden-output guard coverage, and release notes.
 - Phase 44: Demo v2 Golden Snapshot Tests lock required artifact shapes, release-manifest keys, dashboard sections, and unavailable-row semantics.
 - Phase 45: Typed Alpha Closeout Report writes a deterministic closeout memo with explicit proof, non-proof, limitation, and reproducibility sections.
+- Phase 46: Dashboard Readability Polish adds first-screen status, typed-alpha chain, artifact links, manifest summary, and unavailable-artifact messaging without workflow controls.
 
 Current phase:
 
-- Phase 46: Dashboard Readability Polish (optional next phase).
+- Optional later phases complete.
 
 Deferred:
 
@@ -1374,7 +1375,7 @@ Acceptance criteria:
 ## Phase 46: Dashboard Readability Polish
 
 Status:
-Next optional phase.
+Completed.
 
 Goal:
 Improve demo-v2 readability without adding functionality or changing business
