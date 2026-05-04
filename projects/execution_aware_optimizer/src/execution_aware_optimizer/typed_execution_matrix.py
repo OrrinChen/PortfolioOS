@@ -21,6 +21,10 @@ from execution_aware_optimizer.scenario_grid import (
     LiquidityBucket,
     build_scenario_grid,
 )
+from portfolio_os.alpha.schema_versions import (
+    Q2_INPUT_CONTRACT_V2_SCHEMA_VERSION,
+    Q2_TYPED_MATRIX_SCHEMA_VERSION,
+)
 
 
 ProjectionPolicy = Literal[
@@ -39,6 +43,7 @@ class TypedQ2InputContractV2(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
+    schema_version: Literal["q2_input_contract.v2"] = Q2_INPUT_CONTRACT_V2_SCHEMA_VERSION
     bundle_id: str
     alpha_view_id: str
     input_type: Literal["projected_expected_return_panel"] = "projected_expected_return_panel"
@@ -61,6 +66,7 @@ class TypedQ2InputContractV2(BaseModel):
 class TypedExecutionMatrixRow(BaseModel):
     """One typed alpha scenario row in Q2."""
 
+    schema_version: Literal["q2_typed_matrix.v1"] = Q2_TYPED_MATRIX_SCHEMA_VERSION
     scenario_id: str
     source_config_hash: str
     cost_bps: int

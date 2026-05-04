@@ -42,6 +42,12 @@ Run the typed alpha local demo v2:
 make demo-v2
 ```
 
+Run typed alpha release-candidate hardening tests:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_typed_alpha_release_candidate.py -q
+```
+
 Run AlphaView contract tests:
 
 ```bash

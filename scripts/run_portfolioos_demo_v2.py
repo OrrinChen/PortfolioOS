@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
+import json
 import sys
 from pathlib import Path
 
@@ -22,6 +24,10 @@ for path in (
         sys.path.insert(0, str(path))
 
 from portfolio_os.dashboard import render_typed_alpha_dashboard  # noqa: E402
+from portfolio_os.alpha.schema_versions import (  # noqa: E402
+    TYPED_ALPHA_RELEASE_MANIFEST_SCHEMA_VERSION,
+    TYPED_ALPHA_SCHEMA_VERSIONS,
+)
 from portfolio_os.paper.overlay_readiness import (  # noqa: E402
     assess_paper_overlay_readiness,
     write_paper_overlay_readiness_artifacts,
@@ -53,6 +59,7 @@ def main() -> None:
     )
     write_paper_overlay_readiness_artifacts(paper_result, output_dir)
     render_typed_alpha_dashboard(artifact_root=output_dir, output_path=output_dir / "dashboard_v2.html")
+    _write_release_manifest(output_dir)
 
     print(f"portfolioos_demo_v2: {output_dir}")
 
@@ -84,6 +91,37 @@ def _demo_paper_observations() -> pd.DataFrame:
             },
         ]
     )
+
+
+def _write_release_manifest(output_dir: Path) -> Path:
+    artifact_files = sorted(path.name for path in output_dir.iterdir() if path.is_file())
+    payload: dict[str, object] = {
+        "schema_version": TYPED_ALPHA_RELEASE_MANIFEST_SCHEMA_VERSION,
+        "run_id": "demo_v2",
+        "status": "release_candidate_local_only",
+        "typed_alpha_chain": [
+            "AlphaView",
+            "Event Evidence",
+            "Projection Manifest",
+            "Promotion Gate v2",
+            "Q2 Typed Matrix",
+            "Paper Overlay Readiness",
+            "Demo v2 Dashboard",
+        ],
+        "schema_versions": TYPED_ALPHA_SCHEMA_VERSIONS,
+        "artifact_files": artifact_files,
+        "production_alpha_approved": False,
+        "live_trading_enabled": False,
+        "broker_routes_enabled": False,
+        "orders_generated": False,
+        "realized_alpha_performance_claimed": False,
+    }
+    payload["content_hash"] = hashlib.sha256(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    destination = output_dir / "typed_alpha_release_manifest.json"
+    destination.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return destination
 
 
 if __name__ == "__main__":

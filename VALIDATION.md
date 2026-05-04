@@ -36,6 +36,12 @@ Typed alpha demo-v2 smoke:
 make demo-v2
 ```
 
+Typed alpha release-candidate hardening tests:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_typed_alpha_release_candidate.py -q
+```
+
 Typed AlphaView contract tests:
 
 ```bash

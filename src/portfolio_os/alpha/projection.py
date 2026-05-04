@@ -17,10 +17,11 @@ from typing import Any, Sequence
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from portfolio_os.alpha.projection_diagnostics import build_projection_diagnostic_row
+from portfolio_os.alpha.schema_versions import PROJECTION_MANIFEST_SCHEMA_VERSION
 from portfolio_os.alpha.view_contract import AlphaView, ExpectedReturnEntry
 
 
-PROJECTION_SCHEMA_VERSION = "alpha_projection.v2"
+PROJECTION_SCHEMA_VERSION = PROJECTION_MANIFEST_SCHEMA_VERSION
 PROJECTION_ARTIFACTS = (
     "expected_return_panel.csv",
     "alpha_projection_manifest.json",

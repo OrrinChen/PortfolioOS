@@ -47,10 +47,11 @@ Completed:
 - Phase 40: Paper overlay readiness aggregates local paper observations as execution-environment calibration only.
 - Phase 41: SUE typed alpha pilot writes the local AlphaView -> Evidence -> Projection -> Promotion v2 -> Q2 matrix artifact chain.
 - Phase 42: Typed Alpha Demo v2 adds `make demo-v2` and read-only dashboard sections for typed alpha artifacts.
+- Phase 43: Typed Alpha Release Candidate Hardening locks demo-v2 schema versions, release manifest, forbidden-output guard coverage, and release notes.
 
 Current phase:
 
-- Optional later phases only.
+- Phase 44: Demo v2 Golden Snapshot Tests (optional next phase).
 
 Deferred:
 
@@ -157,6 +158,7 @@ Do not:
 | Phase 33-34 | One-command demo, architecture docs, case study | Interview-ready artifact |
 | Phase 35-38 | Typed alpha view, event evidence, projection, promotion v2 | Alpha realism / contracts |
 | Phase 39-42 | Typed Q2 matrix, paper overlay, pilot, dashboard v2 | Research-to-paper closed loop |
+| Phase 43-46 | Typed alpha release hardening, golden checks, closeout, dashboard readability | Demo reliability / audit handoff |
 
 ## Phase 4: Q2 Adapter Hardening
 
@@ -1220,11 +1222,188 @@ Acceptance criteria:
 
 ## Optional Later Phases
 
-Potential follow-on work after Phase 42:
+These phases are optional hardening and packaging work after the completed
+platform and typed-alpha roadmaps. They must not reopen alpha mining, live
+trading, broker/order workflows, production alpha approval, or broad optimizer
+tuning.
 
-- typed alpha service hardening
-- dashboard polish
-- batch scaling beyond local fixtures
-- additional read-only artifact APIs
-- broader provenance integration across legacy PortfolioOS CLIs
-- real data refresh workflows only under explicit credential and data-governance approval
+## Phase 43: Typed Alpha Release Candidate Hardening
+
+Status:
+Completed.
+
+Goal:
+Freeze the completed Phase 35-42 typed-alpha chain into a stable, auditable,
+repeatable release surface that cannot be easily misread as production alpha
+approval.
+
+Release surface:
+
+```text
+AlphaView
+  -> Event Evidence
+  -> Projection Manifest
+  -> Promotion Gate v2
+  -> Q2 Typed Matrix
+  -> Paper Overlay Readiness
+  -> Demo v2 Dashboard
+```
+
+Why next:
+The typed-alpha workflow now runs as a deterministic local artifact demo. The
+next useful work is not another alpha feature; it is to lock the artifact shape,
+schema versions, forbidden-output boundaries, and release notes so future
+changes cannot silently break or overstate the story.
+
+Target work:
+
+- Add demo-v2 golden artifact contract tests for required local artifacts.
+- Lock typed-alpha schema versions in one importable module.
+- Extend forbidden-output regression guards across typed-alpha artifacts.
+- Clarify demo-v2 dashboard wording only where it prevents misuse or overclaim.
+- Add typed-alpha v0.1 release-candidate notes with reproduction commands and
+  explicit non-claims.
+- Keep generated artifacts local and ignored under `outputs/demo_v2/`.
+
+Acceptance criteria:
+
+- `make demo-v2` passes.
+- `make validate` passes.
+- `git diff --check` passes.
+- Demo-v2 required artifacts are present and carry explicit schema versions.
+- Golden contract tests verify the typed-alpha chain remains visible:
+  AlphaView -> Evidence -> Projection -> Promotion v2 -> Q2 -> Audit.
+- Forbidden-output guards cover AlphaView, projection, promotion v2, Q2 typed
+  matrix, paper overlay readiness, audit report, and dashboard artifacts.
+- Q2 unavailable rows remain explicitly unavailable and never contain fabricated
+  returns, turnover, cost drag, or gross-to-net retention.
+- Release candidate notes document what is complete, what is not claimed, how to
+  reproduce it, and current limitations.
+
+Do not:
+
+- add new alpha research
+- run live SEC/FMP/WRDS/Alpaca workflows
+- add broker, order, trade, rebalance, or live execution routes
+- promote SUE, revision, residual momentum, or any alpha into production config
+- claim production alpha approval, realized alpha performance, or live trading
+  readiness
+- fill unavailable Q2 rows with synthetic numbers
+
+Suggested commit split:
+
+- `test: add demo v2 golden artifact regression`
+- `feat: lock typed alpha schema versions`
+- `test: extend forbidden output guards for typed alpha`
+- `docs: add typed alpha release candidate notes`
+
+## Phase 44: Demo v2 Golden Snapshot Tests
+
+Status:
+Next optional phase.
+
+Goal:
+Make `make demo-v2` a stable regression surface by checking artifact structure
+and dashboard sections without brittle full-HTML snapshots.
+
+Target work:
+
+- Add golden expected artifact-shape fixtures under `tests/golden/`.
+- Snapshot required manifest keys and dashboard section headings.
+- Verify required unavailable-row semantics.
+- Verify forbidden trading, broker, order, live, and production-approval claims
+  are absent.
+
+Acceptance criteria:
+
+- `make demo-v2` generates all expected local artifacts.
+- Required dashboard sections are present:
+  Run Summary, Typed Alpha View, Event Evidence, Projection Diagnostics,
+  Promotion Gate v2, Q2 Typed Alpha Execution Matrix, Paper Overlay Readiness,
+  Audit Report, Reproducibility Manifest, and Safety Boundaries.
+- Golden tests fail if the AlphaView -> Evidence -> Projection -> Promotion v2
+  -> Q2 -> Audit chain is broken.
+- Tests avoid full HTML string snapshots unless the output is intentionally
+  stable and compact.
+
+Do not:
+
+- treat golden snapshots as permission to fabricate data
+- snapshot machine-specific timestamps or local absolute paths
+- add new workflow triggers
+
+## Phase 45: Typed Alpha Closeout Report
+
+Status:
+Optional after Phase 43.
+
+Goal:
+Produce a concise closeout memo explaining what Phase 35-42 proved, what it did
+not prove, and why no production alpha approval is claimed.
+
+Target output:
+
+- `reports/typed_alpha_closeout_report.md`
+- optional builder script if the report should be regenerated from local
+  demo-v2 artifacts
+- tests that guard the report's non-claim language
+
+Required sections:
+
+- Scope
+- What This Proves
+- What This Does Not Prove
+- Known Limitations
+- Reproducibility Commands
+- Next Allowed Work
+
+Acceptance criteria:
+
+- Report builds deterministically from committed fixtures or local demo-v2
+  outputs.
+- Report explicitly says there is no live alpha approval, production trading
+  approval, broker integration approval, order generation, or realized alpha
+  performance claim.
+- Report states that Q2 typed rows may remain unavailable and that paper overlay
+  readiness is environment calibration only.
+- Report does not include orders, broker output, live performance, trading
+  instructions, or production approval language.
+
+## Phase 46: Dashboard Readability Polish
+
+Status:
+Optional after Phase 43 and preferably after Phase 44.
+
+Goal:
+Improve demo-v2 readability without adding functionality or changing business
+logic.
+
+Allowed work:
+
+- clearer section ordering
+- compact typed-alpha chain diagram
+- artifact links
+- manifest summary
+- better unavailable-row explanations
+- first-screen status summary that says:
+  - Alpha status: integration benchmark only
+  - Execution status: unavailable or local paper-overlay aggregation only
+  - Trading status: no broker, no orders, no live workflow
+  - Production status: not approved
+
+Acceptance criteria:
+
+- `make demo-v2` still passes.
+- Dashboard golden section tests pass.
+- Forbidden-output tests pass.
+- Missing artifacts render as structured unavailable, not blank or misleading.
+- No forms, POST methods, broker routes, order routes, trade routes, live
+  execution routes, or workflow-triggering controls are added.
+
+Do not:
+
+- add new alpha logic
+- add evaluator logic
+- add broker/live routes
+- fake Q2 metrics
+- add production approval language

@@ -15,12 +15,12 @@ from typing import Any, Literal, Sequence, Self
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from portfolio_os.alpha.schema_versions import EVENT_EVIDENCE_SCHEMA_VERSION
 from portfolio_os.alpha.view_contract import AlphaView
 
 
 EventLabelType = Literal["event_window", "to_next_announcement"]
 
-EVENT_EVIDENCE_SCHEMA_VERSION = "event_evidence_bundle.v1"
 EVENT_EVIDENCE_ARTIFACTS = (
     "event_evidence_bundle.json",
     "event_window_grid.csv",

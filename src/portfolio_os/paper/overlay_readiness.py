@@ -15,6 +15,8 @@ from typing import Any, Sequence
 
 import pandas as pd
 
+from portfolio_os.alpha.schema_versions import PAPER_OVERLAY_READINESS_SCHEMA_VERSION
+
 
 SUMMARY_ARTIFACT = "paper_overlay_calibration_summary.json"
 LATENCY_BUCKETS_ARTIFACT = "paper_overlay_latency_buckets.csv"
@@ -89,6 +91,7 @@ def assess_paper_overlay_readiness(
     spread_capture = _spread_capture_rows(frame)
     observation_count = int(len(frame))
     summary = {
+        "schema_version": PAPER_OVERLAY_READINESS_SCHEMA_VERSION,
         "scope": "paper_overlay_execution_environment_calibration_only",
         "alpha_promotion_allowed": False,
         "production_config_update_allowed": False,

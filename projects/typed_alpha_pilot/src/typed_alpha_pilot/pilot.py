@@ -143,6 +143,7 @@ def run_sue_typed_alpha_pilot(
         artifacts["us_sue_q2_matrix.csv"],
         [row.model_dump(mode="json") for row in q2_rows],
         [
+            "schema_version",
             "scenario_id",
             "source_config_hash",
             "cost_bps",

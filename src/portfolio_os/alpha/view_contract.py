@@ -13,6 +13,8 @@ from typing import Any, Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from portfolio_os.alpha.schema_versions import ALPHA_VIEW_SCHEMA_VERSION
+
 
 MechanismType = Literal["event", "state_transition", "fixed_horizon", "residual_factor"]
 HorizonType = Literal["event_window", "to_next_event", "rebalance_period", "state_exit"]
@@ -122,6 +124,7 @@ class AlphaView(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
+    schema_version: Literal["alpha_view.v1"] = ALPHA_VIEW_SCHEMA_VERSION
     alpha_view_id: str
     family_id: str
     mechanism_type: MechanismType

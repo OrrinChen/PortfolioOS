@@ -6,6 +6,11 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from portfolio_os.alpha.schema_versions import (
+    PROMOTION_DECISION_V2_SCHEMA_VERSION,
+    Q2_INPUT_CONTRACT_V2_SCHEMA_VERSION,
+)
+
 
 PromotionDecisionType = Literal["promote_to_execution_eval", "reject", "needs_more_evidence"]
 
@@ -86,6 +91,7 @@ class Q2InputContractV2(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
+    schema_version: Literal["q2_input_contract.v2"] = Q2_INPUT_CONTRACT_V2_SCHEMA_VERSION
     bundle_id: str
     alpha_view_id: str
     input_type: Literal["projected_expected_return_panel"] = "projected_expected_return_panel"
@@ -124,6 +130,7 @@ class PromotionDecisionV2(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
+    schema_version: Literal["promotion_decision.v2"] = PROMOTION_DECISION_V2_SCHEMA_VERSION
     bundle_id: str
     alpha_view_id: str | None = None
     decision: PromotionDecisionType

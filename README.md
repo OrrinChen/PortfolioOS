@@ -77,6 +77,25 @@ validation, report generation, focused regression tests, and audit report tests.
 
 These artifacts are generated locally and ignored by git.
 
+`outputs/demo_v2/` contains the typed-alpha release-candidate surface:
+
+- `typed_alpha_release_manifest.json`
+- `us_sue_event_alpha_view.json`
+- `us_sue_event_evidence_bundle.json`
+- `us_sue_projection_manifest.json`
+- `us_sue_projection_panel.csv`
+- `us_sue_projection_diagnostics.json`
+- `us_sue_abstain_report.json`
+- `us_sue_promotion_decision_v2.json`
+- `us_sue_q2_matrix.csv`
+- `us_sue_audit_report.md`
+- `paper_overlay_calibration_summary.json`
+- `paper_overlay_readiness.md`
+- `dashboard_v2.html`
+
+The demo-v2 release manifest records local-only status, schema versions, the
+typed-alpha chain, and explicit non-approval flags.
+
 ## Safety Boundaries
 
 - No broker route is exposed by Q1, Q2, the promotion gate, the artifact service,
