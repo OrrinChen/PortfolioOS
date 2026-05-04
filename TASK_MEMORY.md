@@ -23,9 +23,16 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - Phase 39 Q2 Typed Alpha Execution Matrix is now complete.
   - Phase 40 Paper Overlay Calibration Lane is now complete.
   - Phase 41 First Real Typed Alpha Pilot is now complete for the local SUE integration benchmark.
+  - Phase 42 Typed Alpha Demo v2 is now complete.
   - core rule: `no_view != zero_alpha`; missing alpha coverage must be explicit abstain, not silently encoded as zero alpha.
   - the new roadmap keeps Q1, Evidence Bundle, Promotion Gate, Q2, paper overlay, and dashboard boundaries separate.
   - live paper overlay calibration, live data refreshes, and broker paths remain explicit opt-in work only.
+- Phase 42 Typed Alpha Demo v2 is complete:
+  - `scripts/run_portfolioos_demo_v2.py` writes deterministic typed-alpha artifacts under `outputs/demo_v2/` by default.
+  - `make demo-v2` runs the local SUE typed pilot, paper overlay readiness fixture, and read-only typed alpha dashboard renderer.
+  - `src/portfolio_os/dashboard/static_dashboard.py` now includes a typed-alpha dashboard renderer with sections for Typed Alpha View, Event Evidence, Projection Diagnostics, Abstain Report, Q2 Typed Alpha Matrix, and Paper Overlay Calibration.
+  - dashboard v2 remains static read-only and exposes no forms, POST methods, trade routes, order routes, broker routes, or workflow triggers.
+  - validation: demo-v2/static dashboard tests `4 passed`; `make demo-v2` smoke passed; `make validate` passed.
 - Phase 41 First Real Typed Alpha Pilot is complete:
   - `projects/typed_alpha_pilot/src/typed_alpha_pilot/pilot.py` builds deterministic local SUE artifacts across AlphaView, Event Evidence, Projection Bridge v2, Promotion Gate v2, and Q2 Typed Alpha Matrix.
   - output names include `us_sue_event_alpha_view.json`, `us_sue_event_evidence_bundle.json`, `us_sue_projection_panel.csv`, `us_sue_q2_matrix.csv`, and `us_sue_audit_report.md`.
@@ -266,7 +273,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - non-mutating cost-sensitivity scenarios live in `projects/execution_aware_optimizer/src/execution_aware_optimizer/cost_sensitivity.py`.
   - Q2 README documents each ladder layer as partial or unavailable.
   - validation: Q2 tests `11 passed`; relevant PortfolioOS subset `64 passed, 36 warnings`; default Q2 smoke scripts passed without enabling PortfolioOS execution.
-- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 42 and add a deterministic demo-v2/dashboard view for typed alpha artifacts while preserving read-only boundaries.
+- Next recommended repo workflow phase: all Phase 35-42 roadmap phases are complete; choose an optional later phase explicitly before adding more scope.
 - Core platform buildout through Phase 12 is implemented and stable.
 - The current project-wide meta stage is `research convergence + promotion contract`, not repo merge.
 - Project operating mode is now `paper-stage only`.

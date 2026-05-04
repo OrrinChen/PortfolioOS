@@ -46,10 +46,11 @@ Completed:
 - Phase 39: Q2 typed alpha execution matrix consumes Q2InputContract v2 and projection artifacts while keeping execution rows explicitly unavailable.
 - Phase 40: Paper overlay readiness aggregates local paper observations as execution-environment calibration only.
 - Phase 41: SUE typed alpha pilot writes the local AlphaView -> Evidence -> Projection -> Promotion v2 -> Q2 matrix artifact chain.
+- Phase 42: Typed Alpha Demo v2 adds `make demo-v2` and read-only dashboard sections for typed alpha artifacts.
 
 Current phase:
 
-- Phase 42: Typed Alpha Demo v2.
+- Optional later phases only.
 
 Deferred:
 
@@ -1205,10 +1206,10 @@ New sections:
 
 Tasks:
 
-- [ ] Add `make demo-v2` or equivalent.
-- [ ] Generate deterministic local typed-alpha artifacts.
-- [ ] Render AlphaView -> Evidence -> Projection -> Promotion -> Q2 -> Paper Overlay in the static dashboard.
-- [ ] Keep read-only service and dashboard free of trade/order/broker routes.
+- [x] Add `make demo-v2` or equivalent.
+- [x] Generate deterministic local typed-alpha artifacts.
+- [x] Render AlphaView -> Evidence -> Projection -> Promotion -> Q2 -> Paper Overlay in the static dashboard.
+- [x] Keep read-only service and dashboard free of trade/order/broker routes.
 
 Acceptance criteria:
 

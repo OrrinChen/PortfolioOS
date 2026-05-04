@@ -52,10 +52,12 @@ Key boundaries:
 ```bash
 poetry install
 make demo
+make demo-v2
 make validate
 ```
 
 `make demo` writes ignored local artifacts under `outputs/demo/`. `make
+demo-v2` writes the typed AlphaView demo under `outputs/demo_v2/`. `make
 validate` runs the local validation target with no-network guard, example
 validation, report generation, focused regression tests, and audit report tests.
 

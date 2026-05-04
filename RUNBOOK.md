@@ -36,6 +36,12 @@ Run the one-command local demo:
 make demo
 ```
 
+Run the typed alpha local demo v2:
+
+```bash
+make demo-v2
+```
+
 Run AlphaView contract tests:
 
 ```bash

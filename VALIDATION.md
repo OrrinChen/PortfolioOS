@@ -30,6 +30,12 @@ One-command demo smoke:
 make demo
 ```
 
+Typed alpha demo-v2 smoke:
+
+```bash
+make demo-v2
+```
+
 Typed AlphaView contract tests:
 
 ```bash
