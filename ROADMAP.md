@@ -48,10 +48,11 @@ Completed:
 - Phase 41: SUE typed alpha pilot writes the local AlphaView -> Evidence -> Projection -> Promotion v2 -> Q2 matrix artifact chain.
 - Phase 42: Typed Alpha Demo v2 adds `make demo-v2` and read-only dashboard sections for typed alpha artifacts.
 - Phase 43: Typed Alpha Release Candidate Hardening locks demo-v2 schema versions, release manifest, forbidden-output guard coverage, and release notes.
+- Phase 44: Demo v2 Golden Snapshot Tests lock required artifact shapes, release-manifest keys, dashboard sections, and unavailable-row semantics.
 
 Current phase:
 
-- Phase 44: Demo v2 Golden Snapshot Tests (optional next phase).
+- Phase 45: Typed Alpha Closeout Report (optional next phase).
 
 Deferred:
 
@@ -1300,7 +1301,7 @@ Suggested commit split:
 ## Phase 44: Demo v2 Golden Snapshot Tests
 
 Status:
-Next optional phase.
+Completed.
 
 Goal:
 Make `make demo-v2` a stable regression surface by checking artifact structure
@@ -1335,7 +1336,7 @@ Do not:
 ## Phase 45: Typed Alpha Closeout Report
 
 Status:
-Optional after Phase 43.
+Next optional phase.
 
 Goal:
 Produce a concise closeout memo explaining what Phase 35-42 proved, what it did

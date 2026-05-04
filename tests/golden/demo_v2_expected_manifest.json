@@ -1,0 +1,50 @@
+{
+  "required_artifacts": [
+    "typed_alpha_release_manifest.json",
+    "us_sue_event_alpha_view.json",
+    "us_sue_event_evidence_bundle.json",
+    "us_sue_projection_manifest.json",
+    "us_sue_projection_panel.csv",
+    "us_sue_projection_diagnostics.json",
+    "us_sue_abstain_report.json",
+    "us_sue_promotion_decision_v2.json",
+    "us_sue_q2_matrix.csv",
+    "us_sue_audit_report.md",
+    "paper_overlay_calibration_summary.json",
+    "paper_overlay_readiness.md",
+    "dashboard_v2.html"
+  ],
+  "required_manifest_keys": [
+    "artifact_files",
+    "broker_routes_enabled",
+    "content_hash",
+    "live_trading_enabled",
+    "production_alpha_approved",
+    "run_id",
+    "schema_version",
+    "schema_versions",
+    "status",
+    "typed_alpha_chain"
+  ],
+  "required_chain": [
+    "AlphaView",
+    "Event Evidence",
+    "Projection Manifest",
+    "Promotion Gate v2",
+    "Q2 Typed Matrix",
+    "Paper Overlay Readiness",
+    "Demo v2 Dashboard"
+  ],
+  "required_dashboard_sections": [
+    "Run Summary",
+    "Typed Alpha View",
+    "Event Evidence",
+    "Projection Diagnostics",
+    "Promotion Gate v2",
+    "Q2 Typed Alpha Execution Matrix",
+    "Paper Overlay Readiness",
+    "Audit Report",
+    "Reproducibility Manifest",
+    "Safety Boundaries"
+  ]
+}

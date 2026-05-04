@@ -30,10 +30,15 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - Optional Phase 43-46 roadmap has been added:
   - Phase 43 Typed Alpha Release Candidate Hardening is now complete.
   - Phase 43 locks demo-v2 artifact contracts, typed-alpha schema versions, forbidden-output guard coverage, and release-candidate notes.
-  - Phase 44 Demo v2 Golden Snapshot Tests is the next optional phase.
-  - Phase 45 should add a typed-alpha closeout report that states what Phase 35-42 proves and does not prove.
+  - Phase 44 Demo v2 Golden Snapshot Tests is now complete.
+  - Phase 45 Typed Alpha Closeout Report is the next optional phase.
   - Phase 46 should polish dashboard readability only after hardening and without adding functionality.
   - forbidden next work remains new alpha research, live data refreshes, broker/order paths, production approval language, fake Q2 metrics, and optimizer retuning.
+- Phase 44 Demo v2 Golden Snapshot Tests is complete:
+  - `tests/golden/demo_v2_expected_manifest.json` records required demo-v2 artifact names, release-manifest keys, typed-alpha chain, and dashboard section headings without snapshotting full HTML.
+  - `tests/test_demo_v2_golden_snapshot.py` runs `scripts/run_portfolioos_demo_v2.py` against a temp output directory and verifies artifact shape, manifest structure, required dashboard sections, read-only controls, and explicit Q2 unavailable-row semantics.
+  - `src/portfolio_os/dashboard/static_dashboard.py` now renders the demo-v2 sections required by the golden contract while remaining static and read-only.
+  - validation: demo-v2 golden snapshot tests `2 passed`; demo-v2/static dashboard focused tests `6 passed`.
 - Phase 43 Typed Alpha Release Candidate Hardening is complete:
   - `src/portfolio_os/alpha/schema_versions.py` centralizes typed-alpha artifact schema versions.
   - AlphaView, PromotionDecisionV2, Q2InputContractV2, Q2 typed matrix rows, and paper overlay readiness summary now carry explicit schema versions.

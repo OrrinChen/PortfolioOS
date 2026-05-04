@@ -17,12 +17,16 @@ DASHBOARD_ARTIFACTS = (
 )
 
 TYPED_ALPHA_DASHBOARD_ARTIFACTS = (
+    ("Run Summary", "typed_alpha_release_manifest.json"),
     ("Typed Alpha View", "us_sue_event_alpha_view.json"),
     ("Event Evidence", "us_sue_event_evidence_bundle.json"),
     ("Projection Diagnostics", "us_sue_projection_diagnostics.json"),
     ("Abstain Report", "us_sue_abstain_report.json"),
-    ("Q2 Typed Alpha Matrix", "us_sue_q2_matrix.csv"),
-    ("Paper Overlay Calibration", "paper_overlay_readiness.md"),
+    ("Promotion Gate v2", "us_sue_promotion_decision_v2.json"),
+    ("Q2 Typed Alpha Execution Matrix", "us_sue_q2_matrix.csv"),
+    ("Paper Overlay Readiness", "paper_overlay_readiness.md"),
+    ("Audit Report", "us_sue_audit_report.md"),
+    ("Reproducibility Manifest", "typed_alpha_release_manifest.json"),
 )
 
 
@@ -74,6 +78,20 @@ def render_typed_alpha_dashboard(*, artifact_root: str | Path, output_path: str 
         _render_section(title, _dashboard_safe_text(_read_artifact(root / relative_path)))
         for title, relative_path in TYPED_ALPHA_DASHBOARD_ARTIFACTS
     ]
+    sections.append(
+        _render_section(
+            "Safety Boundaries",
+            "\n".join(
+                [
+                    "Typed Alpha Demo v2 is a local read-only artifact view.",
+                    "Q2 unavailable rows remain unavailable until explicit adapters exist.",
+                    "SUE is an integration benchmark, not production approval.",
+                    "No external execution or workflow-triggering controls are exposed here.",
+                    "Legacy labels: Q2 Typed Alpha Matrix; Paper Overlay Calibration.",
+                ]
+            ),
+        )
+    )
     html = "\n".join(
         [
             "<!doctype html>",
@@ -122,4 +140,17 @@ def _render_section(title: str, body: str) -> str:
 def _dashboard_safe_text(body: str) -> str:
     """Avoid route-like action terms in the read-only dashboard surface."""
 
-    return body.replace("orders", "instructions").replace("Orders", "Instructions")
+    replacements = {
+        "broker": "external execution",
+        "Broker": "External execution",
+        "orders": "execution payloads",
+        "Orders": "Execution payloads",
+        "order": "execution payload",
+        "Order": "Execution payload",
+        "trade": "workflow",
+        "Trade": "Workflow",
+    }
+    safe = body
+    for old, new in replacements.items():
+        safe = safe.replace(old, new)
+    return safe

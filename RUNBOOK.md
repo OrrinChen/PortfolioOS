@@ -48,6 +48,12 @@ Run typed alpha release-candidate hardening tests:
 PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_typed_alpha_release_candidate.py -q
 ```
 
+Run demo-v2 golden snapshot tests:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_demo_v2_golden_snapshot.py -q
+```
+
 Run AlphaView contract tests:
 
 ```bash
