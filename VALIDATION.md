@@ -48,6 +48,13 @@ Demo-v2 golden snapshot tests:
 PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_demo_v2_golden_snapshot.py -q
 ```
 
+Typed alpha closeout report smoke and tests:
+
+```bash
+make typed-alpha-closeout
+PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_typed_alpha_closeout_report.py -q
+```
+
 Typed AlphaView contract tests:
 
 ```bash

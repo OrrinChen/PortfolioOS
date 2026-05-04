@@ -31,9 +31,15 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - Phase 43 Typed Alpha Release Candidate Hardening is now complete.
   - Phase 43 locks demo-v2 artifact contracts, typed-alpha schema versions, forbidden-output guard coverage, and release-candidate notes.
   - Phase 44 Demo v2 Golden Snapshot Tests is now complete.
-  - Phase 45 Typed Alpha Closeout Report is the next optional phase.
-  - Phase 46 should polish dashboard readability only after hardening and without adding functionality.
+  - Phase 45 Typed Alpha Closeout Report is now complete.
+  - Phase 46 Dashboard Readability Polish is the next optional phase.
   - forbidden next work remains new alpha research, live data refreshes, broker/order paths, production approval language, fake Q2 metrics, and optimizer retuning.
+- Phase 45 Typed Alpha Closeout Report is complete:
+  - `scripts/build_typed_alpha_closeout_report.py` writes a deterministic local closeout memo.
+  - `reports/typed_alpha_closeout_report.md` records Phase 35-42 scope, what the typed-alpha work proves, what it does not prove, known limitations, reproducibility commands, and next allowed work.
+  - `tests/test_typed_alpha_closeout_report.py` checks builder output, committed-report determinism, and non-approval language.
+  - `make typed-alpha-closeout` rebuilds the committed closeout report.
+  - validation: typed alpha closeout report tests `3 passed`.
 - Phase 44 Demo v2 Golden Snapshot Tests is complete:
   - `tests/golden/demo_v2_expected_manifest.json` records required demo-v2 artifact names, release-manifest keys, typed-alpha chain, and dashboard section headings without snapshotting full HTML.
   - `tests/test_demo_v2_golden_snapshot.py` runs `scripts/run_portfolioos_demo_v2.py` against a temp output directory and verifies artifact shape, manifest structure, required dashboard sections, read-only controls, and explicit Q2 unavailable-row semantics.
