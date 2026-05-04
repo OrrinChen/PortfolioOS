@@ -20,9 +20,17 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - Phase 36 Event-Aware Evaluation Kernel is now complete.
   - Phase 37 Alpha Projection Bridge v2 is now complete.
   - Phase 38 Promotion Gate v2 is now complete.
+  - Phase 39 Q2 Typed Alpha Execution Matrix is now complete.
   - core rule: `no_view != zero_alpha`; missing alpha coverage must be explicit abstain, not silently encoded as zero alpha.
   - the new roadmap keeps Q1, Evidence Bundle, Promotion Gate, Q2, paper overlay, and dashboard boundaries separate.
   - live paper overlay calibration, live data refreshes, and broker paths remain explicit opt-in work only.
+- Phase 39 Q2 Typed Alpha Execution Matrix is complete:
+  - `projects/execution_aware_optimizer/src/execution_aware_optimizer/typed_execution_matrix.py` consumes Q2InputContract v2 shape plus projection manifest, expected-return panel, projection diagnostics, and abstain report artifacts.
+  - typed scenario rows cross existing cost, participation, liquidity, constraint, and execution-mode scenarios with projection policy, abstain policy, and alpha family dimensions.
+  - rows retain deterministic `source_config_hash` values that include projection manifest hash and typed dimensions.
+  - default rows remain `unavailable`; gross-to-net retention, turnover, and cost drag stay `None` until a typed Q2 execution adapter exists.
+  - reports explain cost assumptions, constraint level, expected-return used share, active name count, abstain count, sign consistency, and view overlap without fabricating execution results.
+  - validation: Q2 typed execution matrix tests `3 passed`; `make validate` passed.
 - Phase 38 Promotion Gate v2 is complete:
   - `projects/promotion_gate/src/promotion_gate/schema.py` now defines `Q2InputContractV2` and `PromotionDecisionV2`.
   - `projects/promotion_gate/src/promotion_gate/gate.py` adds typed evaluation over `EvidenceBundle + AlphaView + ProjectionManifest` plus local artifact writing for `promotion_decision_v2.json`, `q2_input_contract_v2.json`, and `promotion_explanation_v2.md`.
@@ -243,7 +251,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - non-mutating cost-sensitivity scenarios live in `projects/execution_aware_optimizer/src/execution_aware_optimizer/cost_sensitivity.py`.
   - Q2 README documents each ladder layer as partial or unavailable.
   - validation: Q2 tests `11 passed`; relevant PortfolioOS subset `64 passed, 36 warnings`; default Q2 smoke scripts passed without enabling PortfolioOS execution.
-- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 39 and implement Q2 Typed Alpha Execution Matrix on top of Q2InputContractV2 and projection artifacts.
+- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 40 and implement the paper overlay calibration lane as execution-environment calibration only.
 - Core platform buildout through Phase 12 is implemented and stable.
 - The current project-wide meta stage is `research convergence + promotion contract`, not repo merge.
 - Project operating mode is now `paper-stage only`.

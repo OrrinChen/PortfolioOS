@@ -43,10 +43,11 @@ Completed:
 - Phase 36: Event-aware evaluation kernel records deterministic evidence-plan artifacts for event-window and to-next-announcement AlphaViews.
 - Phase 37: Alpha Projection Bridge v2 projects typed AlphaViews into rebalance-period expected-return panels with diagnostics and explicit abstain reports.
 - Phase 38: Promotion Gate v2 emits expected-return-panel Q2 input contracts from EvidenceBundle, AlphaView, and projection manifests without running Q2.
+- Phase 39: Q2 typed alpha execution matrix consumes Q2InputContract v2 and projection artifacts while keeping execution rows explicitly unavailable.
 
 Current phase:
 
-- Phase 39: Q2 Typed Alpha Execution Matrix.
+- Phase 40: Paper Overlay Calibration Lane.
 
 Deferred:
 

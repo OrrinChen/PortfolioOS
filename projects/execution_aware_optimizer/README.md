@@ -121,6 +121,24 @@ Unavailable rows also carry structured explanation metadata from
 `portfolio_os.explain`, including `primary_reason`, `severity`,
 `human_readable`, and `fix_hint`.
 
+## Typed Alpha Execution Matrix
+
+Phase 39 adds a typed matrix adapter for Promotion Gate v2 outputs. It consumes:
+
+- `Q2InputContractV2`
+- `alpha_projection_manifest.json`
+- `expected_return_panel.csv`
+- `alpha_projection_diagnostics.json`
+- `alpha_abstain_report.json`
+
+It adds typed dimensions for projection policy, abstain policy, and alpha family.
+Default rows remain explicitly unavailable because the typed Q2 execution adapter
+does not yet run PortfolioOS optimization. The matrix still reports active
+rebalance count, active name count, expected-return used share, abstain count,
+sign consistency, view overlap, cost assumptions, and constraint level so reports
+can explain where projected alpha is consumed by coverage, abstain, cost, and
+constraints without inventing returns.
+
 Run the matrix without enabling PortfolioOS execution:
 
 ```bash

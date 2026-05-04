@@ -161,6 +161,10 @@ Q1 Alpha Triage -> Evidence Bundle -> Promotion Gate -> Q2 Execution-Aware Evalu
 - Alpha Projection Bridge v2 helpers live under
   `src/portfolio_os/alpha/projection.py` and project typed AlphaViews into
   rebalance-period expected-return panels with explicit abstain reporting.
+- Q2 typed execution matrix helpers live under
+  `projects/execution_aware_optimizer/src/execution_aware_optimizer/typed_execution_matrix.py`
+  and consume Q2InputContract v2 plus projection artifacts without fabricating
+  execution results.
 
 These project areas are intentionally separate. They do not create a trading bot, place orders, call brokers, or fabricate backtest output.
 

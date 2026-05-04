@@ -110,6 +110,12 @@ Run Q2 tests:
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:projects/execution_aware_optimizer/src poetry run pytest projects/execution_aware_optimizer/tests -q
 ```
 
+Run Q2 typed execution matrix tests:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:projects/execution_aware_optimizer/src poetry run pytest projects/execution_aware_optimizer/tests/test_typed_execution_matrix.py -q
+```
+
 Run Evidence Bundle tests:
 
 ```bash
