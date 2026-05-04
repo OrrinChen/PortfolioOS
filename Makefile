@@ -4,6 +4,7 @@ PYTHONPATH_Q1 := projects/agentic_alpha_triage/src
 PYTHONPATH_AUDIT := src:projects/audit_report/src:projects/agentic_alpha_triage/src:projects/evidence_bundle/src:projects/promotion_gate/src:projects/execution_aware_optimizer/src
 PYTHONPATH_PROMOTION := src:projects/promotion_gate/src:projects/evidence_bundle/src
 PYTHONPATH_Q2 := src:projects/execution_aware_optimizer/src
+PYTHONPATH_TYPED_PILOT := src:projects/typed_alpha_pilot/src:projects/evidence_bundle/src:projects/promotion_gate/src:projects/execution_aware_optimizer/src
 
 .PHONY: test lint validate-examples audit-report demo no-network validate
 
@@ -29,4 +30,5 @@ validate: lint no-network validate-examples audit-report
 	PYTHONDONTWRITEBYTECODE=1 $(PYTEST) tests/test_ci_regression_hardening.py tests/test_no_network_guard.py tests/test_schema_backward_compatibility.py tests/test_forbidden_output_guards.py tests/test_observability_trace.py tests/test_provenance_manifest.py tests/test_decision_explainability.py tests/test_local_batch_orchestrator.py tests/test_content_addressed_cache.py tests/test_read_only_service.py tests/test_static_dashboard.py tests/test_one_command_demo.py tests/test_readme_packaging.py tests/test_alpha_view_contract.py tests/test_event_alpha_evaluation_contract.py tests/test_alpha_projection_bridge_v2.py tests/test_paper_overlay_readiness.py -q
 	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=$(PYTHONPATH_PROMOTION) $(PYTEST) projects/promotion_gate/tests -q
 	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=$(PYTHONPATH_Q2) $(PYTEST) projects/execution_aware_optimizer/tests/test_typed_execution_matrix.py -q
+	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=$(PYTHONPATH_TYPED_PILOT) $(PYTEST) projects/typed_alpha_pilot/tests -q
 	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=$(PYTHONPATH_AUDIT) $(PYTEST) projects/audit_report/tests -q

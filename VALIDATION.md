@@ -54,6 +54,12 @@ Paper overlay readiness tests:
 PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_paper_overlay_readiness.py -q
 ```
 
+Typed SUE alpha pilot tests:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:projects/typed_alpha_pilot/src:projects/evidence_bundle/src:projects/promotion_gate/src:projects/execution_aware_optimizer/src poetry run pytest projects/typed_alpha_pilot/tests -q
+```
+
 ## Q1 Project
 
 Run when touching `projects/agentic_alpha_triage`:

@@ -45,10 +45,11 @@ Completed:
 - Phase 38: Promotion Gate v2 emits expected-return-panel Q2 input contracts from EvidenceBundle, AlphaView, and projection manifests without running Q2.
 - Phase 39: Q2 typed alpha execution matrix consumes Q2InputContract v2 and projection artifacts while keeping execution rows explicitly unavailable.
 - Phase 40: Paper overlay readiness aggregates local paper observations as execution-environment calibration only.
+- Phase 41: SUE typed alpha pilot writes the local AlphaView -> Evidence -> Projection -> Promotion v2 -> Q2 matrix artifact chain.
 
 Current phase:
 
-- Phase 41: First Real Typed Alpha Pilot.
+- Phase 42: Typed Alpha Demo v2.
 
 Deferred:
 

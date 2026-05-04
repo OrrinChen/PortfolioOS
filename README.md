@@ -168,6 +168,9 @@ Q1 Alpha Triage -> Evidence Bundle -> Promotion Gate -> Q2 Execution-Aware Evalu
 - Paper overlay readiness helpers live under
   `src/portfolio_os/paper/overlay_readiness.py` and summarize paper execution
   observations as environment calibration only, not alpha validation.
+- Typed SUE pilot helpers live under `projects/typed_alpha_pilot` and generate
+  local AlphaView -> Event Evidence -> Projection -> Promotion v2 -> Q2 typed
+  matrix artifacts as an integration benchmark, not production approval.
 
 These project areas are intentionally separate. They do not create a trading bot, place orders, call brokers, or fabricate backtest output.
 

@@ -66,6 +66,12 @@ Build paper overlay readiness artifacts from local observations only:
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src poetry run python scripts/run_paper_overlay_calibration_batch.py --observations outputs/paper_calibration_aggregate/drift_observations.csv --output-dir /tmp/portfolioos_paper_overlay_readiness
 ```
 
+Run the typed SUE alpha pilot tests:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:projects/typed_alpha_pilot/src:projects/evidence_bundle/src:projects/promotion_gate/src:projects/execution_aware_optimizer/src poetry run pytest projects/typed_alpha_pilot/tests -q
+```
+
 Run the no-network guard self-test:
 
 ```bash
