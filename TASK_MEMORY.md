@@ -19,9 +19,18 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - Phase 35 Typed Alpha View Contract is now complete.
   - Phase 36 Event-Aware Evaluation Kernel is now complete.
   - Phase 37 Alpha Projection Bridge v2 is now complete.
+  - Phase 38 Promotion Gate v2 is now complete.
   - core rule: `no_view != zero_alpha`; missing alpha coverage must be explicit abstain, not silently encoded as zero alpha.
   - the new roadmap keeps Q1, Evidence Bundle, Promotion Gate, Q2, paper overlay, and dashboard boundaries separate.
   - live paper overlay calibration, live data refreshes, and broker paths remain explicit opt-in work only.
+- Phase 38 Promotion Gate v2 is complete:
+  - `projects/promotion_gate/src/promotion_gate/schema.py` now defines `Q2InputContractV2` and `PromotionDecisionV2`.
+  - `projects/promotion_gate/src/promotion_gate/gate.py` adds typed evaluation over `EvidenceBundle + AlphaView + ProjectionManifest` plus local artifact writing for `promotion_decision_v2.json`, `q2_input_contract_v2.json`, and `promotion_explanation_v2.md`.
+  - v2 checks typed event AlphaView semantics, horizon fields, visibility before tradability, explicit abstain, projection manifest schema/content hash/active rows, abstain reporting, and analyst revision marginal-value disclosure.
+  - SUE can promote to a projected expected-return-panel Q2 input contract when overlap disclosure is present; revision reaches `needs_more_evidence` without marginal-value disclosure.
+  - forward-return AlphaView fixtures are rejected before any Q2 contract is emitted.
+  - v1 Promotion Gate behavior is preserved; v1 tests still pass without `src` on `PYTHONPATH`.
+  - validation: Promotion Gate tests `12 passed`; legacy v1-only Promotion Gate tests `7 passed`; `make validate` passed.
 - Phase 37 Alpha Projection Bridge v2 is complete:
   - `src/portfolio_os/alpha/projection.py` projects typed AlphaViews into rebalance-period expected-return rows with horizon scaling, decay multipliers, confidence weights, and deterministic artifact writing.
   - `src/portfolio_os/alpha/projection_diagnostics.py` ranks projected optimizer-input expected returns and builds per-date diagnostics.
@@ -234,7 +243,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - non-mutating cost-sensitivity scenarios live in `projects/execution_aware_optimizer/src/execution_aware_optimizer/cost_sensitivity.py`.
   - Q2 README documents each ladder layer as partial or unavailable.
   - validation: Q2 tests `11 passed`; relevant PortfolioOS subset `64 passed, 36 warnings`; default Q2 smoke scripts passed without enabling PortfolioOS execution.
-- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 38 and implement Promotion Gate v2 on top of EvidenceBundle, AlphaView, and ProjectionManifest contracts.
+- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 39 and implement Q2 Typed Alpha Execution Matrix on top of Q2InputContractV2 and projection artifacts.
 - Core platform buildout through Phase 12 is implemented and stable.
 - The current project-wide meta stage is `research convergence + promotion contract`, not repo merge.
 - Project operating mode is now `paper-stage only`.

@@ -21,6 +21,21 @@ perform live data access.
 Promotion can produce a `Q2InputContract`, but that contract only describes
 allowed future input columns. It does not trigger Q2 execution.
 
+Phase 38 adds Promotion Gate v2:
+
+- consumes `EvidenceBundle + AlphaView + ProjectionManifest`
+- checks typed horizon semantics, explicit abstain, projection manifest
+  consistency, active coverage reporting, and revision marginal-value
+  disclosure
+- emits `Q2InputContractV2` for projected expected-return panel artifacts
+- writes optional local artifacts:
+  - `promotion_decision_v2.json`
+  - `q2_input_contract_v2.json`
+  - `promotion_explanation_v2.md`
+
+The v2 gate still does not run Q2, call PortfolioOS workflows, place orders,
+call brokers, or report live performance.
+
 ## Required Gate Checks
 
 Current Phase 22 checks include:
@@ -44,5 +59,5 @@ performance claim.
 Run from the repository root:
 
 ```bash
-PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/promotion_gate/src:projects/evidence_bundle/src poetry run pytest projects/promotion_gate/tests -q
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:projects/promotion_gate/src:projects/evidence_bundle/src poetry run pytest projects/promotion_gate/tests -q
 ```

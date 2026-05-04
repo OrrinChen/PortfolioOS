@@ -42,10 +42,11 @@ Completed:
 - Phase 35: Typed AlphaView contract defines alpha as timestamped, PIT-safe, horizon-aware predictive view with explicit abstain semantics.
 - Phase 36: Event-aware evaluation kernel records deterministic evidence-plan artifacts for event-window and to-next-announcement AlphaViews.
 - Phase 37: Alpha Projection Bridge v2 projects typed AlphaViews into rebalance-period expected-return panels with diagnostics and explicit abstain reports.
+- Phase 38: Promotion Gate v2 emits expected-return-panel Q2 input contracts from EvidenceBundle, AlphaView, and projection manifests without running Q2.
 
 Current phase:
 
-- Phase 38: Promotion Gate v2.
+- Phase 39: Q2 Typed Alpha Execution Matrix.
 
 Deferred:
 
@@ -1036,13 +1037,13 @@ Outputs:
 
 Tasks:
 
-- [ ] Validate AlphaView type and mechanism.
-- [ ] Check horizon type against evaluation label.
-- [ ] Require visibility timestamp no later than tradable timestamp.
-- [ ] Confirm projection did not change mechanism semantics.
-- [ ] Require explicit abstain semantics and active coverage reporting.
-- [ ] Require event overlap / collinearity disclosure.
-- [ ] Emit Q2InputContract v2 without running Q2.
+- [x] Validate AlphaView type and mechanism.
+- [x] Check horizon type against evaluation label.
+- [x] Require visibility timestamp no later than tradable timestamp.
+- [x] Confirm projection did not change mechanism semantics.
+- [x] Require explicit abstain semantics and active coverage reporting.
+- [x] Require event overlap / collinearity disclosure.
+- [x] Emit Q2InputContract v2 without running Q2.
 
 Acceptance criteria:
 
