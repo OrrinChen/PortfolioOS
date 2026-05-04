@@ -1,0 +1,71 @@
+{
+  "abstain_policy": {
+    "coverage_threshold": 0.8,
+    "mode": "explicit_abstain",
+    "stale_after_days": 3
+  },
+  "alpha_view_id": "AV-US-SUE-PEAD-001",
+  "anchor_event_timestamp": "2025-02-05T21:05:00Z",
+  "capacity_view": {
+    "adv_participation_cap": 0.001,
+    "capacity_bucket": "medium"
+  },
+  "confidence_view": {
+    "confidence_score": 0.72,
+    "evidence_strength": "event_window_rank_ic"
+  },
+  "cost_sensitivity_view": {
+    "expected_cost_bps": 5.0,
+    "sensitivity_bucket": "medium"
+  },
+  "coverage_mask": {
+    "covered_symbols": [
+      "AAPL",
+      "MSFT"
+    ],
+    "mode": "explicit_abstain",
+    "uncovered_symbols": [
+      "TSLA"
+    ]
+  },
+  "decay_policy": {
+    "half_life_days": 10,
+    "mode": "event_half_life"
+  },
+  "expected_return_view": {
+    "AAPL": {
+      "state": "active_view",
+      "value": 0.012
+    },
+    "MSFT": {
+      "state": "active_view",
+      "value": 0.006
+    },
+    "TSLA": {
+      "reason": "coverage_missing",
+      "state": "no_view"
+    }
+  },
+  "family_id": "US_EVENT_SUE",
+  "holding_window": {
+    "end_offset_days": 22,
+    "start_offset_days": 2
+  },
+  "horizon_type": "event_window",
+  "mechanism_type": "event",
+  "pit_safety_report": {
+    "anchor_not_before_visibility": true,
+    "no_future_data": true,
+    "pit_source": "local_fixture",
+    "visibility_not_after_tradable": true
+  },
+  "provenance": {
+    "created_by": "fixture",
+    "source": "synthetic_event_contract",
+    "version": "v1"
+  },
+  "signal_timestamp": "2025-02-05T21:05:00Z",
+  "tradable_timestamp": "2025-02-06T14:30:00Z",
+  "universe_id": "US_LARGE_CAP_FIXTURE",
+  "visibility_timestamp": "2025-02-05T21:10:00Z"
+}

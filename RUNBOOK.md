@@ -42,6 +42,12 @@ Run AlphaView contract tests:
 PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_alpha_view_contract.py -q
 ```
 
+Run event-aware alpha evaluation contract tests:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_event_alpha_evaluation_contract.py -q
+```
+
 Run the no-network guard self-test:
 
 ```bash

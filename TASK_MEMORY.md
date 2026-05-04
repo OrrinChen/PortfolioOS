@@ -17,9 +17,18 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - the completed Phase 20-34 platform packaging work remains closed.
   - the new active direction is `Typed Alpha View / Research-to-Paper Closed Loop`.
   - Phase 35 Typed Alpha View Contract is now complete.
+  - Phase 36 Event-Aware Evaluation Kernel is now complete.
   - core rule: `no_view != zero_alpha`; missing alpha coverage must be explicit abstain, not silently encoded as zero alpha.
   - the new roadmap keeps Q1, Evidence Bundle, Promotion Gate, Q2, paper overlay, and dashboard boundaries separate.
   - live paper overlay calibration, live data refreshes, and broker paths remain explicit opt-in work only.
+- Phase 36 Event-Aware Evaluation Kernel is complete:
+  - `src/portfolio_os/alpha/event_evaluation.py` defines event-window and to-next-announcement label contracts plus deterministic event-evidence bundle/artifact writers.
+  - `projects/alpha_view_contract/examples/event_sue_pead_view.json` expresses SUE event windows such as `[+2,+2]`, `[+2,+3]`, and `[+2,+22]`.
+  - `projects/alpha_view_contract/examples/event_revision_view.json` expresses analyst revision from `statpers` to next trading day to next announcement with WRDS as the PIT source.
+  - event artifacts include `event_evidence_bundle.json`, `event_window_grid.csv`, `event_half_life_summary.json`, `event_overlap_diagnostics.json`, `pit_visibility_report.json`, and `placebo_report.json`.
+  - the kernel records planned half-life, placebo, PIT, and overlap diagnostics only; it does not compute realized alpha performance, orders, broker output, or trading instructions.
+  - FMP analyst-estimate history is explicitly rejected as a PIT-safe analyst revision source.
+  - validation: event-aware alpha evaluation contract tests `4 passed`; `make validate` passed.
 - Phase 35 Typed Alpha View Contract is complete:
   - `src/portfolio_os/alpha/view_contract.py` defines `AlphaView`, PIT safety, coverage mask, abstain policy, expected-return entries, deterministic JSON load/dump helpers, and contract-level validation errors.
   - `projects/alpha_view_contract/` contains valid fixtures for SUE event view, revision-to-next-announcement view, and residual momentum calibration view plus a rejected forward-return leakage fixture.
@@ -216,7 +225,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - non-mutating cost-sensitivity scenarios live in `projects/execution_aware_optimizer/src/execution_aware_optimizer/cost_sensitivity.py`.
   - Q2 README documents each ladder layer as partial or unavailable.
   - validation: Q2 tests `11 passed`; relevant PortfolioOS subset `64 passed, 36 warnings`; default Q2 smoke scripts passed without enabling PortfolioOS execution.
-- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 36 and implement the Event-Aware Evaluation Kernel on top of AlphaView fixtures.
+- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 37 and implement Alpha Projection Bridge v2 on top of AlphaView and event-evidence fixtures.
 - Core platform buildout through Phase 12 is implemented and stable.
 - The current project-wide meta stage is `research convergence + promotion contract`, not repo merge.
 - Project operating mode is now `paper-stage only`.

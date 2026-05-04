@@ -153,6 +153,9 @@ Q1 Alpha Triage -> Evidence Bundle -> Promotion Gate -> Q2 Execution-Aware Evalu
 - Typed AlphaView contract helpers live under
   `src/portfolio_os/alpha/view_contract.py` and define alpha as a typed
   predictive view rather than a static score.
+- Event-aware evaluation contract helpers live under
+  `src/portfolio_os/alpha/event_evaluation.py` and write deterministic local
+  evidence-plan artifacts for event-window and to-next-announcement AlphaViews.
 
 These project areas are intentionally separate. They do not create a trading bot, place orders, call brokers, or fabricate backtest output.
 

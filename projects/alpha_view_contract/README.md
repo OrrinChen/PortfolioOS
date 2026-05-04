@@ -44,8 +44,19 @@ Rejected fixture:
 The rejected fixture demonstrates why forward-return labels cannot appear in
 AlphaView payloads.
 
+Phase 36 event-aware fixtures:
+
+- `examples/event_sue_pead_view.json`
+- `examples/event_revision_view.json`
+
+These fixtures feed the local event-evidence contract kernel. The kernel can
+write deterministic evidence-plan artifacts for SUE event windows and analyst
+revision to-next-announcement horizons, but it does not compute realized alpha
+performance or generate trading instructions.
+
 ## Validation
 
 ```bash
 PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_alpha_view_contract.py -q
+PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_event_alpha_evaluation_contract.py -q
 ```

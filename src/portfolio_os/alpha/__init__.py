@@ -2,6 +2,15 @@
 
 from portfolio_os.alpha.acceptance import AlphaAcceptanceResult, AlphaRecipeConfig, default_round_one_recipes, run_alpha_acceptance_gate
 from portfolio_os.alpha.event_targets import build_event_basket_target_frame, build_event_target_manifest
+from portfolio_os.alpha.event_evaluation import (
+    EventEvidenceBundle,
+    EventEvidenceValidationError,
+    EventWindowLabel,
+    ToNextAnnouncementLabel,
+    build_event_evidence_bundle,
+    dump_event_evidence_bundle_json,
+    write_event_evidence_artifacts,
+)
 from portfolio_os.alpha.promotion_contract import (
     PROMOTION_CONTRACT_FILENAME,
     PROMOTION_CONTRACT_TYPE,
@@ -44,12 +53,17 @@ __all__ = [
     "AlphaResearchResult",
     "AlphaView",
     "AlphaViewValidationError",
+    "EventEvidenceBundle",
+    "EventEvidenceValidationError",
+    "EventWindowLabel",
+    "ToNextAnnouncementLabel",
     "UpperLimitPilotRunResult",
     "PROMOTION_CONTRACT_FILENAME",
     "PROMOTION_CONTRACT_TYPE",
     "PROMOTION_CONTRACT_VERSION",
     "PromotionContract",
     "build_event_basket_target_frame",
+    "build_event_evidence_bundle",
     "build_event_target_manifest",
     "build_alpha_score_frame",
     "build_state_transition_matching_covariates",
@@ -76,4 +90,6 @@ __all__ = [
     "run_alpha_research",
     "validate_promotion_contract",
     "dump_alpha_view_json",
+    "dump_event_evidence_bundle_json",
+    "write_event_evidence_artifacts",
 ]

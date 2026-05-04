@@ -40,10 +40,11 @@ Completed:
 - Phase 33: One-command local demo writes Q1, promotion, Q2, audit, manifest, trace, and dashboard artifacts under `outputs/demo/`.
 - Phase 34: README now packages the audit-ready decision evaluation platform with architecture, quickstart, safety boundaries, and case studies.
 - Phase 35: Typed AlphaView contract defines alpha as timestamped, PIT-safe, horizon-aware predictive view with explicit abstain semantics.
+- Phase 36: Event-aware evaluation kernel records deterministic evidence-plan artifacts for event-window and to-next-announcement AlphaViews.
 
 Current phase:
 
-- Phase 36: Event-Aware Evaluation Kernel.
+- Phase 37: Alpha Projection Bridge v2.
 
 Deferred:
 
@@ -952,11 +953,11 @@ Outputs:
 
 Tasks:
 
-- [ ] Support `event_window` labels such as SUE `[+2,+2]`, `[+2,+3]`, and `[+2,+22]`.
-- [ ] Support `to_next_announcement` labels such as revision signal date `statpers` to next trading day to next announcement.
-- [ ] Record `signal_timestamp`, `visibility_timestamp`, `tradable_timestamp`, and `anchor_event_timestamp`.
-- [ ] Add PIT visibility checks and placebo/null-test declarations.
-- [ ] Add overlap diagnostics so revision can be tested as marginal value rather than assumed independent.
+- [x] Support `event_window` labels such as SUE `[+2,+2]`, `[+2,+3]`, and `[+2,+22]`.
+- [x] Support `to_next_announcement` labels such as revision signal date `statpers` to next trading day to next announcement.
+- [x] Record `signal_timestamp`, `visibility_timestamp`, `tradable_timestamp`, and `anchor_event_timestamp`.
+- [x] Add PIT visibility checks and placebo/null-test declarations.
+- [x] Add overlap diagnostics so revision can be tested as marginal value rather than assumed independent.
 
 Acceptance criteria:
 
