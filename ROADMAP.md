@@ -41,10 +41,11 @@ Completed:
 - Phase 34: README now packages the audit-ready decision evaluation platform with architecture, quickstart, safety boundaries, and case studies.
 - Phase 35: Typed AlphaView contract defines alpha as timestamped, PIT-safe, horizon-aware predictive view with explicit abstain semantics.
 - Phase 36: Event-aware evaluation kernel records deterministic evidence-plan artifacts for event-window and to-next-announcement AlphaViews.
+- Phase 37: Alpha Projection Bridge v2 projects typed AlphaViews into rebalance-period expected-return panels with diagnostics and explicit abstain reports.
 
 Current phase:
 
-- Phase 37: Alpha Projection Bridge v2.
+- Phase 38: Promotion Gate v2.
 
 Deferred:
 
@@ -1000,12 +1001,12 @@ Outputs:
 
 Tasks:
 
-- [ ] Select active typed alpha views by rebalance date.
-- [ ] Align event-window, to-next-event, fixed-horizon, and state-exit horizons.
-- [ ] Apply decay and confidence weighting.
-- [ ] Emit explicit abstain for missing/stale/low-coverage views.
-- [ ] Generate projection diagnostics per rebalance date.
-- [ ] Add synthetic sign-flip fixture that changes optimizer ranking direction.
+- [x] Select active typed alpha views by rebalance date.
+- [x] Align event-window, to-next-event, fixed-horizon, and state-exit horizons.
+- [x] Apply decay and confidence weighting.
+- [x] Emit explicit abstain for missing/stale/low-coverage views.
+- [x] Generate projection diagnostics per rebalance date.
+- [x] Add synthetic sign-flip fixture that changes optimizer ranking direction.
 
 Acceptance criteria:
 

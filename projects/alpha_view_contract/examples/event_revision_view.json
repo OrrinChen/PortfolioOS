@@ -42,6 +42,7 @@
   "family_id": "US_ANALYST_REVISION",
   "holding_window": {
     "end_event": "next_announcement",
+    "next_event_timestamp": "2025-05-01T20:00:00Z",
     "start_offset_days": 1
   },
   "horizon_type": "to_next_event",

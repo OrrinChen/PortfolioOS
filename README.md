@@ -156,6 +156,9 @@ Q1 Alpha Triage -> Evidence Bundle -> Promotion Gate -> Q2 Execution-Aware Evalu
 - Event-aware evaluation contract helpers live under
   `src/portfolio_os/alpha/event_evaluation.py` and write deterministic local
   evidence-plan artifacts for event-window and to-next-announcement AlphaViews.
+- Alpha Projection Bridge v2 helpers live under
+  `src/portfolio_os/alpha/projection.py` and project typed AlphaViews into
+  rebalance-period expected-return panels with explicit abstain reporting.
 
 These project areas are intentionally separate. They do not create a trading bot, place orders, call brokers, or fabricate backtest output.
 

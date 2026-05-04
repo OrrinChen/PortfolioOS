@@ -11,6 +11,14 @@ from portfolio_os.alpha.event_evaluation import (
     dump_event_evidence_bundle_json,
     write_event_evidence_artifacts,
 )
+from portfolio_os.alpha.projection import (
+    AlphaProjectionConfig,
+    AlphaProjectionResult,
+    AlphaProjectionValidationError,
+    project_alpha_views_to_expected_returns,
+    write_alpha_projection_artifacts,
+)
+from portfolio_os.alpha.projection_diagnostics import rank_projected_expected_returns
 from portfolio_os.alpha.promotion_contract import (
     PROMOTION_CONTRACT_FILENAME,
     PROMOTION_CONTRACT_TYPE,
@@ -53,6 +61,9 @@ __all__ = [
     "AlphaResearchResult",
     "AlphaView",
     "AlphaViewValidationError",
+    "AlphaProjectionConfig",
+    "AlphaProjectionResult",
+    "AlphaProjectionValidationError",
     "EventEvidenceBundle",
     "EventEvidenceValidationError",
     "EventWindowLabel",
@@ -65,6 +76,8 @@ __all__ = [
     "build_event_basket_target_frame",
     "build_event_evidence_bundle",
     "build_event_target_manifest",
+    "project_alpha_views_to_expected_returns",
+    "rank_projected_expected_returns",
     "build_alpha_score_frame",
     "build_state_transition_matching_covariates",
     "build_upper_limit_event_conditioned_null_pool",
@@ -92,4 +105,5 @@ __all__ = [
     "dump_alpha_view_json",
     "dump_event_evidence_bundle_json",
     "write_event_evidence_artifacts",
+    "write_alpha_projection_artifacts",
 ]

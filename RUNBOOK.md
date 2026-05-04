@@ -48,6 +48,12 @@ Run event-aware alpha evaluation contract tests:
 PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_event_alpha_evaluation_contract.py -q
 ```
 
+Run Alpha Projection Bridge v2 tests:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_alpha_projection_bridge_v2.py -q
+```
+
 Run the no-network guard self-test:
 
 ```bash

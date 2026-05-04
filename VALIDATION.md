@@ -42,6 +42,12 @@ Event-aware alpha evaluation contract tests:
 PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_event_alpha_evaluation_contract.py -q
 ```
 
+Alpha Projection Bridge v2 tests:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_alpha_projection_bridge_v2.py -q
+```
+
 ## Q1 Project
 
 Run when touching `projects/agentic_alpha_triage`:

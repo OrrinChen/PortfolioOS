@@ -54,9 +54,17 @@ write deterministic evidence-plan artifacts for SUE event windows and analyst
 revision to-next-announcement horizons, but it does not compute realized alpha
 performance or generate trading instructions.
 
+Phase 37 projection:
+
+`src/portfolio_os/alpha/projection.py` can project these typed views into a
+rebalance-period expected-return panel plus a projection manifest, diagnostics,
+and explicit abstain report. Missing coverage is never emitted as a synthetic
+zero expected return.
+
 ## Validation
 
 ```bash
 PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_alpha_view_contract.py -q
 PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_event_alpha_evaluation_contract.py -q
+PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_alpha_projection_bridge_v2.py -q
 ```

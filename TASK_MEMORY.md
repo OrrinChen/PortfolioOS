@@ -18,9 +18,18 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - the new active direction is `Typed Alpha View / Research-to-Paper Closed Loop`.
   - Phase 35 Typed Alpha View Contract is now complete.
   - Phase 36 Event-Aware Evaluation Kernel is now complete.
+  - Phase 37 Alpha Projection Bridge v2 is now complete.
   - core rule: `no_view != zero_alpha`; missing alpha coverage must be explicit abstain, not silently encoded as zero alpha.
   - the new roadmap keeps Q1, Evidence Bundle, Promotion Gate, Q2, paper overlay, and dashboard boundaries separate.
   - live paper overlay calibration, live data refreshes, and broker paths remain explicit opt-in work only.
+- Phase 37 Alpha Projection Bridge v2 is complete:
+  - `src/portfolio_os/alpha/projection.py` projects typed AlphaViews into rebalance-period expected-return rows with horizon scaling, decay multipliers, confidence weights, and deterministic artifact writing.
+  - `src/portfolio_os/alpha/projection_diagnostics.py` ranks projected optimizer-input expected returns and builds per-date diagnostics.
+  - projection outputs include `expected_return_panel.csv`, `alpha_projection_manifest.json`, `alpha_projection_diagnostics.json`, and `alpha_abstain_report.json`.
+  - SUE event views project only inside the event window; revision views project until `holding_window.next_event_timestamp`.
+  - explicit abstain is preserved: `no_view`, missing coverage, and inactive windows are recorded in `alpha_abstain_report` instead of synthetic zero expected-return rows.
+  - a synthetic sign-flip test verifies that projected expected-return signs change the optimizer-input ranking direction.
+  - validation: Alpha Projection Bridge v2 tests `6 passed`; AlphaView/Event/Projection focused tests `16 passed`; `make validate` passed.
 - Phase 36 Event-Aware Evaluation Kernel is complete:
   - `src/portfolio_os/alpha/event_evaluation.py` defines event-window and to-next-announcement label contracts plus deterministic event-evidence bundle/artifact writers.
   - `projects/alpha_view_contract/examples/event_sue_pead_view.json` expresses SUE event windows such as `[+2,+2]`, `[+2,+3]`, and `[+2,+22]`.
@@ -225,7 +234,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - non-mutating cost-sensitivity scenarios live in `projects/execution_aware_optimizer/src/execution_aware_optimizer/cost_sensitivity.py`.
   - Q2 README documents each ladder layer as partial or unavailable.
   - validation: Q2 tests `11 passed`; relevant PortfolioOS subset `64 passed, 36 warnings`; default Q2 smoke scripts passed without enabling PortfolioOS execution.
-- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 37 and implement Alpha Projection Bridge v2 on top of AlphaView and event-evidence fixtures.
+- Next recommended repo workflow phase: follow `ROADMAP.md` Phase 38 and implement Promotion Gate v2 on top of EvidenceBundle, AlphaView, and ProjectionManifest contracts.
 - Core platform buildout through Phase 12 is implemented and stable.
 - The current project-wide meta stage is `research convergence + promotion contract`, not repo merge.
 - Project operating mode is now `paper-stage only`.
