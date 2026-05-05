@@ -190,6 +190,12 @@ Typed expected-return injection smoke, only when touching Phase 48 injection pat
 make typed-expected-return-injection-fixture
 ```
 
+Typed optimizer response acceptance smoke, only when touching Phase 49 optimizer response paths:
+
+```bash
+make typed-optimizer-response-acceptance
+```
+
 ## Evidence Bundle Project
 
 Run when touching `projects/evidence_bundle`:

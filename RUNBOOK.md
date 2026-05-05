@@ -177,6 +177,12 @@ Run Q2 typed expected-return injection tests:
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:projects/execution_aware_optimizer/src poetry run pytest projects/execution_aware_optimizer/tests/test_typed_expected_return_injection.py -q
 ```
 
+Run Q2 typed optimizer response acceptance tests:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:projects/execution_aware_optimizer/src poetry run pytest projects/execution_aware_optimizer/tests/test_typed_optimizer_response.py -q
+```
+
 Run the local-only typed Q2 adapter fixture:
 
 ```bash
@@ -187,6 +193,12 @@ Run the local-only typed expected-return injection fixture:
 
 ```bash
 make typed-expected-return-injection-fixture
+```
+
+Run the local-only typed optimizer response acceptance fixture:
+
+```bash
+make typed-optimizer-response-acceptance
 ```
 
 Run Evidence Bundle tests:

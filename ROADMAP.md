@@ -1664,7 +1664,7 @@ Completion note:
 ## Phase 49: Typed Optimizer Response Acceptance Suite
 
 Status:
-Next.
+Complete.
 
 Goal:
 Prove that injected typed expected-return panels produce directionally coherent
@@ -1700,10 +1700,25 @@ Acceptance criteria:
 - Repair retention is reported, not hidden.
 - Output is deterministic enough for regression tests.
 
+Output artifacts:
+
+- `outputs/typed_optimizer_response_acceptance/optimizer_response_summary.json`
+- `outputs/typed_optimizer_response_acceptance/optimizer_response_grid.csv`
+- `outputs/typed_optimizer_response_acceptance/sign_flip_diagnostics.json`
+- `outputs/typed_optimizer_response_acceptance/abstain_vs_zero_report.json`
+
+Completion note:
+
+- `projects/execution_aware_optimizer/src/execution_aware_optimizer/typed_optimizer_response_schema.py` defines the Phase 49 input, row, summary, and result contracts.
+- `projects/execution_aware_optimizer/src/execution_aware_optimizer/typed_optimizer_response.py` builds deterministic positive, scaled, sign-flipped, zero-alpha, and explicit-abstain typed expected-return panels and evaluates them through a local PortfolioOS optimizer fixture.
+- `scripts/run_typed_optimizer_response_acceptance.py` and `make typed-optimizer-response-acceptance` write local ignored artifacts under `outputs/typed_optimizer_response_acceptance/`.
+- The opt-in smoke path returned `response_status=observed`, `optimizer_status=optimal`, `panel_count=7`, and true checks for positive alignment, monotone scaled alpha contribution, sign-flip reversal, `no_view` versus zero-alpha distinction, and repair-retention reporting.
+- The fixture proves directional optimizer response to typed expected-return panel variants. It does not prove SUE survival, revision marginal value, paper-stage readiness, or production approval.
+
 ## Phase 50: SUE Typed Q2 Survival Matrix v1
 
 Status:
-Locked after Phase 49.
+Next.
 
 Goal:
 Run the SUE typed alpha pilot through the injected local optimizer/Q2 path.

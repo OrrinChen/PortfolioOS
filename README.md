@@ -117,6 +117,13 @@ manifest, then writes `optimizer_input_snapshot.csv` proving the projected
 expected-return values reached the local optimizer input shape. It is not an
 optimizer response proof, alpha success claim, or production approval.
 
+`make typed-optimizer-response-acceptance` writes the local Phase 49 optimizer
+response artifacts under `outputs/typed_optimizer_response_acceptance/`. This
+opt-in smoke path evaluates deterministic positive, scaled, sign-flipped, zero,
+and explicit-abstain typed expected-return panels against the local optimizer
+fixture. It reports aggregate response diagnostics only; it does not write
+orders, broker payloads, live performance, or production approval.
+
 ## Safety Boundaries
 
 - No broker route is exposed by Q1, Q2, the promotion gate, the artifact service,

@@ -59,6 +59,14 @@ from execution_aware_optimizer.typed_injection_schema import (
     TypedExpectedReturnInjectionInput,
     TypedExpectedReturnInjectionResult,
 )
+from execution_aware_optimizer.typed_optimizer_response import (
+    run_typed_optimizer_response_acceptance,
+    write_typed_optimizer_response_artifacts,
+)
+from execution_aware_optimizer.typed_optimizer_response_schema import (
+    TypedOptimizerResponseInput,
+    TypedOptimizerResponseResult,
+)
 
 __all__ = [
     "AlphaInputReport",
@@ -80,6 +88,8 @@ __all__ = [
     "TypedQ2InputContractV2",
     "TypedExpectedReturnInjectionInput",
     "TypedExpectedReturnInjectionResult",
+    "TypedOptimizerResponseInput",
+    "TypedOptimizerResponseResult",
     "build_constraint_diagnostics",
     "build_cost_sensitivity_scenarios",
     "build_portfolioos_cost_overrides",
@@ -95,9 +105,11 @@ __all__ = [
     "run_execution_matrix",
     "run_typed_alpha_execution_matrix",
     "run_typed_expected_return_injection",
+    "run_typed_optimizer_response_acceptance",
     "run_typed_q2_adapter",
     "summarize_execution_matrix",
     "summarize_typed_execution_matrix",
     "write_typed_q2_adapter_artifacts",
     "write_typed_expected_return_injection_artifacts",
+    "write_typed_optimizer_response_artifacts",
 ]
