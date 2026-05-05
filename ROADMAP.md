@@ -52,10 +52,11 @@ Completed:
 - Phase 45: Typed Alpha Closeout Report writes a deterministic closeout memo with explicit proof, non-proof, limitation, and reproducibility sections.
 - Phase 46: Dashboard Readability Polish adds first-screen status, typed-alpha chain, artifact links, manifest summary, and unavailable-artifact messaging without workflow controls.
 - Phase 47: Typed Q2 Execution Adapter v0 connects typed Q2 input artifacts to the existing local PortfolioOS fixture adapter and emits observed/unavailable rows without live data, orders, brokers, or production approval.
+- Phase 48: Typed Expected-Return Injection Fixture proves projected expected-return panels can reach a local optimizer input snapshot without live data, brokers, orders, or production approval.
 
 Current phase:
 
-- None. Phase 47 is complete; any further phase should be opened explicitly.
+- Phase 49: Typed Optimizer Response Acceptance Suite.
 
 Deferred:
 
@@ -68,6 +69,8 @@ Deferred:
 - full optimizer dual-value reporting until PortfolioOS exposes it
 - liquidity slack reporting until PortfolioOS exports stable per-name participation diagnostics
 - cloud automation setup
+- paper canary phases unless explicitly approved by a human
+- new alpha research unless imported through a typed research contract
 
 ## Strategic Direction: Audit-Ready Decision Evaluation Platform
 
@@ -1558,3 +1561,707 @@ Completion note:
 - `projects/execution_aware_optimizer/fixtures/typed_q2/` provides a synthetic typed-alpha fixture.
 - `scripts/run_typed_q2_adapter_fixture.py` and `make typed-q2-adapter-fixture` write local adapter artifacts under `outputs/typed_q2_adapter_fixture/`.
 - The adapter v0 validates and records the projected expected-return panel but does not yet inject that panel into a new PortfolioOS optimizer path. It observes only metrics exposed by existing local fixture period attribution.
+
+## Final Typed Alpha to Q2 to Paper-Stage Roadmap
+
+This is the finite Phase 48-66 roadmap. It should not grow automatically. The
+main line is no longer platform packaging or new alpha mining. The main line is
+to prove where each typed alpha stops:
+
+```text
+Typed AlphaView
+  -> Expected-Return Injection
+  -> Optimizer Response
+  -> Q2 Survival
+  -> Attribution
+  -> Alpha Registry
+  -> Optional Paper-Stage Dossier
+```
+
+Rules:
+
+- Phase 48-54 are the required typed-alpha to local Q2 closeout path.
+- Phase 55 freezes decisions into a machine-readable alpha registry.
+- Phase 56-58 are optional paper-stage preparation and governance only.
+- Phase 59-61 are locked by default and require explicit human approval.
+- Phase 62-64 are research-reopen controls, not automatic research branches.
+- Phase 65-66 package and freeze the research-audit release.
+- No phase may add live data, broker routes, orders, trading instructions, fake
+  Q2 metrics, or production approval language.
+
+Priority order:
+
+1. Phase 48.
+2. Phase 49.
+3. Phase 50.
+4. Phase 51.
+5. Phase 52.
+6. Phase 55.
+
+Only run Phase 53-54 if Phase 52 promotes revision into composite evaluation.
+Only run Phase 56-61 after SUE-only or composite has a clean local Q2 dossier.
+Only reopen research through Phase 62-64 after typed mainline closeout.
+
+## Phase 48: Typed Expected-Return Injection Fixture
+
+Status:
+Complete.
+
+Goal:
+Inject typed `expected_return_panel.csv` artifacts into a local-only PortfolioOS
+optimizer fixture input path.
+
+Why next:
+Phase 47 validates and records expected-return panels, but it does not prove the
+panel reaches the optimizer input. Phase 48 closes that exact gap without
+claiming alpha success.
+
+Target modules:
+
+- `projects/execution_aware_optimizer/src/execution_aware_optimizer/typed_injection_schema.py`
+- `projects/execution_aware_optimizer/src/execution_aware_optimizer/typed_expected_return_injection.py`
+- `projects/execution_aware_optimizer/tests/test_typed_expected_return_injection.py`
+- `scripts/run_typed_expected_return_injection_fixture.py`
+
+Output artifacts:
+
+- `outputs/typed_expected_return_injection_fixture/typed_expected_return_injection_result.json`
+- `outputs/typed_expected_return_injection_fixture/optimizer_input_snapshot.csv`
+- `outputs/typed_expected_return_injection_fixture/injected_expected_return_panel.csv`
+- `outputs/typed_expected_return_injection_fixture/typed_q2_execution_matrix_injected.csv`
+- `outputs/typed_expected_return_injection_fixture/typed_q2_injection_robustness_summary.json`
+- `outputs/typed_expected_return_injection_fixture/typed_q2_injection_manifest.json`
+- `outputs/typed_expected_return_injection_fixture/typed_q2_injection_trace.jsonl`
+
+Acceptance criteria:
+
+- Expected-return panel validates against `Q2InputContract v2` and projection
+  manifest.
+- `allow_portfolioos_run=false` returns structured unavailable rows.
+- `allow_portfolioos_run=true` writes `optimizer_input_snapshot.csv`.
+- `optimizer_input_snapshot.csv` proves expected return reached optimizer input.
+- Synthetic positive, scaled, and sign-flipped panels are supported.
+- Unavailable layers remain unavailable.
+- No live data, broker, orders, trading instructions, or production approval
+  path is added.
+- `make validate` passes.
+- `make typed-expected-return-injection-fixture` passes if the target is added.
+
+Stop condition:
+If the expected-return panel cannot map into optimizer input without changing
+PortfolioOS semantics, close Phase 48 as `typed injection unavailable due to
+optimizer input mapping gap`. Do not call that an alpha failure.
+
+Completion note:
+
+- `projects/execution_aware_optimizer/src/execution_aware_optimizer/typed_injection_schema.py` defines typed injection input, result, summary, and manifest contracts.
+- `projects/execution_aware_optimizer/src/execution_aware_optimizer/typed_expected_return_injection.py` validates Q2InputContract v2 plus projection manifest, transforms positive/scaled/sign-flipped expected-return panels, and builds a local PortfolioOS optimizer input snapshot.
+- `projects/execution_aware_optimizer/fixtures/typed_injection/` provides the deterministic Phase 48 fixture aligned to the local monthly backtest schedule.
+- `scripts/run_typed_expected_return_injection_fixture.py` and `make typed-expected-return-injection-fixture` write local ignored artifacts under `outputs/typed_expected_return_injection_fixture/`.
+- The opt-in smoke path returned `injection_status=injected`, `expected_return_reached_optimizer_input=True`, `optimizer_input_snapshot_rows=33`, and `injected_expected_return_count=2`.
+- The fixture proves typed expected-return values reach optimizer input shape; it does not yet prove directional optimizer response or alpha success. Phase 49 is responsible for optimizer response acceptance.
+
+## Phase 49: Typed Optimizer Response Acceptance Suite
+
+Status:
+Next.
+
+Goal:
+Prove that injected typed expected-return panels produce directionally coherent
+optimizer response diagnostics.
+
+Test panels:
+
+- `positive_panel.csv`
+- `scaled_0_5x_panel.csv`
+- `scaled_1_0x_panel.csv`
+- `scaled_2_0x_panel.csv`
+- `sign_flipped_panel.csv`
+- `abstain_panel.csv`
+- `zero_panel.csv`
+
+Diagnostics:
+
+- `alpha_reward_share`
+- `rank_alignment`
+- `top_minus_bottom_weight_delta`
+- `gross_traded_notional`
+- `repair_retention`
+- `expected_return_used_share`
+- `optimizer_status`
+
+Acceptance criteria:
+
+- Positive panel produces positive rank/weight alignment.
+- Scaled panels produce monotonic alpha-reward or expected-return contribution.
+- Sign-flipped panel reverses relative ordering.
+- Abstain panel is not silently treated as positive alpha.
+- Zero alpha and `no_view` are reported separately.
+- Repair retention is reported, not hidden.
+- Output is deterministic enough for regression tests.
+
+## Phase 50: SUE Typed Q2 Survival Matrix v1
+
+Status:
+Locked after Phase 49.
+
+Goal:
+Run the SUE typed alpha pilot through the injected local optimizer/Q2 path.
+
+Required readout:
+
+- `active_rebalance_count`
+- `active_name_count`
+- `expected_return_used_share`
+- `gross_return`
+- `net_return`
+- `turnover`
+- `cost_drag`
+- `gross_to_net_retention`
+- `repair_retention`
+- `unavailable_reason`
+- `projection_policy`
+- `abstain_policy`
+- `source_config_hash`
+
+Acceptance criteria:
+
+- SUE expected return reaches optimizer input.
+- SUE rows are observed or explicitly unavailable.
+- No fabricated gross/net/turnover metrics.
+- If observed, gross-to-net and cost drag are reported.
+- If unavailable, the exact missing layer is reported.
+- SUE remains an integration benchmark and Q2 candidate, not production-approved.
+
+## Phase 51: SUE Execution-Survival Attribution Report
+
+Status:
+Locked after Phase 50.
+
+Goal:
+Explain exactly where SUE survives or fails.
+
+Attribution layers:
+
+- evidence
+- projection
+- injection
+- optimizer response
+- constraint repair
+- cost
+- turnover
+- coverage / abstain
+- unavailable local fixture hook
+
+Decision labels:
+
+- `sue_q2_observed_survives`
+- `sue_q2_observed_cost_failure`
+- `sue_q2_observed_constraint_failure`
+- `sue_q2_projection_too_sparse`
+- `sue_q2_injection_unavailable`
+- `sue_q2_fixture_unavailable`
+- `sue_q2_inconclusive`
+
+Acceptance criteria:
+
+- Report states what SUE proves and does not prove.
+- Report does not claim production approval.
+- Report distinguishes alpha failure from execution failure.
+- Report distinguishes projection sparsity from optimizer failure.
+- Report states whether Phase 52 revision marginal-value testing should proceed.
+
+## Phase 52: Revision Marginal-Value Gate
+
+Status:
+Locked after Phase 51.
+
+Goal:
+Decide whether revision adds marginal value beyond SUE.
+
+Required tests:
+
+- SUE-only baseline.
+- Revision-only shadow branch.
+- SUE + revision equal composite.
+- SUE + revision confidence-weighted composite.
+- SUE residualized against revision.
+- Revision residualized against SUE.
+- Event-overlap and coverage-overlap diagnostics.
+- Cost-aware marginal contribution.
+
+Gate decisions:
+
+- `revision_promote_to_composite_eval`
+- `revision_real_but_no_marginal_value`
+- `revision_needs_more_evidence`
+- `revision_reject_due_to_pit_or_horizon`
+
+Acceptance criteria:
+
+- WRDS remains the required PIT source for analyst revision research.
+- FMP frozen estimate history is not accepted as PIT-safe revision source.
+- Revision must beat a SUE-adjusted marginal threshold before composite
+  promotion.
+- Raw tree importance or feature importance is not accepted as proof.
+- Gate produces a clear promote, shadow, archive, or needs-more-evidence
+  decision.
+
+## Phase 53: Composite AlphaView Assembler: SUE + Revision
+
+Status:
+Conditional on Phase 52 promotion.
+
+Goal:
+Build a composite typed AlphaView only if revision passes Phase 52.
+
+Composite policies:
+
+- `equal_weight`
+- `confidence_weighted`
+- `horizon_priority`
+- `event_recency_priority`
+- `non_overlapping_only`
+- `residualized_revision`
+
+Acceptance criteria:
+
+- `no_view != zero_alpha` remains preserved.
+- Conflict resolution is deterministic.
+- Horizon semantics are explicit.
+- Composite expected-return panel is reproducible.
+- Projection diagnostics explain every active and abstained view.
+
+## Phase 54: Composite Typed Q2 Survival Matrix
+
+Status:
+Conditional on Phase 53.
+
+Goal:
+Evaluate whether the composite survives Q2 better than SUE-only.
+
+Comparison set:
+
+- SUE-only.
+- Revision-only.
+- SUE + revision equal.
+- SUE + revision confidence-weighted.
+- SUE + revision residualized.
+
+Decision labels:
+
+- `composite_beats_sue_after_cost`
+- `composite_adds_signal_but_costs_too_much`
+- `composite_no_marginal_value`
+- `composite_inconclusive`
+
+Acceptance criteria:
+
+- Composite is compared against SUE-only, not judged standalone.
+- Cost and turnover are included.
+- Unavailable rows remain unavailable.
+- No production approval is claimed.
+- Next phase is blocked unless this produces a clear decision.
+
+## Phase 55: Alpha Registry v2 / Decision State Machine
+
+Status:
+Locked after Phase 54 or Phase 52 archive decision.
+
+Goal:
+Freeze all alpha statuses in one machine-readable registry.
+
+Required entries:
+
+- SUE / PEAD.
+- `revision_1m`.
+- SUE + revision composite if built.
+- Old real alpha package / Phase 1.5 bridge.
+- Qlib fixed-horizon + revision.
+- Residual momentum / residual reversal.
+- A-share `anti_mom_21_5`.
+- Forward-return leakage fixtures.
+
+Registry statuses:
+
+- `canonical_pilot`
+- `eligible_for_q2_eval`
+- `q2_observed_survives`
+- `q2_observed_fails_cost`
+- `q2_observed_fails_constraints`
+- `real_shadow_branch`
+- `needs_marginal_value`
+- `diagnostic_only`
+- `calibration_only`
+- `background_partially_real`
+- `rejected_leakage`
+- `archived_no_marginal_value`
+- `production_not_approved`
+
+Acceptance criteria:
+
+- Every alpha has a typed-chain stop layer.
+- No alpha is labeled only pass/fail.
+- SUE and revision statuses reflect Phase 50-54 results.
+- Residual momentum remains calibration-only unless Phase 62 later changes it.
+- A-share remains background unless Phase 63 is explicitly opened.
+
+## Phase 56: Paper Overlay Calibration Round 2
+
+Status:
+Optional paper-stage calibration.
+
+Goal:
+Calibrate the paper-stage execution environment, not alpha.
+
+Scope:
+
+- SPY x 1 share repeated tranche.
+- 30-50 runs.
+- Drift aggregation.
+- Half-spread scaling.
+- Latency buckets.
+- Time-of-day buckets.
+- Paper venue quirks.
+
+Acceptance criteria:
+
+- Confirms environment calibration only.
+- No alpha orders.
+- No SUE or revision paper trading.
+- No calibrated `k` promotion into `config/us_expanded.yaml`.
+- No extrapolation above 0.1 percent participation.
+
+## Phase 57: Paper-Stage Candidate Dossier
+
+Status:
+Conditional after local Q2 candidate decision.
+
+Goal:
+Create the full paper-stage dossier for SUE-only or SUE + revision composite
+without approving live or production trading.
+
+Dossier sections:
+
+- AlphaView contract.
+- Event evidence.
+- Projection manifest.
+- Expected-return injection proof.
+- Optimizer response acceptance.
+- Typed Q2 survival matrix.
+- Cost, turnover, and repair analysis.
+- Paper overlay calibration compatibility.
+- Failure modes.
+- Explicit non-claims.
+- Human approval checklist.
+
+Acceptance criteria:
+
+- Candidate status is `paper-stage dossier prepared`, not approved.
+- No orders, broker payloads, or trading instructions.
+- All artifacts are locally reproducible.
+- Limitations are explicit.
+- Human approval gate is required for anything beyond local evaluation.
+
+## Phase 58: Human Approval / No-Automation Boundary Pack
+
+Status:
+Conditional governance phase.
+
+Goal:
+Document the boundary before any paper canary.
+
+Required document:
+
+- `docs/governance/paper_stage_human_approval_boundary.md`
+
+Acceptance criteria:
+
+- PortfolioOS will not automatically place paper alpha orders.
+- Paper canary requires explicit human approval.
+- Candidate dossier is not approval.
+- Paper-stage observation is not production validation.
+- Production trading remains out of scope.
+- Any broker/order path must be separately authorized and reviewed.
+- Forbidden-output guards still pass.
+
+## Phase 59: Conditional Paper Canary Contract
+
+Status:
+Locked by default. Requires explicit human approval after Phase 58.
+
+Goal:
+Define a tiny paper-stage canary contract before any paper canary is run.
+
+Constraints:
+
+- Paper account only.
+- Tiny notional.
+- 0-0.1 percent participation.
+- Pre-trade reference snapshot required.
+- Post-trade reconciliation required.
+- Kill switch required.
+- Manual approval required.
+- No production language.
+
+Acceptance criteria:
+
+- Contract exists before any execution.
+- Contract has max notional, max participation, max names, and max attempts.
+- No automatic promotion from dossier to canary.
+- No production approval.
+
+## Phase 60: Conditional Paper Canary Observation Report
+
+Status:
+Locked by default. Requires Phase 59 and explicitly approved run artifacts.
+
+Goal:
+Report observed paper-stage behavior if a canary is manually executed.
+
+Report must separate:
+
+- alpha signal behavior
+- optimizer intent
+- paper fill behavior
+- slippage / spread capture
+- latency
+- broker venue quirks
+- unmatched, rejected, or partial fills
+- post-trade reconciliation
+
+Acceptance criteria:
+
+- Report does not claim production readiness.
+- Report does not generalize from a tiny sample.
+- Report records all rejected, partial, and unmatched fills.
+- Report explains whether the result is alpha issue, execution issue, or venue
+  issue.
+
+## Phase 61: Paper-Stage Closeout Decision
+
+Status:
+Conditional after Phase 60.
+
+Goal:
+Close the paper-stage path honestly.
+
+Allowed outcomes:
+
+- `paper_stage_continue_observation`
+- `paper_stage_pause_due_to_execution_gap`
+- `paper_stage_pause_due_to_alpha_decay`
+- `paper_stage_close_no_production_case`
+- `paper_stage_ready_for_external_review_only`
+
+Forbidden outcomes:
+
+- `production_approved`
+- `live_approved`
+- `scale_up_approved`
+
+Acceptance criteria:
+
+- Decision is evidence-backed.
+- No automatic next trading phase.
+- Production remains out of scope.
+- Any continuing tranche must be separately approved.
+
+## Phase 62: Residual Momentum Calibration Closeout
+
+Status:
+Blocked until typed mainline closeout.
+
+Goal:
+Revisit residual momentum only as a calibration closeout, not as alpha
+promotion.
+
+Decision labels:
+
+- `calibration_validated`
+- `calibration_failed_placebo_dominates`
+- `family_archived`
+- `needs_new_controls`
+
+Acceptance criteria:
+
+- Placebo no longer dominates live expression, or the family is closed honestly.
+- Calibration report states whether the discovery harness is trustworthy.
+- No Q2 promotion unless calibration passes.
+- No broad factor tournament.
+
+## Phase 63: Conditional A-Share State-Transition Tranche Charter
+
+Status:
+Locked by default. Requires explicit new A-share decision.
+
+Goal:
+Reopen A-share only through a new typed state-transition tranche charter.
+
+Charter must include:
+
+- mechanism hypothesis
+- state definition
+- PIT data contract
+- short-horizon label
+- execution assumption
+- capacity assumption
+- typed AlphaView shape
+- Q1 evidence requirements
+- Q2 survival requirements
+- kill criteria
+
+Acceptance criteria:
+
+- Old `anti_mom_21_5` is not auto-promoted.
+- New tranche has its own preregistered contract.
+- Typed state-transition AlphaView is defined before mining.
+- Branch-local A-share memory remains canonical for A-share details.
+
+## Phase 64: Research Import Contract for New Typed Alpha Families
+
+Status:
+Locked after Phase 62 or Phase 63.
+
+Goal:
+Prevent new research from bypassing typed-alpha governance.
+
+Input requirements:
+
+- external research artifact bundle
+- mechanism family description
+- PIT report
+- event / state / fixed-horizon label contract
+- coverage report
+- cost assumption
+- candidate AlphaView
+
+Import decisions:
+
+- `import_rejected`
+- `import_needs_more_evidence`
+- `import_as_calibration_only`
+- `import_as_shadow_branch`
+- `import_to_q1_evidence`
+- `import_to_q2_eval`
+
+Acceptance criteria:
+
+- No external research enters Q2 directly.
+- Import must specify typed horizon.
+- Leakage fixtures are rejected.
+- Missing PIT source is rejected or marked needs-more-evidence.
+- Alpha registry is updated.
+
+## Phase 65: PortfolioOS v1 Research-Audit Release
+
+Status:
+Final packaging.
+
+Goal:
+Package the whole system as a stable research-audit release.
+
+Release contents:
+
+- README.
+- Architecture.
+- RUNBOOK.
+- VALIDATION.
+- ROADMAP.
+- Typed-alpha closeout.
+- SUE Q2 report.
+- Revision marginal-value report.
+- Composite report if applicable.
+- Alpha Registry v2.
+- Paper-stage dossier if applicable.
+- Forbidden-output guard report.
+
+Acceptance criteria:
+
+- Required smoke checks pass.
+- Release note lists every non-claim.
+- No live, broker, order, or production approval path appears.
+- Generated artifacts are local and reproducible.
+- `ROADMAP.md` says no automatic next phase.
+
+## Phase 66: Maintenance Freeze / Future-Only Backlog
+
+Status:
+Terminal.
+
+Goal:
+Stop automatic roadmap growth.
+
+Allowed after Phase 66:
+
+- bug fixes
+- schema migration
+- test stabilization
+- documentation corrections
+- artifact readability polish
+- new research only through Phase 64 import contract
+- paper canary only through Phase 58-61 approval path
+
+Forbidden after Phase 66:
+
+- automatic Phase 67
+- new alpha mining without charter
+- production approval language
+- broker/order workflow by default
+- fake Q2 metrics
+- dashboard features that imply trading capability
+
+Acceptance criteria:
+
+- `ROADMAP.md` no longer recommends automatic expansion.
+- Future work is categorized as bugfix, maintenance, explicit new research
+  decision, or explicit paper-stage approval.
+- Alpha Registry v2 remains the source of truth.
+- All old branches have explicit status.
+
+## Phase 48-66 Decision Tree
+
+After Phase 48-49:
+
+- If typed expected-return injection fails, stop the platform path, document the
+  optimizer input mapping gap, and do not blame alpha.
+- If injection works but optimizer response fails, stop optimizer path, document
+  response failure, and do not run SUE Q2.
+- If injection and response work, proceed to SUE Typed Q2 Survival Matrix.
+
+After Phase 50-51:
+
+- If SUE survives local Q2, proceed to revision marginal-value gate and prepare
+  SUE candidate dossier.
+- If SUE fails due to cost or turnover, document execution survival failure and
+  do not reopen alpha research immediately.
+- If SUE fails due to projection sparsity, revisit projection bridge, not
+  optimizer.
+- If SUE is unavailable due to fixture gap, close as local Q2 observability gap.
+
+After Phase 52-54:
+
+- If revision adds marginal value, build composite AlphaView and run composite
+  Q2.
+- If revision does not add marginal value, archive it as a real shadow branch and
+  keep SUE-only.
+- If composite improves gross but loses net, keep SUE-only and record
+  cost/turnover failure.
+- If composite beats SUE net of cost, composite becomes paper-stage dossier
+  candidate.
+
+After Phase 56-61:
+
+- If paper calibration is unstable, no paper canary.
+- If paper calibration is stable but no human approval exists, stop at dossier.
+- If paper canary is approved and observation is clean, mark external review
+  only, still no production approval.
+- If paper canary shows fill, latency, or slippage issues, pause paper-stage
+  path.
+
+After Phase 62-64:
+
+- If residual momentum calibration fails, archive the family.
+- If residual momentum calibration passes, import via Phase 64, not direct Q2.
+- If A-share is reopened, write a new typed tranche charter first.
+- If a new family appears, import via Phase 64 only.

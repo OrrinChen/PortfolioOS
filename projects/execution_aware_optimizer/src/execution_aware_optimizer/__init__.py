@@ -51,6 +51,14 @@ from execution_aware_optimizer.typed_portfolioos_adapter import (
     run_typed_q2_adapter,
     write_typed_q2_adapter_artifacts,
 )
+from execution_aware_optimizer.typed_expected_return_injection import (
+    run_typed_expected_return_injection,
+    write_typed_expected_return_injection_artifacts,
+)
+from execution_aware_optimizer.typed_injection_schema import (
+    TypedExpectedReturnInjectionInput,
+    TypedExpectedReturnInjectionResult,
+)
 
 __all__ = [
     "AlphaInputReport",
@@ -70,6 +78,8 @@ __all__ = [
     "TypedQ2AdapterMatrixRow",
     "TypedQ2AdapterResult",
     "TypedQ2InputContractV2",
+    "TypedExpectedReturnInjectionInput",
+    "TypedExpectedReturnInjectionResult",
     "build_constraint_diagnostics",
     "build_cost_sensitivity_scenarios",
     "build_portfolioos_cost_overrides",
@@ -84,8 +94,10 @@ __all__ = [
     "run_alpha_decay_ladder",
     "run_execution_matrix",
     "run_typed_alpha_execution_matrix",
+    "run_typed_expected_return_injection",
     "run_typed_q2_adapter",
     "summarize_execution_matrix",
     "summarize_typed_execution_matrix",
     "write_typed_q2_adapter_artifacts",
+    "write_typed_expected_return_injection_artifacts",
 ]

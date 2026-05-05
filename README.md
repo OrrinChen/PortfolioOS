@@ -110,6 +110,13 @@ period-attribution outputs where stable mappings exist. Unsupported layers stay
 explicitly unavailable, and the artifacts keep no-live, no-order, and no-broker
 confirmations.
 
+`make typed-expected-return-injection-fixture` writes the local Phase 48
+injection artifacts under `outputs/typed_expected_return_injection_fixture/`.
+This opt-in smoke path validates the typed Q2 input contract and projection
+manifest, then writes `optimizer_input_snapshot.csv` proving the projected
+expected-return values reached the local optimizer input shape. It is not an
+optimizer response proof, alpha success claim, or production approval.
+
 ## Safety Boundaries
 
 - No broker route is exposed by Q1, Q2, the promotion gate, the artifact service,

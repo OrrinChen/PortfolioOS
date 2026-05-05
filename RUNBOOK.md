@@ -171,10 +171,22 @@ Run Q2 typed PortfolioOS adapter tests:
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:projects/execution_aware_optimizer/src poetry run pytest projects/execution_aware_optimizer/tests/test_typed_portfolioos_adapter.py -q
 ```
 
+Run Q2 typed expected-return injection tests:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:projects/execution_aware_optimizer/src poetry run pytest projects/execution_aware_optimizer/tests/test_typed_expected_return_injection.py -q
+```
+
 Run the local-only typed Q2 adapter fixture:
 
 ```bash
 make typed-q2-adapter-fixture
+```
+
+Run the local-only typed expected-return injection fixture:
+
+```bash
+make typed-expected-return-injection-fixture
 ```
 
 Run Evidence Bundle tests:

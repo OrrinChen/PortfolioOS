@@ -175,6 +175,35 @@ This writes ignored local artifacts under `outputs/typed_q2_adapter_fixture/`:
 - `typed_q2_adapter_manifest.json`
 - `typed_q2_adapter_trace.jsonl`
 
+## Typed Expected-Return Injection Fixture
+
+Phase 48 adds a local-only injection fixture. It validates `Q2InputContractV2`
+and `alpha_projection.v2`, applies optional scale/sign transforms to the
+projected expected-return panel, and writes an `optimizer_input_snapshot.csv`
+with the same `expected_return` column shape consumed by PortfolioOS
+`run_rebalance`.
+
+This proves reachability into optimizer input, not optimizer response. Phase 49
+is responsible for directional optimizer acceptance. The fixture does not call
+live data, brokers, order submission, or production approval paths.
+
+Run the opt-in local smoke target:
+
+```bash
+make typed-expected-return-injection-fixture
+```
+
+This writes ignored local artifacts under
+`outputs/typed_expected_return_injection_fixture/`:
+
+- `typed_expected_return_injection_result.json`
+- `optimizer_input_snapshot.csv`
+- `injected_expected_return_panel.csv`
+- `typed_q2_execution_matrix_injected.csv`
+- `typed_q2_injection_robustness_summary.json`
+- `typed_q2_injection_manifest.json`
+- `typed_q2_injection_trace.jsonl`
+
 ## Reports
 
 The markdown report includes:

@@ -44,6 +44,25 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - The adapter confirms no live data, no orders, and no broker path; it does not claim production alpha approval.
   - Known limitation: adapter v0 validates and records the projected expected-return panel, but it does not inject that panel into a new PortfolioOS optimizer path. Observed rows are only the metrics exposed by existing local fixture period attribution.
   - validation: Q2 project tests `33 passed`; typed Q2 focused tests `9 passed`; `make typed-q2-adapter-fixture` passed with `adapter_status=partially_observed`; `make validate` passed.
+- Final finite Phase 48-66 roadmap has been added:
+  - Phase 48 Typed Expected-Return Injection Fixture is now complete.
+  - Current phase is Phase 49 Typed Optimizer Response Acceptance Suite.
+  - Phase 48-54 are the required typed-alpha to local Q2 closeout path.
+  - Phase 55 freezes alpha decisions into Alpha Registry v2.
+  - Phase 56-58 are optional paper-stage preparation and governance only.
+  - Phase 59-61 are locked by default and require explicit human approval.
+  - Phase 62-64 are research-reopen controls, not automatic research branches.
+  - Phase 65-66 package and freeze the research-audit release.
+  - No automatic roadmap expansion is allowed after Phase 66.
+  - The main remaining gap is expected-return injection into a local optimizer input path, not a new alpha layer.
+- Phase 48 Typed Expected-Return Injection Fixture is complete:
+  - `projects/execution_aware_optimizer/src/execution_aware_optimizer/typed_injection_schema.py` defines injection input/result/summary/manifest contracts.
+  - `projects/execution_aware_optimizer/src/execution_aware_optimizer/typed_expected_return_injection.py` validates Q2InputContract v2 plus projection manifest, supports positive/scaled/sign-flipped expected-return panels, and writes optimizer input snapshots.
+  - `projects/execution_aware_optimizer/fixtures/typed_injection/` provides a deterministic fixture aligned to the local 2026-02-27 rebalance date.
+  - `scripts/run_typed_expected_return_injection_fixture.py` and `make typed-expected-return-injection-fixture` write local ignored artifacts under `outputs/typed_expected_return_injection_fixture/`.
+  - The opt-in smoke path returned `injection_status=injected`, `expected_return_reached_optimizer_input=True`, `optimizer_input_snapshot_rows=33`, `injected_expected_return_count=2`, and `q2_adapter_status=partially_observed`.
+  - Known limitation: Phase 48 proves optimizer-input reachability only. It does not prove directional optimizer response, SUE survival, production alpha approval, or paper-stage readiness.
+  - validation: Phase 48 focused tests `6 passed`; typed Q2 + Phase 48 focused tests `15 passed`; Q2 project tests `39 passed`; `make typed-expected-return-injection-fixture` passed with `injection_status=injected`; `make validate` passed.
 - Phase 46 Dashboard Readability Polish is complete:
   - `src/portfolio_os/dashboard/static_dashboard.py` now renders a first-screen typed-alpha status summary, typed-alpha chain, artifact links, manifest summary, clearer safety boundaries, and missing-artifact unavailable messaging.
   - Dashboard wording explicitly distinguishes integration benchmark, unavailable/local paper-overlay execution state, no broker/orders/live workflow, and not-approved production state.
@@ -314,7 +333,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - non-mutating cost-sensitivity scenarios live in `projects/execution_aware_optimizer/src/execution_aware_optimizer/cost_sensitivity.py`.
   - Q2 README documents each ladder layer as partial or unavailable.
   - validation: Q2 tests `11 passed`; relevant PortfolioOS subset `64 passed, 36 warnings`; default Q2 smoke scripts passed without enabling PortfolioOS execution.
-- Next recommended repo workflow phase: no active implementation phase is open after Phase 47; choose the next phase explicitly before adding more scope.
+- Next recommended repo workflow phase: Phase 49 Typed Optimizer Response Acceptance Suite. Do not open new alpha research or paper canary work before Phase 49-55 closeout.
 - Core platform buildout through Phase 12 is implemented and stable.
 - The current project-wide meta stage is `research convergence + promotion contract`, not repo merge.
 - Project operating mode is now `paper-stage only`.

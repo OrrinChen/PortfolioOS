@@ -152,6 +152,12 @@ Typed Q2 local adapter contract test:
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:projects/execution_aware_optimizer/src poetry run pytest projects/execution_aware_optimizer/tests/test_typed_portfolioos_adapter.py -q
 ```
 
+Typed expected-return injection fixture test:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:projects/execution_aware_optimizer/src poetry run pytest projects/execution_aware_optimizer/tests/test_typed_expected_return_injection.py -q
+```
+
 Smoke scripts, default non-execution mode:
 
 ```bash
@@ -176,6 +182,12 @@ Typed Q2 local adapter smoke, only when touching Phase 47 adapter paths:
 
 ```bash
 make typed-q2-adapter-fixture
+```
+
+Typed expected-return injection smoke, only when touching Phase 48 injection paths:
+
+```bash
+make typed-expected-return-injection-fixture
 ```
 
 ## Evidence Bundle Project
