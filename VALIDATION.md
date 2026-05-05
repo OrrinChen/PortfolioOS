@@ -55,6 +55,13 @@ make typed-alpha-closeout
 PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_typed_alpha_closeout_report.py -q
 ```
 
+Alpha Registry v2 smoke and tests:
+
+```bash
+make alpha-registry-v2
+PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_alpha_registry_v2.py -q
+```
+
 Typed alpha dashboard readability tests:
 
 ```bash

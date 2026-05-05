@@ -57,10 +57,11 @@ Completed:
 - Phase 50: SUE Typed Q2 Survival Matrix v1 proves SUE expected-return reaches the local optimizer input path and maps Q2 rows as observed or unavailable.
 - Phase 51: SUE Execution-Survival Attribution Report explains SUE survival layers and keeps Phase 52 as a diagnostic, not production approval.
 - Phase 52: Revision Marginal-Value Gate archives revision as a real shadow branch in the local fixture because it does not clear the SUE-adjusted cost-aware marginal threshold.
+- Phase 55: Alpha Registry v2 / Decision State Machine freezes alpha statuses and typed-chain stop layers across SUE, revision, composite, old alpha package, Qlib revision, residual momentum, A-share, and leakage fixtures.
 
 Current phase:
 
-- Phase 55: Alpha Registry v2 / Decision State Machine.
+- Phase 65: PortfolioOS v1 Research-Audit Release.
 
 Deferred:
 
@@ -1922,7 +1923,7 @@ Acceptance criteria:
 ## Phase 55: Alpha Registry v2 / Decision State Machine
 
 Status:
-Next after the Phase 52 archive decision.
+Complete.
 
 Goal:
 Freeze all alpha statuses in one machine-readable registry.
@@ -1961,6 +1962,15 @@ Acceptance criteria:
 - SUE and revision statuses reflect Phase 50-54 results.
 - Residual momentum remains calibration-only unless Phase 62 later changes it.
 - A-share remains background unless Phase 63 is explicitly opened.
+
+Completion note:
+
+- `src/portfolio_os/alpha/registry_v2.py` defines the Phase 55 registry and entry contracts plus deterministic default alpha states.
+- `scripts/build_alpha_registry_v2.py` and `make alpha-registry-v2` write `outputs/alpha_registry_v2/alpha_registry.yaml`, `outputs/alpha_registry_v2/alpha_registry_decision_table.csv`, and `reports/alpha_registry_report.md`.
+- SUE is recorded as `canonical_pilot` with stop layer `unavailable_local_fixture_hook`.
+- `revision_1m` is recorded as `real_shadow_branch` with `archived_no_marginal_value` in its status history and stop layer `revision_marginal_value_gate`.
+- Residual momentum remains `calibration_only`; A-share `anti_mom_21_5` remains `background_partially_real`; forward-return leakage fixtures remain `rejected_leakage`.
+- No alpha is labeled only pass/fail, and the registry does not claim production approval, live trading, paper canary approval, broker workflows, orders, or new research branches.
 
 ## Phase 56: Paper Overlay Calibration Round 2
 

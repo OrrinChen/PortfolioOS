@@ -28,6 +28,13 @@ from portfolio_os.alpha.promotion_contract import (
     validate_promotion_contract,
 )
 from portfolio_os.alpha.report import render_alpha_acceptance_note, render_alpha_research_report
+from portfolio_os.alpha.registry_v2 import (
+    AlphaRegistryEntry,
+    AlphaRegistryV2,
+    build_default_alpha_registry_v2,
+    render_alpha_registry_report,
+    write_alpha_registry_v2_artifacts,
+)
 from portfolio_os.alpha.research import AlphaResearchResult, build_alpha_score_frame, load_alpha_returns_panel, run_alpha_research
 from portfolio_os.alpha.state_transition_pilot import (
     UpperLimitPilotRunResult,
@@ -58,6 +65,8 @@ from portfolio_os.alpha.state_transition_panel import (
 __all__ = [
     "AlphaAcceptanceResult",
     "AlphaRecipeConfig",
+    "AlphaRegistryEntry",
+    "AlphaRegistryV2",
     "AlphaResearchResult",
     "AlphaView",
     "AlphaViewValidationError",
@@ -74,6 +83,7 @@ __all__ = [
     "PROMOTION_CONTRACT_VERSION",
     "PromotionContract",
     "build_event_basket_target_frame",
+    "build_default_alpha_registry_v2",
     "build_event_evidence_bundle",
     "build_event_target_manifest",
     "project_alpha_views_to_expected_returns",
@@ -96,6 +106,7 @@ __all__ = [
     "load_alpha_returns_panel",
     "load_alpha_view",
     "render_alpha_acceptance_note",
+    "render_alpha_registry_report",
     "render_alpha_research_report",
     "build_state_transition_daily_panel",
     "extract_upper_limit_daily_state_slice",
@@ -106,4 +117,5 @@ __all__ = [
     "dump_event_evidence_bundle_json",
     "write_event_evidence_artifacts",
     "write_alpha_projection_artifacts",
+    "write_alpha_registry_v2_artifacts",
 ]

@@ -146,6 +146,13 @@ raw tree or feature importance as proof, and decides whether revision should
 advance to composite evaluation. The default fixture archives revision as a real
 shadow branch without composite promotion or production approval.
 
+`make alpha-registry-v2` writes the local Phase 55 alpha registry under
+`outputs/alpha_registry_v2/` and `reports/alpha_registry_report.md`. The
+registry freezes SUE, revision, composite, old alpha package, Qlib revision,
+residual momentum, A-share, and leakage-fixture decision states with explicit
+typed-chain stop layers. It does not open research, broker, order, paper canary,
+or production-approval paths.
+
 ## Safety Boundaries
 
 - No broker route is exposed by Q1, Q2, the promotion gate, the artifact service,

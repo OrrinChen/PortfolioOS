@@ -50,7 +50,8 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - Phase 50 SUE Typed Q2 Survival Matrix v1 is now complete.
   - Phase 51 SUE Execution-Survival Attribution Report is now complete.
   - Phase 52 Revision Marginal-Value Gate is now complete.
-  - Current phase is Phase 55 Alpha Registry v2 / Decision State Machine because the Phase 52 local fixture archived revision as a real shadow branch and did not open conditional Phase 53-54 composite work.
+  - Phase 55 Alpha Registry v2 / Decision State Machine is now complete.
+  - Current phase is Phase 65 PortfolioOS v1 Research-Audit Release because Phase 56-61 remain optional/locked without a clean local Q2 dossier.
   - Phase 48-54 are the required typed-alpha to local Q2 closeout path.
   - Phase 55 freezes alpha decisions into Alpha Registry v2.
   - Phase 56-58 are optional paper-stage preparation and governance only.
@@ -96,6 +97,12 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - `scripts/run_revision_marginal_value_gate.py` and `make revision-marginal-value-gate` write `outputs/revision_marginal_value_gate/` artifacts plus `reports/revision_marginal_value_report.md`.
   - The local decision is `revision_real_but_no_marginal_value`: revision remains a real shadow branch, Phase 53-54 composite work is not opened by the default fixture, and production approval is not claimed.
   - validation: Phase 52 focused tests `5 passed`; Phase 51-52 focused tests `9 passed`; Q2 project tests `56 passed`; `make revision-marginal-value-gate` passed with `gate_decision=revision_real_but_no_marginal_value`; `make validate` passed.
+- Phase 55 Alpha Registry v2 / Decision State Machine is complete:
+  - `src/portfolio_os/alpha/registry_v2.py` defines machine-readable alpha registry and entry contracts, allowed decision statuses, pass/fail label rejection, stop-layer requirements, and no-production/no-live guards.
+  - `scripts/build_alpha_registry_v2.py` and `make alpha-registry-v2` write `outputs/alpha_registry_v2/alpha_registry.yaml`, `outputs/alpha_registry_v2/alpha_registry_decision_table.csv`, and `reports/alpha_registry_report.md`.
+  - Registry entries freeze SUE as `canonical_pilot`, revision as `real_shadow_branch`, SUE + revision composite as `archived_no_marginal_value`, old Phase 1.5 bridge and Qlib revision as `diagnostic_only`, residual momentum as `calibration_only`, A-share `anti_mom_21_5` as `background_partially_real`, and forward-return leakage fixtures as `rejected_leakage`.
+  - Every registry entry has a typed-chain stop layer, and no entry claims production approval, live trading, paper canary approval, broker workflows, orders, or new research branches.
+  - validation: Alpha Registry v2 focused tests `3 passed`; `make alpha-registry-v2` passed with `entry_count=8`; `make validate` passed.
 - Phase 46 Dashboard Readability Polish is complete:
   - `src/portfolio_os/dashboard/static_dashboard.py` now renders a first-screen typed-alpha status summary, typed-alpha chain, artifact links, manifest summary, clearer safety boundaries, and missing-artifact unavailable messaging.
   - Dashboard wording explicitly distinguishes integration benchmark, unavailable/local paper-overlay execution state, no broker/orders/live workflow, and not-approved production state.
@@ -366,7 +373,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - non-mutating cost-sensitivity scenarios live in `projects/execution_aware_optimizer/src/execution_aware_optimizer/cost_sensitivity.py`.
   - Q2 README documents each ladder layer as partial or unavailable.
   - validation: Q2 tests `11 passed`; relevant PortfolioOS subset `64 passed, 36 warnings`; default Q2 smoke scripts passed without enabling PortfolioOS execution.
-- Next recommended repo workflow phase: Phase 55 Alpha Registry v2 / Decision State Machine. Do not open new alpha research or paper canary work before Phase 55 freezes SUE, revision, old alpha package, residual momentum, A-share, and rejected-leakage statuses.
+- Next recommended repo workflow phase: Phase 65 PortfolioOS v1 Research-Audit Release. Phase 56-61 remain optional/locked without a clean local Q2 dossier; do not open new alpha research, broker/order workflows, or paper canary approval paths.
 - Core platform buildout through Phase 12 is implemented and stable.
 - The current project-wide meta stage is `research convergence + promotion contract`, not repo merge.
 - Project operating mode is now `paper-stage only`.
