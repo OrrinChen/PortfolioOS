@@ -146,6 +146,12 @@ Typed Q2 execution matrix contract test:
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:projects/execution_aware_optimizer/src poetry run pytest projects/execution_aware_optimizer/tests/test_typed_execution_matrix.py -q
 ```
 
+Typed Q2 local adapter contract test:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:projects/execution_aware_optimizer/src poetry run pytest projects/execution_aware_optimizer/tests/test_typed_portfolioos_adapter.py -q
+```
+
 Smoke scripts, default non-execution mode:
 
 ```bash
@@ -164,6 +170,12 @@ Explicit local executed fixture report smoke, only when touching that opt-in fix
 
 ```bash
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:projects/execution_aware_optimizer/src poetry run python projects/execution_aware_optimizer/scripts/run_alpha_decay_ladder.py --config projects/execution_aware_optimizer/configs/local_executed_fixture_report.yaml --output /tmp/portfolioos_q2_local_executed_fixture/alpha_decay_ladder_results.csv --report /tmp/portfolioos_q2_local_executed_fixture/local_executed_fixture_report.md
+```
+
+Typed Q2 local adapter smoke, only when touching Phase 47 adapter paths:
+
+```bash
+make typed-q2-adapter-fixture
 ```
 
 ## Evidence Bundle Project

@@ -42,6 +42,15 @@ from execution_aware_optimizer.typed_execution_matrix import (
     run_typed_alpha_execution_matrix,
     summarize_typed_execution_matrix,
 )
+from execution_aware_optimizer.typed_adapter_schema import (
+    TypedQ2AdapterInput,
+    TypedQ2AdapterMatrixRow,
+    TypedQ2AdapterResult,
+)
+from execution_aware_optimizer.typed_portfolioos_adapter import (
+    run_typed_q2_adapter,
+    write_typed_q2_adapter_artifacts,
+)
 
 __all__ = [
     "AlphaInputReport",
@@ -57,6 +66,9 @@ __all__ = [
     "ScenarioGridConfig",
     "TypedExecutionMatrixRow",
     "TypedExecutionMatrixSummary",
+    "TypedQ2AdapterInput",
+    "TypedQ2AdapterMatrixRow",
+    "TypedQ2AdapterResult",
     "TypedQ2InputContractV2",
     "build_constraint_diagnostics",
     "build_cost_sensitivity_scenarios",
@@ -72,6 +84,8 @@ __all__ = [
     "run_alpha_decay_ladder",
     "run_execution_matrix",
     "run_typed_alpha_execution_matrix",
+    "run_typed_q2_adapter",
     "summarize_execution_matrix",
     "summarize_typed_execution_matrix",
+    "write_typed_q2_adapter_artifacts",
 ]

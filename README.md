@@ -103,6 +103,13 @@ boundaries while remaining static and read-only.
 Phase 35-42 plus release hardening. It states what the typed-alpha chain proves,
 what it does not prove, known limitations, and allowed next work.
 
+`make typed-q2-adapter-fixture` writes the local Phase 47 adapter artifacts under
+`outputs/typed_q2_adapter_fixture/`. This opt-in smoke path connects the typed
+Q2 input contract and expected-return panel to existing local PortfolioOS fixture
+period-attribution outputs where stable mappings exist. Unsupported layers stay
+explicitly unavailable, and the artifacts keep no-live, no-order, and no-broker
+confirmations.
+
 ## Safety Boundaries
 
 - No broker route is exposed by Q1, Q2, the promotion gate, the artifact service,

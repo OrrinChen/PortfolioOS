@@ -145,6 +145,36 @@ Run the matrix without enabling PortfolioOS execution:
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:projects/execution_aware_optimizer/src poetry run python projects/execution_aware_optimizer/scripts/run_execution_matrix.py --config projects/execution_aware_optimizer/configs/execution_matrix.yaml --output /tmp/portfolioos_q2_execution_matrix/execution_matrix.csv --summary-output /tmp/portfolioos_q2_execution_matrix/robustness_summary.json --report /tmp/portfolioos_q2_execution_matrix/execution_report.md
 ```
 
+## Typed Q2 Execution Adapter v0
+
+Phase 47 adds a local-only typed Q2 adapter around the existing
+`run_alpha_decay_ladder` PortfolioOS adapter. It consumes a
+`Q2InputContractV2`, projected `expected_return_panel.csv`, projection manifest,
+and local backtest manifest. With `allow_portfolioos_run=false`, every row stays
+structured unavailable and PortfolioOS is not called. With explicit opt-in, the
+adapter maps locally available period-attribution rows into observed typed Q2
+rows and preserves unsupported layers as unavailable.
+
+The v0 adapter does not feed the projected expected-return panel into a new
+optimizer path. It validates and records typed-alpha coverage diagnostics, then
+observes only the local PortfolioOS fixture metrics exposed by stable existing
+backtest outputs. It does not call live data, broker, or order workflows, and it
+does not imply production alpha approval.
+
+Run the opt-in local smoke target:
+
+```bash
+make typed-q2-adapter-fixture
+```
+
+This writes ignored local artifacts under `outputs/typed_q2_adapter_fixture/`:
+
+- `typed_q2_execution_matrix.csv`
+- `typed_q2_adapter_result.json`
+- `typed_q2_robustness_summary.json`
+- `typed_q2_adapter_manifest.json`
+- `typed_q2_adapter_trace.jsonl`
+
 ## Reports
 
 The markdown report includes:

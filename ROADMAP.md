@@ -51,10 +51,11 @@ Completed:
 - Phase 44: Demo v2 Golden Snapshot Tests lock required artifact shapes, release-manifest keys, dashboard sections, and unavailable-row semantics.
 - Phase 45: Typed Alpha Closeout Report writes a deterministic closeout memo with explicit proof, non-proof, limitation, and reproducibility sections.
 - Phase 46: Dashboard Readability Polish adds first-screen status, typed-alpha chain, artifact links, manifest summary, and unavailable-artifact messaging without workflow controls.
+- Phase 47: Typed Q2 Execution Adapter v0 connects typed Q2 input artifacts to the existing local PortfolioOS fixture adapter and emits observed/unavailable rows without live data, orders, brokers, or production approval.
 
 Current phase:
 
-- Optional later phases complete.
+- None. Phase 47 is complete; any further phase should be opened explicitly.
 
 Deferred:
 
@@ -162,6 +163,7 @@ Do not:
 | Phase 35-38 | Typed alpha view, event evidence, projection, promotion v2 | Alpha realism / contracts |
 | Phase 39-42 | Typed Q2 matrix, paper overlay, pilot, dashboard v2 | Research-to-paper closed loop |
 | Phase 43-46 | Typed alpha release hardening, golden checks, closeout, dashboard readability | Demo reliability / audit handoff |
+| Phase 47 | Typed Q2 execution adapter v0 | Closing the typed-alpha execution-observation gap |
 
 ## Phase 4: Q2 Adapter Hardening
 
@@ -1410,3 +1412,149 @@ Do not:
 - add broker/live routes
 - fake Q2 metrics
 - add production approval language
+
+## Phase 47: Typed Q2 Execution Adapter v0
+
+Status:
+Complete.
+
+Goal:
+Connect typed-alpha `Q2InputContract v2` and projected expected-return-panel
+artifacts to a local-only PortfolioOS execution-aware fixture so typed Q2 rows
+can become observed where local metrics are available.
+
+Why next:
+The typed-alpha chain can now express SUE as:
+
+```text
+AlphaView
+  -> Event Evidence
+  -> Projection
+  -> Promotion Gate v2
+  -> Q2 Input Contract
+```
+
+The remaining gap is that the Q2 typed matrix still reports execution rows as
+`unavailable`. Phase 47 should answer whether typed-alpha projections can be
+consumed by a local Q2 adapter without live data, brokers, order generation, or
+production approval.
+
+Non-goals:
+
+- no live Alpaca, SEC, FMP, WRDS, Tushare, or paid/external data workflow
+- no broker integration
+- no order generation
+- no production alpha approval
+- no `config/us_expanded.yaml` promotion
+- no new SUE, revision, residual momentum, or A-share research
+- no fake Q2 metrics
+- no placeholder values that make unavailable rows look observed
+
+Target modules:
+
+- `projects/execution_aware_optimizer/src/execution_aware_optimizer/typed_adapter_schema.py`
+- `projects/execution_aware_optimizer/src/execution_aware_optimizer/typed_portfolioos_adapter.py`
+- `projects/execution_aware_optimizer/fixtures/typed_q2/`
+- `scripts/run_typed_q2_adapter_fixture.py`
+- focused typed-adapter tests under `projects/execution_aware_optimizer/tests/`
+
+Input contract:
+
+```text
+TypedQ2AdapterInput
+  schema_version
+  run_id
+  q2_input_contract_v2_path
+  expected_return_panel_path
+  projection_manifest_path
+  local_backtest_manifest_path
+  adapter_config
+  allow_portfolioos_run
+  no_network
+  no_broker
+```
+
+Output contract:
+
+```text
+TypedQ2AdapterResult
+  schema_version
+  run_id
+  adapter_status: observed | partially_observed | unavailable | rejected
+  observed_rows
+  unavailable_rows
+  rejection_reasons
+  source_config_hash
+  input_artifact_hashes
+  no_live_data_confirmed
+  no_orders_confirmed
+  no_broker_confirmed
+```
+
+Required output artifacts:
+
+- `typed_q2_execution_matrix.csv`
+- `typed_q2_adapter_result.json`
+- `typed_q2_robustness_summary.json`
+- `typed_q2_adapter_manifest.json`
+- `typed_q2_adapter_trace.jsonl`
+
+Execution semantics:
+
+- `allow_portfolioos_run=false` returns structured unavailable rows.
+- `allow_portfolioos_run=true` may produce observed rows only from deterministic
+  local fixtures.
+- Missing local backtest manifests produce unavailable results.
+- Missing expected-return panels produce rejected results.
+- Schema mismatches produce rejected results.
+- Forbidden output detection produces rejected results.
+- Observed rows must map to metrics actually computed from local PortfolioOS
+  fixture output.
+- Unavailable rows must remain unavailable and must not be encoded as zero
+  performance.
+
+Preferred fixture order:
+
+1. Synthetic typed-alpha fixture for contract and mapping safety.
+2. Demo-v2 SUE fixture for artifact compatibility.
+3. Optional SUE pilot adapter smoke after the synthetic fixture is stable.
+
+Acceptance criteria:
+
+- Adapter consumes `Q2InputContract v2`, expected-return panel, projection
+  manifest, and a local backtest manifest.
+- `allow_portfolioos_run=false` returns structured unavailable rows.
+- `allow_portfolioos_run=true` can produce at least one observed row from a
+  deterministic local fixture.
+- Observed rows include at least net return or cost/turnover-derived metrics
+  from local fixture output.
+- Unavailable layers remain explicit and are not fabricated.
+- Adapter result confirms no live data, no orders, and no broker path.
+- Output artifacts include execution matrix, adapter result, robustness summary,
+  manifest, and trace.
+- Forbidden-output guards cover order-like payloads, broker output, live
+  performance, production approval, credentials, and account identifiers.
+- `make validate` passes.
+- Optional `make typed-q2-adapter-fixture` passes if the fixture target is added.
+
+Stop conditions:
+
+- Adapter requires live data or broker state.
+- Expected-return panel cannot map to PortfolioOS input without semantic loss.
+- Observed rows require fake metrics.
+- SUE fixture sparsity starts being misread as performance proof.
+- Forbidden-output guard catches order-like payloads.
+
+Closeout rule:
+
+If observed local mapping cannot be implemented safely, Phase 47 should close
+as `typed Q2 adapter unavailable due to mapping gap`, not force a fake observed
+implementation.
+
+Completion note:
+
+- `projects/execution_aware_optimizer/src/execution_aware_optimizer/typed_adapter_schema.py` defines the typed adapter input, matrix row, result, summary, and manifest contracts.
+- `projects/execution_aware_optimizer/src/execution_aware_optimizer/typed_portfolioos_adapter.py` validates typed artifacts, rejects forbidden output keys, preserves unavailable rows, and maps local PortfolioOS period attribution into observed typed Q2 adapter rows where stable mappings exist.
+- `projects/execution_aware_optimizer/fixtures/typed_q2/` provides a synthetic typed-alpha fixture.
+- `scripts/run_typed_q2_adapter_fixture.py` and `make typed-q2-adapter-fixture` write local adapter artifacts under `outputs/typed_q2_adapter_fixture/`.
+- The adapter v0 validates and records the projected expected-return panel but does not yet inject that panel into a new PortfolioOS optimizer path. It observes only metrics exposed by existing local fixture period attribution.

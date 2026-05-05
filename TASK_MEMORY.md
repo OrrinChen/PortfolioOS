@@ -33,8 +33,17 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - Phase 44 Demo v2 Golden Snapshot Tests is now complete.
   - Phase 45 Typed Alpha Closeout Report is now complete.
   - Phase 46 Dashboard Readability Polish is now complete.
-  - Current roadmap status is optional later phases complete.
+  - Current release-candidate hardening status is complete.
   - forbidden next work remains new alpha research, live data refreshes, broker/order paths, production approval language, fake Q2 metrics, and optimizer retuning.
+- Phase 47 Typed Q2 Execution Adapter v0 is complete:
+  - `projects/execution_aware_optimizer/src/execution_aware_optimizer/typed_adapter_schema.py` defines local adapter input, matrix row, result, robustness summary, and manifest contracts.
+  - `projects/execution_aware_optimizer/src/execution_aware_optimizer/typed_portfolioos_adapter.py` validates typed Q2 input artifacts, rejects forbidden output keys, preserves unavailable rows, and maps stable local PortfolioOS period-attribution rows into observed typed Q2 adapter rows.
+  - `projects/execution_aware_optimizer/fixtures/typed_q2/` provides the synthetic typed-alpha fixture.
+  - `scripts/run_typed_q2_adapter_fixture.py` and `make typed-q2-adapter-fixture` write local ignored artifacts under `outputs/typed_q2_adapter_fixture/`.
+  - The opt-in smoke path returned `adapter_status=partially_observed`, `observed_rows=18`, and `unavailable_rows=1` against the existing local backtest fixture.
+  - The adapter confirms no live data, no orders, and no broker path; it does not claim production alpha approval.
+  - Known limitation: adapter v0 validates and records the projected expected-return panel, but it does not inject that panel into a new PortfolioOS optimizer path. Observed rows are only the metrics exposed by existing local fixture period attribution.
+  - validation: Q2 project tests `33 passed`; typed Q2 focused tests `9 passed`; `make typed-q2-adapter-fixture` passed with `adapter_status=partially_observed`; `make validate` passed.
 - Phase 46 Dashboard Readability Polish is complete:
   - `src/portfolio_os/dashboard/static_dashboard.py` now renders a first-screen typed-alpha status summary, typed-alpha chain, artifact links, manifest summary, clearer safety boundaries, and missing-artifact unavailable messaging.
   - Dashboard wording explicitly distinguishes integration benchmark, unavailable/local paper-overlay execution state, no broker/orders/live workflow, and not-approved production state.
@@ -305,7 +314,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - non-mutating cost-sensitivity scenarios live in `projects/execution_aware_optimizer/src/execution_aware_optimizer/cost_sensitivity.py`.
   - Q2 README documents each ladder layer as partial or unavailable.
   - validation: Q2 tests `11 passed`; relevant PortfolioOS subset `64 passed, 36 warnings`; default Q2 smoke scripts passed without enabling PortfolioOS execution.
-- Next recommended repo workflow phase: all Phase 35-42 roadmap phases are complete; choose an optional later phase explicitly before adding more scope.
+- Next recommended repo workflow phase: no active implementation phase is open after Phase 47; choose the next phase explicitly before adding more scope.
 - Core platform buildout through Phase 12 is implemented and stable.
 - The current project-wide meta stage is `research convergence + promotion contract`, not repo merge.
 - Project operating mode is now `paper-stage only`.

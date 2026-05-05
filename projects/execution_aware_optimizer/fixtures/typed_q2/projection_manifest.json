@@ -1,0 +1,21 @@
+{
+  "abstain_row_count": 0,
+  "alpha_view_ids": [
+    "AV-TYPED-Q2-FIXTURE-001"
+  ],
+  "content_hash": "typed-q2-fixture-projection-hash",
+  "cost_assumptions": {
+    "cost_bps": 5.0
+  },
+  "diagnostic_row_count": 1,
+  "panel_row_count": 2,
+  "rebalance_dates": [
+    "2026-02-28"
+  ],
+  "risk_horizon_days": 21,
+  "schema_version": "alpha_projection.v2",
+  "universe_symbols": [
+    "AAPL",
+    "MSFT"
+  ]
+}

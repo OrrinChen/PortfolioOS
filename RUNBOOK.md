@@ -165,6 +165,18 @@ Run Q2 typed execution matrix tests:
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:projects/execution_aware_optimizer/src poetry run pytest projects/execution_aware_optimizer/tests/test_typed_execution_matrix.py -q
 ```
 
+Run Q2 typed PortfolioOS adapter tests:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:projects/execution_aware_optimizer/src poetry run pytest projects/execution_aware_optimizer/tests/test_typed_portfolioos_adapter.py -q
+```
+
+Run the local-only typed Q2 adapter fixture:
+
+```bash
+make typed-q2-adapter-fixture
+```
+
 Run Evidence Bundle tests:
 
 ```bash
