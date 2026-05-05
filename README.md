@@ -138,6 +138,14 @@ fixture and writes Phase 51 attribution artifacts:
 failure from execution failure, projection sparsity from optimizer response, and
 states whether revision marginal-value testing should proceed.
 
+`make revision-marginal-value-gate` writes the local Phase 52 revision
+marginal-value artifacts under `outputs/revision_marginal_value_gate/` and
+`reports/revision_marginal_value_report.md`. The gate requires WRDS as the
+PIT-safe analyst revision source, rejects FMP frozen estimate history, rejects
+raw tree or feature importance as proof, and decides whether revision should
+advance to composite evaluation. The default fixture archives revision as a real
+shadow branch without composite promotion or production approval.
+
 ## Safety Boundaries
 
 - No broker route is exposed by Q1, Q2, the promotion gate, the artifact service,

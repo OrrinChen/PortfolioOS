@@ -1,0 +1,87 @@
+{
+  "horizon_type": "to_next_announcement",
+  "local_only": true,
+  "marginal_metrics": {
+    "cost_aware_net_improvement": -0.0008,
+    "coverage_overlap_ratio": 0.24,
+    "event_overlap_ratio": 0.18,
+    "gross_to_net_retention": 0.46,
+    "marginal_alpha_only_t": 2.8,
+    "marginal_rank_ic_t": 3.1,
+    "sue_adjusted_net_improvement": 0.0004,
+    "turnover_delta": 0.12
+  },
+  "marginal_thresholds": {
+    "max_coverage_overlap_ratio": 0.85,
+    "max_event_overlap_ratio": 0.75,
+    "min_cost_aware_net_improvement": 0.001,
+    "min_gross_to_net_retention": 0.5,
+    "min_marginal_alpha_only_t": 2.0,
+    "min_marginal_rank_ic_t": 2.0,
+    "min_sue_adjusted_net_improvement": 0.001
+  },
+  "no_broker": true,
+  "no_network": true,
+  "pit_source": "WRDS",
+  "proof_type": "event_aware_marginal_diagnostics",
+  "required_test_results": [
+    {
+      "details": "Local SUE-only baseline fixture was evaluated.",
+      "metric_name": "net_return",
+      "metric_value": 0.01,
+      "status": "passed",
+      "test_name": "sue_only_baseline"
+    },
+    {
+      "details": "Revision-only shadow branch was evaluated.",
+      "metric_name": "net_return",
+      "metric_value": 0.011,
+      "status": "passed",
+      "test_name": "revision_only_shadow_branch"
+    },
+    {
+      "details": "Equal composite branch was evaluated.",
+      "metric_name": "net_return",
+      "metric_value": 0.0104,
+      "status": "passed",
+      "test_name": "sue_revision_equal_composite"
+    },
+    {
+      "details": "Confidence-weighted composite branch was evaluated.",
+      "metric_name": "net_return",
+      "metric_value": 0.0105,
+      "status": "passed",
+      "test_name": "sue_revision_confidence_weighted_composite"
+    },
+    {
+      "details": "SUE residual branch was evaluated.",
+      "metric_name": "residual_rank_ic_t",
+      "metric_value": 3.0,
+      "status": "passed",
+      "test_name": "sue_residualized_against_revision"
+    },
+    {
+      "details": "Revision residual branch was evaluated.",
+      "metric_name": "residual_rank_ic_t",
+      "metric_value": 2.8,
+      "status": "passed",
+      "test_name": "revision_residualized_against_sue"
+    },
+    {
+      "details": "Event and coverage overlap are disclosed.",
+      "metric_name": "coverage_overlap",
+      "metric_value": 0.24,
+      "status": "passed",
+      "test_name": "event_overlap_coverage_overlap"
+    },
+    {
+      "details": "Cost-aware marginal contribution was evaluated and did not clear the threshold.",
+      "metric_name": "net_improvement",
+      "metric_value": -0.0008,
+      "status": "passed",
+      "test_name": "cost_aware_marginal_contribution"
+    }
+  ],
+  "revision_data_source": "wrds_ibes_point_in_time",
+  "run_id": "revision-marginal-value-fixture"
+}

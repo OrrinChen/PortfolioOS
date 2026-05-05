@@ -195,6 +195,12 @@ Run SUE execution-survival attribution tests:
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:projects/execution_aware_optimizer/src poetry run pytest projects/execution_aware_optimizer/tests/test_sue_execution_survival_attribution.py -q
 ```
 
+Run revision marginal-value gate tests:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:projects/execution_aware_optimizer/src poetry run pytest projects/execution_aware_optimizer/tests/test_revision_marginal_value_gate.py -q
+```
+
 Run the local-only typed Q2 adapter fixture:
 
 ```bash
@@ -223,6 +229,12 @@ Build the local SUE execution-survival attribution report:
 
 ```bash
 make sue-survival-attribution
+```
+
+Run the local-only revision marginal-value gate:
+
+```bash
+make revision-marginal-value-gate
 ```
 
 Run Evidence Bundle tests:

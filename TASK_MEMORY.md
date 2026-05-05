@@ -49,7 +49,8 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - Phase 49 Typed Optimizer Response Acceptance Suite is now complete.
   - Phase 50 SUE Typed Q2 Survival Matrix v1 is now complete.
   - Phase 51 SUE Execution-Survival Attribution Report is now complete.
-  - Current phase is Phase 52 Revision Marginal-Value Gate.
+  - Phase 52 Revision Marginal-Value Gate is now complete.
+  - Current phase is Phase 55 Alpha Registry v2 / Decision State Machine because the Phase 52 local fixture archived revision as a real shadow branch and did not open conditional Phase 53-54 composite work.
   - Phase 48-54 are the required typed-alpha to local Q2 closeout path.
   - Phase 55 freezes alpha decisions into Alpha Registry v2.
   - Phase 56-58 are optional paper-stage preparation and governance only.
@@ -88,6 +89,13 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - The local decision is `sue_q2_inconclusive`: SUE reaches optimizer input and local Q2 rows are partially observed, but an intermediate local fixture hook remains unavailable.
   - Phase 52 should proceed only as a revision marginal-value diagnostic, not as SUE alpha success or production approval.
   - validation: Phase 51 focused tests `4 passed`; `make sue-survival-attribution` passed; Phase 50-51 focused tests `8 passed`; Q2 typed focused tests `27 passed`; Q2 project tests `51 passed`; `make validate` passed.
+- Phase 52 Revision Marginal-Value Gate is complete:
+  - `projects/execution_aware_optimizer/src/execution_aware_optimizer/revision_marginal_value_schema.py` defines the gate input, required-test, marginal-metric, threshold, overlap-row, summary, and result contracts.
+  - `projects/execution_aware_optimizer/src/execution_aware_optimizer/revision_marginal_value_gate.py` enforces WRDS-only PIT source acceptance for analyst revision research, rejects FMP frozen estimate history as PIT-safe input, rejects raw tree or feature importance as proof, and requires SUE-adjusted cost-aware marginal improvement before composite promotion.
+  - `projects/execution_aware_optimizer/fixtures/revision_marginal_value/gate_input.json` is the deterministic local fixture; it passes the required diagnostics but fails the cost-aware marginal threshold.
+  - `scripts/run_revision_marginal_value_gate.py` and `make revision-marginal-value-gate` write `outputs/revision_marginal_value_gate/` artifacts plus `reports/revision_marginal_value_report.md`.
+  - The local decision is `revision_real_but_no_marginal_value`: revision remains a real shadow branch, Phase 53-54 composite work is not opened by the default fixture, and production approval is not claimed.
+  - validation: Phase 52 focused tests `5 passed`; Phase 51-52 focused tests `9 passed`; Q2 project tests `56 passed`; `make revision-marginal-value-gate` passed with `gate_decision=revision_real_but_no_marginal_value`; `make validate` passed.
 - Phase 46 Dashboard Readability Polish is complete:
   - `src/portfolio_os/dashboard/static_dashboard.py` now renders a first-screen typed-alpha status summary, typed-alpha chain, artifact links, manifest summary, clearer safety boundaries, and missing-artifact unavailable messaging.
   - Dashboard wording explicitly distinguishes integration benchmark, unavailable/local paper-overlay execution state, no broker/orders/live workflow, and not-approved production state.
@@ -358,7 +366,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - non-mutating cost-sensitivity scenarios live in `projects/execution_aware_optimizer/src/execution_aware_optimizer/cost_sensitivity.py`.
   - Q2 README documents each ladder layer as partial or unavailable.
   - validation: Q2 tests `11 passed`; relevant PortfolioOS subset `64 passed, 36 warnings`; default Q2 smoke scripts passed without enabling PortfolioOS execution.
-- Next recommended repo workflow phase: Phase 52 Revision Marginal-Value Gate. Do not open new alpha research or paper canary work before Phase 52-55 closeout.
+- Next recommended repo workflow phase: Phase 55 Alpha Registry v2 / Decision State Machine. Do not open new alpha research or paper canary work before Phase 55 freezes SUE, revision, old alpha package, residual momentum, A-share, and rejected-leakage statuses.
 - Core platform buildout through Phase 12 is implemented and stable.
 - The current project-wide meta stage is `research convergence + promotion contract`, not repo merge.
 - Project operating mode is now `paper-stage only`.

@@ -53,10 +53,14 @@ Completed:
 - Phase 46: Dashboard Readability Polish adds first-screen status, typed-alpha chain, artifact links, manifest summary, and unavailable-artifact messaging without workflow controls.
 - Phase 47: Typed Q2 Execution Adapter v0 connects typed Q2 input artifacts to the existing local PortfolioOS fixture adapter and emits observed/unavailable rows without live data, orders, brokers, or production approval.
 - Phase 48: Typed Expected-Return Injection Fixture proves projected expected-return panels can reach a local optimizer input snapshot without live data, brokers, orders, or production approval.
+- Phase 49: Typed Optimizer Response Acceptance Suite proves local optimizer response to positive, scaled, sign-flipped, zero-alpha, and explicit-abstain typed expected-return panels.
+- Phase 50: SUE Typed Q2 Survival Matrix v1 proves SUE expected-return reaches the local optimizer input path and maps Q2 rows as observed or unavailable.
+- Phase 51: SUE Execution-Survival Attribution Report explains SUE survival layers and keeps Phase 52 as a diagnostic, not production approval.
+- Phase 52: Revision Marginal-Value Gate archives revision as a real shadow branch in the local fixture because it does not clear the SUE-adjusted cost-aware marginal threshold.
 
 Current phase:
 
-- Phase 49: Typed Optimizer Response Acceptance Suite.
+- Phase 55: Alpha Registry v2 / Decision State Machine.
 
 Deferred:
 
@@ -1818,7 +1822,7 @@ Completion note:
 ## Phase 52: Revision Marginal-Value Gate
 
 Status:
-Next.
+Complete.
 
 Goal:
 Decide whether revision adds marginal value beyond SUE.
@@ -1850,6 +1854,14 @@ Acceptance criteria:
 - Raw tree importance or feature importance is not accepted as proof.
 - Gate produces a clear promote, shadow, archive, or needs-more-evidence
   decision.
+
+Completion note:
+
+- `projects/execution_aware_optimizer/src/execution_aware_optimizer/revision_marginal_value_schema.py` defines the Phase 52 input, test-result, marginal-metric, threshold, overlap-row, summary, and result contracts.
+- `projects/execution_aware_optimizer/src/execution_aware_optimizer/revision_marginal_value_gate.py` applies the local gate rules: WRDS is required, FMP frozen estimate history is rejected, raw tree/feature importance is insufficient, and composite promotion requires SUE-adjusted cost-aware marginal improvement.
+- `projects/execution_aware_optimizer/fixtures/revision_marginal_value/gate_input.json` is the deterministic local fixture. It keeps revision as a real shadow branch because it passes the required diagnostics but fails the cost-aware marginal threshold.
+- `scripts/run_revision_marginal_value_gate.py` and `make revision-marginal-value-gate` write `outputs/revision_marginal_value_gate/` artifacts plus `reports/revision_marginal_value_report.md`.
+- The local Phase 52 decision is `revision_real_but_no_marginal_value`, so Phase 53-54 composite work remains closed unless a future explicit marginal-value fixture clears the gate.
 
 ## Phase 53: Composite AlphaView Assembler: SUE + Revision
 
@@ -1910,7 +1922,7 @@ Acceptance criteria:
 ## Phase 55: Alpha Registry v2 / Decision State Machine
 
 Status:
-Locked after Phase 54 or Phase 52 archive decision.
+Next after the Phase 52 archive decision.
 
 Goal:
 Freeze all alpha statuses in one machine-readable registry.

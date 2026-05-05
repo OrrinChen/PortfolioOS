@@ -208,6 +208,18 @@ SUE execution-survival attribution smoke, only when touching Phase 51 attributio
 make sue-survival-attribution
 ```
 
+Revision marginal-value gate tests:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:projects/execution_aware_optimizer/src poetry run pytest projects/execution_aware_optimizer/tests/test_revision_marginal_value_gate.py -q
+```
+
+Revision marginal-value gate smoke, only when touching Phase 52 gate paths:
+
+```bash
+make revision-marginal-value-gate
+```
+
 ## Evidence Bundle Project
 
 Run when touching `projects/evidence_bundle`:

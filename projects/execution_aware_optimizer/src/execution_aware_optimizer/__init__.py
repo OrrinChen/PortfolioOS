@@ -29,6 +29,16 @@ from execution_aware_optimizer.robustness_summary import (
     render_execution_matrix_report,
     summarize_execution_matrix,
 )
+from execution_aware_optimizer.revision_marginal_value_gate import (
+    render_revision_marginal_value_report,
+    run_revision_marginal_value_gate,
+    write_revision_marginal_value_artifacts,
+)
+from execution_aware_optimizer.revision_marginal_value_schema import (
+    RevisionMarginalValueInput,
+    RevisionMarginalValueResult,
+    RevisionMarginalValueSummary,
+)
 from execution_aware_optimizer.scenario_grid import (
     ExecutionScenario,
     ScenarioGridConfig,
@@ -96,6 +106,9 @@ __all__ = [
     "ExperimentConfig",
     "LadderResultRow",
     "RobustnessSummary",
+    "RevisionMarginalValueInput",
+    "RevisionMarginalValueResult",
+    "RevisionMarginalValueSummary",
     "ScenarioGridConfig",
     "SueExecutionSurvivalAttribution",
     "SueLayerAttribution",
@@ -122,10 +135,12 @@ __all__ = [
     "load_cost_sensitivity_results",
     "load_experiment_config",
     "render_execution_matrix_report",
+    "render_revision_marginal_value_report",
     "render_sue_execution_survival_attribution_report",
     "render_typed_execution_matrix_report",
     "run_alpha_decay_ladder",
     "run_execution_matrix",
+    "run_revision_marginal_value_gate",
     "run_typed_alpha_execution_matrix",
     "run_typed_expected_return_injection",
     "run_typed_optimizer_response_acceptance",
@@ -138,4 +153,5 @@ __all__ = [
     "write_typed_optimizer_response_artifacts",
     "write_sue_typed_q2_survival_artifacts",
     "write_sue_execution_survival_attribution_artifacts",
+    "write_revision_marginal_value_artifacts",
 ]
