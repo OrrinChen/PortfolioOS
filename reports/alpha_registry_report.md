@@ -15,7 +15,7 @@ no live trading allowed by registry
 
 | alpha_id | display_name | primary_status | stop_layer | source_phase |
 |---|---|---|---|---|
-| sue_pead | SUE / PEAD | canonical_pilot | unavailable_local_fixture_hook | Phase 50-51 |
+| sue_pead | SUE / PEAD | canonical_pilot | q2_observed_survives_local_fixture | Phase 50-51 |
 | revision_1m | revision_1m | real_shadow_branch | revision_marginal_value_gate | Phase 52 |
 | sue_revision_composite | SUE + revision composite | archived_no_marginal_value | not_built_phase52_archive | Phase 52 |
 | phase_1_5_bridge | Old real alpha package / Phase 1.5 bridge | diagnostic_only | typed_projection_activation_gap | Pre-Phase 35 alpha package audit |

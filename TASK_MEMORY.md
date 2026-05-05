@@ -40,10 +40,10 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - `projects/execution_aware_optimizer/src/execution_aware_optimizer/typed_portfolioos_adapter.py` validates typed Q2 input artifacts, rejects forbidden output keys, preserves unavailable rows, and maps stable local PortfolioOS period-attribution rows into observed typed Q2 adapter rows.
   - `projects/execution_aware_optimizer/fixtures/typed_q2/` provides the synthetic typed-alpha fixture.
   - `scripts/run_typed_q2_adapter_fixture.py` and `make typed-q2-adapter-fixture` write local ignored artifacts under `outputs/typed_q2_adapter_fixture/`.
-  - The opt-in smoke path returned `adapter_status=partially_observed`, `observed_rows=18`, and `unavailable_rows=1` against the existing local backtest fixture.
+  - The opt-in smoke path now returns `adapter_status=observed`, `observed_rows=30`, and `unavailable_rows=0` against the existing local backtest fixture after mapping the Q2 `risk_controlled` layer to the stable PortfolioOS `naive_pro_rata` strategy.
   - The adapter confirms no live data, no orders, and no broker path; it does not claim production alpha approval.
   - Known limitation: adapter v0 validates and records the projected expected-return panel, but it does not inject that panel into a new PortfolioOS optimizer path. Observed rows are only the metrics exposed by existing local fixture period attribution.
-  - validation: Q2 project tests `33 passed`; typed Q2 focused tests `9 passed`; `make typed-q2-adapter-fixture` passed with `adapter_status=partially_observed`; `make validate` passed.
+  - validation: Q2 project tests `58 passed`; typed Q2 adapter smoke passed with `adapter_status=observed`; `make typed-q2-adapter-fixture` passed with `observed_rows=30`.
 - Final finite Phase 48-66 roadmap has been added:
   - Phase 48 Typed Expected-Return Injection Fixture is now complete.
   - Phase 49 Typed Optimizer Response Acceptance Suite is now complete.
@@ -51,7 +51,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - Phase 51 SUE Execution-Survival Attribution Report is now complete.
   - Phase 52 Revision Marginal-Value Gate is now complete.
   - Phase 55 Alpha Registry v2 / Decision State Machine is now complete.
-  - Current phase is Phase 65 PortfolioOS v1 Research-Audit Release because Phase 56-61 remain optional/locked without a clean local Q2 dossier.
+  - Current phase remains Phase 65 PortfolioOS v1 Research-Audit Release. Phase 56-58 paper-stage preparation is now technically unblocked by a clean local SUE Q2 fixture, but it remains optional and must not start without an explicit decision.
   - Phase 48-54 are the required typed-alpha to local Q2 closeout path.
   - Phase 55 freezes alpha decisions into Alpha Registry v2.
   - Phase 56-58 are optional paper-stage preparation and governance only.
@@ -65,7 +65,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - `projects/execution_aware_optimizer/src/execution_aware_optimizer/typed_expected_return_injection.py` validates Q2InputContract v2 plus projection manifest, supports positive/scaled/sign-flipped expected-return panels, and writes optimizer input snapshots.
   - `projects/execution_aware_optimizer/fixtures/typed_injection/` provides a deterministic fixture aligned to the local 2026-02-27 rebalance date.
   - `scripts/run_typed_expected_return_injection_fixture.py` and `make typed-expected-return-injection-fixture` write local ignored artifacts under `outputs/typed_expected_return_injection_fixture/`.
-  - The opt-in smoke path returned `injection_status=injected`, `expected_return_reached_optimizer_input=True`, `optimizer_input_snapshot_rows=33`, `injected_expected_return_count=2`, and `q2_adapter_status=partially_observed`.
+  - The opt-in smoke path returned `injection_status=injected`, `expected_return_reached_optimizer_input=True`, `optimizer_input_snapshot_rows=33`, `injected_expected_return_count=2`, and `q2_adapter_status=observed`.
   - Known limitation: Phase 48 proves optimizer-input reachability only. It does not prove directional optimizer response, SUE survival, production alpha approval, or paper-stage readiness.
   - validation: Phase 48 focused tests `6 passed`; typed Q2 + Phase 48 focused tests `15 passed`; Q2 project tests `39 passed`; `make typed-expected-return-injection-fixture` passed with `injection_status=injected`; `make validate` passed.
 - Phase 49 Typed Optimizer Response Acceptance Suite is complete:
@@ -77,19 +77,19 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - validation: Phase 49 focused tests `4 passed`; `make typed-optimizer-response-acceptance` passed; Q2 typed focused tests `19 passed`; Q2 project tests `43 passed`; `make validate` passed.
 - Phase 50 SUE Typed Q2 Survival Matrix v1 is complete:
   - `projects/execution_aware_optimizer/src/execution_aware_optimizer/sue_typed_q2_survival_schema.py` defines SUE survival input, row, summary, and result contracts.
-  - `projects/execution_aware_optimizer/src/execution_aware_optimizer/sue_typed_q2_survival.py` aligns the SUE typed projection to the local 2026-02-27 optimizer fixture date, reuses the Phase 48 injection path, and maps Q2 rows as observed or unavailable.
+  - `projects/execution_aware_optimizer/src/execution_aware_optimizer/sue_typed_q2_survival.py` aligns the SUE typed projection to the local 2026-02-27 optimizer fixture date, reuses the Phase 48 injection path, and maps configured local Q2 rows as observed.
   - `projects/execution_aware_optimizer/fixtures/sue_survival/` provides the local SUE typed projection fixture.
   - `scripts/run_sue_typed_q2_survival.py` and `make sue-typed-q2-survival` write local ignored artifacts under `outputs/sue_typed_q2_survival/`.
-  - The opt-in smoke path returned `survival_status=partially_observed`, `injection_status=injected`, `expected_return_reached_optimizer_input=True`, `q2_observed_rows=18`, and `q2_unavailable_rows=1`.
+  - The opt-in smoke path now returns `survival_status=observed`, `injection_status=injected`, `expected_return_reached_optimizer_input=True`, `q2_observed_rows=30`, and `q2_unavailable_rows=0`.
   - Known limitation: Phase 50 proves SUE expected-return reaches a local optimizer input snapshot and maps existing local Q2 adapter rows. It does not claim SUE alpha success, revision marginal value, paper-stage readiness, or production approval.
-  - validation: Phase 50 focused tests `4 passed`; `make sue-typed-q2-survival` passed; Q2 typed focused tests `23 passed`; Q2 project tests `47 passed`; `make validate` passed.
+  - validation: Phase 50 focused tests passed; `make sue-typed-q2-survival` passed with `survival_status=observed`; Q2 project tests `58 passed`.
 - Phase 51 SUE Execution-Survival Attribution Report is complete:
   - `projects/execution_aware_optimizer/src/execution_aware_optimizer/sue_execution_survival_attribution_schema.py` defines attribution and layer schemas.
   - `projects/execution_aware_optimizer/src/execution_aware_optimizer/sue_execution_survival_attribution.py` interprets Phase 50 rows across evidence, projection, injection, optimizer response, constraint repair, cost, turnover, coverage/abstain, and unavailable fixture-hook layers.
   - `scripts/build_sue_typed_q2_survival_attribution.py` and `make sue-survival-attribution` rebuild the local Phase 50 fixture and write `outputs/sue_typed_q2_survival/failure_attribution.json` plus `reports/sue_typed_q2_survival_attribution.md`.
-  - The local decision is `sue_q2_inconclusive`: SUE reaches optimizer input and local Q2 rows are partially observed, but an intermediate local fixture hook remains unavailable.
+  - The local decision is now `sue_q2_observed_survives`: SUE reaches optimizer input and all configured local Q2 fixture rows are observed, including `risk_controlled` through the `naive_pro_rata` mapping.
   - Phase 52 should proceed only as a revision marginal-value diagnostic, not as SUE alpha success or production approval.
-  - validation: Phase 51 focused tests `4 passed`; `make sue-survival-attribution` passed; Phase 50-51 focused tests `8 passed`; Q2 typed focused tests `27 passed`; Q2 project tests `51 passed`; `make validate` passed.
+  - validation: Phase 51 focused tests passed; `make sue-survival-attribution` passed with `decision_label=sue_q2_observed_survives`; Q2 project tests `58 passed`.
 - Phase 52 Revision Marginal-Value Gate is complete:
   - `projects/execution_aware_optimizer/src/execution_aware_optimizer/revision_marginal_value_schema.py` defines the gate input, required-test, marginal-metric, threshold, overlap-row, summary, and result contracts.
   - `projects/execution_aware_optimizer/src/execution_aware_optimizer/revision_marginal_value_gate.py` enforces WRDS-only PIT source acceptance for analyst revision research, rejects FMP frozen estimate history as PIT-safe input, rejects raw tree or feature importance as proof, and requires SUE-adjusted cost-aware marginal improvement before composite promotion.
@@ -100,7 +100,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
 - Phase 55 Alpha Registry v2 / Decision State Machine is complete:
   - `src/portfolio_os/alpha/registry_v2.py` defines machine-readable alpha registry and entry contracts, allowed decision statuses, pass/fail label rejection, stop-layer requirements, and no-production/no-live guards.
   - `scripts/build_alpha_registry_v2.py` and `make alpha-registry-v2` write `outputs/alpha_registry_v2/alpha_registry.yaml`, `outputs/alpha_registry_v2/alpha_registry_decision_table.csv`, and `reports/alpha_registry_report.md`.
-  - Registry entries freeze SUE as `canonical_pilot`, revision as `real_shadow_branch`, SUE + revision composite as `archived_no_marginal_value`, old Phase 1.5 bridge and Qlib revision as `diagnostic_only`, residual momentum as `calibration_only`, A-share `anti_mom_21_5` as `background_partially_real`, and forward-return leakage fixtures as `rejected_leakage`.
+  - Registry entries freeze SUE as `canonical_pilot` with `q2_observed_survives` in its history, revision as `real_shadow_branch`, SUE + revision composite as `archived_no_marginal_value`, old Phase 1.5 bridge and Qlib revision as `diagnostic_only`, residual momentum as `calibration_only`, A-share `anti_mom_21_5` as `background_partially_real`, and forward-return leakage fixtures as `rejected_leakage`.
   - Every registry entry has a typed-chain stop layer, and no entry claims production approval, live trading, paper canary approval, broker workflows, orders, or new research branches.
   - validation: Alpha Registry v2 focused tests `3 passed`; `make alpha-registry-v2` passed with `entry_count=8`; `make validate` passed.
 - Phase 46 Dashboard Readability Polish is complete:
@@ -373,7 +373,11 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - non-mutating cost-sensitivity scenarios live in `projects/execution_aware_optimizer/src/execution_aware_optimizer/cost_sensitivity.py`.
   - Q2 README documents each ladder layer as partial or unavailable.
   - validation: Q2 tests `11 passed`; relevant PortfolioOS subset `64 passed, 36 warnings`; default Q2 smoke scripts passed without enabling PortfolioOS execution.
-- Next recommended repo workflow phase: Phase 65 PortfolioOS v1 Research-Audit Release. Phase 56-61 remain optional/locked without a clean local Q2 dossier; do not open new alpha research, broker/order workflows, or paper canary approval paths.
+- Next recommended repo workflow phase: Phase 65 PortfolioOS v1 Research-Audit
+  Release. Phase 56-58 are technically unblocked by the clean local SUE Q2
+  fixture but remain optional governance/paper-environment work; Phase 59-61
+  remain locked without explicit human approval. Do not open new alpha research,
+  broker/order workflows, or paper canary approval paths.
 - Core platform buildout through Phase 12 is implemented and stable.
 - The current project-wide meta stage is `research convergence + promotion contract`, not repo merge.
 - Project operating mode is now `paper-stage only`.

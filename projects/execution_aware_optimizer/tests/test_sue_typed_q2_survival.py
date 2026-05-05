@@ -62,10 +62,10 @@ def test_disabled_sue_survival_returns_structured_unavailable() -> None:
     assert result.no_broker_confirmed is True
 
 
-def test_sue_survival_injects_expected_returns_and_preserves_observed_unavailable_rows() -> None:
+def test_sue_survival_injects_expected_returns_and_observes_stable_local_layers() -> None:
     result = run_sue_typed_q2_survival(_survival_input())
 
-    assert result.survival_status == "partially_observed"
+    assert result.survival_status == "observed"
     assert result.injection_status == "injected"
     assert result.expected_return_reached_optimizer_input is True
     assert result.optimizer_rebalance_date == "2026-02-27"
@@ -75,25 +75,26 @@ def test_sue_survival_injects_expected_returns_and_preserves_observed_unavailabl
     assert result.active_name_count == 2
     assert result.expected_return_used_share == pytest.approx(2 / 3)
     assert result.q2_observed_rows > 0
-    assert result.q2_unavailable_rows > 0
+    assert result.q2_unavailable_rows == 0
     assert result.production_approval_claimed is False
 
     observed_rows = [row for row in result.matrix_rows if row.status == "observed"]
     unavailable_rows = [row for row in result.matrix_rows if row.status == "unavailable"]
     assert observed_rows
-    assert unavailable_rows
+    assert unavailable_rows == []
     assert all(row.alpha_family == "SUE" for row in result.matrix_rows)
     assert all(row.projection_policy == "event_window_decay" for row in result.matrix_rows)
     assert all(row.abstain_policy == "explicit_abstain" for row in result.matrix_rows)
+    assert {row.layer for row in observed_rows} == {
+        "raw_top_alpha_equal_weight",
+        "risk_controlled",
+        "full_execution_aware_cost_adjusted",
+    }
     assert all(row.gross_return is not None for row in observed_rows)
     assert all(row.net_return is not None for row in observed_rows)
     assert all(row.turnover is not None for row in observed_rows)
     assert all(row.cost_drag is not None for row in observed_rows)
     assert all(row.gross_to_net_retention is not None for row in observed_rows)
-    assert all(row.unavailable_reason for row in unavailable_rows)
-    assert all(row.gross_return is None for row in unavailable_rows)
-    assert all(row.net_return is None for row in unavailable_rows)
-    assert all(row.turnover is None for row in unavailable_rows)
 
 
 def test_sue_survival_artifact_writer_outputs_required_phase_50_files(tmp_path: Path) -> None:
@@ -121,13 +122,13 @@ def test_sue_survival_artifact_writer_outputs_required_phase_50_files(tmp_path: 
 
     summary = json.loads((tmp_path / "sue_typed_q2_survival_summary.json").read_text(encoding="utf-8"))
     assert summary["schema_version"] == "sue_typed_q2_survival_summary.v1"
-    assert summary["survival_status"] == "partially_observed"
+    assert summary["survival_status"] == "observed"
     assert summary["expected_return_reached_optimizer_input"] is True
     assert summary["sue_status"] == "integration_benchmark_q2_candidate"
     assert summary["production_approval_claimed"] is False
 
     matrix = pd.read_csv(tmp_path / "sue_typed_q2_execution_matrix.csv")
-    assert {"observed", "unavailable"}.issubset(set(matrix["status"]))
+    assert set(matrix["status"]) == {"observed"}
     assert {
         "active_rebalance_count",
         "active_name_count",

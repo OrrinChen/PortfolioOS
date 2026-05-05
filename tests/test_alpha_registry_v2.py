@@ -30,8 +30,9 @@ def test_alpha_registry_v2_freezes_required_alpha_statuses() -> None:
     }.issubset(entries)
 
     assert entries["sue_pead"].primary_status == "canonical_pilot"
-    assert entries["sue_pead"].typed_chain_stop_layer == "unavailable_local_fixture_hook"
+    assert entries["sue_pead"].typed_chain_stop_layer == "q2_observed_survives_local_fixture"
     assert "eligible_for_q2_eval" in entries["sue_pead"].status_history
+    assert "q2_observed_survives" in entries["sue_pead"].status_history
 
     assert entries["revision_1m"].primary_status == "real_shadow_branch"
     assert entries["revision_1m"].typed_chain_stop_layer == "revision_marginal_value_gate"

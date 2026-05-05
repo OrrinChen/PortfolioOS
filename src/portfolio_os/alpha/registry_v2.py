@@ -126,18 +126,23 @@ def build_default_alpha_registry_v2() -> AlphaRegistryV2:
                 alpha_id="sue_pead",
                 display_name="SUE / PEAD",
                 primary_status="canonical_pilot",
-                status_history=["canonical_pilot", "eligible_for_q2_eval", "production_not_approved"],
-                typed_chain_stop_layer="unavailable_local_fixture_hook",
+                status_history=[
+                    "canonical_pilot",
+                    "eligible_for_q2_eval",
+                    "q2_observed_survives",
+                    "production_not_approved",
+                ],
+                typed_chain_stop_layer="q2_observed_survives_local_fixture",
                 decision_source_phase="Phase 50-51",
                 decision_source_artifact="reports/sue_typed_q2_survival_attribution.md",
                 decision_summary=(
-                    "SUE reaches the local optimizer input and maps partially observed Q2 rows, "
-                    "but an intermediate local fixture hook remains unavailable."
+                    "SUE reaches the local optimizer input and maps observed local Q2 rows, including "
+                    "the risk-controlled fixture layer through the stable naive_pro_rata adapter."
                 ),
                 next_allowed_work="Keep as canonical typed-alpha pilot; do not claim paper or production approval.",
                 notes=[
                     "SUE remains an integration benchmark and Q2 candidate.",
-                    "Phase 51 labels the local result as sue_q2_inconclusive.",
+                    "Phase 51 labels the local fixture result as sue_q2_observed_survives.",
                 ],
             ),
             AlphaRegistryEntry(

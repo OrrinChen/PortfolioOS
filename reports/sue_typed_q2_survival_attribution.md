@@ -5,14 +5,14 @@ production approval: not claimed
 
 ## Decision
 
-- decision_label: `sue_q2_inconclusive`
-- primary_stop_layer: `unavailable_local_fixture_hook`
+- decision_label: `sue_q2_observed_survives`
+- primary_stop_layer: `none`
 - phase52_revision_marginal_value_should_proceed: `true`
 
 ## What This Proves
 
 - SUE typed expected-return values can be represented and passed into the local optimizer input path.
-- Local Q2 adapter rows can be classified as observed or unavailable without fabricating missing layers.
+- Configured local Q2 adapter rows can be observed, while unsupported rows would remain unavailable rather than fabricated.
 - Observed rows expose gross, net, turnover, cost drag, and gross-to-net retention where local fixture hooks exist.
 
 ## What This Does Not Prove
@@ -30,11 +30,10 @@ production approval: not claimed
 | projection | observed | 0 | 0 | active_rebalance_count=1; active_name_count=2; expected_return_used_share=0.666667 |
 | injection | observed | 0 | 0 | injection_status=injected; optimizer_rebalance_date=2026-02-27 |
 | optimizer_response | observed | 0 | 0 | Phase 49 separately validated directional optimizer response to typed expected-return variants. |
-| constraint_repair | observed | 18 | 0 | Observed local Q2 rows expose this metric where fixture hooks exist. |
-| cost | observed | 18 | 0 | Observed local Q2 rows expose this metric where fixture hooks exist. |
-| turnover | observed | 18 | 0 | Observed local Q2 rows expose this metric where fixture hooks exist. |
+| constraint_repair | observed | 30 | 0 | Observed local Q2 rows expose this metric where fixture hooks exist. |
+| cost | observed | 30 | 0 | Observed local Q2 rows expose this metric where fixture hooks exist. |
+| turnover | observed | 30 | 0 | Observed local Q2 rows expose this metric where fixture hooks exist. |
 | coverage_abstain | observed | 0 | 0 | SUE uses explicit abstain for missing coverage; no_view is not silently encoded as zero alpha. |
-| unavailable_local_fixture_hook | unavailable | 0 | 1 | risk_controlled: No stable PortfolioOS adapter exists yet for this intermediate layer. The project records this as unavailable rather than fabricating a result. |
 
 ## Alpha Failure vs Execution Failure
 
@@ -55,7 +54,7 @@ Proceed to Phase 52 as a marginal-value diagnostic. This is not a production app
 ## Limitations
 
 - Observed Q2 rows come from stable local fixture mappings, not live execution.
-- The risk-controlled intermediate layer may remain unavailable until a stable adapter hook exists.
+- The risk-controlled fixture layer uses the local naive_pro_rata mapping; richer optimizer risk diagnostics still require dedicated PortfolioOS hooks.
 - The SUE fixture covers a small local typed projection and should be read as an integration benchmark.
 
 ## Safety Boundaries

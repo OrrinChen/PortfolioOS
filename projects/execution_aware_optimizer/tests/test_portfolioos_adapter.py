@@ -37,6 +37,18 @@ def _fake_backtest_result() -> FakeBacktestResult:
                     "spread_cost": 0.3,
                 },
                 {
+                    "strategy": "naive_pro_rata",
+                    "end_date": "2026-02-28",
+                    "start_nav": 100.0,
+                    "holding_pnl": 1.7,
+                    "active_trading_pnl": 0.5,
+                    "trading_cost_pnl": -0.3,
+                    "period_return": 0.019,
+                    "turnover": 0.30,
+                    "commission_cost": 0.1,
+                    "spread_cost": 0.2,
+                },
+                {
                     "strategy": "optimizer",
                     "end_date": "2026-02-28",
                     "start_nav": 100.0,
@@ -71,8 +83,8 @@ def test_portfolioos_backtest_adapter_maps_available_strategies_to_ladder_rows()
     rows = run_alpha_decay_ladder(config, backtest_runner=lambda _manifest: _fake_backtest_result())
 
     raw_row = next(row for row in rows if row.layer_name == "raw_top_alpha_equal_weight")
+    risk_row = next(row for row in rows if row.layer_name == "risk_controlled")
     full_row = next(row for row in rows if row.layer_name == "full_execution_aware_cost_adjusted")
-    unavailable_row = next(row for row in rows if row.layer_name == "risk_controlled")
 
     assert raw_row.date.isoformat() == "2026-02-28"
     assert raw_row.gross_return == pytest.approx(0.03)
@@ -80,11 +92,15 @@ def test_portfolioos_backtest_adapter_maps_available_strategies_to_ladder_rows()
     assert raw_row.estimated_transaction_cost == pytest.approx(0.005)
     assert raw_row.turnover == pytest.approx(0.40)
     assert raw_row.infeasibility_reason is None
+    assert risk_row.date.isoformat() == "2026-02-28"
+    assert risk_row.gross_return == pytest.approx(0.022)
+    assert risk_row.net_return == pytest.approx(0.019)
+    assert risk_row.estimated_transaction_cost == pytest.approx(0.003)
+    assert risk_row.turnover == pytest.approx(0.30)
+    assert risk_row.infeasibility_reason is None
     assert full_row.gross_return == pytest.approx(0.022)
     assert full_row.net_return == pytest.approx(0.020)
     assert full_row.estimated_transaction_cost == pytest.approx(0.002)
-    assert unavailable_row.infeasibility_reason is not None
-    assert "No stable PortfolioOS adapter" in unavailable_row.infeasibility_reason
 
 
 def test_q2_default_configs_do_not_enable_portfolioos_runs() -> None:
@@ -113,15 +129,14 @@ def test_local_portfolioos_fixture_maps_executed_rows_without_report_writes(tmp_
     rows = run_alpha_decay_ladder(config, backtest_runner=run_backtest)
 
     raw_rows = [row for row in rows if row.layer_name == "raw_top_alpha_equal_weight"]
+    risk_rows = [row for row in rows if row.layer_name == "risk_controlled"]
     full_rows = [row for row in rows if row.layer_name == "full_execution_aware_cost_adjusted"]
-    unavailable_rows = [row for row in rows if row.layer_name == "risk_controlled"]
 
     assert raw_rows
+    assert risk_rows
     assert full_rows
     assert any(row.net_return is not None for row in raw_rows)
+    assert any(row.net_return is not None for row in risk_rows)
     assert any(row.net_return is not None for row in full_rows)
-    assert all(row.infeasibility_reason is None for row in raw_rows + full_rows)
-    assert len(unavailable_rows) == 1
-    assert unavailable_rows[0].infeasibility_reason is not None
-    assert "No stable PortfolioOS adapter" in unavailable_rows[0].infeasibility_reason
+    assert all(row.infeasibility_reason is None for row in raw_rows + risk_rows + full_rows)
     assert list(tmp_path.iterdir()) == []

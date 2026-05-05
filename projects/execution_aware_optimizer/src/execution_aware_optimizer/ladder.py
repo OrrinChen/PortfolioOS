@@ -100,6 +100,7 @@ def _run_portfolioos_backtest_layers(
     rows: list[LadderResultRow] = []
     layer_map = {
         "raw_top_alpha_equal_weight": "alpha_only_top_quintile",
+        "risk_controlled": "naive_pro_rata",
         "full_execution_aware_cost_adjusted": "optimizer",
     }
     for layer in config.layers:

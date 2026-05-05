@@ -128,8 +128,9 @@ orders, broker payloads, live performance, or production approval.
 under `outputs/sue_typed_q2_survival/`. This opt-in smoke path aligns the SUE
 typed projection to the local optimizer fixture date, proves the SUE
 expected-return values reached `optimizer_input_snapshot.csv`, and maps Q2 rows
-as observed or unavailable. SUE remains an integration benchmark and Q2
-candidate only, not production approval.
+as observed where stable local fixture hooks exist, including the
+`risk_controlled` layer through the `naive_pro_rata` adapter. SUE remains an
+integration benchmark and Q2 candidate only, not production approval.
 
 `make sue-survival-attribution` rebuilds the local Phase 50 SUE survival
 fixture and writes Phase 51 attribution artifacts:

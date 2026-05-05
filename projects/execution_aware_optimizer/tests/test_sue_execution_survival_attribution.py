@@ -86,6 +86,53 @@ def _partial_observed_result() -> SueTypedQ2SurvivalResult:
     )
 
 
+def _observed_result() -> SueTypedQ2SurvivalResult:
+    return SueTypedQ2SurvivalResult(
+        run_id="sue-survival-attribution-observed-fixture",
+        survival_status="observed",
+        injection_status="injected",
+        expected_return_reached_optimizer_input=True,
+        optimizer_rebalance_date="2026-02-27",
+        original_projection_dates=["2025-02-10"],
+        local_rebalance_date="2026-02-27",
+        active_rebalance_count=1,
+        active_name_count=2,
+        expected_return_used_share=2 / 3,
+        q2_observed_rows=3,
+        q2_unavailable_rows=0,
+        matrix_rows=[
+            _row(
+                layer="raw_top_alpha_equal_weight",
+                status="observed",
+                gross_return=0.01,
+                net_return=0.009,
+                turnover=0.4,
+                cost_drag=0.001,
+                gross_to_net_retention=0.9,
+            ),
+            _row(
+                layer="risk_controlled",
+                status="observed",
+                gross_return=0.011,
+                net_return=0.010,
+                turnover=0.3,
+                cost_drag=0.001,
+                gross_to_net_retention=0.91,
+            ),
+            _row(
+                layer="full_execution_aware_cost_adjusted",
+                status="observed",
+                gross_return=0.012,
+                net_return=0.011,
+                turnover=0.05,
+                cost_drag=0.001,
+                gross_to_net_retention=0.92,
+            ),
+        ],
+        source_config_hash="source-hash",
+    )
+
+
 def test_attribution_explains_partial_observed_sue_without_overclaiming() -> None:
     attribution = build_sue_execution_survival_attribution(_partial_observed_result())
 
@@ -105,6 +152,23 @@ def test_attribution_explains_partial_observed_sue_without_overclaiming() -> Non
     assert layers["optimizer_response"].status == "observed"
     assert layers["unavailable_local_fixture_hook"].status == "unavailable"
     assert "risk_controlled" in layers["unavailable_local_fixture_hook"].details
+
+
+def test_attribution_labels_all_observed_local_sue_without_production_approval() -> None:
+    attribution = build_sue_execution_survival_attribution(_observed_result())
+
+    assert attribution.decision_label == "sue_q2_observed_survives"
+    assert attribution.primary_stop_layer == "none"
+    assert attribution.phase52_revision_marginal_value_should_proceed is True
+    assert attribution.alpha_failure_detected is False
+    assert attribution.execution_failure_detected is False
+    assert attribution.production_approval_claimed is False
+
+    layers = {layer.layer_name: layer for layer in attribution.layer_attribution}
+    assert "unavailable_local_fixture_hook" not in layers
+    assert layers["constraint_repair"].status == "observed"
+    assert layers["cost"].status == "observed"
+    assert layers["turnover"].status == "observed"
 
 
 def test_attribution_blocks_revision_when_injection_is_unavailable() -> None:

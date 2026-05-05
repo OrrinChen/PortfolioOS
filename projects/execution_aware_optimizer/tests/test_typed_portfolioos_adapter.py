@@ -43,6 +43,18 @@ def _fake_backtest_result() -> FakeBacktestResult:
                     "spread_cost": 0.3,
                 },
                 {
+                    "strategy": "naive_pro_rata",
+                    "end_date": "2026-02-28",
+                    "start_nav": 100.0,
+                    "holding_pnl": 1.7,
+                    "active_trading_pnl": 0.5,
+                    "trading_cost_pnl": -0.3,
+                    "period_return": 0.019,
+                    "turnover": 0.30,
+                    "commission_cost": 0.1,
+                    "spread_cost": 0.2,
+                },
+                {
                     "strategy": "optimizer",
                     "end_date": "2026-02-28",
                     "start_nav": 100.0,
@@ -57,6 +69,11 @@ def _fake_backtest_result() -> FakeBacktestResult:
             ]
         )
     )
+
+
+def _fake_backtest_result_without_risk_controlled() -> FakeBacktestResult:
+    fixture = _fake_backtest_result().period_attribution
+    return FakeBacktestResult(period_attribution=fixture.loc[fixture["strategy"] != "naive_pro_rata"].copy())
 
 
 def _adapter_input(*, allow_portfolioos_run: bool) -> TypedQ2AdapterInput:
@@ -111,15 +128,15 @@ def test_allow_portfolioos_run_false_returns_structured_unavailable_rows() -> No
     assert all(row.unavailable_reason for row in result.matrix_rows)
 
 
-def test_allow_portfolioos_run_true_maps_local_fixture_to_observed_and_unavailable_rows() -> None:
+def test_allow_portfolioos_run_true_maps_local_fixture_to_observed_rows() -> None:
     result = run_typed_q2_adapter(
         _adapter_input(allow_portfolioos_run=True),
         backtest_runner=lambda _manifest: _fake_backtest_result(),
     )
 
-    assert result.adapter_status == "partially_observed"
-    assert result.observed_rows == 2
-    assert result.unavailable_rows == 1
+    assert result.adapter_status == "observed"
+    assert result.observed_rows == 3
+    assert result.unavailable_rows == 0
     assert result.rejection_reasons == []
     assert result.source_config_hash
     assert set(result.input_artifact_hashes) == {
@@ -131,8 +148,8 @@ def test_allow_portfolioos_run_true_maps_local_fixture_to_observed_and_unavailab
     }
 
     raw = next(row for row in result.matrix_rows if row.layer == "raw_top_alpha_equal_weight")
+    risk = next(row for row in result.matrix_rows if row.layer == "risk_controlled")
     full = next(row for row in result.matrix_rows if row.layer == "full_execution_aware_cost_adjusted")
-    unavailable = next(row for row in result.matrix_rows if row.layer == "risk_controlled")
 
     assert raw.status == "observed"
     assert raw.gross_return == pytest.approx(0.03)
@@ -140,11 +157,30 @@ def test_allow_portfolioos_run_true_maps_local_fixture_to_observed_and_unavailab
     assert raw.turnover == pytest.approx(0.40)
     assert raw.cost_drag == pytest.approx(0.005)
     assert raw.gross_to_net_retention == pytest.approx(0.025 / 0.03)
+    assert risk.status == "observed"
+    assert risk.gross_return == pytest.approx(0.022)
+    assert risk.net_return == pytest.approx(0.019)
+    assert risk.turnover == pytest.approx(0.30)
+    assert risk.cost_drag == pytest.approx(0.003)
     assert full.status == "observed"
     assert full.net_return == pytest.approx(0.020)
+    assert all(row.unavailable_reason is None for row in result.matrix_rows)
+
+
+def test_missing_risk_controlled_strategy_remains_structured_unavailable() -> None:
+    result = run_typed_q2_adapter(
+        _adapter_input(allow_portfolioos_run=True),
+        backtest_runner=lambda _manifest: _fake_backtest_result_without_risk_controlled(),
+    )
+
+    assert result.adapter_status == "partially_observed"
+    assert result.observed_rows == 2
+    assert result.unavailable_rows == 1
+
+    unavailable = next(row for row in result.matrix_rows if row.layer == "risk_controlled")
     assert unavailable.status == "unavailable"
     assert unavailable.net_return is None
-    assert "No stable PortfolioOS adapter" in str(unavailable.unavailable_reason)
+    assert "naive_pro_rata" in str(unavailable.unavailable_reason)
 
 
 def test_missing_expected_return_panel_rejects_without_backtest_run(tmp_path: Path) -> None:
@@ -197,7 +233,7 @@ def test_typed_q2_adapter_writes_artifacts_without_trading_payloads(tmp_path: Pa
     assert expected_names == {path.name for path in artifacts.values()}
 
     matrix = pd.read_csv(tmp_path / "typed_q2_execution_matrix.csv")
-    assert set(matrix["status"]) == {"observed", "unavailable"}
+    assert set(matrix["status"]) == {"observed"}
     assert "schema_version" in matrix.columns
 
     manifest = json.loads((tmp_path / "typed_q2_adapter_manifest.json").read_text(encoding="utf-8"))

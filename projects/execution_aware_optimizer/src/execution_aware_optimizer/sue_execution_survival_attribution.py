@@ -40,7 +40,7 @@ def build_sue_execution_survival_attribution(
         layer_attribution=layer_attribution,
         what_this_proves=[
             "SUE typed expected-return values can be represented and passed into the local optimizer input path.",
-            "Local Q2 adapter rows can be classified as observed or unavailable without fabricating missing layers.",
+            "Configured local Q2 adapter rows can be observed, while unsupported rows would remain unavailable rather than fabricated.",
             "Observed rows expose gross, net, turnover, cost drag, and gross-to-net retention where local fixture hooks exist.",
         ],
         what_this_does_not_prove=[
@@ -51,7 +51,7 @@ def build_sue_execution_survival_attribution(
         ],
         limitations=[
             "Observed Q2 rows come from stable local fixture mappings, not live execution.",
-            "The risk-controlled intermediate layer may remain unavailable until a stable adapter hook exists.",
+            "The risk-controlled fixture layer uses the local naive_pro_rata mapping; richer optimizer risk diagnostics still require dedicated PortfolioOS hooks.",
             "The SUE fixture covers a small local typed projection and should be read as an integration benchmark.",
         ],
     )

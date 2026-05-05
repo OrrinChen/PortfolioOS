@@ -143,4 +143,4 @@ def test_injection_artifact_writer_outputs_manifest_matrix_and_trace(tmp_path: P
     assert manifest["no_broker_confirmed"] is True
 
     matrix = pd.read_csv(tmp_path / "typed_q2_execution_matrix_injected.csv")
-    assert {"observed", "unavailable"}.issubset(set(matrix["status"]))
+    assert set(matrix["status"]) == {"observed"}

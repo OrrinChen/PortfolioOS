@@ -54,8 +54,8 @@ Completed:
 - Phase 47: Typed Q2 Execution Adapter v0 connects typed Q2 input artifacts to the existing local PortfolioOS fixture adapter and emits observed/unavailable rows without live data, orders, brokers, or production approval.
 - Phase 48: Typed Expected-Return Injection Fixture proves projected expected-return panels can reach a local optimizer input snapshot without live data, brokers, orders, or production approval.
 - Phase 49: Typed Optimizer Response Acceptance Suite proves local optimizer response to positive, scaled, sign-flipped, zero-alpha, and explicit-abstain typed expected-return panels.
-- Phase 50: SUE Typed Q2 Survival Matrix v1 proves SUE expected-return reaches the local optimizer input path and maps Q2 rows as observed or unavailable.
-- Phase 51: SUE Execution-Survival Attribution Report explains SUE survival layers and keeps Phase 52 as a diagnostic, not production approval.
+- Phase 50: SUE Typed Q2 Survival Matrix v1 proves SUE expected-return reaches the local optimizer input path and maps configured local Q2 rows as observed, including the risk-controlled fixture hook.
+- Phase 51: SUE Execution-Survival Attribution Report explains SUE survival layers and records the local fixture result as observed, while keeping Phase 52 as a diagnostic and not production approval.
 - Phase 52: Revision Marginal-Value Gate archives revision as a real shadow branch in the local fixture because it does not clear the SUE-adjusted cost-aware marginal threshold.
 - Phase 55: Alpha Registry v2 / Decision State Machine freezes alpha statuses and typed-chain stop layers across SUE, revision, composite, old alpha package, Qlib revision, residual momentum, A-share, and leakage fixtures.
 
@@ -1764,10 +1764,10 @@ Output artifacts:
 Completion note:
 
 - `projects/execution_aware_optimizer/src/execution_aware_optimizer/sue_typed_q2_survival_schema.py` defines the Phase 50 input, row, summary, and result contracts.
-- `projects/execution_aware_optimizer/src/execution_aware_optimizer/sue_typed_q2_survival.py` aligns the SUE typed projection to the local optimizer fixture date, reuses the Phase 48 injection path, and maps Q2 adapter rows as observed or unavailable.
+- `projects/execution_aware_optimizer/src/execution_aware_optimizer/sue_typed_q2_survival.py` aligns the SUE typed projection to the local optimizer fixture date, reuses the Phase 48 injection path, and maps configured local Q2 adapter rows as observed.
 - `projects/execution_aware_optimizer/fixtures/sue_survival/` provides the local SUE typed projection fixture.
 - `scripts/run_sue_typed_q2_survival.py` and `make sue-typed-q2-survival` write local ignored artifacts under `outputs/sue_typed_q2_survival/`.
-- The opt-in smoke path returned `survival_status=partially_observed`, `injection_status=injected`, `expected_return_reached_optimizer_input=True`, `q2_observed_rows=18`, and `q2_unavailable_rows=1`.
+- The opt-in smoke path now returns `survival_status=observed`, `injection_status=injected`, `expected_return_reached_optimizer_input=True`, `q2_observed_rows=30`, and `q2_unavailable_rows=0`.
 - The SUE projection is still an integration benchmark and Q2 candidate only. This phase does not claim SUE alpha success, revision marginal value, paper-stage readiness, or production approval.
 
 ## Phase 51: SUE Execution-Survival Attribution Report
@@ -1818,7 +1818,7 @@ Completion note:
 - `projects/execution_aware_optimizer/src/execution_aware_optimizer/sue_execution_survival_attribution_schema.py` defines the Phase 51 attribution and layer schemas.
 - `projects/execution_aware_optimizer/src/execution_aware_optimizer/sue_execution_survival_attribution.py` interprets Phase 50 SUE survival rows into evidence, projection, injection, optimizer response, cost, turnover, coverage/abstain, and unavailable fixture-hook layers.
 - `scripts/build_sue_typed_q2_survival_attribution.py` and `make sue-survival-attribution` rebuild the local Phase 50 fixture and write Phase 51 JSON plus Markdown artifacts.
-- The local Phase 51 decision is `sue_q2_inconclusive` because the SUE projection reaches optimizer input and local Q2 rows are partially observed, but an intermediate local fixture hook remains unavailable. Phase 52 may proceed as a marginal-value diagnostic, not as production approval.
+- The local Phase 51 decision is now `sue_q2_observed_survives` because the SUE projection reaches optimizer input and all configured local Q2 fixture rows are observed, including `risk_controlled` through the stable `naive_pro_rata` mapping. Phase 52 may proceed as a marginal-value diagnostic, not as production approval.
 
 ## Phase 52: Revision Marginal-Value Gate
 
@@ -1967,7 +1967,7 @@ Completion note:
 
 - `src/portfolio_os/alpha/registry_v2.py` defines the Phase 55 registry and entry contracts plus deterministic default alpha states.
 - `scripts/build_alpha_registry_v2.py` and `make alpha-registry-v2` write `outputs/alpha_registry_v2/alpha_registry.yaml`, `outputs/alpha_registry_v2/alpha_registry_decision_table.csv`, and `reports/alpha_registry_report.md`.
-- SUE is recorded as `canonical_pilot` with stop layer `unavailable_local_fixture_hook`.
+- SUE is recorded as `canonical_pilot` with `q2_observed_survives` in its history and stop layer `q2_observed_survives_local_fixture`.
 - `revision_1m` is recorded as `real_shadow_branch` with `archived_no_marginal_value` in its status history and stop layer `revision_marginal_value_gate`.
 - Residual momentum remains `calibration_only`; A-share `anti_mom_21_5` remains `background_partially_real`; forward-return leakage fixtures remain `rejected_leakage`.
 - No alpha is labeled only pass/fail, and the registry does not claim production approval, live trading, paper canary approval, broker workflows, orders, or new research branches.
