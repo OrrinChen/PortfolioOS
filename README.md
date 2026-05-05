@@ -124,6 +124,13 @@ and explicit-abstain typed expected-return panels against the local optimizer
 fixture. It reports aggregate response diagnostics only; it does not write
 orders, broker payloads, live performance, or production approval.
 
+`make sue-typed-q2-survival` writes the local Phase 50 SUE survival artifacts
+under `outputs/sue_typed_q2_survival/`. This opt-in smoke path aligns the SUE
+typed projection to the local optimizer fixture date, proves the SUE
+expected-return values reached `optimizer_input_snapshot.csv`, and maps Q2 rows
+as observed or unavailable. SUE remains an integration benchmark and Q2
+candidate only, not production approval.
+
 ## Safety Boundaries
 
 - No broker route is exposed by Q1, Q2, the promotion gate, the artifact service,

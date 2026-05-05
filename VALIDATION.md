@@ -196,6 +196,12 @@ Typed optimizer response acceptance smoke, only when touching Phase 49 optimizer
 make typed-optimizer-response-acceptance
 ```
 
+SUE typed Q2 survival smoke, only when touching Phase 50 SUE survival paths:
+
+```bash
+make sue-typed-q2-survival
+```
+
 ## Evidence Bundle Project
 
 Run when touching `projects/evidence_bundle`:

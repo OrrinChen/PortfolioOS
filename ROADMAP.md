@@ -1718,7 +1718,7 @@ Completion note:
 ## Phase 50: SUE Typed Q2 Survival Matrix v1
 
 Status:
-Next.
+Complete.
 
 Goal:
 Run the SUE typed alpha pilot through the injected local optimizer/Q2 path.
@@ -1748,10 +1748,27 @@ Acceptance criteria:
 - If unavailable, the exact missing layer is reported.
 - SUE remains an integration benchmark and Q2 candidate, not production-approved.
 
+Output artifacts:
+
+- `outputs/sue_typed_q2_survival/sue_typed_q2_execution_matrix.csv`
+- `outputs/sue_typed_q2_survival/sue_typed_q2_survival_summary.json`
+- `outputs/sue_typed_q2_survival/sue_optimizer_input_snapshot.csv`
+- `outputs/sue_typed_q2_survival/sue_injection_manifest.json`
+- `outputs/sue_typed_q2_survival/sue_q2_trace.jsonl`
+
+Completion note:
+
+- `projects/execution_aware_optimizer/src/execution_aware_optimizer/sue_typed_q2_survival_schema.py` defines the Phase 50 input, row, summary, and result contracts.
+- `projects/execution_aware_optimizer/src/execution_aware_optimizer/sue_typed_q2_survival.py` aligns the SUE typed projection to the local optimizer fixture date, reuses the Phase 48 injection path, and maps Q2 adapter rows as observed or unavailable.
+- `projects/execution_aware_optimizer/fixtures/sue_survival/` provides the local SUE typed projection fixture.
+- `scripts/run_sue_typed_q2_survival.py` and `make sue-typed-q2-survival` write local ignored artifacts under `outputs/sue_typed_q2_survival/`.
+- The opt-in smoke path returned `survival_status=partially_observed`, `injection_status=injected`, `expected_return_reached_optimizer_input=True`, `q2_observed_rows=18`, and `q2_unavailable_rows=1`.
+- The SUE projection is still an integration benchmark and Q2 candidate only. This phase does not claim SUE alpha success, revision marginal value, paper-stage readiness, or production approval.
+
 ## Phase 51: SUE Execution-Survival Attribution Report
 
 Status:
-Locked after Phase 50.
+Next.
 
 Goal:
 Explain exactly where SUE survives or fails.

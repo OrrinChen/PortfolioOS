@@ -34,6 +34,14 @@ from execution_aware_optimizer.scenario_grid import (
     ScenarioGridConfig,
     build_scenario_grid,
 )
+from execution_aware_optimizer.sue_typed_q2_survival import (
+    run_sue_typed_q2_survival,
+    write_sue_typed_q2_survival_artifacts,
+)
+from execution_aware_optimizer.sue_typed_q2_survival_schema import (
+    SueTypedQ2SurvivalInput,
+    SueTypedQ2SurvivalResult,
+)
 from execution_aware_optimizer.typed_execution_matrix import (
     TypedExecutionMatrixRow,
     TypedExecutionMatrixSummary,
@@ -80,6 +88,8 @@ __all__ = [
     "LadderResultRow",
     "RobustnessSummary",
     "ScenarioGridConfig",
+    "SueTypedQ2SurvivalInput",
+    "SueTypedQ2SurvivalResult",
     "TypedExecutionMatrixRow",
     "TypedExecutionMatrixSummary",
     "TypedQ2AdapterInput",
@@ -106,10 +116,12 @@ __all__ = [
     "run_typed_alpha_execution_matrix",
     "run_typed_expected_return_injection",
     "run_typed_optimizer_response_acceptance",
+    "run_sue_typed_q2_survival",
     "run_typed_q2_adapter",
     "summarize_execution_matrix",
     "summarize_typed_execution_matrix",
     "write_typed_q2_adapter_artifacts",
     "write_typed_expected_return_injection_artifacts",
     "write_typed_optimizer_response_artifacts",
+    "write_sue_typed_q2_survival_artifacts",
 ]

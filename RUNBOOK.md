@@ -183,6 +183,12 @@ Run Q2 typed optimizer response acceptance tests:
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:projects/execution_aware_optimizer/src poetry run pytest projects/execution_aware_optimizer/tests/test_typed_optimizer_response.py -q
 ```
 
+Run SUE typed Q2 survival tests:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:projects/execution_aware_optimizer/src poetry run pytest projects/execution_aware_optimizer/tests/test_sue_typed_q2_survival.py -q
+```
+
 Run the local-only typed Q2 adapter fixture:
 
 ```bash
@@ -199,6 +205,12 @@ Run the local-only typed optimizer response acceptance fixture:
 
 ```bash
 make typed-optimizer-response-acceptance
+```
+
+Run the local-only SUE typed Q2 survival fixture:
+
+```bash
+make sue-typed-q2-survival
 ```
 
 Run Evidence Bundle tests:
