@@ -48,7 +48,8 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - Phase 48 Typed Expected-Return Injection Fixture is now complete.
   - Phase 49 Typed Optimizer Response Acceptance Suite is now complete.
   - Phase 50 SUE Typed Q2 Survival Matrix v1 is now complete.
-  - Current phase is Phase 51 SUE Execution-Survival Attribution Report.
+  - Phase 51 SUE Execution-Survival Attribution Report is now complete.
+  - Current phase is Phase 52 Revision Marginal-Value Gate.
   - Phase 48-54 are the required typed-alpha to local Q2 closeout path.
   - Phase 55 freezes alpha decisions into Alpha Registry v2.
   - Phase 56-58 are optional paper-stage preparation and governance only.
@@ -80,6 +81,13 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - The opt-in smoke path returned `survival_status=partially_observed`, `injection_status=injected`, `expected_return_reached_optimizer_input=True`, `q2_observed_rows=18`, and `q2_unavailable_rows=1`.
   - Known limitation: Phase 50 proves SUE expected-return reaches a local optimizer input snapshot and maps existing local Q2 adapter rows. It does not claim SUE alpha success, revision marginal value, paper-stage readiness, or production approval.
   - validation: Phase 50 focused tests `4 passed`; `make sue-typed-q2-survival` passed; Q2 typed focused tests `23 passed`; Q2 project tests `47 passed`; `make validate` passed.
+- Phase 51 SUE Execution-Survival Attribution Report is complete:
+  - `projects/execution_aware_optimizer/src/execution_aware_optimizer/sue_execution_survival_attribution_schema.py` defines attribution and layer schemas.
+  - `projects/execution_aware_optimizer/src/execution_aware_optimizer/sue_execution_survival_attribution.py` interprets Phase 50 rows across evidence, projection, injection, optimizer response, constraint repair, cost, turnover, coverage/abstain, and unavailable fixture-hook layers.
+  - `scripts/build_sue_typed_q2_survival_attribution.py` and `make sue-survival-attribution` rebuild the local Phase 50 fixture and write `outputs/sue_typed_q2_survival/failure_attribution.json` plus `reports/sue_typed_q2_survival_attribution.md`.
+  - The local decision is `sue_q2_inconclusive`: SUE reaches optimizer input and local Q2 rows are partially observed, but an intermediate local fixture hook remains unavailable.
+  - Phase 52 should proceed only as a revision marginal-value diagnostic, not as SUE alpha success or production approval.
+  - validation: Phase 51 focused tests `4 passed`; `make sue-survival-attribution` passed; Phase 50-51 focused tests `8 passed`; Q2 typed focused tests `27 passed`; Q2 project tests `51 passed`; `make validate` passed.
 - Phase 46 Dashboard Readability Polish is complete:
   - `src/portfolio_os/dashboard/static_dashboard.py` now renders a first-screen typed-alpha status summary, typed-alpha chain, artifact links, manifest summary, clearer safety boundaries, and missing-artifact unavailable messaging.
   - Dashboard wording explicitly distinguishes integration benchmark, unavailable/local paper-overlay execution state, no broker/orders/live workflow, and not-approved production state.
@@ -350,7 +358,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - non-mutating cost-sensitivity scenarios live in `projects/execution_aware_optimizer/src/execution_aware_optimizer/cost_sensitivity.py`.
   - Q2 README documents each ladder layer as partial or unavailable.
   - validation: Q2 tests `11 passed`; relevant PortfolioOS subset `64 passed, 36 warnings`; default Q2 smoke scripts passed without enabling PortfolioOS execution.
-- Next recommended repo workflow phase: Phase 51 SUE Execution-Survival Attribution Report. Do not open new alpha research or paper canary work before Phase 51-55 closeout.
+- Next recommended repo workflow phase: Phase 52 Revision Marginal-Value Gate. Do not open new alpha research or paper canary work before Phase 52-55 closeout.
 - Core platform buildout through Phase 12 is implemented and stable.
 - The current project-wide meta stage is `research convergence + promotion contract`, not repo merge.
 - Project operating mode is now `paper-stage only`.

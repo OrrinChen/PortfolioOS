@@ -202,6 +202,12 @@ SUE typed Q2 survival smoke, only when touching Phase 50 SUE survival paths:
 make sue-typed-q2-survival
 ```
 
+SUE execution-survival attribution smoke, only when touching Phase 51 attribution paths:
+
+```bash
+make sue-survival-attribution
+```
+
 ## Evidence Bundle Project
 
 Run when touching `projects/evidence_bundle`:

@@ -131,6 +131,13 @@ expected-return values reached `optimizer_input_snapshot.csv`, and maps Q2 rows
 as observed or unavailable. SUE remains an integration benchmark and Q2
 candidate only, not production approval.
 
+`make sue-survival-attribution` rebuilds the local Phase 50 SUE survival
+fixture and writes Phase 51 attribution artifacts:
+`outputs/sue_typed_q2_survival/failure_attribution.json` and
+`reports/sue_typed_q2_survival_attribution.md`. The report distinguishes alpha
+failure from execution failure, projection sparsity from optimizer response, and
+states whether revision marginal-value testing should proceed.
+
 ## Safety Boundaries
 
 - No broker route is exposed by Q1, Q2, the promotion gate, the artifact service,

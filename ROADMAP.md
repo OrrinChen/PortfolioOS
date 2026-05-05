@@ -1768,7 +1768,7 @@ Completion note:
 ## Phase 51: SUE Execution-Survival Attribution Report
 
 Status:
-Next.
+Complete.
 
 Goal:
 Explain exactly where SUE survives or fails.
@@ -1803,10 +1803,22 @@ Acceptance criteria:
 - Report distinguishes projection sparsity from optimizer failure.
 - Report states whether Phase 52 revision marginal-value testing should proceed.
 
+Output artifacts:
+
+- `reports/sue_typed_q2_survival_attribution.md`
+- `outputs/sue_typed_q2_survival/failure_attribution.json`
+
+Completion note:
+
+- `projects/execution_aware_optimizer/src/execution_aware_optimizer/sue_execution_survival_attribution_schema.py` defines the Phase 51 attribution and layer schemas.
+- `projects/execution_aware_optimizer/src/execution_aware_optimizer/sue_execution_survival_attribution.py` interprets Phase 50 SUE survival rows into evidence, projection, injection, optimizer response, cost, turnover, coverage/abstain, and unavailable fixture-hook layers.
+- `scripts/build_sue_typed_q2_survival_attribution.py` and `make sue-survival-attribution` rebuild the local Phase 50 fixture and write Phase 51 JSON plus Markdown artifacts.
+- The local Phase 51 decision is `sue_q2_inconclusive` because the SUE projection reaches optimizer input and local Q2 rows are partially observed, but an intermediate local fixture hook remains unavailable. Phase 52 may proceed as a marginal-value diagnostic, not as production approval.
+
 ## Phase 52: Revision Marginal-Value Gate
 
 Status:
-Locked after Phase 51.
+Next.
 
 Goal:
 Decide whether revision adds marginal value beyond SUE.

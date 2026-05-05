@@ -34,6 +34,15 @@ from execution_aware_optimizer.scenario_grid import (
     ScenarioGridConfig,
     build_scenario_grid,
 )
+from execution_aware_optimizer.sue_execution_survival_attribution import (
+    build_sue_execution_survival_attribution,
+    render_sue_execution_survival_attribution_report,
+    write_sue_execution_survival_attribution_artifacts,
+)
+from execution_aware_optimizer.sue_execution_survival_attribution_schema import (
+    SueExecutionSurvivalAttribution,
+    SueLayerAttribution,
+)
 from execution_aware_optimizer.sue_typed_q2_survival import (
     run_sue_typed_q2_survival,
     write_sue_typed_q2_survival_artifacts,
@@ -88,6 +97,8 @@ __all__ = [
     "LadderResultRow",
     "RobustnessSummary",
     "ScenarioGridConfig",
+    "SueExecutionSurvivalAttribution",
+    "SueLayerAttribution",
     "SueTypedQ2SurvivalInput",
     "SueTypedQ2SurvivalResult",
     "TypedExecutionMatrixRow",
@@ -104,12 +115,14 @@ __all__ = [
     "build_cost_sensitivity_scenarios",
     "build_portfolioos_cost_overrides",
     "build_scenario_grid",
+    "build_sue_execution_survival_attribution",
     "clean_alpha_scores",
     "execution_matrix_rows_to_frame",
     "load_alpha_scores",
     "load_cost_sensitivity_results",
     "load_experiment_config",
     "render_execution_matrix_report",
+    "render_sue_execution_survival_attribution_report",
     "render_typed_execution_matrix_report",
     "run_alpha_decay_ladder",
     "run_execution_matrix",
@@ -124,4 +137,5 @@ __all__ = [
     "write_typed_expected_return_injection_artifacts",
     "write_typed_optimizer_response_artifacts",
     "write_sue_typed_q2_survival_artifacts",
+    "write_sue_execution_survival_attribution_artifacts",
 ]

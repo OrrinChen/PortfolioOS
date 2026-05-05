@@ -189,6 +189,12 @@ Run SUE typed Q2 survival tests:
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:projects/execution_aware_optimizer/src poetry run pytest projects/execution_aware_optimizer/tests/test_sue_typed_q2_survival.py -q
 ```
 
+Run SUE execution-survival attribution tests:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:projects/execution_aware_optimizer/src poetry run pytest projects/execution_aware_optimizer/tests/test_sue_execution_survival_attribution.py -q
+```
+
 Run the local-only typed Q2 adapter fixture:
 
 ```bash
@@ -211,6 +217,12 @@ Run the local-only SUE typed Q2 survival fixture:
 
 ```bash
 make sue-typed-q2-survival
+```
+
+Build the local SUE execution-survival attribution report:
+
+```bash
+make sue-survival-attribution
 ```
 
 Run Evidence Bundle tests:
