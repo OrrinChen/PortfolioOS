@@ -1,0 +1,37 @@
+schema_version: research_mode_dataset_manifest.v1
+mode: research_mode
+allowed_use_mode: formal_research
+content_hash: local-research-fixture-content-hash
+source_provenance:
+  provider: pit_index_vendor_fixture
+  as_of_timestamp: "2026-03-31T00:00:00Z"
+  license_mode: local_research_fixture
+universe:
+  path: historical_membership.csv
+  constituent_mode: historical_membership
+  source: pit_index_vendor_fixture
+  source_is_pit: true
+prices:
+  path: adjusted_price_volume.csv
+  source: adjusted_price_vendor_fixture
+  adjusted: true
+benchmark:
+  path: qqq_benchmark.csv
+  benchmark_id: QQQ
+  source: adjusted_price_vendor_fixture
+delisting:
+  handling: explicit_file
+  path: delistings.csv
+trading_calendar:
+  path: qqq_benchmark.csv
+  source: exchange_calendar_fixture
+timestamp_policy:
+  signal: month_end_close
+  visibility: after_month_end_close
+  tradable: next_session_close
+  allow_same_close_trading: false
+non_claims:
+  production_approval: false
+  live_trading: false
+  security_orders: false
+  direct_q2_entry: false

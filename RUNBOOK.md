@@ -89,6 +89,7 @@ Build local PIT-style universe snapshots from the synthetic onboarding fixture:
 make multifactor-research-universe
 make multifactor-research-panels
 make multifactor-research-delistings
+make multifactor-first-research-dry-run
 ```
 
 Run the standalone Multi-Factor Alpha Validation Engine:

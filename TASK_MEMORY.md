@@ -240,8 +240,13 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     rows with exit dates, requires explicit delisting or terminal-return
     policy fields, reports inactive-name coverage, blocks missing inactive
     coverage, and records the delisting policy artifact.
-  - Next recommended multifactor phase is MF-R4 first real research dry run,
-    then MF-R5 rolling OOS factor validation.
+  - MF-R4 First Research Dry Run is complete:
+    `run_first_research_dry_run` requires a ready research-mode preflight,
+    runs only `momentum_12_1`, `reversal_5_1`, and `low_vol_60d` through signal
+    panels, AlphaView mapping, Q1 evidence, and QQQ/beta benchmark attribution,
+    blocks same-close trading, does not run the allocator, and writes explicit
+    no-alpha-success language.
+  - Next recommended multifactor phase is MF-R5 rolling OOS factor validation.
   - Do not add factors, tune allocator logic, add ML models, or polish returns
     before the PIT dataset gate is ready.
   - Validation: Week 1-8 focused tests passed; `make factor-validate` is the

@@ -68,6 +68,7 @@ synthetic fixture:
 make multifactor-research-universe
 make multifactor-research-panels
 make multifactor-research-delistings
+make multifactor-first-research-dry-run
 ```
 
 ## Boundaries
