@@ -154,6 +154,13 @@ residual momentum, A-share, and leakage-fixture decision states with explicit
 typed-chain stop layers. It does not open research, broker, order, paper canary,
 or production-approval paths.
 
+`make factor-discovery-teaching-baseline` writes the local FD-1 Factor Discovery
+Sandbox teaching-mode artifacts under `outputs/factor_discovery/teaching_mode/`.
+The baseline uses a deterministic current-constituent style fixture, QQQ
+benchmark reporting, 29 price-volume factor columns, IC/ICIR tables,
+correlation matrix, ICIR weights, and a markdown report. It is explicitly
+survivorship-biased, educational-only, and not alpha evidence.
+
 ## Safety Boundaries
 
 - No broker route is exposed by Q1, Q2, the promotion gate, the artifact service,
@@ -250,6 +257,10 @@ Q1 Alpha Triage -> Evidence Bundle -> Promotion Gate -> Q2 Execution-Aware Evalu
 - Typed SUE pilot helpers live under `projects/typed_alpha_pilot` and generate
   local AlphaView -> Event Evidence -> Projection -> Promotion v2 -> Q2 typed
   matrix artifacts as an integration benchmark, not production approval.
+- Factor Discovery Sandbox helpers live under
+  `projects/multifactor_alpha_validation/factor_discovery_sandbox` and generate
+  candidate factor-discovery artifacts only. The sandbox does not enter Q2
+  directly and does not claim formal alpha strategy status.
 
 These project areas are intentionally separate. They do not create a trading bot, place orders, call brokers, or fabricate backtest output.
 

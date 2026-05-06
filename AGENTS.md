@@ -24,6 +24,16 @@ Your job is to advance the next incomplete roadmap phase. Do not invent unrelate
 - Q1 and Q2 must remain separate project stories.
 - Q2 may reuse PortfolioOS APIs through explicit adapters.
 - Q1 may later export an alpha-score file for Q2, but Q2 must not depend on Q1 agent loops or data collection.
+- New alpha or factor research families must enter through the Phase 64 research
+  import contract; they must not bypass Q1 evidence, Promotion Gate, Q2, or
+  Alpha Registry governance.
+- `Factor Discovery Sandbox`, if explicitly opened, belongs under
+  `projects/multifactor_alpha_validation/factor_discovery_sandbox/` and asks:
+  "Which candidate factors deserve typed validation?" It is a candidate
+  generation sandbox, not a formal strategy, production alpha proof, or direct
+  Q2 input path.
+- Teaching-mode factor demos must be labeled as survivorship-biased,
+  educational-only, and not alpha evidence.
 
 ## Hard Constraints
 
@@ -41,6 +51,11 @@ Do not:
 - hardcode API keys
 - run live broker, paid API, or external data workflows unless explicitly requested
 - run destructive git or filesystem actions without explicit approval
+- treat current-constituent NASDAQ100 or yfinance factor-rotation results as
+  formal alpha evidence
+- route Factor Discovery Sandbox outputs directly into Q2 without Phase 64,
+  Q1 evidence, Promotion Gate, and Alpha Registry decisions
+- mix teaching-mode baseline artifacts with research-mode validation artifacts
 
 ## Workflow
 
@@ -51,6 +66,8 @@ Before starting:
 3. Read `TASK_MEMORY.md`.
 4. Identify the next incomplete phase.
 5. Inspect relevant files before editing.
+6. For any new factor or alpha-family work, confirm whether it is an approved
+   Phase 64 import/charter task, a documentation-only charter, or out of scope.
 
 During work:
 
@@ -60,6 +77,8 @@ During work:
 4. Add or update tests for behavioral changes.
 5. Update README when user-facing behavior changes.
 6. Update `TASK_MEMORY.md` with what changed and what was verified.
+7. Preserve timestamp contracts, explicit abstain semantics, and the
+   `no_view != zero_alpha` rule for any factor-spec or AlphaView-related work.
 
 Validation:
 

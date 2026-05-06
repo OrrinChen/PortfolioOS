@@ -60,6 +60,40 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - Phase 65-66 package and freeze the research-audit release.
   - No automatic roadmap expansion is allowed after Phase 66.
   - The main remaining gap is expected-return injection into a local optimizer input path, not a new alpha layer.
+- Factor Discovery Sandbox has been added only as a Phase 64 candidate charter,
+  not as active Phase 65 implementation:
+  - Proposed future path:
+    `projects/multifactor_alpha_validation/factor_discovery_sandbox/`.
+  - It asks "Which candidate factors deserve typed validation?", not "What is
+    the formal alpha strategy?"
+  - Teaching mode may replicate the NASDAQ100 29-factor IC/ICIR rotation
+    baseline with QQQ benchmark, but every artifact must be labeled
+    `survivorship_biased=true`, `educational_only=true`, and
+    `not_alpha_evidence=true`.
+  - Research mode requires historical universe handling, timestamp contracts,
+    rolling out-of-sample ICIR, train/validation/test boundaries, FactorSpecs,
+    redundancy/marginal-value gates, shrinkage, zero-weight attribution,
+    cost/capacity stress, and QQQ-relative benchmark attribution.
+  - Sandbox outputs must enter through Phase 64 import review before Q1
+    evidence, Promotion Gate, Q2 execution survival, or Alpha Registry updates.
+  - It must not run live broker, paid API, external data refresh, or yfinance
+    workflows unless explicitly approved for an opt-in sandbox run.
+- FD-1 Teaching Baseline Replication is complete:
+  - `projects/multifactor_alpha_validation/factor_discovery_sandbox/src/factor_discovery_sandbox/teaching_baseline.py`
+    builds a deterministic current-constituent style teaching fixture with 29
+    price-volume factors.
+  - `scripts/run_factor_discovery_teaching_baseline.py` and
+    `make factor-discovery-teaching-baseline` write ignored artifacts under
+    `outputs/factor_discovery/teaching_mode/`.
+  - Artifacts include `nasdaq100_factor_table.csv`,
+    `qqq_benchmark_report.csv`, `factor_ic_table.csv`,
+    `factor_correlation_matrix.csv`, `icir_weight_table.csv`, and
+    `teaching_backtest_report.md`.
+  - The report and result summary explicitly set survivorship-biased,
+    educational-only, not-alpha-evidence, no-network, and no-production-approval
+    status.
+  - Validation: the FD-1 focused test passed; `make
+    factor-discovery-teaching-baseline` passed.
 - Phase 48 Typed Expected-Return Injection Fixture is complete:
   - `projects/execution_aware_optimizer/src/execution_aware_optimizer/typed_injection_schema.py` defines injection input/result/summary/manifest contracts.
   - `projects/execution_aware_optimizer/src/execution_aware_optimizer/typed_expected_return_injection.py` validates Q2InputContract v2 plus projection manifest, supports positive/scaled/sign-flipped expected-return panels, and writes optimizer input snapshots.
@@ -377,7 +411,9 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   Release. Phase 56-58 are technically unblocked by the clean local SUE Q2
   fixture but remain optional governance/paper-environment work; Phase 59-61
   remain locked without explicit human approval. Do not open new alpha research,
-  broker/order workflows, or paper canary approval paths.
+  broker/order workflows, or paper canary approval paths. Factor Discovery
+  Sandbox is only a Phase 64 candidate charter until explicitly approved as a
+  research import task.
 - Core platform buildout through Phase 12 is implemented and stable.
 - The current project-wide meta stage is `research convergence + promotion contract`, not repo merge.
 - Project operating mode is now `paper-stage only`.

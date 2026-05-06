@@ -5,8 +5,9 @@ PYTHONPATH_AUDIT := src:projects/audit_report/src:projects/agentic_alpha_triage/
 PYTHONPATH_PROMOTION := src:projects/promotion_gate/src:projects/evidence_bundle/src
 PYTHONPATH_Q2 := src:projects/execution_aware_optimizer/src
 PYTHONPATH_TYPED_PILOT := src:projects/typed_alpha_pilot/src:projects/evidence_bundle/src:projects/promotion_gate/src:projects/execution_aware_optimizer/src
+PYTHONPATH_FACTOR_DISCOVERY := projects/multifactor_alpha_validation/factor_discovery_sandbox/src
 
-.PHONY: test lint validate-examples audit-report demo demo-v2 typed-alpha-closeout alpha-registry-v2 typed-q2-adapter-fixture typed-expected-return-injection-fixture typed-optimizer-response-acceptance sue-typed-q2-survival sue-survival-attribution revision-marginal-value-gate no-network validate
+.PHONY: test lint validate-examples audit-report demo demo-v2 typed-alpha-closeout alpha-registry-v2 factor-discovery-teaching-baseline typed-q2-adapter-fixture typed-expected-return-injection-fixture typed-optimizer-response-acceptance sue-typed-q2-survival sue-survival-attribution revision-marginal-value-gate no-network validate
 
 test:
 	PYTHONDONTWRITEBYTECODE=1 $(PYTEST) -q
@@ -31,6 +32,9 @@ typed-alpha-closeout:
 
 alpha-registry-v2:
 	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src $(PYTHON) scripts/build_alpha_registry_v2.py
+
+factor-discovery-teaching-baseline:
+	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=$(PYTHONPATH_FACTOR_DISCOVERY) $(PYTHON) scripts/run_factor_discovery_teaching_baseline.py
 
 typed-q2-adapter-fixture:
 	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=$(PYTHONPATH_Q2) $(PYTHON) scripts/run_typed_q2_adapter_fixture.py --allow-portfolioos-run

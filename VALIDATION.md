@@ -62,6 +62,13 @@ make alpha-registry-v2
 PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_alpha_registry_v2.py -q
 ```
 
+Factor Discovery Sandbox FD-1 teaching baseline smoke and tests:
+
+```bash
+make factor-discovery-teaching-baseline
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/factor_discovery_sandbox/src poetry run pytest projects/multifactor_alpha_validation/factor_discovery_sandbox/tests -q
+```
+
 Typed alpha dashboard readability tests:
 
 ```bash

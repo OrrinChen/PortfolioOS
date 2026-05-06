@@ -58,6 +58,10 @@ Completed:
 - Phase 51: SUE Execution-Survival Attribution Report explains SUE survival layers and records the local fixture result as observed, while keeping Phase 52 as a diagnostic and not production approval.
 - Phase 52: Revision Marginal-Value Gate archives revision as a real shadow branch in the local fixture because it does not clear the SUE-adjusted cost-aware marginal threshold.
 - Phase 55: Alpha Registry v2 / Decision State Machine freezes alpha statuses and typed-chain stop layers across SUE, revision, composite, old alpha package, Qlib revision, residual momentum, A-share, and leakage fixtures.
+- FD-1: Factor Discovery Sandbox teaching baseline replication is complete with
+  deterministic local fixture data, QQQ benchmark reporting, 29 price-volume
+  factors, IC/ICIR tables, correlation matrix, ICIR weights, and explicit
+  survivorship-biased educational-only labels.
 
 Current phase:
 
@@ -76,6 +80,8 @@ Deferred:
 - cloud automation setup
 - paper canary phases unless explicitly approved by a human
 - new alpha research unless imported through a typed research contract
+- Factor Discovery Sandbox implementation until an explicit Phase 64 research
+  import charter is approved
 
 ## Strategic Direction: Audit-Ready Decision Evaluation Platform
 
@@ -2219,6 +2225,108 @@ Acceptance criteria:
 - Missing PIT source is rejected or marked needs-more-evidence.
 - Alpha registry is updated.
 
+### Phase 64 Candidate Charter: Factor Discovery Sandbox
+
+Status:
+Proposed future research import candidate. This is not active Phase 65 work and
+does not create an automatic Phase 67.
+
+Placement:
+`projects/multifactor_alpha_validation/factor_discovery_sandbox/`
+
+Goal:
+Create a controlled candidate-generation sandbox for NASDAQ100-style
+price-volume factors while preserving the main project story: PortfolioOS is an
+audit-ready research-to-execution evaluation platform, not a strategy factory.
+
+Boundary:
+
+- Factor Discovery Sandbox asks: "Which candidate factors deserve typed
+  validation?"
+- It may generate candidate factor specs, teaching reports, and import bundles.
+- It must not claim production alpha, submit orders, call brokers, or enter Q2
+  directly.
+- It must feed Phase 64 import review before any Q1 evidence, Promotion Gate,
+  Q2 execution-survival, or Alpha Registry decision.
+
+Modes:
+
+- `teaching_mode`: current NASDAQ100 constituents, yfinance-style public data,
+  QQQ benchmark, 29 price-volume factor baseline, IC/ICIR, correlation filter,
+  ICIR weighting, monthly rebalance, and simple cost model. Every artifact must
+  set `survivorship_biased=true`, `educational_only=true`, and
+  `not_alpha_evidence=true`.
+- `research_mode`: historical constituents, universe timestamps, timestamp
+  contract, rolling out-of-sample ICIR, train/validation/test split,
+  no same-close trading, FactorSpec coverage rules, redundancy and marginal
+  value gate, shrinkage, allocator diagnostics, zero-weight attribution, cost
+  and capacity stress, and QQQ-relative benchmark attribution.
+
+Candidate sub-roadmap:
+
+- FD-1 Teaching Baseline Replication: complete. Reproduce the seven-step NASDAQ100 factor
+  rotation only as a biased educational baseline with QQQ-relative reporting.
+- FD-2 FactorSpec Conversion: convert the factor columns into explicit specs
+  with mechanism, lookback, skip, direction, horizon, timestamp contract,
+  coverage rule, correlation family, and known failure mode.
+- FD-3 Rolling ICIR and OOS Weighting: estimate IC/ICIR only with history
+  available before the rebalance month, form scores at `t`, and trade no earlier
+  than `t+1`.
+- FD-4 Redundancy / Marginal-Value Gate: replace shallow correlation filtering
+  with cluster, residual IC, incremental spread, incremental net return,
+  turnover, cost drag, and marginal-value decisions.
+- FD-5 Shrinkage + Allocator + Zero-Weight Attribution: shrink noisy factor
+  means, stabilize covariance, cap clusters, and explain every zero factor
+  weight.
+- FD-6 Cost / Capacity / Benchmark Survival: report raw, QQQ-relative,
+  beta-adjusted, cost-adjusted, capacity-adjusted, sector/style/liquidity
+  attribution, and survival-funnel results.
+
+Required artifacts before import review:
+
+- `teaching_factor_rotation_report.md`
+- `institutional_factor_validation_report.md`
+- `factor_specs/price_volume_29/*.yaml`
+- `rolling_icir_weights.csv`
+- `marginal_value_decision_table.csv`
+- `zero_weight_attribution.csv`
+- `cost_stress_matrix.csv`
+- `capacity_frontier.csv`
+- `benchmark_attribution.csv`
+- `research_import_bundle.json`
+
+Import decisions:
+
+- `import_rejected`
+- `import_needs_more_evidence`
+- `import_as_calibration_only`
+- `import_as_shadow_branch`
+- `import_to_q1_evidence`
+
+Acceptance criteria:
+
+- Teaching-mode output explicitly states survivorship bias, educational-only
+  status, and not-alpha-evidence status.
+- Research-mode output separates `signal_timestamp`, `visibility_timestamp`,
+  and `tradable_timestamp`.
+- Full-sample ICIR weights are forbidden for research-mode backtests.
+- Missing factor coverage is explicit abstain; `no_view != zero_alpha`.
+- High-correlation factors cannot survive on standalone ICIR alone.
+- Every promoted candidate has a typed horizon, PIT/universe report,
+  benchmark-relative attribution, cost/capacity stress, and marginal-value
+  decision.
+- Alpha Registry is updated only after Phase 64 import review, never from the
+  sandbox directly.
+
+Do not:
+
+- describe the sandbox as a formal alpha strategy.
+- cite high teaching-mode annualized returns as success evidence.
+- rely on current NASDAQ100 constituents for institutional validation.
+- trade at the same close used to form the signal.
+- run yfinance, paid data, broker, or live workflows unless explicitly approved.
+- merge Q1 and Q2 project stories through the sandbox.
+
 ## Phase 65: PortfolioOS v1 Research-Audit Release
 
 Status:
@@ -2330,4 +2438,6 @@ After Phase 62-64:
 - If residual momentum calibration fails, archive the family.
 - If residual momentum calibration passes, import via Phase 64, not direct Q2.
 - If A-share is reopened, write a new typed tranche charter first.
+- If Factor Discovery Sandbox is opened, treat it as a Phase 64 candidate
+  charter and keep teaching-mode output separate from research-mode validation.
 - If a new family appears, import via Phase 64 only.
