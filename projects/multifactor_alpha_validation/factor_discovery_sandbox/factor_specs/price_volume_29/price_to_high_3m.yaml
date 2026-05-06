@@ -1,0 +1,19 @@
+schema_version: factor_spec.v1
+factor_id: price_to_high_3m
+mechanism: Distance from recent highs and drawdowns may capture trend quality and
+  fragility.
+lookback: 3
+skip: 1
+direction: positive
+signal_timestamp: month_end_close
+visibility_timestamp: after_month_end_close
+tradable_timestamp: next_rebalance_session
+coverage_rule:
+  minimum_observations: 4
+  insufficient_coverage: explicit_abstain
+  abstain_reason: insufficient_price_volume_history
+expected_horizon: next_month_excess_return
+known_correlation_family: price_position
+known_failure_mode: Can duplicate momentum windows without marginal value.
+no_view_is_not_zero_alpha: true
+production_approval_claimed: false

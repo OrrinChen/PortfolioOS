@@ -161,6 +161,13 @@ benchmark reporting, 29 price-volume factor columns, IC/ICIR tables,
 correlation matrix, ICIR weights, and a markdown report. It is explicitly
 survivorship-biased, educational-only, and not alpha evidence.
 
+`make factor-discovery-factor-specs` writes the FD-2 price-volume FactorSpec
+YAML files under
+`projects/multifactor_alpha_validation/factor_discovery_sandbox/factor_specs/price_volume_29/`
+and a validation summary under `outputs/factor_discovery/`. Each spec records
+lookback, skip, direction, timestamp contract, coverage abstain rule, expected
+horizon, correlation family, and known failure mode.
+
 ## Safety Boundaries
 
 - No broker route is exposed by Q1, Q2, the promotion gate, the artifact service,

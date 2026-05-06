@@ -94,6 +94,20 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     status.
   - Validation: the FD-1 focused test passed; `make
     factor-discovery-teaching-baseline` passed.
+- FD-2 FactorSpec Conversion is complete:
+  - `factor_discovery_sandbox/factor_specs.py` writes the 29 price-volume specs
+    from the same factor list used by FD-1.
+  - Committed specs live under
+    `projects/multifactor_alpha_validation/factor_discovery_sandbox/factor_specs/price_volume_29/`.
+  - `scripts/run_factor_discovery_factor_specs.py` and
+    `make factor-discovery-factor-specs` write specs plus ignored
+    `outputs/factor_discovery/factor_spec_validation.json`.
+  - Every spec records mechanism, lookback, skip, direction, timestamp contract,
+    expected horizon, correlation family, failure mode, explicit abstain
+    coverage rule, and `no_view_is_not_zero_alpha=true`.
+  - Validation: FD-2 focused test passed; `make
+    factor-discovery-factor-specs` passed with `factor_count=29` and
+    `all_specs_valid=true`.
 - Phase 48 Typed Expected-Return Injection Fixture is complete:
   - `projects/execution_aware_optimizer/src/execution_aware_optimizer/typed_injection_schema.py` defines injection input/result/summary/manifest contracts.
   - `projects/execution_aware_optimizer/src/execution_aware_optimizer/typed_expected_return_injection.py` validates Q2InputContract v2 plus projection manifest, supports positive/scaled/sign-flipped expected-return panels, and writes optimizer input snapshots.

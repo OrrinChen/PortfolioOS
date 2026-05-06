@@ -1,0 +1,18 @@
+schema_version: factor_spec.v1
+factor_id: turnover_1m
+mechanism: Trading activity may proxy for attention, capacity, and liquidity regime.
+lookback: 1
+skip: 1
+direction: positive
+signal_timestamp: month_end_close
+visibility_timestamp: after_month_end_close
+tradable_timestamp: next_rebalance_session
+coverage_rule:
+  minimum_observations: 2
+  insufficient_coverage: explicit_abstain
+  abstain_reason: insufficient_price_volume_history
+expected_horizon: next_month_excess_return
+known_correlation_family: liquidity_volume
+known_failure_mode: Can be attention or size exposure with high cost drag.
+no_view_is_not_zero_alpha: true
+production_approval_claimed: false

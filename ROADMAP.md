@@ -62,6 +62,9 @@ Completed:
   deterministic local fixture data, QQQ benchmark reporting, 29 price-volume
   factors, IC/ICIR tables, correlation matrix, ICIR weights, and explicit
   survivorship-biased educational-only labels.
+- FD-2: FactorSpec conversion is complete with 29 committed price-volume
+  FactorSpec YAML files, timestamp contracts, explicit abstain coverage rules,
+  `no_view != zero_alpha`, and a validation smoke target.
 
 Current phase:
 
@@ -2266,7 +2269,7 @@ Candidate sub-roadmap:
 
 - FD-1 Teaching Baseline Replication: complete. Reproduce the seven-step NASDAQ100 factor
   rotation only as a biased educational baseline with QQQ-relative reporting.
-- FD-2 FactorSpec Conversion: convert the factor columns into explicit specs
+- FD-2 FactorSpec Conversion: complete. Convert the factor columns into explicit specs
   with mechanism, lookback, skip, direction, horizon, timestamp contract,
   coverage rule, correlation family, and known failure mode.
 - FD-3 Rolling ICIR and OOS Weighting: estimate IC/ICIR only with history
