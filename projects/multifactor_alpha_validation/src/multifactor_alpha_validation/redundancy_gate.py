@@ -135,6 +135,7 @@ def _decision_table(
             {
                 "q1_decision": row["q1_decision"],
                 "incremental_net_spread": incremental_net,
+                "incremental_turnover": incremental_turnover,
                 "max_pairwise_correlation": max_corr,
                 "residual_ic_after_baseline": residual_ic,
                 "marginal_value_score": marginal_score,
