@@ -61,6 +61,13 @@ membership SQL to point at the PIT constituent table available in your WRDS
 subscription. Raw and standardized WRDS extracts are written under
 `data/cache/wrds_multifactor/`, which is ignored by git.
 
+The local historical-universe smoke writes PIT-style universe snapshots from a
+synthetic fixture:
+
+```bash
+make multifactor-research-universe
+```
+
 ## Boundaries
 
 - Missing coverage is explicit abstain.

@@ -1,0 +1,4 @@
+date,asset_id,ticker,in_universe,entry_date,exit_date,source
+2010-01-01,AAPL,AAPL,true,2000-01-01,,pit_index_vendor_fixture
+2010-01-01,OLD,OLD,true,2009-01-01,2011-12-31,pit_index_vendor_fixture
+2012-01-01,NEW,NEW,true,2012-01-01,,pit_index_vendor_fixture

@@ -83,6 +83,12 @@ make multifactor-wrds-config-check
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/src poetry run python projects/multifactor_alpha_validation/scripts/run_wrds_multifactor_ingest.py --config projects/multifactor_alpha_validation/configs/wrds_multifactor_query_template.yaml --require-ready
 ```
 
+Build local PIT-style universe snapshots from the synthetic onboarding fixture:
+
+```bash
+make multifactor-research-universe
+```
+
 Run the standalone Multi-Factor Alpha Validation Engine:
 
 ```bash

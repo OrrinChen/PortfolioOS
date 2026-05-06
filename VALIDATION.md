@@ -100,6 +100,13 @@ make multifactor-wrds-config-check
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/src poetry run pytest projects/multifactor_alpha_validation/tests/test_research_mode_preflight.py projects/multifactor_alpha_validation/tests/test_wrds_ingest.py -q
 ```
 
+Multifactor research dataset onboarding smoke and tests:
+
+```bash
+make multifactor-research-universe
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/src poetry run pytest projects/multifactor_alpha_validation/tests/test_research_dataset_onboarding.py -q
+```
+
 Standalone Multi-Factor Alpha Validation Engine smoke and tests:
 
 ```bash

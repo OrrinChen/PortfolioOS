@@ -8,7 +8,7 @@ PYTHONPATH_TYPED_PILOT := src:projects/typed_alpha_pilot/src:projects/evidence_b
 PYTHONPATH_FACTOR_DISCOVERY := projects/multifactor_alpha_validation/factor_discovery_sandbox/src
 PYTHONPATH_MULTIFACTOR := projects/multifactor_alpha_validation/src
 
-.PHONY: test lint validate-examples audit-report demo demo-v2 typed-alpha-closeout alpha-registry-v2 factor-discovery-teaching-baseline factor-discovery-factor-specs factor-discovery-rolling-oos factor-discovery-marginal-value-gate factor-discovery-allocator factor-discovery-survival multifactor-research-mode-preflight multifactor-wrds-config-check factor-spec-validate factor-signals factor-q1 factor-redundancy factor-shrinkage factor-allocator factor-survival factor-registry factor-report factor-dashboard factor-release-manifest factor-validate typed-q2-adapter-fixture typed-expected-return-injection-fixture typed-optimizer-response-acceptance sue-typed-q2-survival sue-survival-attribution sue-expanded-typed-q2-survival sue-optimizer-input-bridge-fixture revision-marginal-value-gate no-network validate
+.PHONY: test lint validate-examples audit-report demo demo-v2 typed-alpha-closeout alpha-registry-v2 factor-discovery-teaching-baseline factor-discovery-factor-specs factor-discovery-rolling-oos factor-discovery-marginal-value-gate factor-discovery-allocator factor-discovery-survival multifactor-research-mode-preflight multifactor-wrds-config-check multifactor-research-universe factor-spec-validate factor-signals factor-q1 factor-redundancy factor-shrinkage factor-allocator factor-survival factor-registry factor-report factor-dashboard factor-release-manifest factor-validate typed-q2-adapter-fixture typed-expected-return-injection-fixture typed-optimizer-response-acceptance sue-typed-q2-survival sue-survival-attribution sue-expanded-typed-q2-survival sue-optimizer-input-bridge-fixture revision-marginal-value-gate no-network validate
 
 test:
 	PYTHONDONTWRITEBYTECODE=1 $(PYTEST) -q
@@ -57,6 +57,9 @@ multifactor-research-mode-preflight:
 
 multifactor-wrds-config-check:
 	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=$(PYTHONPATH_MULTIFACTOR) $(PYTHON) projects/multifactor_alpha_validation/scripts/run_wrds_multifactor_ingest.py --check-config-only
+
+multifactor-research-universe:
+	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=$(PYTHONPATH_MULTIFACTOR) $(PYTHON) projects/multifactor_alpha_validation/scripts/run_research_dataset_universe.py
 
 factor-spec-validate:
 	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=$(PYTHONPATH_MULTIFACTOR) $(PYTHON) projects/multifactor_alpha_validation/scripts/validate_factor_specs.py
