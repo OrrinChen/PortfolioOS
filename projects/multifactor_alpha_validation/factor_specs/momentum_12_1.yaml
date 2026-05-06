@@ -1,0 +1,47 @@
+schema_version: factor_spec.v1
+factor_id: momentum_12_1
+family_id: momentum
+display_name: 12-1 Price Momentum
+mechanism: Medium-term continuation after skipping the most recent month.
+mechanism_type: fixed_horizon
+data_tier: tier_1_price
+status: enabled
+data_requirements:
+  required_fields: [adjusted_close, trading_calendar]
+  optional_fields: [sector, market_cap]
+pit_contract:
+  signal_timestamp_rule: close_on_signal_date
+  visibility_timestamp_rule: after_market_close
+  tradable_timestamp_rule: next_trading_day_open
+  reporting_lag_days: 0
+  reject_if_missing_visibility: true
+signal_definition:
+  lookback_days: 252
+  skip_days: 21
+  transform: cross_sectional_rank_zscore
+  winsorize: true
+  winsorize_limits: [0.01, 0.99]
+horizon:
+  horizon_type: rebalance_period
+  holding_days: 21
+  rebalance_frequency: monthly
+coverage:
+  min_assets: 300
+  min_history_days: 252
+  missing_policy: explicit_abstain
+neutralization:
+  beta: report
+  sector: report
+  size: report
+  liquidity: report
+cost_sensitivity:
+  expected_turnover: medium
+  capacity_risk: medium
+known_failure_modes: [momentum_crash, sector_concentration, crowded_trade]
+no_view_is_not_zero_alpha: true
+non_claims:
+  production_approval: false
+  live_trading: false
+  security_orders: false
+  direct_q2_entry: false
+

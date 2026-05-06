@@ -1,0 +1,47 @@
+schema_version: factor_spec.v1
+factor_id: reversal_5_1
+family_id: reversal
+display_name: Short-Term Reversal
+mechanism: Near-term mean reversion after recent price pressure.
+mechanism_type: fixed_horizon
+data_tier: tier_1_price
+status: enabled
+data_requirements:
+  required_fields: [adjusted_close, trading_calendar]
+  optional_fields: [sector, market_cap]
+pit_contract:
+  signal_timestamp_rule: close_on_signal_date
+  visibility_timestamp_rule: after_market_close
+  tradable_timestamp_rule: next_trading_day_open
+  reporting_lag_days: 0
+  reject_if_missing_visibility: true
+signal_definition:
+  lookback_days: 5
+  skip_days: 1
+  transform: inverse_cross_sectional_rank_zscore
+  winsorize: true
+  winsorize_limits: [0.01, 0.99]
+horizon:
+  horizon_type: rebalance_period
+  holding_days: 5
+  rebalance_frequency: weekly
+coverage:
+  min_assets: 300
+  min_history_days: 6
+  missing_policy: explicit_abstain
+neutralization:
+  beta: report
+  sector: report
+  size: report
+  liquidity: report
+cost_sensitivity:
+  expected_turnover: high
+  capacity_risk: medium
+known_failure_modes: [bid_ask_bounce, high_turnover, liquidity_fragility]
+no_view_is_not_zero_alpha: true
+non_claims:
+  production_approval: false
+  live_trading: false
+  security_orders: false
+  direct_q2_entry: false
+
