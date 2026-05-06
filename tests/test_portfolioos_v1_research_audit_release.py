@@ -38,6 +38,7 @@ def test_v1_research_audit_release_note_covers_required_boundaries() -> None:
         "sue expanded deterministic typed-q2 candidate benchmark",
         "alpha registry v2 decision state machine",
         "dashboard / audit / provenance / no-network safeguards",
+        "validation summary",
         "explicit non-goals",
     ]
     for section in required_sections:

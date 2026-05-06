@@ -86,6 +86,17 @@ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:projects/execution_aware_optimizer/src 
 make validate
 ```
 
+## Validation Summary
+
+The release hygiene path is guarded by:
+
+- Alpha Registry v2 generation and registry tests
+- expanded SUE typed-Q2 survival smoke and attribution rebuild
+- PortfolioOS v1 release hygiene tests
+- `make validate`, including no-network, example validation, audit report,
+  core tests, Promotion Gate tests, Q2 focused tests, typed-alpha pilot tests,
+  and audit report tests
+
 ## Explicit Non-Goals
 
 - no production approval
