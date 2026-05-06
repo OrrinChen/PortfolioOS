@@ -14,7 +14,7 @@ def main() -> None:
     parser.add_argument(
         "--config",
         type=Path,
-        default=Path("projects/multifactor_alpha_validation/configs/wrds_multifactor_query_template.yaml"),
+        default=Path("projects/multifactor_alpha_validation/configs/wrds_nasdaq100_research_mode.yaml"),
     )
     parser.add_argument("--base-dir", type=Path, default=Path("."))
     parser.add_argument("--require-ready", action="store_true")

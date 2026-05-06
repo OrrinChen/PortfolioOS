@@ -97,7 +97,8 @@ WRDS multifactor ingest config smoke and tests:
 
 ```bash
 make multifactor-wrds-config-check
-PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/src poetry run pytest projects/multifactor_alpha_validation/tests/test_research_mode_preflight.py projects/multifactor_alpha_validation/tests/test_wrds_ingest.py -q
+make multifactor-external-source-check
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/src poetry run pytest projects/multifactor_alpha_validation/tests/test_research_mode_preflight.py projects/multifactor_alpha_validation/tests/test_wrds_ingest.py projects/multifactor_alpha_validation/tests/test_external_dataset_source_adapter.py -q
 ```
 
 Multifactor research dataset onboarding smoke and tests:

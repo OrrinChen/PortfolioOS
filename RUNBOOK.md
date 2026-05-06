@@ -80,6 +80,7 @@ configured outside the repo:
 
 ```bash
 make multifactor-wrds-config-check
+make multifactor-external-source-check
 WRDS_USERNAME=<your_wrds_username> PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/src poetry run python projects/multifactor_alpha_validation/scripts/run_wrds_multifactor_ingest.py --config projects/multifactor_alpha_validation/configs/wrds_nasdaq100_research_mode.yaml --require-ready
 ```
 

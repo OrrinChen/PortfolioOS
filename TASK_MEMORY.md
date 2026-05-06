@@ -258,9 +258,17 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     train/validation/test windows explicit, separates raw, neutralized, and
     cost-adjusted readouts, writes a survival funnel, and records an honest
     null when costs collapse the fixture result.
-  - Next recommended multifactor phase is real external PIT dataset wiring only
-    if the user supplies/approves a qualified data source; do not add factors,
-    tune returns, or open allocator/ML polish before that.
+  - MF-R6 External PIT Dataset Source Adapter is complete:
+    `validate_external_pit_dataset_source` validates the WRDS Nasdaq100 source
+    config without opening a WRDS connection, writes
+    `dataset_source_manifest.yaml`, `source_field_mapping.yaml`,
+    `dataset_ingest_validation.json`, and `dataset_readiness.md`, blocks
+    current-constituent/yfinance-style source configs, rejects embedded
+    credentials, requires local data/cache paths, and records no-alpha-evidence
+    non-claims.
+  - Next recommended multifactor phase is MF-R7 Real Dataset Dry Run, No Factor
+    Claims, after a local WRDS ingest or equivalent approved PIT bundle exists;
+    do not add factors, tune returns, or open allocator/ML polish before that.
   - Do not add factors, tune allocator logic, add ML models, or polish returns
     before the PIT dataset gate is ready.
   - Validation: Week 1-8 focused tests passed; `make factor-validate` is the

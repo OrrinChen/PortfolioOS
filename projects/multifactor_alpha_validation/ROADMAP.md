@@ -15,10 +15,11 @@ Phase 67, and does not promote any factor family into Q2 without the root Phase
 Current state:
 
 ```text
-Multi-Factor Alpha Validation Engine: infrastructure complete
-Research-grade alpha evidence: not unlocked
-Current blocker: real PIT dataset readiness
-Next phase: dataset onboarding, not more factor logic
+Multi-Factor Alpha Validation Engine: research workflow shape complete
+Dataset onboarding gate: complete
+Synthetic PIT-ready path: complete
+Real research evidence: still locked
+Current blocker: external PIT dataset wiring
 ```
 
 ## Positioning
@@ -743,3 +744,82 @@ Acceptance:
 - Raw, neutralized, and cost-adjusted readouts are separate.
 - Factor survival funnel is generated.
 - Weak or collapsed results are recorded honestly.
+
+### MF-R6: External PIT Dataset Source Adapter
+
+Goal:
+Wire a real external PIT source into source validation artifacts before running
+alpha evidence.
+
+Allowed sources:
+
+- WRDS / CRSP / Compustat / historical index membership source
+- user-provided PIT parquet/csv bundle configured through local paths
+
+Artifacts:
+
+- `outputs/multifactor_alpha_validation/external_dataset_source/dataset_source_manifest.yaml`
+- `outputs/multifactor_alpha_validation/external_dataset_source/source_field_mapping.yaml`
+- `outputs/multifactor_alpha_validation/external_dataset_source/dataset_ingest_validation.json`
+- `outputs/multifactor_alpha_validation/external_dataset_source/dataset_readiness.md`
+
+Acceptance:
+
+- Credentials are not embedded in config.
+- Raw external data is not committed.
+- All source and output paths are specified through local config.
+- Historical universe membership is proven historical, not current constituents.
+- Adjusted price-volume output is explicitly proven.
+- QQQ benchmark coverage source is explicit.
+- Delisting and inactive handling source exists.
+- If any proof is missing, readiness remains blocked.
+
+### MF-R7: Real Dataset Dry Run, No Factor Claims
+
+Goal:
+After real data is ingested locally, run only data-readiness dry checks.
+
+Allowed checks:
+
+- data coverage
+- timestamp alignment
+- universe snapshots
+- signal availability
+- benchmark alignment
+- delisting coverage
+
+Forbidden at this phase:
+
+- strategy return claims
+- alpha conclusions
+- factor ranking
+- optimizer weights
+
+### MF-R8: First Real Rolling OOS Evidence
+
+Goal:
+Run first real rolling OOS evidence only, without allocator promotion.
+
+Rules:
+
+- estimate IC/ICIR using data strictly before each rebalance month
+- form signals at the rebalance month
+- trade no earlier than the next session under timestamp policy
+- report raw, QQQ-relative, beta-adjusted, sector-adjusted, gross, and net
+  evidence separately
+
+### MF-R9: Real Evidence Closeout Gate
+
+Goal:
+Decide whether the first real evidence can enter redundancy or must stay
+blocked/diagnostic.
+
+Allowed decisions:
+
+- `ready_for_redundancy_gate`
+- `needs_data_fix`
+- `diagnostic_only`
+- `blocked`
+
+No decision may approve production, paper canary, live trading, or portfolio
+deployment.

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Mapping, Protocol
@@ -74,20 +75,24 @@ def run_wrds_multifactor_ingest(
     conn = (connection_factory or _default_wrds_connection_factory)()
     raw_files: dict[str, Path] = {}
     standardized_files: dict[str, Path] = {}
+    query_context: dict[str, str] = {}
     try:
         for artifact, file_name in ARTIFACTS.items():
             query_payload = queries[artifact]
             assert isinstance(query_payload, Mapping)
-            sql = str(query_payload.get("sql", "")).strip()
+            sql = _render_query_template(str(query_payload.get("sql", "")).strip(), query_context, artifact)
             frame = conn.raw_sql(sql)
             if frame.empty:
                 raise WRDSQueryConfigError(f"{artifact} query returned zero rows")
             raw_path = raw_dir / file_name
             standardized_path = standardized_dir / file_name
             frame.to_csv(raw_path, index=False)
-            _standardize_frame(artifact, frame).to_csv(standardized_path, index=False)
+            standardized = _standardize_frame(artifact, frame)
+            standardized.to_csv(standardized_path, index=False)
             raw_files[artifact] = raw_path
             standardized_files[artifact] = standardized_path
+            if artifact == "historical_universe_membership":
+                query_context["universe_permno_csv"] = _extract_permno_csv(standardized)
     finally:
         conn.close()
 
@@ -157,17 +162,48 @@ def _validate_queries(queries: Mapping[str, Any]) -> None:
             raise WRDSQueryConfigError(f"missing sql for {artifact}")
 
 
+def _render_query_template(sql: str, query_context: Mapping[str, str], artifact: str) -> str:
+    if "{universe_permno_csv}" in sql:
+        permno_csv = query_context.get("universe_permno_csv")
+        if not permno_csv:
+            raise WRDSQueryConfigError(f"{artifact} query requires universe_permno_csv before it is available")
+        sql = sql.replace("{universe_permno_csv}", permno_csv)
+    return sql
+
+
+def _extract_permno_csv(frame: pd.DataFrame) -> str:
+    if "permno" not in frame.columns:
+        raise WRDSQueryConfigError("historical universe must include permno to parameterize WRDS panel queries")
+    permnos = pd.to_numeric(frame["permno"], errors="coerce").dropna().astype(int)
+    unique = sorted(set(int(value) for value in permnos))
+    if not unique:
+        raise WRDSQueryConfigError("historical universe produced no permnos for WRDS panel queries")
+    return ", ".join(str(value) for value in unique)
+
+
 def _standardize_frame(artifact: str, frame: pd.DataFrame) -> pd.DataFrame:
     normalized = frame.copy()
     normalized.columns = [str(column).lower() for column in normalized.columns]
+    if artifact in {"adjusted_price_volume_panel", "qqq_benchmark_panel"}:
+        normalized = _derive_return_index_adjusted_prices(artifact, normalized)
     if artifact == "historical_universe_membership":
-        required = {"membership_start", "membership_end", "as_of_timestamp", "source", "source_is_pit"}
+        required = {
+            "date",
+            "in_universe",
+            "entry_date",
+            "exit_date",
+            "membership_start",
+            "membership_end",
+            "as_of_timestamp",
+            "source",
+            "source_is_pit",
+        }
     elif artifact == "adjusted_price_volume_panel":
-        required = {"date", "adjusted_close", "volume"}
+        required = {"date", "adjusted_open", "adjusted_close", "volume"}
     elif artifact == "qqq_benchmark_panel":
-        required = {"date", "benchmark", "adjusted_close"}
+        required = {"date", "benchmark", "adjusted_open", "adjusted_close", "volume"}
     elif artifact == "delisting_returns":
-        required = {"delisting_date", "delisting_return"}
+        required = {"delisting_date", "delisting_return", "inactive_reason", "last_trade_date"}
     else:
         raise WRDSQueryConfigError(f"unknown artifact: {artifact}")
     missing = sorted(required - set(normalized.columns))
@@ -176,6 +212,51 @@ def _standardize_frame(artifact: str, frame: pd.DataFrame) -> pd.DataFrame:
     if artifact != "qqq_benchmark_panel" and not ({"ticker", "permno", "asset_id"} & set(normalized.columns)):
         raise WRDSQueryConfigError(f"{artifact} must include ticker, permno, or asset_id")
     return normalized
+
+
+def _derive_return_index_adjusted_prices(artifact: str, frame: pd.DataFrame) -> pd.DataFrame:
+    if "adjusted_close" in frame.columns:
+        if "adjusted_open" not in frame.columns and {"raw_open", "raw_close"} <= set(frame.columns):
+            frame = frame.copy()
+            frame["adjusted_open"] = _derive_adjusted_open(frame)
+        return frame
+    if "return" not in frame.columns:
+        return frame
+
+    group_keys = _price_group_keys(artifact, frame)
+    working = frame.copy()
+    working["_sort_date"] = pd.to_datetime(working["date"], errors="coerce") if "date" in working.columns else pd.NaT
+    sort_keys = [*group_keys, "_sort_date"] if group_keys else ["_sort_date"]
+    working = working.sort_values(sort_keys, kind="mergesort")
+    returns = pd.to_numeric(working["return"], errors="coerce").fillna(0.0)
+    gross_returns = 1.0 + returns
+    if (gross_returns <= 0).any():
+        raise WRDSQueryConfigError(f"{artifact} contains returns <= -100%; cannot build adjusted price index")
+    if group_keys:
+        working["adjusted_close"] = gross_returns.groupby([working[key] for key in group_keys]).cumprod() * 100.0
+    else:
+        working["adjusted_close"] = gross_returns.cumprod() * 100.0
+    if {"raw_open", "raw_close"} <= set(working.columns):
+        working["adjusted_open"] = _derive_adjusted_open(working)
+    working = working.drop(columns=["_sort_date"])
+    return working
+
+
+def _price_group_keys(artifact: str, frame: pd.DataFrame) -> list[str]:
+    if artifact == "qqq_benchmark_panel":
+        return ["benchmark"] if "benchmark" in frame.columns else []
+    for key in ("permno", "asset_id", "ticker"):
+        if key in frame.columns:
+            return [key]
+    return []
+
+
+def _derive_adjusted_open(frame: pd.DataFrame) -> pd.Series:
+    raw_open = pd.to_numeric(frame["raw_open"], errors="coerce").abs()
+    raw_close = pd.to_numeric(frame["raw_close"], errors="coerce").abs().replace(0, pd.NA)
+    adjusted_close = pd.to_numeric(frame["adjusted_close"], errors="coerce")
+    adjusted_open = adjusted_close * raw_open / raw_close
+    return adjusted_open.fillna(adjusted_close)
 
 
 def _build_research_manifest(
@@ -249,4 +330,7 @@ def _default_wrds_connection_factory() -> WRDSConnection:
         raise WRDSQueryConfigError(
             "wrds package is not installed; install/configure it locally outside secrets and retry"
         ) from exc
+    username = os.environ.get("WRDS_USERNAME") or os.environ.get("WRDS_USER")
+    if username:
+        return wrds.Connection(wrds_username=username)
     return wrds.Connection()
