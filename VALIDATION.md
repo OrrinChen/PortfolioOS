@@ -67,6 +67,12 @@ PortfolioOS v1 research-audit release hygiene tests:
 ```bash
 PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_portfolioos_v1_research_audit_release.py -q
 ```
+PortfolioOS v1 maintenance freeze tests:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_portfolioos_v1_maintenance_freeze.py -q
+```
+
 
 Factor Discovery Sandbox FD-1 teaching baseline smoke and tests:
 

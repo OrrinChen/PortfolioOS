@@ -60,6 +60,7 @@ Completed:
 - Phase 55: Alpha Registry v2 / Decision State Machine freezes alpha statuses and typed-chain stop layers across SUE, revision, composite, old alpha package, Qlib revision, residual momentum, A-share, and leakage fixtures.
 - Phase 56A: Expanded SUE Typed Q2 Candidate v1 expands deterministic local SUE breadth to 120 event-name rows across 12 rebalance dates while preserving PIT timestamps, explicit abstain semantics, Q2 observed/unavailable separation, and non-approval language.
 - Phase 65: PortfolioOS v1 Research-Audit Release Hygiene packages the current local release surface, release note, Alpha Registry v2 consistency checks, Phase 56A deterministic fixture limits, and misleading-claim regression tests without adding alpha research, optimizer changes, live workflows, or broker/order paths.
+- Phase 66: PortfolioOS v1 Maintenance Freeze / Future-Only Backlog freezes the v1 research-audit release, records future-only backlog categories, and blocks automatic roadmap expansion.
 - FD-1: Factor Discovery Sandbox teaching baseline replication is complete with
   deterministic local fixture data, QQQ benchmark reporting, 29 price-volume
   factors, IC/ICIR tables, correlation matrix, ICIR weights, and explicit
@@ -82,7 +83,11 @@ Completed:
 
 Current phase:
 
-- Phase 66: Maintenance Freeze / Future-Only Backlog.
+- Terminal maintenance freeze. Phase 66 is the final freeze phase.
+
+No automatic roadmap expansion after Phase 66. New work requires explicit
+reopen decision. Existing unrelated Multifactor / Factor Discovery working-tree
+changes are not part of the v1 freeze.
 
 Deferred:
 

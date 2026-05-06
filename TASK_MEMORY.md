@@ -52,7 +52,9 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - Phase 52 Revision Marginal-Value Gate is now complete.
   - Phase 55 Alpha Registry v2 / Decision State Machine is now complete.
   - Phase 65 PortfolioOS v1 Research-Audit Release Hygiene is now complete. Phase 56-58 paper-stage preparation is technically unblocked by a clean local SUE Q2 fixture, but it remains optional and must not start without an explicit decision.
-  - Current phase is Phase 66 Maintenance Freeze / Future-Only Backlog.
+  - Phase 66 Maintenance Freeze / Future-Only Backlog is now complete.
+  - Phase 66 is the final freeze phase. No automatic roadmap expansion after Phase 66.
+  - New work requires explicit reopen decision. Existing unrelated Multifactor / Factor Discovery working-tree changes are not part of the v1 freeze.
   - Phase 48-54 are the required typed-alpha to local Q2 closeout path.
   - Phase 55 freezes alpha decisions into Alpha Registry v2.
   - Phase 56-58 are optional paper-stage preparation and governance only.
@@ -244,6 +246,12 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - `docs/releases/typed_alpha_v0_1_release_candidate.md` documents what the typed-alpha release candidate completes and what it does not claim.
   - `tests/test_typed_alpha_release_candidate.py` guards schema version locks, demo-v2 release artifacts, unavailable Q2 row semantics, release manifest non-approval flags, and release-note non-claim language.
   - validation: typed alpha release candidate tests `4 passed`; AlphaView tests `6 passed`; Promotion Gate tests `12 passed`; Q2 typed matrix tests `3 passed`; paper overlay tests `3 passed`; demo-v2 tests `2 passed`; typed SUE pilot tests `2 passed`.
+- Phase 66 PortfolioOS v1 Maintenance Freeze / Future-Only Backlog is complete:
+  - `docs/releases/portfolioos_v1_maintenance_freeze.md` freezes the v1 research-audit release after Phase 56A and Phase 65.
+  - `docs/strategy/portfolioos_future_backlog.md` records locked future-only categories for real historical SUE, paper-overlay calibration, Factor Discovery import review, live/broker/order work, and production approval.
+  - `tests/test_portfolioos_v1_maintenance_freeze.py` rejects misleading freeze claims and verifies that new work is backlog-only unless explicitly reopened.
+  - SUE remains an expanded deterministic typed-Q2 candidate benchmark, not production-approved, not paper-ready, not live-ready, and not historically proven.
+  - Existing unrelated Multifactor / Factor Discovery working-tree changes are not part of the v1 freeze.
 - Phase 42 Typed Alpha Demo v2 is complete:
   - `scripts/run_portfolioos_demo_v2.py` writes deterministic typed-alpha artifacts under `outputs/demo_v2/` by default.
   - `make demo-v2` runs the local SUE typed pilot, paper overlay readiness fixture, and read-only typed alpha dashboard renderer.
