@@ -246,7 +246,15 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     panels, AlphaView mapping, Q1 evidence, and QQQ/beta benchmark attribution,
     blocks same-close trading, does not run the allocator, and writes explicit
     no-alpha-success language.
-  - Next recommended multifactor phase is MF-R5 rolling OOS factor validation.
+  - MF-R5 Rolling OOS Factor Validation is complete:
+    `run_rolling_oos_factor_validation` forbids full-sample ICIR weighting,
+    records prior-history-only cutoffs before every rebalance date, makes
+    train/validation/test windows explicit, separates raw, neutralized, and
+    cost-adjusted readouts, writes a survival funnel, and records an honest
+    null when costs collapse the fixture result.
+  - Next recommended multifactor phase is real external PIT dataset wiring only
+    if the user supplies/approves a qualified data source; do not add factors,
+    tune returns, or open allocator/ML polish before that.
   - Do not add factors, tune allocator logic, add ML models, or polish returns
     before the PIT dataset gate is ready.
   - Validation: Week 1-8 focused tests passed; `make factor-validate` is the

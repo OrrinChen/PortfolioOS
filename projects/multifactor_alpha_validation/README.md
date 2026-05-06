@@ -69,6 +69,7 @@ make multifactor-research-universe
 make multifactor-research-panels
 make multifactor-research-delistings
 make multifactor-first-research-dry-run
+make multifactor-rolling-oos-validation
 ```
 
 ## Boundaries
