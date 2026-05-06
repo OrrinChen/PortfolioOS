@@ -8,7 +8,7 @@ PYTHONPATH_TYPED_PILOT := src:projects/typed_alpha_pilot/src:projects/evidence_b
 PYTHONPATH_FACTOR_DISCOVERY := projects/multifactor_alpha_validation/factor_discovery_sandbox/src
 PYTHONPATH_MULTIFACTOR := projects/multifactor_alpha_validation/src
 
-.PHONY: test lint validate-examples audit-report demo demo-v2 typed-alpha-closeout alpha-registry-v2 factor-discovery-teaching-baseline factor-discovery-factor-specs factor-discovery-rolling-oos factor-discovery-marginal-value-gate factor-discovery-allocator factor-discovery-survival multifactor-research-mode-preflight multifactor-wrds-config-check multifactor-external-source-check multifactor-research-universe multifactor-research-panels multifactor-research-delistings multifactor-first-research-dry-run multifactor-rolling-oos-validation factor-spec-validate factor-signals factor-q1 factor-redundancy factor-shrinkage factor-allocator factor-survival factor-registry factor-report factor-dashboard factor-release-manifest factor-validate typed-q2-adapter-fixture typed-expected-return-injection-fixture typed-optimizer-response-acceptance sue-typed-q2-survival sue-survival-attribution sue-expanded-typed-q2-survival sue-optimizer-input-bridge-fixture sue-historical-event-panel-smoke revision-marginal-value-gate no-network validate
+.PHONY: test lint validate-examples audit-report demo demo-v2 typed-alpha-closeout alpha-registry-v2 factor-discovery-teaching-baseline factor-discovery-factor-specs factor-discovery-rolling-oos factor-discovery-marginal-value-gate factor-discovery-allocator factor-discovery-survival multifactor-research-mode-preflight multifactor-wrds-config-check multifactor-external-source-check multifactor-research-universe multifactor-research-panels multifactor-research-delistings multifactor-first-research-dry-run multifactor-rolling-oos-validation factor-spec-validate factor-signals factor-q1 factor-redundancy factor-shrinkage factor-allocator factor-survival factor-registry factor-report factor-dashboard factor-release-manifest factor-validate typed-q2-adapter-fixture typed-expected-return-injection-fixture typed-optimizer-response-acceptance sue-typed-q2-survival sue-survival-attribution sue-expanded-typed-q2-survival sue-optimizer-input-bridge-fixture sue-historical-event-panel-smoke sue-historical-event-panel-full-audit revision-marginal-value-gate no-network validate
 
 test:
 	PYTHONDONTWRITEBYTECODE=1 $(PYTEST) -q
@@ -135,6 +135,9 @@ sue-optimizer-input-bridge-fixture:
 
 sue-historical-event-panel-smoke:
 	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src $(PYTHON) scripts/build_wrds_sue_event_panel.py --mode smoke
+
+sue-historical-event-panel-full-audit:
+	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src $(PYTHON) scripts/build_wrds_sue_event_panel.py --config configs/wrds_sue_event_panel_full.yaml
 
 revision-marginal-value-gate:
 	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=$(PYTHONPATH_Q2) $(PYTHON) scripts/run_revision_marginal_value_gate.py

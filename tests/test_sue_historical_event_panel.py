@@ -9,7 +9,9 @@ import pytest
 from portfolio_os.alpha.sue_historical_panel import (
     SueHistoricalPanelConfig,
     build_sue_historical_event_panel,
+    load_sue_historical_panel_run_config,
     render_sue_historical_event_panel_report,
+    write_sue_historical_missing_inputs_artifacts,
     write_sue_historical_panel_artifacts,
 )
 from portfolio_os.alpha.sue_historical_schema import (
@@ -165,12 +167,15 @@ def test_smoke_builder_writes_pit_labeled_outputs_without_overclaiming(tmp_path:
 
     coverage = json.loads(artifacts["coverage_report"].read_text(encoding="utf-8"))
     for key in [
+        "total_raw_events",
         "linked_rows",
         "unlinked_rows",
         "missing_estimates",
+        "missing_estimate_snapshot_dates",
         "missing_actuals",
         "missing_prices",
         "diagnostic_only_rows",
+        "final_pit_safe_rows",
     ]:
         assert key in coverage
 
@@ -278,6 +283,80 @@ def test_full_mode_joins_local_wrds_extracts_with_pit_filters(tmp_path: Path) ->
     assert result.coverage_report["linked_rows"] == 1
     assert result.coverage_report["unlinked_rows"] == 1
     assert result.coverage_report["missing_estimates"] == 1
+
+
+def test_full_mode_missing_extracts_write_unavailable_audit_without_smoke_fallback(tmp_path: Path) -> None:
+    output_dir = tmp_path / "full_outputs"
+    report_path = tmp_path / "sue_historical_event_panel_full_report.md"
+    config = SueHistoricalPanelConfig(
+        mode="full",
+        earnings_events_path=str(tmp_path / "missing_ibes_actuals.csv"),
+        estimate_snapshots_path=str(tmp_path / "missing_ibes_estimates.csv"),
+        security_links_path=str(tmp_path / "missing_ibes_links.csv"),
+        crsp_daily_path=str(tmp_path / "missing_crsp_daily.csv"),
+        fetched_at="2026-05-06T00:00:00Z",
+    )
+
+    artifacts = write_sue_historical_missing_inputs_artifacts(
+        config,
+        output_dir=output_dir,
+        report_path=report_path,
+    )
+
+    assert artifacts["missing_inputs_report"].name == "missing_inputs_report.json"
+    missing_report = json.loads(artifacts["missing_inputs_report"].read_text(encoding="utf-8"))
+    assert missing_report["status"] == "unavailable"
+    assert missing_report["mode"] == "full"
+    assert missing_report["no_fake_panel_created"] is True
+    assert missing_report["synthetic_historical_evidence_created"] is False
+    assert missing_report["production_approval_claimed"] is False
+    assert len(missing_report["missing_inputs"]) == 4
+    assert {item["source_table"] for item in missing_report["missing_inputs"]} == {
+        "ibes.actu_epsus",
+        "ibes.statsum_epsus",
+        "ibes.idsum",
+        "crsp.dsf",
+    }
+    assert not (output_dir / "events.csv").exists()
+    assert not (output_dir / "sue_values.csv").exists()
+
+    report = report_path.read_text(encoding="utf-8")
+    assert "Full WRDS SUE event panel unavailable" in report
+    assert "No smoke fixture or synthetic historical evidence was substituted." in report
+    assert "It does not prove SUE alpha success by itself." in report
+    validate_sue_historical_report_language(report)
+
+
+def test_full_mode_yaml_config_loads_output_paths_and_missing_inputs(tmp_path: Path) -> None:
+    config_path = tmp_path / "wrds_sue_event_panel_full.yaml"
+    output_dir = tmp_path / "configured_full_outputs"
+    report_path = tmp_path / "configured_report.md"
+    config_path.write_text(
+        "\n".join(
+            [
+                "schema_version: wrds_sue_event_panel_full_config.v1",
+                "mode: full",
+                "fetched_at: '2026-05-06T00:00:00Z'",
+                "inputs:",
+                f"  earnings_events_path: {tmp_path / 'missing_actuals.csv'}",
+                f"  estimate_snapshots_path: {tmp_path / 'missing_estimates.csv'}",
+                f"  security_links_path: {tmp_path / 'missing_links.csv'}",
+                f"  crsp_daily_path: {tmp_path / 'missing_prices.csv'}",
+                "outputs:",
+                f"  output_dir: {output_dir}",
+                f"  report_path: {report_path}",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    run_config = load_sue_historical_panel_run_config(config_path)
+
+    assert run_config.panel_config.mode == "full"
+    assert run_config.panel_config.earnings_events_path == str(tmp_path / "missing_actuals.csv")
+    assert run_config.output_dir == str(output_dir)
+    assert run_config.report_path == str(report_path)
 
 
 def test_rendered_report_rejects_approval_claim_if_added() -> None:

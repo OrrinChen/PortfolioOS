@@ -73,6 +73,11 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     - `scripts/build_wrds_sue_event_panel.py --mode smoke` writes `events.csv`, `sue_values.csv`, PIT visibility, linkage, coverage, lineage, and report artifacts under `outputs/sue_historical_event_panel/` plus `reports/sue_historical_event_panel_report.md`.
     - Smoke validation returned `event_count=60`, `rebalance_date_count=60`, `linked_rows=57`, `unlinked_rows=3`, `missing_estimates=3`, `missing_actuals=3`, `missing_prices=2`, and `diagnostic_only_rows=11`.
     - Known limitation: H1A builds and audits the panel only. It does not prove SUE alpha success, run typed event evidence/Q2/optimizer evaluation, approve paper/live trading, or update Alpha Registry.
+  - Reopen-H1A.1 WRDS Full Extract Run + Panel Audit is now complete as a full-mode local extract audit path:
+    - `configs/wrds_sue_event_panel_full.yaml` defines local IBES actuals, IBES estimate snapshot, IBES link, and CRSP daily extract paths plus full-mode output/report destinations.
+    - `scripts/build_wrds_sue_event_panel.py --config configs/wrds_sue_event_panel_full.yaml` writes a structured unavailable report when required local WRDS extracts are absent, and writes full panel artifacts when the local cache is present.
+    - Current workspace WRDS cache status: bounded 2020-2021 local extracts produced `event_count=5000`, `rebalance_date_count=77`, `linked_rows=3210`, `unlinked_rows=1790`, `missing_estimates=700`, `missing_actuals=730`, `missing_prices=4990`, `diagnostic_only_rows=4990`, and `final_pit_safe_rows=10`.
+    - Known limitation: the current real WRDS-backed panel is a bounded audit run with intentionally sampled CRSP price coverage. It does not prove SUE alpha success, run typed event evidence/Q2/optimizer evaluation, approve paper/live trading, or update Alpha Registry.
 - Factor Discovery Sandbox has been added only as a Phase 64 candidate charter,
   not as active Phase 65 implementation:
   - Proposed future path:

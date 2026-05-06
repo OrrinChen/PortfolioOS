@@ -282,6 +282,17 @@ Build the WRDS PIT-labeled historical SUE event panel smoke artifacts:
 make sue-historical-event-panel-smoke
 ```
 
+Run the local WRDS full-mode SUE panel audit path:
+
+```bash
+make sue-historical-event-panel-full-audit
+```
+
+If the configured local IBES/CRSP extracts in
+`configs/wrds_sue_event_panel_full.yaml` are missing, the command writes a
+structured unavailable report instead of generating a fake panel or substituting
+smoke data.
+
 Run the local-only revision marginal-value gate:
 
 ```bash

@@ -13,6 +13,7 @@ from typing import Any
 
 import pandas as pd
 from pydantic import BaseModel, ConfigDict, Field
+import yaml
 
 from portfolio_os.alpha.sue_historical_schema import (
     SUE_HISTORICAL_COVERAGE_SCHEMA_VERSION,
@@ -53,6 +54,40 @@ SOURCE_TABLE_NAMES = [
     "ibes.idsum",
     "crsp.dsf",
 ]
+
+FULL_MODE_INPUT_SPECS = {
+    "earnings_events_path": {
+        "input_concept": "IBES actuals / earnings announcement data",
+        "source_table": "ibes.actu_epsus",
+    },
+    "estimate_snapshots_path": {
+        "input_concept": "IBES estimates / consensus or forecast snapshot data",
+        "source_table": "ibes.statsum_epsus",
+    },
+    "security_links_path": {
+        "input_concept": "IBES-to-CRSP link data or idsum CUSIP matching input",
+        "source_table": "ibes.idsum",
+    },
+    "crsp_daily_path": {
+        "input_concept": "CRSP daily price / return window data",
+        "source_table": "crsp.dsf",
+    },
+}
+
+DEFAULT_SMOKE_OUTPUT_DIR = "outputs/sue_historical_event_panel"
+DEFAULT_SMOKE_REPORT_PATH = "reports/sue_historical_event_panel_report.md"
+DEFAULT_FULL_OUTPUT_DIR = "outputs/sue_historical_event_panel_full"
+DEFAULT_FULL_REPORT_PATH = "reports/sue_historical_event_panel_full_report.md"
+
+
+class SueHistoricalPanelRunConfig(BaseModel):
+    """Script-level H1A.1 run config with artifact destinations."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    panel_config: SueHistoricalPanelConfig
+    output_dir: str
+    report_path: str
 
 
 class SueHistoricalPanelBuildResult(BaseModel):
@@ -136,6 +171,9 @@ def write_sue_historical_panel_artifacts(
     linkage_report_path = output_path / "linkage_report.json"
     coverage_report_path = output_path / "coverage_report.json"
     lineage_path = output_path / "data_lineage_manifest.json"
+    stale_missing_report_path = output_path / "missing_inputs_report.json"
+    if result.mode == "full" and stale_missing_report_path.exists():
+        stale_missing_report_path.unlink()
 
     pd.DataFrame([row.model_dump(mode="json") for row in result.event_rows]).reindex(
         columns=["schema_version", *SUE_HISTORICAL_EVENT_COLUMNS]
@@ -157,6 +195,139 @@ def write_sue_historical_panel_artifacts(
         "data_lineage_manifest": lineage_path,
         "report": report_destination,
     }
+
+
+def load_sue_historical_panel_run_config(path: str | Path) -> SueHistoricalPanelRunConfig:
+    """Load a smoke/full panel builder config from YAML."""
+
+    config_path = Path(path)
+    payload = yaml.safe_load(config_path.read_text(encoding="utf-8")) or {}
+    inputs = payload.get("inputs") or {}
+    outputs = payload.get("outputs") or {}
+    mode = str(payload.get("mode", "smoke"))
+    panel_config = SueHistoricalPanelConfig(
+        mode=mode,
+        sample_event_count=int(payload.get("sample_event_count", 60)),
+        fetched_at=payload.get("fetched_at"),
+        earnings_events_path=inputs.get("earnings_events_path") or payload.get("earnings_events_path"),
+        estimate_snapshots_path=inputs.get("estimate_snapshots_path") or payload.get("estimate_snapshots_path"),
+        security_links_path=inputs.get("security_links_path") or payload.get("security_links_path"),
+        crsp_daily_path=inputs.get("crsp_daily_path") or payload.get("crsp_daily_path"),
+    )
+    return SueHistoricalPanelRunConfig(
+        panel_config=panel_config,
+        output_dir=str(
+            outputs.get("output_dir")
+            or payload.get("output_dir")
+            or (DEFAULT_FULL_OUTPUT_DIR if mode == "full" else DEFAULT_SMOKE_OUTPUT_DIR)
+        ),
+        report_path=str(
+            outputs.get("report_path")
+            or payload.get("report_path")
+            or (DEFAULT_FULL_REPORT_PATH if mode == "full" else DEFAULT_SMOKE_REPORT_PATH)
+        ),
+    )
+
+
+def missing_full_mode_inputs(config: SueHistoricalPanelConfig) -> list[dict[str, Any]]:
+    """Return missing local WRDS extract inputs for full mode."""
+
+    missing: list[dict[str, Any]] = []
+    if config.mode != "full":
+        return missing
+    for field_name, spec in FULL_MODE_INPUT_SPECS.items():
+        raw_path = getattr(config, field_name)
+        exists = bool(raw_path) and Path(str(raw_path)).exists()
+        if not exists:
+            missing.append(
+                {
+                    "field": field_name,
+                    "path": str(raw_path) if raw_path else None,
+                    "input_concept": spec["input_concept"],
+                    "source_table": spec["source_table"],
+                    "exists": False,
+                }
+            )
+    return missing
+
+
+def write_sue_historical_missing_inputs_artifacts(
+    config: SueHistoricalPanelConfig,
+    *,
+    output_dir: str | Path = DEFAULT_FULL_OUTPUT_DIR,
+    report_path: str | Path = DEFAULT_FULL_REPORT_PATH,
+) -> dict[str, Path]:
+    """Write structured unavailable artifacts when full WRDS extracts are absent."""
+
+    output_path = Path(output_dir)
+    output_path.mkdir(parents=True, exist_ok=True)
+    report_destination = Path(report_path)
+    report_destination.parent.mkdir(parents=True, exist_ok=True)
+    fetched_at = _fetched_at(config)
+    missing_inputs = missing_full_mode_inputs(config)
+    payload = {
+        "schema_version": "sue_historical_missing_inputs_report.v1",
+        "run_id": "sue_historical_event_panel_full",
+        "status": "unavailable",
+        "mode": config.mode,
+        "unavailable_reason": "required local WRDS/IBES/CRSP extracts are missing",
+        "missing_inputs": missing_inputs,
+        "required_source_table_names": SOURCE_TABLE_NAMES,
+        "query_timestamp": fetched_at,
+        "no_fake_panel_created": True,
+        "synthetic_historical_evidence_created": False,
+        "smoke_fallback_used": False,
+        "suppressed_outputs": ["events.csv", "sue_values.csv"],
+        "production_approval_claimed": False,
+        "paper_ready_claimed": False,
+        "live_trading_claimed": False,
+        "broker_order_workflow_added": False,
+    }
+    payload["content_hash"] = hash_payload(payload)
+    missing_report_path = output_path / "missing_inputs_report.json"
+    _write_json(missing_report_path, payload)
+    report_text = render_sue_historical_missing_inputs_report(payload)
+    validate_sue_historical_report_language(report_text)
+    report_destination.write_text(report_text, encoding="utf-8")
+    return {
+        "missing_inputs_report": missing_report_path,
+        "report": report_destination,
+    }
+
+
+def render_sue_historical_missing_inputs_report(payload: dict[str, Any]) -> str:
+    """Render a full-mode unavailable report."""
+
+    lines = [
+        "# SUE Historical Event Panel Full Report",
+        "",
+        "Full WRDS SUE event panel unavailable.",
+        "This is a WRDS PIT-safe or PIT-labeled SUE event panel builder.",
+        "It does not prove SUE alpha success by itself.",
+        "It does not approve paper trading, live trading, broker workflows, orders, or production deployment.",
+        "No smoke fixture or synthetic historical evidence was substituted.",
+        "Downstream typed event evidence and Q2 optimizer-path evaluation require separate explicit reopen phases.",
+        "",
+        "## Missing Local WRDS Extracts",
+        "",
+    ]
+    for item in payload["missing_inputs"]:
+        lines.append(f"- `{item['field']}`: `{item['path']}` ({item['source_table']})")
+    lines.extend(
+        [
+            "",
+            "## Audit Status",
+            "",
+            f"- status: `{payload['status']}`",
+            f"- unavailable_reason: `{payload['unavailable_reason']}`",
+            f"- no_fake_panel_created: `{payload['no_fake_panel_created']}`",
+            f"- synthetic_historical_evidence_created: `{payload['synthetic_historical_evidence_created']}`",
+            f"- smoke_fallback_used: `{payload['smoke_fallback_used']}`",
+            f"- query_timestamp: `{payload['query_timestamp']}`",
+            "",
+        ]
+    )
+    return "\n".join(lines)
 
 
 def render_sue_historical_event_panel_report(result: SueHistoricalPanelBuildResult) -> str:
@@ -335,9 +506,16 @@ def _build_full_mode_rows(config: SueHistoricalPanelConfig, *, fetched_at: str) 
         links["ibes_ticker"] = links["ibes_ticker"].astype(str).str.upper()
     if "cusip" in links.columns:
         links["cusip"] = links["cusip"].astype(str)
+    if "link_start_date" in links.columns:
+        links["link_start_date"] = pd.to_datetime(links["link_start_date"], errors="coerce").dt.date
+    if "link_end_date" in links.columns:
+        links["link_end_date"] = pd.to_datetime(links["link_end_date"], errors="coerce").dt.date
     prices = prices.copy()
     prices["date"] = pd.to_datetime(prices["date"], errors="raise").dt.date
     prices["permno"] = pd.to_numeric(prices["permno"], errors="coerce").astype("Int64")
+    estimate_index = _estimate_index(estimates)
+    link_index = _link_index(links)
+    price_date_index = _price_date_index(prices)
 
     rows: list[dict[str, Any]] = []
     for index, event in normalized_events.iterrows():
@@ -349,21 +527,21 @@ def _build_full_mode_rows(config: SueHistoricalPanelConfig, *, fetched_at: str) 
         available = _event_available_timestamp(event, announcement_date)
         tradable_date = (pd.Timestamp(available.date()) + pd.offsets.BDay(1)).date()
         tradable = datetime.combine(tradable_date, time(14, 30), tzinfo=timezone.utc)
-        estimate = _select_latest_pit_estimate(
-            estimates=estimates,
+        estimate = _select_latest_pit_estimate_from_index(
+            estimate_index=estimate_index,
             ibes_ticker=ibes_ticker,
             cusip=cusip,
             fiscal_period=fiscal_period,
             event_available_date=available.date(),
         )
-        link = _select_valid_link(
-            links=links,
+        link = _select_valid_link_from_index(
+            link_index=link_index,
             ibes_ticker=ibes_ticker,
             cusip=cusip,
             event_date=announcement_date,
         )
         permno = _optional_int(link.get("permno")) if link is not None else None
-        price_dates = _price_dates_for_permno(prices, permno)
+        price_dates = price_date_index.get(int(permno), []) if permno is not None else []
         price_anchor_date, return_window_start, return_window_end = _return_window_dates(
             tradable_date=tradable_date,
             price_dates=price_dates,
@@ -422,19 +600,26 @@ def _coverage_report(event_rows: list[SueHistoricalEventRow]) -> dict[str, Any]:
     linked_rows = sum(1 for row in event_rows if row.permno is not None)
     unlinked_rows = len(event_rows) - linked_rows
     missing_estimates = sum(1 for row in event_rows if row.expected_eps is None)
+    missing_estimate_snapshot_dates = sum(1 for row in event_rows if row.estimate_snapshot_date is None)
     missing_actuals = sum(1 for row in event_rows if row.actual_eps is None)
     missing_prices = sum(1 for row in event_rows if row.price_anchor_date is None)
     diagnostic_only = sum(1 for row in event_rows if row.diagnostic_only)
+    pit_safe_rows = sum(1 for row in event_rows if row.pit_safety_status == "pit_safe")
     return {
         "schema_version": SUE_HISTORICAL_COVERAGE_SCHEMA_VERSION,
+        "total_raw_events": len(event_rows),
         "row_count": len(event_rows),
         "linked_rows": linked_rows,
         "unlinked_rows": unlinked_rows,
         "missing_estimates": missing_estimates,
+        "missing_expected_eps": missing_estimates,
+        "missing_estimate_snapshot_dates": missing_estimate_snapshot_dates,
         "missing_actuals": missing_actuals,
+        "missing_actual_eps": missing_actuals,
         "missing_prices": missing_prices,
         "diagnostic_only_rows": diagnostic_only,
-        "pit_safe_rows": sum(1 for row in event_rows if row.pit_safety_status == "pit_safe"),
+        "pit_safe_rows": pit_safe_rows,
+        "final_pit_safe_rows": pit_safe_rows,
     }
 
 
@@ -477,6 +662,47 @@ def _select_latest_pit_estimate(
     return candidates.iloc[-1]
 
 
+def _estimate_index(estimates: pd.DataFrame) -> dict[tuple[str, str, str], list[dict[str, Any]]]:
+    index: dict[tuple[str, str, str], list[dict[str, Any]]] = {}
+    for record in estimates.to_dict(orient="records"):
+        fiscal_period = str(record.get("fiscal_period"))
+        snapshot = record.get("estimate_snapshot_date")
+        if pd.isna(snapshot):
+            continue
+        if "ibes_ticker" in estimates.columns and record.get("ibes_ticker"):
+            key = ("ticker", str(record["ibes_ticker"]).upper(), fiscal_period)
+            index.setdefault(key, []).append(record)
+        if "cusip" in estimates.columns and record.get("cusip"):
+            key = ("cusip", str(record["cusip"]), fiscal_period)
+            index.setdefault(key, []).append(record)
+    for records in index.values():
+        records.sort(key=lambda item: item["estimate_snapshot_date"])
+    return index
+
+
+def _select_latest_pit_estimate_from_index(
+    *,
+    estimate_index: dict[tuple[str, str, str], list[dict[str, Any]]],
+    ibes_ticker: str,
+    cusip: str,
+    fiscal_period: str,
+    event_available_date: date,
+) -> dict[str, Any] | None:
+    candidates = estimate_index.get(("ticker", ibes_ticker, fiscal_period))
+    if candidates is None and cusip:
+        candidates = estimate_index.get(("cusip", cusip, fiscal_period))
+    if not candidates:
+        return None
+    latest: dict[str, Any] | None = None
+    for candidate in candidates:
+        snapshot = candidate["estimate_snapshot_date"]
+        if snapshot <= event_available_date:
+            latest = candidate
+        else:
+            break
+    return latest
+
+
 def _select_valid_link(
     *,
     links: pd.DataFrame,
@@ -506,11 +732,56 @@ def _select_valid_link(
     return candidates.iloc[0]
 
 
+def _link_index(links: pd.DataFrame) -> dict[tuple[str, str], list[dict[str, Any]]]:
+    index: dict[tuple[str, str], list[dict[str, Any]]] = {}
+    for record in links.to_dict(orient="records"):
+        if record.get("ibes_ticker"):
+            index.setdefault(("ticker", str(record["ibes_ticker"]).upper()), []).append(record)
+        if record.get("cusip"):
+            index.setdefault(("cusip", str(record["cusip"])), []).append(record)
+    return index
+
+
+def _select_valid_link_from_index(
+    *,
+    link_index: dict[tuple[str, str], list[dict[str, Any]]],
+    ibes_ticker: str,
+    cusip: str,
+    event_date: date,
+) -> dict[str, Any] | None:
+    candidates = list(link_index.get(("ticker", ibes_ticker), []))
+    if cusip:
+        seen = {id(item) for item in candidates}
+        for item in link_index.get(("cusip", cusip), []):
+            if id(item) not in seen:
+                candidates.append(item)
+    for candidate in candidates:
+        if "link_validity_flag" in candidate:
+            flag = str(candidate.get("link_validity_flag")).lower()
+            if flag not in {"true", "1", "yes", "valid"}:
+                continue
+        start_date = candidate.get("link_start_date")
+        if start_date is not None and pd.notna(start_date) and start_date > event_date:
+            continue
+        end_date = candidate.get("link_end_date")
+        if end_date is not None and pd.notna(end_date) and end_date < event_date:
+            continue
+        return candidate
+    return None
+
+
 def _price_dates_for_permno(prices: pd.DataFrame, permno: int | None) -> list[date]:
     if permno is None:
         return []
     candidates = prices.loc[prices["permno"].astype("Int64").eq(int(permno)), "date"].dropna()
     return sorted({pd.Timestamp(value).date() for value in candidates})
+
+
+def _price_date_index(prices: pd.DataFrame) -> dict[int, list[date]]:
+    index: dict[int, list[date]] = {}
+    for permno, group in prices.dropna(subset=["permno"]).groupby("permno"):
+        index[int(permno)] = sorted({pd.Timestamp(value).date() for value in group["date"].dropna()})
+    return index
 
 
 def _return_window_dates(

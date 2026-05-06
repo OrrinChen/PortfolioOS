@@ -1,0 +1,25 @@
+schema_version: wrds_sue_event_panel_full_config.v1
+mode: full
+fetched_at: '2026-05-06T00:00:00Z'
+
+inputs:
+  earnings_events_path: data/cache/wrds_sue_event_panel/ibes_actuals.csv
+  estimate_snapshots_path: data/cache/wrds_sue_event_panel/ibes_estimates.csv
+  security_links_path: data/cache/wrds_sue_event_panel/ibes_links.csv
+  crsp_daily_path: data/cache/wrds_sue_event_panel/crsp_daily.csv
+
+outputs:
+  output_dir: outputs/sue_historical_event_panel_full
+  report_path: reports/sue_historical_event_panel_full_report.md
+
+source_tables:
+  earnings_events: ibes.actu_epsus
+  estimate_snapshots: ibes.statsum_epsus
+  security_links: ibes.idsum
+  crsp_daily: crsp.dsf
+
+non_goals:
+  production_approval_claimed: false
+  paper_ready_claimed: false
+  live_trading_claimed: false
+  broker_order_workflow_added: false

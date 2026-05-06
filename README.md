@@ -156,6 +156,15 @@ diagnostic-only rows, and missing estimate/actual/price coverage loss. It does
 not prove SUE alpha success, approve paper/live trading, create broker/order
 paths, or promote anything into Alpha Registry.
 
+`make sue-historical-event-panel-full-audit` reads
+`configs/wrds_sue_event_panel_full.yaml` and attempts the Reopen-H1A.1 local
+WRDS full-mode path. If the configured IBES/CRSP extracts are missing, it writes
+`outputs/sue_historical_event_panel_full/missing_inputs_report.json` and
+`reports/sue_historical_event_panel_full_report.md` without creating a fake
+historical panel or falling back to smoke data. With local extracts present, the
+same full-mode builder writes the PIT-labeled panel artifacts under
+`outputs/sue_historical_event_panel_full/`.
+
 `make revision-marginal-value-gate` writes the local Phase 52 revision
 marginal-value artifacts under `outputs/revision_marginal_value_gate/` and
 `reports/revision_marginal_value_report.md`. The gate requires WRDS as the
