@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
 from typing import Any, Callable, Mapping, Protocol
 import hashlib
@@ -75,13 +76,14 @@ def run_wrds_multifactor_ingest(
     conn = (connection_factory or _default_wrds_connection_factory)()
     raw_files: dict[str, Path] = {}
     standardized_files: dict[str, Path] = {}
-    query_context: dict[str, str] = {}
+    query_context: dict[str, object] = {}
     try:
         for artifact, file_name in ARTIFACTS.items():
             query_payload = queries[artifact]
             assert isinstance(query_payload, Mapping)
-            sql = _render_query_template(str(query_payload.get("sql", "")).strip(), query_context, artifact)
-            frame = conn.raw_sql(sql)
+            sql_template = str(query_payload.get("sql", "")).strip()
+            chunk_cache_dir = raw_dir / "_chunks" / artifact
+            frame = _execute_query_payload(conn, sql_template, query_payload, query_context, artifact, chunk_cache_dir)
             if frame.empty:
                 raise WRDSQueryConfigError(f"{artifact} query returned zero rows")
             raw_path = raw_dir / file_name
@@ -92,7 +94,9 @@ def run_wrds_multifactor_ingest(
             raw_files[artifact] = raw_path
             standardized_files[artifact] = standardized_path
             if artifact == "historical_universe_membership":
-                query_context["universe_permno_csv"] = _extract_permno_csv(standardized)
+                universe_permnos = _extract_permnos(standardized)
+                query_context["universe_permnos"] = universe_permnos
+                query_context["universe_permno_csv"] = _permno_csv(universe_permnos)
     finally:
         conn.close()
 
@@ -162,23 +166,130 @@ def _validate_queries(queries: Mapping[str, Any]) -> None:
             raise WRDSQueryConfigError(f"missing sql for {artifact}")
 
 
-def _render_query_template(sql: str, query_context: Mapping[str, str], artifact: str) -> str:
+def _execute_query_payload(
+    conn: WRDSConnection,
+    sql_template: str,
+    query_payload: Mapping[str, Any],
+    query_context: Mapping[str, object],
+    artifact: str,
+    chunk_cache_dir: Path,
+) -> pd.DataFrame:
+    chunk_size = query_payload.get("permno_chunk_size")
+    if chunk_size and "{universe_permno_csv}" in sql_template:
+        try:
+            parsed_chunk_size = int(chunk_size)
+        except (TypeError, ValueError) as exc:
+            raise WRDSQueryConfigError(f"{artifact} permno_chunk_size must be an integer") from exc
+        if parsed_chunk_size <= 0:
+            raise WRDSQueryConfigError(f"{artifact} permno_chunk_size must be positive")
+        permnos = query_context.get("universe_permnos")
+        if not isinstance(permnos, list) or not permnos:
+            raise WRDSQueryConfigError(f"{artifact} query requires universe permnos before chunking")
+        frames: list[pd.DataFrame] = []
+        date_chunks = _date_chunks(query_payload)
+        total_chunks = len(date_chunks) * ((len(permnos) + parsed_chunk_size - 1) // parsed_chunk_size)
+        chunk_cache_dir.mkdir(parents=True, exist_ok=True)
+        chunk_number = 0
+        for date_context in date_chunks:
+            for start in range(0, len(permnos), parsed_chunk_size):
+                chunk_number += 1
+                chunk = permnos[start : start + parsed_chunk_size]
+                sql = sql_template.replace("{universe_permno_csv}", _permno_csv(chunk))
+                sql = _render_date_chunk_template(sql, date_context, artifact)
+                _emit_progress(
+                    f"wrds_ingest_chunk_start artifact={artifact} chunk={chunk_number}/{total_chunks} "
+                    f"permno_count={len(chunk)}"
+                )
+                chunk_path = _chunk_cache_path(chunk_cache_dir, artifact, chunk_number)
+                if chunk_path.exists():
+                    frame = pd.read_csv(chunk_path)
+                    _emit_progress(
+                        f"wrds_ingest_chunk_cache_hit artifact={artifact} chunk={chunk_number}/{total_chunks} "
+                        f"row_count={len(frame)} path={chunk_path}"
+                    )
+                else:
+                    frame = conn.raw_sql(sql)
+                    frame.to_csv(chunk_path, index=False)
+                _emit_progress(
+                    f"wrds_ingest_chunk_done artifact={artifact} chunk={chunk_number}/{total_chunks} "
+                    f"row_count={len(frame)}"
+                )
+                if not frame.empty:
+                    frames.append(frame)
+        if not frames:
+            return pd.DataFrame()
+        return pd.concat(frames, ignore_index=True)
+
+    sql = _render_query_template(sql_template, query_context, artifact)
+    _emit_progress(f"wrds_ingest_query_start artifact={artifact}")
+    return conn.raw_sql(sql)
+
+
+def _chunk_cache_path(chunk_cache_dir: Path, artifact: str, chunk_number: int) -> Path:
+    return chunk_cache_dir / f"{artifact}_chunk_{chunk_number:04d}.csv"
+
+
+def _emit_progress(message: str) -> None:
+    if os.environ.get("WRDS_INGEST_PROGRESS"):
+        print(message, flush=True)
+
+
+def _render_query_template(sql: str, query_context: Mapping[str, object], artifact: str) -> str:
     if "{universe_permno_csv}" in sql:
         permno_csv = query_context.get("universe_permno_csv")
-        if not permno_csv:
+        if not isinstance(permno_csv, str) or not permno_csv:
             raise WRDSQueryConfigError(f"{artifact} query requires universe_permno_csv before it is available")
         sql = sql.replace("{universe_permno_csv}", permno_csv)
     return sql
 
 
-def _extract_permno_csv(frame: pd.DataFrame) -> str:
+def _date_chunks(query_payload: Mapping[str, Any]) -> list[dict[str, str]]:
+    if "{chunk_start}" not in str(query_payload.get("sql", "")) and "{chunk_end}" not in str(query_payload.get("sql", "")):
+        return [{}]
+    start_raw = str(query_payload.get("date_chunk_start", "")).strip()
+    end_raw = str(query_payload.get("date_chunk_end", "")).strip()
+    years_raw = query_payload.get("date_chunk_years", 1)
+    if not start_raw or not end_raw:
+        raise WRDSQueryConfigError("date chunk start/end are required when query uses date chunk placeholders")
+    try:
+        start_date = date.fromisoformat(start_raw)
+        end_date = date.fromisoformat(end_raw)
+        chunk_years = int(years_raw)
+    except (TypeError, ValueError) as exc:
+        raise WRDSQueryConfigError("date chunk bounds and years must be valid") from exc
+    if chunk_years <= 0:
+        raise WRDSQueryConfigError("date_chunk_years must be positive")
+    chunks: list[dict[str, str]] = []
+    current = start_date
+    while current <= end_date:
+        chunk_end = min(date(current.year + chunk_years - 1, 12, 31), end_date)
+        chunks.append({"chunk_start": current.isoformat(), "chunk_end": chunk_end.isoformat()})
+        current = date(chunk_end.year + 1, 1, 1)
+    return chunks
+
+
+def _render_date_chunk_template(sql: str, date_context: Mapping[str, str], artifact: str) -> str:
+    if "{chunk_start}" in sql or "{chunk_end}" in sql:
+        chunk_start = date_context.get("chunk_start")
+        chunk_end = date_context.get("chunk_end")
+        if not chunk_start or not chunk_end:
+            raise WRDSQueryConfigError(f"{artifact} query requires date chunk context")
+        sql = sql.replace("{chunk_start}", chunk_start).replace("{chunk_end}", chunk_end)
+    return sql
+
+
+def _extract_permnos(frame: pd.DataFrame) -> list[int]:
     if "permno" not in frame.columns:
         raise WRDSQueryConfigError("historical universe must include permno to parameterize WRDS panel queries")
     permnos = pd.to_numeric(frame["permno"], errors="coerce").dropna().astype(int)
     unique = sorted(set(int(value) for value in permnos))
     if not unique:
         raise WRDSQueryConfigError("historical universe produced no permnos for WRDS panel queries")
-    return ", ".join(str(value) for value in unique)
+    return unique
+
+
+def _permno_csv(permnos: list[int]) -> str:
+    return ", ".join(str(value) for value in permnos)
 
 
 def _standardize_frame(artifact: str, frame: pd.DataFrame) -> pd.DataFrame:
@@ -282,27 +393,27 @@ def _build_research_manifest(
             "license_mode": "local_research_subscription",
         },
         "universe": {
-            "path": str(standardized_files["historical_universe_membership"]),
+            "path": str(standardized_files["historical_universe_membership"].resolve()),
             "constituent_mode": "historical_membership",
             "source": "wrds_index_constituents",
             "source_is_pit": True,
         },
         "prices": {
-            "path": str(standardized_files["adjusted_price_volume_panel"]),
+            "path": str(standardized_files["adjusted_price_volume_panel"].resolve()),
             "source": "wrds_crsp",
             "adjusted": True,
         },
         "benchmark": {
-            "path": str(standardized_files["qqq_benchmark_panel"]),
+            "path": str(standardized_files["qqq_benchmark_panel"].resolve()),
             "benchmark_id": "QQQ",
             "source": "wrds_crsp",
         },
         "delisting": {
             "handling": "explicit_file",
-            "path": str(standardized_files["delisting_returns"]),
+            "path": str(standardized_files["delisting_returns"].resolve()),
         },
         "trading_calendar": {
-            "path": str(standardized_files["adjusted_price_volume_panel"]),
+            "path": str(standardized_files["adjusted_price_volume_panel"].resolve()),
             "source": "wrds_crsp_trading_dates",
         },
         "timestamp_policy": dict(timestamp_policy),

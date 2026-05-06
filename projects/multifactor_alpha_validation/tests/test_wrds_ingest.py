@@ -237,3 +237,116 @@ def test_wrds_ingest_renders_universe_permno_placeholder_after_membership_query(
     )
 
     assert "prices for (14593)" in fake.queries
+
+
+def test_wrds_ingest_can_chunk_permno_placeholder_queries(tmp_path: Path) -> None:
+    config = _config()
+    queries = config["queries"]
+    assert isinstance(queries, dict)
+    queries["adjusted_price_volume_panel"] = {
+        "sql": "prices for ({universe_permno_csv})",
+        "permno_chunk_size": 1,
+    }
+    tables = _tables()
+    tables["universe_sql"] = pd.DataFrame(
+        [
+            {
+                "permno": 14593,
+                "date": "2010-01-01",
+                "in_universe": True,
+                "entry_date": "2010-01-01",
+                "exit_date": "",
+                "membership_start": "2010-01-01",
+                "membership_end": "",
+                "as_of_timestamp": "2010-01-01T00:00:00Z",
+                "source": "wrds_index_constituents",
+                "source_is_pit": True,
+            },
+            {
+                "permno": 10107,
+                "date": "2010-01-01",
+                "in_universe": True,
+                "entry_date": "2010-01-01",
+                "exit_date": "",
+                "membership_start": "2010-01-01",
+                "membership_end": "",
+                "as_of_timestamp": "2010-01-01T00:00:00Z",
+                "source": "wrds_index_constituents",
+                "source_is_pit": True,
+            },
+        ]
+    )
+    tables["prices for (14593)"] = pd.DataFrame(
+        [
+            {
+                "date": "2010-01-29",
+                "permno": 14593,
+                "adjusted_open": 9.8,
+                "adjusted_close": 10.0,
+                "volume": 1000000,
+                "return": 0.02,
+            }
+        ]
+    )
+    tables["prices for (10107)"] = pd.DataFrame(
+        [
+            {
+                "date": "2010-01-29",
+                "permno": 10107,
+                "adjusted_open": 19.7,
+                "adjusted_close": 20.0,
+                "volume": 2000000,
+                "return": 0.03,
+            }
+        ]
+    )
+    tables.pop("prices_sql")
+    fake = FakeWRDSConnection(tables)
+
+    result = run_wrds_multifactor_ingest(
+        config,
+        base_dir=tmp_path,
+        connection_factory=lambda: fake,
+        require_ready=True,
+    )
+
+    prices = pd.read_csv(result.standardized_files["adjusted_price_volume_panel"])
+    assert set(prices["permno"]) == {14593, 10107}
+    assert "prices for (14593)" in fake.queries
+    assert "prices for (10107)" in fake.queries
+    assert (tmp_path / "raw" / "_chunks" / "adjusted_price_volume_panel" / "adjusted_price_volume_panel_chunk_0001.csv").exists()
+    assert (tmp_path / "raw" / "_chunks" / "adjusted_price_volume_panel" / "adjusted_price_volume_panel_chunk_0002.csv").exists()
+
+
+def test_wrds_ingest_can_chunk_permnos_across_date_windows(tmp_path: Path) -> None:
+    config = _config()
+    queries = config["queries"]
+    assert isinstance(queries, dict)
+    queries["adjusted_price_volume_panel"] = {
+        "sql": "prices for ({universe_permno_csv}) from {chunk_start} to {chunk_end}",
+        "permno_chunk_size": 1,
+        "date_chunk_start": "2010-01-01",
+        "date_chunk_end": "2011-12-31",
+        "date_chunk_years": 1,
+    }
+    tables = _tables()
+    tables["prices for (14593) from 2010-01-01 to 2010-12-31"] = pd.DataFrame(
+        [{"date": "2010-01-29", "permno": 14593, "adjusted_open": 9.8, "adjusted_close": 10.0, "volume": 1}]
+    )
+    tables["prices for (14593) from 2011-01-01 to 2011-12-31"] = pd.DataFrame(
+        [{"date": "2011-01-31", "permno": 14593, "adjusted_open": 10.8, "adjusted_close": 11.0, "volume": 1}]
+    )
+    tables.pop("prices_sql")
+    fake = FakeWRDSConnection(tables)
+
+    result = run_wrds_multifactor_ingest(
+        config,
+        base_dir=tmp_path,
+        connection_factory=lambda: fake,
+        require_ready=True,
+    )
+
+    prices = pd.read_csv(result.standardized_files["adjusted_price_volume_panel"])
+    assert len(prices) == 2
+    assert "prices for (14593) from 2010-01-01 to 2010-12-31" in fake.queries
+    assert "prices for (14593) from 2011-01-01 to 2011-12-31" in fake.queries

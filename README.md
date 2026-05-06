@@ -237,10 +237,12 @@ fixtures from being treated as real research.
 `projects/multifactor_alpha_validation/configs/wrds_nasdaq100_research_mode.yaml`
 is the WRDS option-B Nasdaq100 research-mode ingest config. It uses Compustat
 `idxcst_his` for historical Nasdaq100 membership, CRSP/Compustat CCM for
-`permno` mapping, CRSP CIZ daily security data for return-index adjusted
-price/volume panels, CRSP CIZ QQQ data as benchmark, and explicit CRSP
-delisting records. It contains no credentials; set WRDS credentials outside the
-repo, for example with `.pgpass` plus `WRDS_USERNAME`.
+`permno` mapping, CRSP monthly CIZ security data for adjusted price/volume
+coverage, CRSP monthly QQQ data as benchmark, and explicit CRSP delisting
+records. It contains no credentials; set WRDS credentials outside the repo, for
+example with `.pgpass` plus `WRDS_USERNAME`. This is a PIT dataset gate for
+monthly research-mode onboarding; it is not a daily 60-trading-day factor panel
+or alpha-success claim.
 
 `make factor-validate` runs the standalone Multi-Factor Alpha Validation Engine
 through local-only contract validation, signal panel generation, Q1-style

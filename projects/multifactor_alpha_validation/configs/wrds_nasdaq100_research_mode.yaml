@@ -71,52 +71,50 @@ queries:
       where membership_start <= membership_end
       order by membership_start, permno, gvkey, iid
   adjusted_price_volume_panel:
+    permno_chunk_size: 25
     sql: |
-      with params as (
-        select date '2008-01-01' as price_start,
-               date '2025-12-31' as research_end
-      )
       select
-        d.permno,
-        d.permno::text as asset_id,
-        d.dlycaldt as date,
-        d.dlyopen::double precision as raw_open,
-        coalesce(d.dlyprc, d.dlyclose)::double precision as raw_close,
-        d.dlyvol::double precision as volume,
-        d.dlyret::double precision as return,
-        'return_index_from_crsp_dlyret_base_100' as adjusted_price_convention
-      from crsp_a_stock.stkdlysecuritydata d
-      cross join params
-      where d.permno in ({universe_permno_csv})
-        and d.dlycaldt between params.price_start and params.research_end
-        and d.dlyret is not null
-        and d.dlyret > -0.999999
+        m.permno,
+        m.permno::text as asset_id,
+        m.ticker,
+        m.mthcaldt as date,
+        abs(m.mthprc)::double precision / nullif(m.mthcumfacpr::double precision, 0) as adjusted_open,
+        abs(m.mthprc)::double precision / nullif(m.mthcumfacpr::double precision, 0) as adjusted_close,
+        m.mthvol::double precision as volume,
+        m.mthret::double precision as return,
+        'crsp_msf_v2_mthprc_div_mthcumfacpr_monthly_close_proxy_open' as adjusted_price_convention
+      from crsp_a_stock.msf_v2 m
+      where m.permno in ({universe_permno_csv})
+        and m.mthcaldt between date '2008-01-01' and date '2025-12-31'
+        and m.mthret is not null
+        and m.mthret > -0.999999
+        and m.mthcumfacpr is not null
+        and m.mthcumfacpr <> 0
+        and m.mthprc is not null
   qqq_benchmark_panel:
     sql: |
-      with params as (
-        select date '2008-01-01' as price_start,
-               date '2025-12-31' as research_end
-      )
       select
-        d.dlycaldt as date,
+        m.mthcaldt as date,
         'QQQ' as benchmark,
-        d.dlyopen::double precision as raw_open,
-        coalesce(d.dlyprc, d.dlyclose)::double precision as raw_close,
-        d.dlyvol::double precision as volume,
-        d.dlyret::double precision as return,
-        'return_index_from_crsp_dlyret_base_100' as adjusted_price_convention
-      from crsp_a_stock.stkdlysecuritydata d
-      cross join params
-      where d.permno = 86755
-        and d.dlycaldt between params.price_start and params.research_end
-        and d.dlyret is not null
-        and d.dlyret > -0.999999
+        abs(m.mthprc)::double precision / nullif(m.mthcumfacpr::double precision, 0) as adjusted_open,
+        abs(m.mthprc)::double precision / nullif(m.mthcumfacpr::double precision, 0) as adjusted_close,
+        m.mthvol::double precision as volume,
+        m.mthret::double precision as return,
+        'crsp_msf_v2_mthprc_div_mthcumfacpr_monthly_close_proxy_open' as adjusted_price_convention
+      from crsp_a_stock.msf_v2 m
+      where m.permno = 86755
+        and m.mthcaldt between date '2008-01-01' and date '2025-12-31'
+        and m.mthret is not null
+        and m.mthret > -0.999999
+        and m.mthcumfacpr is not null
+        and m.mthcumfacpr <> 0
+        and m.mthprc is not null
   delisting_returns:
+    permno_chunk_size: 100
+    date_chunk_start: "2010-01-01"
+    date_chunk_end: "2025-12-31"
+    date_chunk_years: 4
     sql: |
-      with params as (
-        select date '2010-01-01' as research_start,
-               date '2025-12-31' as research_end
-      )
       select
         dl.permno,
         dl.permno::text as asset_id,
@@ -128,7 +126,6 @@ queries:
         dl.delstatustype as delisting_status_type,
         dl.delreasontype as delisting_reason_type
       from crsp_a_stock.stkdelists dl
-      cross join params
       where dl.permno in ({universe_permno_csv})
-        and dl.delistingdt between params.research_start and params.research_end
+        and dl.delistingdt between date '{chunk_start}' and date '{chunk_end}'
       order by dl.delistingdt, dl.permno
