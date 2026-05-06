@@ -19,8 +19,10 @@ Multi-Factor Alpha Validation Engine: research workflow shape complete
 Dataset onboarding gate: complete
 Synthetic PIT-ready path: complete
 WRDS monthly PIT dry run: complete
-Real rolling OOS evidence: still locked
-Current blocker: daily price-volume validation / MF-R8 evidence scope
+WRDS daily PIT bundle: pulled
+First real rolling OOS evidence: complete as diagnostic evidence
+Real evidence closeout: diagnostic_only
+Current blocker: sector/style attribution data before redundancy or allocator entry
 ```
 
 ## Positioning
@@ -819,6 +821,21 @@ Rules:
 - report raw, QQQ-relative, beta-adjusted, sector-adjusted, gross, and net
   evidence separately
 
+Status:
+
+- Complete on the local WRDS daily PIT bundle.
+- Inputs: historical Nasdaq100 membership, daily adjusted price-volume, QQQ
+  benchmark, and explicit delisting/inactive handling under ignored
+  `data/cache/wrds_multifactor/nasdaq100_daily/`.
+- Scope: `momentum_12_1`, `reversal_5_1`, and `low_vol_60d` only.
+- Outputs live under
+  `outputs/multifactor_alpha_validation/wrds_real_oos_evidence/`.
+- The run records `full_sample_icir_used=false`,
+  `prior_history_only=true`, `allocator_ran=false`,
+  `alpha_success_claimed=false`, and `not_alpha_evidence=true`.
+- Sector/style attribution remains unavailable, so this is diagnostic evidence
+  only.
+
 ### MF-R9: Real Evidence Closeout Gate
 
 Goal:
@@ -834,3 +851,14 @@ Allowed decisions:
 
 No decision may approve production, paper canary, live trading, or portfolio
 deployment.
+
+Status:
+
+- Complete.
+- Output lives under
+  `outputs/multifactor_alpha_validation/wrds_real_evidence_closeout/`.
+- Current decision: `diagnostic_only`.
+- Reasons: `sector_attribution_unavailable` and
+  `style_attribution_unavailable`.
+- Allocator entry, redundancy-gate entry, direct Q2 entry, paper canary, live
+  trading, security orders, and production approval all remain false.

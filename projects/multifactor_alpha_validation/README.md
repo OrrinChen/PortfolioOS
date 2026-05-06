@@ -14,8 +14,10 @@ Research workflow shape complete.
 Dataset onboarding gate complete.
 Synthetic PIT-ready path complete.
 WRDS monthly PIT dry run complete.
-Real rolling OOS evidence is still locked.
-Daily price-volume validation is a separate long task.
+WRDS daily PIT bundle pulled.
+MF-R8 first real rolling OOS evidence complete as diagnostic evidence.
+MF-R9 closeout decision: diagnostic_only.
+Real allocator/redundancy promotion remains locked by missing sector/style attribution.
 ```
 
 ## Scope
@@ -78,9 +80,20 @@ run allocator weights, claim strategy returns, claim alpha success, approve
 production, or enter Q2.
 
 Daily price-volume validation is explicitly separated in
-`configs/wrds_nasdaq100_daily_price_volume_long_task.yaml`; it remains
-`not_started` and requires an explicit long run before `reversal_5_1`,
-`low_vol_60d`, or next-session tradability can be validated from daily data.
+`configs/wrds_nasdaq100_daily_price_volume_long_task.yaml`. The committed
+daily WRDS research-mode config can now pull the local daily PIT bundle without
+storing credentials in the repo:
+
+```bash
+WRDS_USERNAME=<your_wrds_username> PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/src poetry run python projects/multifactor_alpha_validation/scripts/run_wrds_multifactor_ingest.py --config projects/multifactor_alpha_validation/configs/wrds_nasdaq100_daily_research_mode.yaml --require-ready
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/src poetry run python projects/multifactor_alpha_validation/scripts/run_real_rolling_oos_evidence.py --manifest data/cache/wrds_multifactor/nasdaq100_daily/standardized/research_mode_dataset_manifest.yaml --output-dir outputs/multifactor_alpha_validation/wrds_real_oos_evidence
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/src poetry run python projects/multifactor_alpha_validation/scripts/run_real_evidence_closeout.py --real-oos-output-dir outputs/multifactor_alpha_validation/wrds_real_oos_evidence --output-dir outputs/multifactor_alpha_validation/wrds_real_evidence_closeout
+```
+
+The current WRDS daily dry evidence path evaluates only `momentum_12_1`,
+`reversal_5_1`, and `low_vol_60d`; it writes diagnostic OOS evidence and a
+closeout gate. It does not run allocator weights, redundancy promotion, paper
+canaries, Q2, strategy deployment, or alpha success claims.
 
 The local historical-universe smoke writes PIT-style universe snapshots from a
 synthetic fixture:
@@ -113,7 +126,8 @@ The next roadmap is Real PIT Dataset Onboarding:
 - `MF-R8` First Real Rolling OOS Evidence
 - `MF-R9` Real Evidence Closeout Gate
 
-MF-R7 is complete for the monthly WRDS PIT bundle. Do not start MF-R8 until the
-daily price-volume long task is explicitly run or the evidence scope is limited
-to what the monthly bundle can prove. Do not add factors, tune the allocator,
-add ML models, or polish return displays before that gate is clear.
+MF-R8 and MF-R9 are complete on the local WRDS daily PIT bundle as diagnostic
+workflow checks. The closeout decision is `diagnostic_only` because sector and
+style attribution are unavailable. Do not add factors, tune the allocator, add
+ML models, or polish return displays before attribution data is onboarded and a
+new closeout gate allows the next research layer.

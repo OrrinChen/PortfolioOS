@@ -159,6 +159,23 @@ def test_committed_nasdaq100_wrds_config_validates_without_credentials() -> None
     assert "token" not in rendered
 
 
+def test_committed_nasdaq100_daily_wrds_config_validates_without_credentials() -> None:
+    config_path = Path(__file__).parents[1] / "configs" / "wrds_nasdaq100_daily_research_mode.yaml"
+
+    payload, _ = validate_wrds_query_config(config_path)
+
+    assert payload["schema_version"] == "wrds_multifactor_query_config.v1"
+    assert payload["standardized_output_dir"] == "data/cache/wrds_multifactor/nasdaq100_daily/standardized"
+    assert payload["queries"]["adjusted_price_volume_panel"]["permno_chunk_size"] == 5
+    query_text = payload["queries"]["adjusted_price_volume_panel"]["sql"].lower()
+    assert "crsp_a_stock.dsf_v2" in query_text
+    assert "dlycaldt" in query_text
+    rendered = config_path.read_text(encoding="utf-8").lower()
+    assert "password" not in rendered
+    assert "api_key" not in rendered
+    assert "token" not in rendered
+
+
 def test_wrds_ingest_derives_adjusted_prices_from_return_index(tmp_path: Path) -> None:
     fake = FakeWRDSConnection(
         {

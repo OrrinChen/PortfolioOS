@@ -195,6 +195,38 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - This preflight is not alpha evidence; it prevents sandbox or teaching-mode
     artifacts from being promoted into real research mode without the required
     PIT data contract.
+- MF-R6/R7/R8/R9 real PIT dataset onboarding is complete through the first
+  diagnostic WRDS daily OOS closeout:
+  - The monthly WRDS PIT bundle path remains complete for MF-R7 data-readiness
+    dry checks and no factor claims.
+  - `projects/multifactor_alpha_validation/configs/wrds_nasdaq100_daily_research_mode.yaml`
+    defines the local daily WRDS pull without embedded credentials and writes
+    ignored cache artifacts under `data/cache/wrds_multifactor/nasdaq100_daily/`.
+  - The local daily bundle currently contains historical Nasdaq100 membership,
+    daily adjusted price-volume, QQQ benchmark coverage, and delisting records.
+  - `multifactor_alpha_validation.real_rolling_oos.run_first_real_rolling_oos_evidence`
+    runs MF-R8 for `momentum_12_1`, `reversal_5_1`, and `low_vol_60d` only.
+    It writes `real_oos_factor_evidence.csv`,
+    `real_oos_neutralization_report.csv`,
+    `real_oos_benchmark_attribution.csv`, `real_oos_survival_funnel.csv`,
+    `real_oos_summary.json`, and `real_oos_readiness.md` under
+    `outputs/multifactor_alpha_validation/wrds_real_oos_evidence/`.
+  - Current MF-R8 run returned `oos_status=evidence_ready`,
+    `dataset_frequency=daily`, `observation_count=612`,
+    `full_sample_icir_used=false`, `prior_history_only=true`,
+    `allocator_ran=false`, `alpha_success_claimed=false`, and
+    `not_alpha_evidence=true`.
+  - `multifactor_alpha_validation.real_evidence_closeout.run_real_evidence_closeout`
+    runs MF-R9 and writes `real_evidence_closeout_decision.json` plus
+    `real_evidence_closeout_report.md` under
+    `outputs/multifactor_alpha_validation/wrds_real_evidence_closeout/`.
+  - Current MF-R9 decision is `diagnostic_only` because sector and style
+    attribution are unavailable. Allocator entry, redundancy-gate entry, direct
+    Q2 entry, paper canary, live trading, broker/order paths, and production
+    approval all remain false.
+  - Known limitation: R8/R9 prove the real-data workflow shape and timestamped
+    daily evidence plumbing only. They do not prove real alpha, approve Q2, or
+    unlock allocator/redundancy promotion.
   - Validation: research-mode preflight focused tests passed; smoke returned
     `status=blocked` with thirteen blockers on the local proxy manifest.
 - WRDS option B ingest is installed for formal multifactor research mode:
