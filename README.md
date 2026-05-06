@@ -174,6 +174,11 @@ factor weights only from prior history, scores names at the rebalance month, and
 uses next-session tradability timestamps. It explicitly forbids full-sample
 ICIR weighting.
 
+`make factor-discovery-marginal-value-gate` writes the FD-4 research-mode
+redundancy artifacts under `outputs/factor_discovery/research_mode/`: factor
+clusters, residual IC, and a marginal-value decision table. High-correlation
+factors cannot survive on standalone ICIR alone.
+
 ## Safety Boundaries
 
 - No broker route is exposed by Q1, Q2, the promotion gate, the artifact service,

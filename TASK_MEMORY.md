@@ -121,6 +121,18 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     results separate from research-mode OOS results.
   - Validation: FD-3 focused test passed; `make
     factor-discovery-rolling-oos` passed with `uses_full_sample_icir=false`.
+- FD-4 Redundancy / Marginal-Value Gate is complete:
+  - `factor_discovery_sandbox/marginal_value.py` writes
+    `factor_cluster_report.csv`, `residual_ic_report.csv`, and
+    `marginal_value_decision_table.csv`.
+  - Decisions are selected from `promote_to_allocator`, `real_but_redundant`,
+    `archive_no_marginal_value`, `needs_more_evidence`, and `diagnostic_only`.
+  - The gate records residual contribution, incremental spread, incremental net
+    return, incremental turnover, and cost drag for every factor.
+  - High-correlation factors cannot be kept by standalone ICIR alone.
+  - Validation: FD-4 focused test passed; `make
+    factor-discovery-marginal-value-gate` passed with
+    `high_correlation_kept_by_icir_only=false`.
 - Phase 48 Typed Expected-Return Injection Fixture is complete:
   - `projects/execution_aware_optimizer/src/execution_aware_optimizer/typed_injection_schema.py` defines injection input/result/summary/manifest contracts.
   - `projects/execution_aware_optimizer/src/execution_aware_optimizer/typed_expected_return_injection.py` validates Q2InputContract v2 plus projection manifest, supports positive/scaled/sign-flipped expected-return panels, and writes optimizer input snapshots.

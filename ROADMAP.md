@@ -68,6 +68,9 @@ Completed:
 - FD-3: Rolling ICIR and OOS weighting is complete with prior-history-only
   rolling ICIR weights, OOS factor score panel, no same-close trading, and a
   separate research-mode OOS backtest report.
+- FD-4: Redundancy / Marginal-Value Gate is complete with factor clusters,
+  residual IC, incremental spread/net/turnover/cost diagnostics, and explicit
+  marginal-value decisions.
 
 Current phase:
 
@@ -2278,7 +2281,7 @@ Candidate sub-roadmap:
 - FD-3 Rolling ICIR and OOS Weighting: complete. Estimate IC/ICIR only with history
   available before the rebalance month, form scores at `t`, and trade no earlier
   than `t+1`.
-- FD-4 Redundancy / Marginal-Value Gate: replace shallow correlation filtering
+- FD-4 Redundancy / Marginal-Value Gate: complete. Replace shallow correlation filtering
   with cluster, residual IC, incremental spread, incremental net return,
   turnover, cost drag, and marginal-value decisions.
 - FD-5 Shrinkage + Allocator + Zero-Weight Attribution: shrink noisy factor
