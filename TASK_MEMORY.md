@@ -235,9 +235,13 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     snapshots, checks QQQ coverage across rebalance dates, records the adjusted
     price convention, and writes missing name coverage to an abstain report
     instead of zero-filling.
-  - Next recommended multifactor phase is MF-R3 delisting/inactive handling,
-    then MF-R4 first real research dry run and MF-R5 rolling OOS factor
-    validation.
+  - MF-R3 Delisting and Inactive Asset Handling is complete:
+    `validate_delisting_inactive_handling` identifies historical membership
+    rows with exit dates, requires explicit delisting or terminal-return
+    policy fields, reports inactive-name coverage, blocks missing inactive
+    coverage, and records the delisting policy artifact.
+  - Next recommended multifactor phase is MF-R4 first real research dry run,
+    then MF-R5 rolling OOS factor validation.
   - Do not add factors, tune allocator logic, add ML models, or polish returns
     before the PIT dataset gate is ready.
   - Validation: Week 1-8 focused tests passed; `make factor-validate` is the

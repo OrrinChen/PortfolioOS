@@ -30,6 +30,16 @@ class PriceBenchmarkResult:
     benchmark_report_path: str
 
 
+@dataclass(frozen=True)
+class DelistingHandlingResult:
+    delisting_ready: bool
+    covered_inactive_assets: tuple[str, ...]
+    missing_inactive_assets: tuple[str, ...]
+    terminal_return_policy: str
+    coverage_report_path: str
+    policy_report_path: str
+
+
 _UNIVERSE_COLUMNS = {
     "date",
     "asset_id",
@@ -41,6 +51,7 @@ _UNIVERSE_COLUMNS = {
 }
 _PRICE_COLUMNS = {"date", "asset_id", "adjusted_open", "adjusted_close", "volume"}
 _BENCHMARK_COLUMNS = {"date", "adjusted_open", "adjusted_close", "volume"}
+_DELISTING_BASE_COLUMNS = {"asset_id", "delisting_date", "inactive_reason", "last_trade_date"}
 
 
 def load_historical_universe_membership(
@@ -171,6 +182,74 @@ def validate_adjusted_price_volume_and_benchmark(
     )
 
 
+def validate_delisting_inactive_handling(
+    membership_path: Path,
+    delisting_path: Path,
+    output_dir: Path,
+    terminal_return_policy: str,
+) -> DelistingHandlingResult:
+    if not terminal_return_policy.strip():
+        raise ResearchDatasetError("terminal return policy is required")
+    membership = _read_csv_rows(membership_path, _UNIVERSE_COLUMNS, "historical universe membership")
+    delistings = _read_delisting_rows(delisting_path)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    inactive_assets = sorted({row["asset_id"] for row in membership if row.get("exit_date", "").strip()})
+    delisting_index = {row["asset_id"]: row for row in delistings}
+    coverage_rows: list[dict[str, object]] = []
+    covered: list[str] = []
+    missing: list[str] = []
+    for asset_id in inactive_assets:
+        row = delisting_index.get(asset_id)
+        covered_flag = row is not None
+        if covered_flag:
+            covered.append(asset_id)
+        else:
+            missing.append(asset_id)
+        coverage_rows.append(
+            {
+                "asset_id": asset_id,
+                "delisting_covered": covered_flag,
+                "inactive_reason": row.get("inactive_reason", "") if row else "",
+                "delisting_date": row.get("delisting_date", "") if row else "",
+                "last_trade_date": row.get("last_trade_date", "") if row else "",
+                "terminal_return_policy": terminal_return_policy,
+            }
+        )
+
+    coverage_report_path = output_dir / "delisting_coverage_report.csv"
+    policy_report_path = output_dir / "delisting_policy.json"
+    _write_dict_csv(
+        coverage_report_path,
+        coverage_rows,
+        [
+            "asset_id",
+            "delisting_covered",
+            "inactive_reason",
+            "delisting_date",
+            "last_trade_date",
+            "terminal_return_policy",
+        ],
+    )
+    policy_report = {
+        "schema_version": "delisting_policy.v1",
+        "terminal_return_policy": terminal_return_policy,
+        "inactive_asset_count": len(inactive_assets),
+        "covered_inactive_assets": covered,
+        "missing_inactive_assets": missing,
+        "delisting_ready": not missing,
+    }
+    policy_report_path.write_text(json.dumps(policy_report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return DelistingHandlingResult(
+        delisting_ready=not missing,
+        covered_inactive_assets=tuple(covered),
+        missing_inactive_assets=tuple(missing),
+        terminal_return_policy=terminal_return_policy,
+        coverage_report_path=str(coverage_report_path),
+        policy_report_path=str(policy_report_path),
+    )
+
+
 def _read_csv_rows(path: Path, required_columns: set[str], label: str) -> list[dict[str, str]]:
     if not path.exists():
         raise ResearchDatasetError(f"{label} file does not exist: {path}")
@@ -183,6 +262,24 @@ def _read_csv_rows(path: Path, required_columns: set[str], label: str) -> list[d
         rows = [{key: str(value or "") for key, value in row.items()} for row in reader]
     if not rows:
         raise ResearchDatasetError(f"{label} has no rows")
+    return rows
+
+
+def _read_delisting_rows(path: Path) -> list[dict[str, str]]:
+    if not path.exists():
+        raise ResearchDatasetError(f"delisting panel file does not exist: {path}")
+    with path.open("r", encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle)
+        columns = set(reader.fieldnames or [])
+        required = set(_DELISTING_BASE_COLUMNS)
+        if "delisting_return" not in columns and "terminal_return_policy" not in columns:
+            required.add("delisting_return")
+        missing = sorted(required - columns)
+        if missing:
+            raise ResearchDatasetError(f"delisting panel missing columns: {', '.join(missing)}")
+        rows = [{key: str(value or "") for key, value in row.items()} for row in reader]
+    if not rows:
+        raise ResearchDatasetError("delisting panel has no rows")
     return rows
 
 

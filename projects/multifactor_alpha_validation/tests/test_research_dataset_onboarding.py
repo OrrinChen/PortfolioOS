@@ -8,6 +8,7 @@ import pytest
 
 from multifactor_alpha_validation.research_dataset import (
     ResearchDatasetError,
+    validate_delisting_inactive_handling,
     validate_adjusted_price_volume_and_benchmark,
     load_historical_universe_membership,
 )
@@ -201,3 +202,73 @@ def test_missing_price_data_becomes_abstain_not_zero_fill(tmp_path: Path) -> Non
     assert "OLD" in abstain_text
     assert "missing_adjusted_price_volume" in abstain_text
     assert ",0," not in abstain_text
+
+
+def _delisting_path(tmp_path: Path, include_old: bool = True) -> Path:
+    rows = [
+        {
+            "asset_id": "AAPL",
+            "delisting_date": "",
+            "delisting_return": "",
+            "inactive_reason": "active",
+            "last_trade_date": "",
+        }
+    ]
+    if include_old:
+        rows.append(
+            {
+                "asset_id": "OLD",
+                "delisting_date": "2011-12-31",
+                "delisting_return": -0.35,
+                "inactive_reason": "delisted",
+                "last_trade_date": "2011-12-30",
+            }
+        )
+    path = tmp_path / "delistings.csv"
+    _write_csv(path, rows)
+    return path
+
+
+def test_delisting_handling_reports_inactive_asset_coverage(tmp_path: Path) -> None:
+    result = validate_delisting_inactive_handling(
+        _historical_membership_path(tmp_path),
+        _delisting_path(tmp_path),
+        output_dir=tmp_path / "research_dataset",
+        terminal_return_policy="use_delisting_return",
+    )
+
+    coverage = Path(result.coverage_report_path).read_text()
+    policy = json.loads(Path(result.policy_report_path).read_text())
+    assert result.delisting_ready is True
+    assert result.covered_inactive_assets == ("OLD",)
+    assert result.missing_inactive_assets == ()
+    assert "OLD" in coverage
+    assert policy["terminal_return_policy"] == "use_delisting_return"
+
+
+def test_missing_delisting_record_blocks_research_dataset_readiness(tmp_path: Path) -> None:
+    result = validate_delisting_inactive_handling(
+        _historical_membership_path(tmp_path),
+        _delisting_path(tmp_path, include_old=False),
+        output_dir=tmp_path / "research_dataset",
+        terminal_return_policy="use_delisting_return",
+    )
+
+    assert result.delisting_ready is False
+    assert result.missing_inactive_assets == ("OLD",)
+
+
+def test_delisting_handling_requires_explicit_policy_fields(tmp_path: Path) -> None:
+    path = tmp_path / "bad_delistings.csv"
+    _write_csv(
+        path,
+        [{"asset_id": "OLD", "delisting_date": "2011-12-31", "last_trade_date": "2011-12-30"}],
+    )
+
+    with pytest.raises(ResearchDatasetError, match="delisting panel missing columns"):
+        validate_delisting_inactive_handling(
+            _historical_membership_path(tmp_path),
+            path,
+            output_dir=tmp_path / "research_dataset",
+            terminal_return_policy="use_delisting_return",
+        )

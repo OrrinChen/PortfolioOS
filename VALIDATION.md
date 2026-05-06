@@ -105,6 +105,7 @@ Multifactor research dataset onboarding smoke and tests:
 ```bash
 make multifactor-research-universe
 make multifactor-research-panels
+make multifactor-research-delistings
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/src poetry run pytest projects/multifactor_alpha_validation/tests/test_research_dataset_onboarding.py -q
 ```
 
