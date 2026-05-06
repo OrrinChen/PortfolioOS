@@ -179,6 +179,12 @@ redundancy artifacts under `outputs/factor_discovery/research_mode/`: factor
 clusters, residual IC, and a marginal-value decision table. High-correlation
 factors cannot survive on standalone ICIR alone.
 
+`make factor-discovery-allocator` writes the FD-5 research-mode shrinkage and
+allocator diagnostics under `outputs/factor_discovery/research_mode/`: posterior
+factor means, shrunk factor covariance, allocator weights, and zero-weight
+attribution. The allocator is diagnostic only and does not claim a production
+strategy.
+
 ## Safety Boundaries
 
 - No broker route is exposed by Q1, Q2, the promotion gate, the artifact service,

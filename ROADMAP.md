@@ -71,6 +71,9 @@ Completed:
 - FD-4: Redundancy / Marginal-Value Gate is complete with factor clusters,
   residual IC, incremental spread/net/turnover/cost diagnostics, and explicit
   marginal-value decisions.
+- FD-5: Shrinkage + Allocator + Zero-Weight Attribution is complete with
+  posterior factor means, shrunk covariance, nonnegative diagnostic allocator
+  weights, zero-weight reasons, and sign-flip / scale-response sanity checks.
 
 Current phase:
 
@@ -2284,7 +2287,7 @@ Candidate sub-roadmap:
 - FD-4 Redundancy / Marginal-Value Gate: complete. Replace shallow correlation filtering
   with cluster, residual IC, incremental spread, incremental net return,
   turnover, cost drag, and marginal-value decisions.
-- FD-5 Shrinkage + Allocator + Zero-Weight Attribution: shrink noisy factor
+- FD-5 Shrinkage + Allocator + Zero-Weight Attribution: complete. Shrink noisy factor
   means, stabilize covariance, cap clusters, and explain every zero factor
   weight.
 - FD-6 Cost / Capacity / Benchmark Survival: report raw, QQQ-relative,

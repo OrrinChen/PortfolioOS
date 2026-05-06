@@ -133,6 +133,21 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - Validation: FD-4 focused test passed; `make
     factor-discovery-marginal-value-gate` passed with
     `high_correlation_kept_by_icir_only=false`.
+- FD-5 Shrinkage + Allocator + Zero-Weight Attribution is complete:
+  - `factor_discovery_sandbox/allocator.py` writes `posterior_factor_mu.csv`,
+    `factor_covariance_shrunk.csv`, `allocator_weights.csv`, and
+    `zero_weight_attribution.csv`.
+  - Posterior means are shrunk toward zero; covariance is stabilized from the
+    local factor correlation panel; allocator weights are nonnegative and
+    normalized.
+  - Every zero-weight factor receives one of the allowed reasons:
+    `low_posterior_alpha`, `high_redundancy`, `cluster_dominated`,
+    `high_turnover`, `high_cost_drag`, `capacity_limited`, `no_view`, or
+    `insufficient_evidence`.
+  - The allocator report path records sign-flip and scale-response sanity
+    checks and does not claim production strategy status.
+  - Validation: FD-5 focused test passed; `make factor-discovery-allocator`
+    passed with sign-flip and scale-response checks true.
 - Phase 48 Typed Expected-Return Injection Fixture is complete:
   - `projects/execution_aware_optimizer/src/execution_aware_optimizer/typed_injection_schema.py` defines injection input/result/summary/manifest contracts.
   - `projects/execution_aware_optimizer/src/execution_aware_optimizer/typed_expected_return_injection.py` validates Q2InputContract v2 plus projection manifest, supports positive/scaled/sign-flipped expected-return panels, and writes optimizer input snapshots.
