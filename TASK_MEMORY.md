@@ -62,7 +62,11 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - Phase 62-64 are research-reopen controls, not automatic research branches.
   - Phase 65-66 package and freeze the research-audit release.
   - No automatic roadmap expansion is allowed after Phase 66.
-  - The main remaining gap is expected-return injection into a local optimizer input path, not a new alpha layer.
+  - Reopen-O1 Typed Alpha Optimizer Input Bridge v1 is now complete as an explicit reopen task, not an automatic Phase 67:
+    - `src/portfolio_os/alpha/optimizer_input_bridge.py` injects typed expected-return panels into optimizer universe frames behind `allow_typed_alpha_optimizer_injection`, keeps no_view rows explicitly labeled, and uses objective-neutral solver fill only as a recorded optimizer API adaptation.
+    - `projects/execution_aware_optimizer/src/execution_aware_optimizer/sue_optimizer_input_bridge.py` runs the expanded deterministic SUE panel through actual local `run_rebalance` calls and emits Q2 rows based on optimizer outputs, not existing adapter-hook attribution mapping.
+    - `make sue-optimizer-input-bridge-fixture` returns `bridge_status=observed`, `expected_return_reached_actual_optimizer_input=True`, `optimizer_decision_used_typed_expected_return=True`, `sign_flip_reversal_observed=True`, `scaled_alpha_monotonicity_observed=True`, `no_view_not_encoded_as_zero=True`, `actual_optimizer_output_rows=7`, and `adapter_hook_only=False`.
+    - Known limitation: this proves local optimizer-path integration only. It does not prove real historical SUE alpha, paper readiness, live readiness, or production approval.
 - Factor Discovery Sandbox has been added only as a Phase 64 candidate charter,
   not as active Phase 65 implementation:
   - Proposed future path:
@@ -219,10 +223,15 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     allowed-use metadata is blocked, same-close trading is blocked, and WRDS
     query config validation rejects embedded credentials without opening a WRDS
     connection.
-  - Next recommended multifactor phase is MF-R1 Historical Universe Membership
-    Loader, then MF-R2 adjusted price-volume plus QQQ benchmark panels, MF-R3
-    delisting/inactive handling, MF-R4 first real research dry run, and MF-R5
-    rolling OOS factor validation.
+  - MF-R1 Historical Universe Membership Loader is complete:
+    `multifactor_alpha_validation.research_dataset.load_historical_universe_membership`
+    validates historical membership fields, rejects current-constituent
+    backfill, writes rebalance-date universe snapshots, keeps exited names in
+    their valid historical windows, and emits
+    `historical_membership_validation.json`.
+  - Next recommended multifactor phase is MF-R2 adjusted price-volume plus QQQ
+    benchmark panels, then MF-R3 delisting/inactive handling, MF-R4 first real
+    research dry run, and MF-R5 rolling OOS factor validation.
   - Do not add factors, tune allocator logic, add ML models, or polish returns
     before the PIT dataset gate is ready.
   - Validation: Week 1-8 focused tests passed; `make factor-validate` is the
