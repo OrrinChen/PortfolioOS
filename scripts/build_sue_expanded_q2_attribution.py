@@ -4,14 +4,17 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+import sys
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT / "src"))
+sys.path.insert(0, str(REPO_ROOT / "projects" / "execution_aware_optimizer" / "src"))
 
 from execution_aware_optimizer.sue_expanded_typed_q2_survival import (
     load_sue_expanded_result,
     write_sue_expanded_q2_attribution_artifacts,
 )
-
-
-REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 def main() -> None:

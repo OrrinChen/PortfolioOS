@@ -62,6 +62,12 @@ make alpha-registry-v2
 PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_alpha_registry_v2.py -q
 ```
 
+PortfolioOS v1 research-audit release hygiene tests:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_portfolioos_v1_research_audit_release.py -q
+```
+
 Factor Discovery Sandbox FD-1 teaching baseline smoke and tests:
 
 ```bash
@@ -231,7 +237,7 @@ Expanded SUE typed-Q2 candidate smoke and tests, only when touching Phase 56A pa
 
 ```bash
 make sue-expanded-typed-q2-survival
-PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:projects/execution_aware_optimizer/src poetry run python scripts/build_sue_expanded_q2_attribution.py
+PYTHONDONTWRITEBYTECODE=1 poetry run python scripts/build_sue_expanded_q2_attribution.py
 make alpha-registry-v2
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:projects/execution_aware_optimizer/src poetry run pytest projects/execution_aware_optimizer/tests/test_sue_expanded_typed_q2_survival.py -q
 PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_alpha_registry_v2.py -q

@@ -19,6 +19,8 @@ filled with synthetic performance values.
 Missing coverage remains explicit abstain/no_view, not zero alpha. The
 `no_view != zero_alpha` rule remains part of the SUE typed-alpha contract.
 
+production_approval_claimed=false
+
 ## Non-Claims
 
 - production approval: not claimed

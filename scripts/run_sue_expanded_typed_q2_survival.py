@@ -4,6 +4,12 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+import sys
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT / "src"))
+sys.path.insert(0, str(REPO_ROOT / "projects" / "execution_aware_optimizer" / "src"))
 
 from execution_aware_optimizer.sue_expanded_survival_schema import SueExpandedTypedQ2SurvivalInput
 from execution_aware_optimizer.sue_expanded_typed_q2_survival import (
@@ -12,7 +18,6 @@ from execution_aware_optimizer.sue_expanded_typed_q2_survival import (
 )
 
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_CONFIG = REPO_ROOT / "projects" / "typed_alpha_pilot" / "fixtures" / "sue_expanded" / "fixture_config.json"
 SURVIVAL_FIXTURE_DIR = REPO_ROOT / "projects" / "execution_aware_optimizer" / "fixtures" / "sue_expanded_survival"
 

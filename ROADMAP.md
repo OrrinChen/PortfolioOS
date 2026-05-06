@@ -59,6 +59,7 @@ Completed:
 - Phase 52: Revision Marginal-Value Gate archives revision as a real shadow branch in the local fixture because it does not clear the SUE-adjusted cost-aware marginal threshold.
 - Phase 55: Alpha Registry v2 / Decision State Machine freezes alpha statuses and typed-chain stop layers across SUE, revision, composite, old alpha package, Qlib revision, residual momentum, A-share, and leakage fixtures.
 - Phase 56A: Expanded SUE Typed Q2 Candidate v1 expands deterministic local SUE breadth to 120 event-name rows across 12 rebalance dates while preserving PIT timestamps, explicit abstain semantics, Q2 observed/unavailable separation, and non-approval language.
+- Phase 65: PortfolioOS v1 Research-Audit Release Hygiene packages the current local release surface, release note, Alpha Registry v2 consistency checks, Phase 56A deterministic fixture limits, and misleading-claim regression tests without adding alpha research, optimizer changes, live workflows, or broker/order paths.
 - FD-1: Factor Discovery Sandbox teaching baseline replication is complete with
   deterministic local fixture data, QQQ benchmark reporting, 29 price-volume
   factors, IC/ICIR tables, correlation matrix, ICIR weights, and explicit
@@ -81,7 +82,7 @@ Completed:
 
 Current phase:
 
-- Phase 65: PortfolioOS v1 Research-Audit Release.
+- Phase 66: Maintenance Freeze / Future-Only Backlog.
 
 Deferred:
 

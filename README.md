@@ -163,6 +163,14 @@ residual momentum, A-share, and leakage-fixture decision states with explicit
 typed-chain stop layers. It does not open research, broker, order, paper canary,
 or production-approval paths.
 
+`docs/releases/portfolioos_v1_research_audit_release.md` packages the Phase 65
+research-audit release hygiene surface after Phase 56A closeout. It summarizes
+the Q1 boundary, Evidence Bundle / Promotion Gate boundary, Typed AlphaView
+contract, SUE local and expanded typed-Q2 benchmark status, Alpha Registry v2,
+and dashboard/audit/provenance/no-network safeguards. It explicitly records no
+production approval, no live trading, no broker/order path, and no paper-ready
+alpha claim.
+
 `make factor-discovery-teaching-baseline` writes the local FD-1 Factor Discovery
 Sandbox teaching-mode artifacts under `outputs/factor_discovery/teaching_mode/`.
 The baseline uses a deterministic current-constituent style fixture, QQQ

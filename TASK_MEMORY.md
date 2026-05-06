@@ -51,7 +51,8 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - Phase 51 SUE Execution-Survival Attribution Report is now complete.
   - Phase 52 Revision Marginal-Value Gate is now complete.
   - Phase 55 Alpha Registry v2 / Decision State Machine is now complete.
-  - Current phase remains Phase 65 PortfolioOS v1 Research-Audit Release. Phase 56-58 paper-stage preparation is now technically unblocked by a clean local SUE Q2 fixture, but it remains optional and must not start without an explicit decision.
+  - Phase 65 PortfolioOS v1 Research-Audit Release Hygiene is now complete. Phase 56-58 paper-stage preparation is technically unblocked by a clean local SUE Q2 fixture, but it remains optional and must not start without an explicit decision.
+  - Current phase is Phase 66 Maintenance Freeze / Future-Only Backlog.
   - Phase 48-54 are the required typed-alpha to local Q2 closeout path.
   - Phase 55 freezes alpha decisions into Alpha Registry v2.
   - Phase 56-58 are optional paper-stage preparation and governance only.
@@ -229,6 +230,10 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - validation: typed alpha closeout report tests `3 passed`.
 - Phase 44 Demo v2 Golden Snapshot Tests is complete:
   - `tests/golden/demo_v2_expected_manifest.json` records required demo-v2 artifact names, release-manifest keys, typed-alpha chain, and dashboard section headings without snapshotting full HTML.
+- Phase 65 PortfolioOS v1 Research-Audit Release Hygiene is complete:
+  - `docs/releases/portfolioos_v1_research_audit_release.md` summarizes the release boundaries across Q1, Evidence Bundle / Promotion Gate, Typed AlphaView, SUE local typed-Q2 pilot, expanded deterministic SUE benchmark, Alpha Registry v2, dashboard, audit, provenance, and no-network safeguards.
+  - `tests/test_portfolioos_v1_research_audit_release.py` verifies the release note, Alpha Registry v2 SUE status, Phase 56A deterministic fixture metrics, `outputs/alpha_registry_v2/` consistency when generated, and misleading-claim rejection for production approval, paper readiness, live alpha orders, broker execution, real historical SUE proof, guaranteed tradable alpha, auto trading, and investment recommendations.
+  - Release hygiene does not add alpha research, optimizer changes, broker/order paths, paper canary approval, live workflows, or Factor Discovery implementation.
   - `tests/test_demo_v2_golden_snapshot.py` runs `scripts/run_portfolioos_demo_v2.py` against a temp output directory and verifies artifact shape, manifest structure, required dashboard sections, read-only controls, and explicit Q2 unavailable-row semantics.
   - `src/portfolio_os/dashboard/static_dashboard.py` now renders the demo-v2 sections required by the golden contract while remaining static and read-only.
   - validation: demo-v2 golden snapshot tests `2 passed`; demo-v2/static dashboard focused tests `6 passed`.
