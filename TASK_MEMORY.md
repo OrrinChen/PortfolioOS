@@ -229,9 +229,15 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     backfill, writes rebalance-date universe snapshots, keeps exited names in
     their valid historical windows, and emits
     `historical_membership_validation.json`.
-  - Next recommended multifactor phase is MF-R2 adjusted price-volume plus QQQ
-    benchmark panels, then MF-R3 delisting/inactive handling, MF-R4 first real
-    research dry run, and MF-R5 rolling OOS factor validation.
+  - MF-R2 Adjusted Price/Volume and QQQ Benchmark Panel is complete:
+    `validate_adjusted_price_volume_and_benchmark` requires adjusted open,
+    adjusted close, and volume, checks price coverage against PIT universe
+    snapshots, checks QQQ coverage across rebalance dates, records the adjusted
+    price convention, and writes missing name coverage to an abstain report
+    instead of zero-filling.
+  - Next recommended multifactor phase is MF-R3 delisting/inactive handling,
+    then MF-R4 first real research dry run and MF-R5 rolling OOS factor
+    validation.
   - Do not add factors, tune allocator logic, add ML models, or polish returns
     before the PIT dataset gate is ready.
   - Validation: Week 1-8 focused tests passed; `make factor-validate` is the

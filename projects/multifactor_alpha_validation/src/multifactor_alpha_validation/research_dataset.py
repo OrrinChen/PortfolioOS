@@ -18,6 +18,18 @@ class HistoricalUniverseResult:
     validation_path: str
 
 
+@dataclass(frozen=True)
+class PriceBenchmarkResult:
+    price_panel_ready: bool
+    benchmark_ready: bool
+    missing_price_rows: int
+    missing_benchmark_dates: tuple[str, ...]
+    adjusted_price_convention: str
+    coverage_report_path: str
+    abstain_report_path: str
+    benchmark_report_path: str
+
+
 _UNIVERSE_COLUMNS = {
     "date",
     "asset_id",
@@ -27,6 +39,8 @@ _UNIVERSE_COLUMNS = {
     "exit_date",
     "source",
 }
+_PRICE_COLUMNS = {"date", "asset_id", "adjusted_open", "adjusted_close", "volume"}
+_BENCHMARK_COLUMNS = {"date", "adjusted_open", "adjusted_close", "volume"}
 
 
 def load_historical_universe_membership(
@@ -79,6 +93,84 @@ def load_historical_universe_membership(
     )
 
 
+def validate_adjusted_price_volume_and_benchmark(
+    price_path: Path,
+    benchmark_path: Path,
+    universe_snapshot_paths: dict[str, str],
+    output_dir: Path,
+    adjusted_price_convention: str,
+) -> PriceBenchmarkResult:
+    if not adjusted_price_convention.strip():
+        raise ResearchDatasetError("adjusted price convention is required")
+    prices = _read_csv_rows(price_path, _PRICE_COLUMNS, "adjusted price-volume panel")
+    benchmark = _read_csv_rows(benchmark_path, _BENCHMARK_COLUMNS, "QQQ benchmark panel")
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    coverage_rows: list[dict[str, object]] = []
+    abstain_rows: list[dict[str, str]] = []
+    price_index = {(row["date"], row["asset_id"]): row for row in prices}
+
+    for rebalance_date, snapshot_path in sorted(universe_snapshot_paths.items()):
+        snapshot = _read_csv_rows(Path(snapshot_path), _UNIVERSE_COLUMNS, "universe snapshot")
+        for row in snapshot:
+            key = (rebalance_date, row["asset_id"])
+            has_price = key in price_index
+            coverage_rows.append(
+                {
+                    "date": rebalance_date,
+                    "asset_id": row["asset_id"],
+                    "coverage_flag": has_price,
+                    "abstain_reason": "" if has_price else "missing_adjusted_price_volume",
+                }
+            )
+            if not has_price:
+                abstain_rows.append(
+                    {
+                        "date": rebalance_date,
+                        "asset_id": row["asset_id"],
+                        "coverage_flag": "false",
+                        "abstain_reason": "missing_adjusted_price_volume",
+                    }
+                )
+
+    benchmark_dates = {row["date"] for row in benchmark}
+    required_dates = sorted(universe_snapshot_paths)
+    missing_benchmark_dates = tuple(date_value for date_value in required_dates if date_value not in benchmark_dates)
+
+    coverage_report_path = output_dir / "price_coverage_report.csv"
+    abstain_report_path = output_dir / "price_abstain_report.csv"
+    benchmark_report_path = output_dir / "benchmark_coverage_report.json"
+    _write_dict_csv(
+        coverage_report_path,
+        coverage_rows,
+        ["date", "asset_id", "coverage_flag", "abstain_reason"],
+    )
+    _write_dict_csv(
+        abstain_report_path,
+        abstain_rows,
+        ["date", "asset_id", "coverage_flag", "abstain_reason"],
+    )
+    benchmark_report = {
+        "schema_version": "benchmark_coverage_report.v1",
+        "benchmark_id": "QQQ",
+        "benchmark_ready": not missing_benchmark_dates,
+        "required_dates": required_dates,
+        "missing_dates": list(missing_benchmark_dates),
+        "adjusted_price_convention": adjusted_price_convention,
+    }
+    benchmark_report_path.write_text(json.dumps(benchmark_report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return PriceBenchmarkResult(
+        price_panel_ready=not abstain_rows,
+        benchmark_ready=not missing_benchmark_dates,
+        missing_price_rows=len(abstain_rows),
+        missing_benchmark_dates=missing_benchmark_dates,
+        adjusted_price_convention=adjusted_price_convention,
+        coverage_report_path=str(coverage_report_path),
+        abstain_report_path=str(abstain_report_path),
+        benchmark_report_path=str(benchmark_report_path),
+    )
+
+
 def _read_csv_rows(path: Path, required_columns: set[str], label: str) -> list[dict[str, str]]:
     if not path.exists():
         raise ResearchDatasetError(f"{label} file does not exist: {path}")
@@ -122,6 +214,14 @@ def _write_snapshot(path: Path, rows: list[dict[str, str]]) -> None:
         writer.writeheader()
         for row in rows:
             writer.writerow({key: row.get(key, "") for key in fieldnames})
+
+
+def _write_dict_csv(path: Path, rows: list[dict[str, object]], fieldnames: list[str]) -> None:
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow(row)
 
 
 def _parse_date(value: str) -> date:

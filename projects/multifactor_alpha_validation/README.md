@@ -66,6 +66,7 @@ synthetic fixture:
 
 ```bash
 make multifactor-research-universe
+make multifactor-research-panels
 ```
 
 ## Boundaries
