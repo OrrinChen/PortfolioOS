@@ -18,8 +18,9 @@ Current state:
 Multi-Factor Alpha Validation Engine: research workflow shape complete
 Dataset onboarding gate: complete
 Synthetic PIT-ready path: complete
-Real research evidence: still locked
-Current blocker: external PIT dataset wiring
+WRDS monthly PIT dry run: complete
+Real rolling OOS evidence: still locked
+Current blocker: daily price-volume validation / MF-R8 evidence scope
 ```
 
 ## Positioning
@@ -794,6 +795,16 @@ Forbidden at this phase:
 - alpha conclusions
 - factor ranking
 - optimizer weights
+
+Status:
+
+- Complete for the local WRDS monthly PIT bundle.
+- The dry run reads the real monthly manifest and CSVs, writes coverage,
+  timestamp alignment, universe snapshot, signal availability, benchmark
+  alignment, and delisting coverage artifacts, and keeps all non-claim flags
+  closed.
+- Daily price-volume validation remains a separate long task and was not
+  started by MF-R7.
 
 ### MF-R8: First Real Rolling OOS Evidence
 

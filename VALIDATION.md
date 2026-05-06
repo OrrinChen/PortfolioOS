@@ -101,6 +101,14 @@ make multifactor-external-source-check
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/src poetry run pytest projects/multifactor_alpha_validation/tests/test_research_mode_preflight.py projects/multifactor_alpha_validation/tests/test_wrds_ingest.py projects/multifactor_alpha_validation/tests/test_external_dataset_source_adapter.py -q
 ```
 
+WRDS monthly PIT real dataset dry run smoke and tests, after the local WRDS
+monthly bundle exists under `data/cache/wrds_multifactor/nasdaq100/`:
+
+```bash
+make multifactor-real-dataset-dry-run
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/src poetry run pytest projects/multifactor_alpha_validation/tests/test_real_dataset_dry_run.py -q
+```
+
 Multifactor research dataset onboarding smoke and tests:
 
 ```bash

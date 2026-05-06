@@ -13,8 +13,9 @@ Current status:
 Research workflow shape complete.
 Dataset onboarding gate complete.
 Synthetic PIT-ready path complete.
-Real research evidence is still locked.
-The active blocker is external PIT dataset wiring.
+WRDS monthly PIT dry run complete.
+Real rolling OOS evidence is still locked.
+Daily price-volume validation is a separate long task.
 ```
 
 ## Scope
@@ -56,6 +57,7 @@ the repo:
 make multifactor-wrds-config-check
 make multifactor-external-source-check
 WRDS_USERNAME=<your_wrds_username> PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/src poetry run python projects/multifactor_alpha_validation/scripts/run_wrds_multifactor_ingest.py --config projects/multifactor_alpha_validation/configs/wrds_nasdaq100_research_mode.yaml --require-ready
+make multifactor-real-dataset-dry-run
 ```
 
 The source check writes `dataset_source_manifest.yaml`,
@@ -65,6 +67,20 @@ uses the committed Nasdaq100 WRDS config only after credentials are configured
 outside the repo. Raw and standardized WRDS extracts are written under
 `data/cache/wrds_multifactor/`, which is ignored by git and must not be
 committed.
+
+`make multifactor-real-dataset-dry-run` reads the local WRDS monthly PIT bundle
+manifest under `data/cache/wrds_multifactor/nasdaq100/standardized/` and writes
+MF-R7 readiness artifacts under
+`outputs/multifactor_alpha_validation/wrds_real_dataset_dry_run/`. It checks
+coverage, timestamp alignment, universe snapshots, signal availability,
+benchmark alignment, and delisting coverage only. It does not rank factors,
+run allocator weights, claim strategy returns, claim alpha success, approve
+production, or enter Q2.
+
+Daily price-volume validation is explicitly separated in
+`configs/wrds_nasdaq100_daily_price_volume_long_task.yaml`; it remains
+`not_started` and requires an explicit long run before `reversal_5_1`,
+`low_vol_60d`, or next-session tradability can be validated from daily data.
 
 The local historical-universe smoke writes PIT-style universe snapshots from a
 synthetic fixture:
@@ -97,5 +113,7 @@ The next roadmap is Real PIT Dataset Onboarding:
 - `MF-R8` First Real Rolling OOS Evidence
 - `MF-R9` Real Evidence Closeout Gate
 
-Do not add factors, tune the allocator, add ML models, or polish return displays
-before the dataset gate is ready.
+MF-R7 is complete for the monthly WRDS PIT bundle. Do not start MF-R8 until the
+daily price-volume long task is explicitly run or the evidence scope is limited
+to what the monthly bundle can prove. Do not add factors, tune the allocator,
+add ML models, or polish return displays before that gate is clear.

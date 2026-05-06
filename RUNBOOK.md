@@ -82,7 +82,15 @@ configured outside the repo:
 make multifactor-wrds-config-check
 make multifactor-external-source-check
 WRDS_USERNAME=<your_wrds_username> PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/src poetry run python projects/multifactor_alpha_validation/scripts/run_wrds_multifactor_ingest.py --config projects/multifactor_alpha_validation/configs/wrds_nasdaq100_research_mode.yaml --require-ready
+make multifactor-real-dataset-dry-run
 ```
+
+The real dataset dry run reads the local WRDS monthly PIT bundle only; it does
+not reconnect to WRDS. It writes MF-R7 coverage, timestamp, universe,
+benchmark, delisting, signal-availability, and daily-long-task artifacts under
+`outputs/multifactor_alpha_validation/wrds_real_dataset_dry_run/`. Daily
+price-volume validation remains a separate explicit long task tracked by
+`projects/multifactor_alpha_validation/configs/wrds_nasdaq100_daily_price_volume_long_task.yaml`.
 
 Build local PIT-style universe snapshots from the synthetic onboarding fixture:
 

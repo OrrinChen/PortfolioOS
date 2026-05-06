@@ -203,15 +203,21 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     credential-like keys, writes raw and standardized extracts under
     `data/cache/wrds_multifactor/`, builds a research-mode manifest, and runs
     the PIT preflight.
-  - `projects/multifactor_alpha_validation/configs/wrds_multifactor_query_template.yaml`
-    provides query aliases for historical universe membership, adjusted price
-    volume, QQQ benchmark, and delisting returns. The NASDAQ100 membership SQL
-    must be pointed at the PIT constituent table available in the user's WRDS
-    subscription before a real pull.
+  - `projects/multifactor_alpha_validation/configs/wrds_nasdaq100_research_mode.yaml`
+    uses WRDS Compustat `idxcst_his` plus CRSP/Compustat CCM for PIT Nasdaq100
+    membership, CRSP monthly CIZ security data for adjusted monthly
+    price-volume coverage, CRSP monthly QQQ benchmark data, and explicit CRSP
+    delisting records. The current local bundle is monthly, not daily.
+  - Current workspace WRDS monthly PIT bundle status: ready. The standardized
+    manifest at
+    `data/cache/wrds_multifactor/nasdaq100/standardized/research_mode_dataset_manifest.yaml`
+    passed preflight with 272 historical membership rows, 39,470 adjusted
+    monthly price-volume rows, 216 QQQ benchmark rows, and 55 delisting rows.
   - `make multifactor-wrds-config-check` validates the query config without
     opening a WRDS connection.
   - Validation: WRDS ingest focused tests passed; config-check smoke passed
-    with `credentials_in_config=false`.
+    with `credentials_in_config=false`; the actual local ingest passed with
+    `research_mode_ready=true` and no preflight blockers.
 - Standalone Multi-Factor Alpha Validation Engine Week 1-8 is implemented:
   - `projects/multifactor_alpha_validation/ROADMAP.md` remains independent from
     the root PortfolioOS phase sequence and does not create an automatic Phase
@@ -225,8 +231,9 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - `make factor-validate` runs the standalone local pipeline and project tests.
   - The engine remains local-only, no-production-approval, no-live-trading,
     no-security-output, and no-direct-Q2-entry.
-  - Current project state is infrastructure complete, not research-grade alpha
-    evidence. The active blocker is real PIT dataset readiness.
+  - Current project state is infrastructure complete plus MF-R7 monthly WRDS
+    PIT dry-run complete. This is still not research-grade alpha evidence; the
+    active blocker is daily price-volume validation / MF-R8 evidence scope.
   - MF-R0 Dataset Manifest Contract is complete:
     current-constituent/yfinance-style manifests fail closed, synthetic PIT
     fixture manifests can pass, missing historical membership / price /
@@ -271,8 +278,27 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     current-constituent/yfinance-style source configs, rejects embedded
     credentials, requires local data/cache paths, and records no-alpha-evidence
     non-claims.
-  - Next recommended multifactor phase is MF-R7 Real Dataset Dry Run, No Factor
-    Claims, after a local WRDS ingest or equivalent approved PIT bundle exists;
+  - MF-R7 Real Dataset Dry Run, No Factor Claims is complete for the local WRDS
+    monthly PIT bundle:
+    `multifactor_alpha_validation.real_dataset_dry_run.run_real_dataset_dry_run`
+    reads the real manifest and CSVs, reruns preflight, writes
+    `real_dataset_summary.json`, `real_dataset_coverage.csv`,
+    `timestamp_alignment.csv`, `universe_snapshot_summary.csv`,
+    `benchmark_alignment.csv`, `delisting_coverage.csv`,
+    `signal_availability.csv`, `daily_price_volume_long_task.md`, and
+    `real_dataset_dry_run_report.md` under ignored
+    `outputs/multifactor_alpha_validation/wrds_real_dataset_dry_run/`.
+  - The MF-R7 smoke returned `dataset_frequency=monthly`,
+    `daily_price_volume_validation_status=separate_long_task_not_started`,
+    `allocator_ran=false`, `factor_ranking_ran=false`,
+    `strategy_return_claimed=false`, and `alpha_conclusion_claimed=false`.
+  - Daily price-volume validation is explicitly separated in
+    `projects/multifactor_alpha_validation/configs/wrds_nasdaq100_daily_price_volume_long_task.yaml`
+    with `status=not_started` and `requires_explicit_run=true`; it must be run
+    before daily `reversal_5_1`, `low_vol_60d`, or next-session tradability
+    claims.
+  - Next recommended multifactor phase is the daily price-volume long task or a
+    tightly scoped MF-R8 that only uses evidence the monthly bundle can prove;
     do not add factors, tune returns, or open allocator/ML polish before that.
   - Do not add factors, tune allocator logic, add ML models, or polish returns
     before the PIT dataset gate is ready.

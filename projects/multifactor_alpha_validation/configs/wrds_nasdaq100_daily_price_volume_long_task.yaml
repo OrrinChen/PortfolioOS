@@ -1,0 +1,32 @@
+schema_version: daily_price_volume_long_task.v1
+status: not_started
+requires_explicit_run: true
+purpose: daily_price_volume_validation_after_monthly_pit_dry_run
+source:
+  provider: wrds
+  base_monthly_manifest: data/cache/wrds_multifactor/nasdaq100/standardized/research_mode_dataset_manifest.yaml
+  base_wrds_config: projects/multifactor_alpha_validation/configs/wrds_nasdaq100_research_mode.yaml
+  credential_policy: configured_outside_repo
+requested_daily_bundle:
+  universe: historical_nasdaq100_permnos_from_monthly_pit_bundle
+  price_volume_frequency: daily
+  adjusted_price_required: true
+  start_date: "2008-01-01"
+  end_date: "2025-12-31"
+  output_cache_dir: data/cache/wrds_multifactor/nasdaq100_daily
+  resumable_chunks_required: true
+  default_chunk_axis: permno_and_date
+validation_scope:
+  - daily_trading_calendar_alignment
+  - next_session_tradability_proof
+  - reversal_5_1_signal_availability
+  - low_vol_60d_signal_availability
+  - daily_volume_and_liquidity_coverage
+  - no_same_close_trading_check
+non_claims:
+  production_approval: false
+  live_trading: false
+  security_orders: false
+  direct_q2_entry: false
+  strategy_return_claim: false
+  alpha_success_claim: false

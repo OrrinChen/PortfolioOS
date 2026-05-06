@@ -244,6 +244,17 @@ example with `.pgpass` plus `WRDS_USERNAME`. This is a PIT dataset gate for
 monthly research-mode onboarding; it is not a daily 60-trading-day factor panel
 or alpha-success claim.
 
+`make multifactor-real-dataset-dry-run` reads the local WRDS monthly PIT bundle
+from `data/cache/wrds_multifactor/nasdaq100/standardized/` and writes MF-R7
+data-readiness artifacts under
+`outputs/multifactor_alpha_validation/wrds_real_dataset_dry_run/`. It checks
+coverage, timestamp alignment, universe snapshots, signal availability,
+benchmark alignment, and delisting coverage only. It does not rank factors, run
+allocator weights, claim strategy returns, claim alpha success, approve
+production, or enter Q2. Daily price-volume validation is tracked separately by
+`projects/multifactor_alpha_validation/configs/wrds_nasdaq100_daily_price_volume_long_task.yaml`
+and remains an explicit long task.
+
 `make factor-validate` runs the standalone Multi-Factor Alpha Validation Engine
 through local-only contract validation, signal panel generation, Q1-style
 evidence, redundancy/marginal-value gates, shrinkage/covariance diagnostics,
