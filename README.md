@@ -185,6 +185,12 @@ factor means, shrunk factor covariance, allocator weights, and zero-weight
 attribution. The allocator is diagnostic only and does not claim a production
 strategy.
 
+`make factor-discovery-survival` writes the FD-6 final survival artifacts under
+`outputs/factor_discovery/research_mode/`: cost stress matrix, capacity
+frontier, benchmark attribution, survival funnel, final report, and a Phase 64
+research import bundle. The bundle blocks direct Q2 entry and keeps the sandbox
+as calibration-only unless separately imported through governance.
+
 ## Safety Boundaries
 
 - No broker route is exposed by Q1, Q2, the promotion gate, the artifact service,

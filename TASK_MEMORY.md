@@ -148,6 +148,21 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     checks and does not claim production strategy status.
   - Validation: FD-5 focused test passed; `make factor-discovery-allocator`
     passed with sign-flip and scale-response checks true.
+- FD-6 Cost / Capacity / Benchmark Survival is complete:
+  - `factor_discovery_sandbox/survival.py` writes `cost_stress_matrix.csv`,
+    `capacity_frontier.csv`, `benchmark_attribution.csv`,
+    `survival_funnel.csv`, `final_factor_discovery_report.md`, and
+    `research_import_bundle.json` under ignored
+    `outputs/factor_discovery/research_mode/`.
+  - The report compares raw, QQQ-relative, beta-adjusted, cost-adjusted, and
+    capacity-adjusted results and explicitly attributes sector, style, and
+    liquidity exposure.
+  - The local fixture flags tech concentration risk and keeps the recommended
+    import decision at `import_as_calibration_only`.
+  - The research import bundle sets `direct_q2_entry_allowed=false` and does
+    not claim production approval.
+  - Validation: FD-6 focused test passed; `make factor-discovery-survival`
+    passed with `recommended_import_decision=import_as_calibration_only`.
 - Phase 48 Typed Expected-Return Injection Fixture is complete:
   - `projects/execution_aware_optimizer/src/execution_aware_optimizer/typed_injection_schema.py` defines injection input/result/summary/manifest contracts.
   - `projects/execution_aware_optimizer/src/execution_aware_optimizer/typed_expected_return_injection.py` validates Q2InputContract v2 plus projection manifest, supports positive/scaled/sign-flipped expected-return panels, and writes optimizer input snapshots.

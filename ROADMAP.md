@@ -74,6 +74,9 @@ Completed:
 - FD-5: Shrinkage + Allocator + Zero-Weight Attribution is complete with
   posterior factor means, shrunk covariance, nonnegative diagnostic allocator
   weights, zero-weight reasons, and sign-flip / scale-response sanity checks.
+- FD-6: Cost / Capacity / Benchmark Survival is complete with cost stress,
+  capacity frontier, benchmark attribution, survival funnel, final report, and a
+  Phase 64 research import bundle that blocks direct Q2 entry.
 
 Current phase:
 
@@ -2290,7 +2293,7 @@ Candidate sub-roadmap:
 - FD-5 Shrinkage + Allocator + Zero-Weight Attribution: complete. Shrink noisy factor
   means, stabilize covariance, cap clusters, and explain every zero factor
   weight.
-- FD-6 Cost / Capacity / Benchmark Survival: report raw, QQQ-relative,
+- FD-6 Cost / Capacity / Benchmark Survival: complete. Report raw, QQQ-relative,
   beta-adjusted, cost-adjusted, capacity-adjusted, sector/style/liquidity
   attribution, and survival-funnel results.
 
