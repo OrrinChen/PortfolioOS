@@ -68,9 +68,11 @@ def run_research_mode_preflight(
     prices = _section(payload, "prices")
     benchmark = _section(payload, "benchmark")
     delisting = _section(payload, "delisting")
+    trading_calendar = _section(payload, "trading_calendar")
     timestamp_policy = _section(payload, "timestamp_policy")
     non_claims = _non_claims(payload)
 
+    _validate_manifest_metadata(payload, blockers)
     rows_checked["historical_universe"] = _validate_universe(
         universe,
         manifest_base,
@@ -80,7 +82,7 @@ def run_research_mode_preflight(
     rows_checked["prices"] = _validate_csv_section(
         prices,
         manifest_base,
-        {"date", "ticker", "adjusted_close", "volume"},
+        {"date", "adjusted_close", "volume"},
         "price panel",
         blockers,
     )
@@ -100,6 +102,13 @@ def run_research_mode_preflight(
         blockers.append("QQQ benchmark is required")
 
     rows_checked["delistings"] = _validate_delisting(delisting, manifest_base, blockers)
+    rows_checked["trading_calendar"] = _validate_csv_section(
+        trading_calendar,
+        manifest_base,
+        {"date"},
+        "trading calendar",
+        blockers,
+    )
     _validate_timestamp_policy(timestamp_policy, blockers)
     _validate_non_claims(non_claims, blockers)
 
@@ -158,6 +167,20 @@ def _non_claims(payload: Mapping[str, Any]) -> dict[str, bool]:
     return defaults
 
 
+def _validate_manifest_metadata(payload: Mapping[str, Any], blockers: list[str]) -> None:
+    if payload.get("allowed_use_mode") != "formal_research":
+        blockers.append("allowed use mode must be formal_research")
+    if not str(payload.get("content_hash", "")).strip():
+        blockers.append("dataset content hash is required")
+    provenance = payload.get("source_provenance")
+    if not isinstance(provenance, Mapping) or not provenance:
+        blockers.append("source provenance is required")
+        return
+    for key in ("provider", "as_of_timestamp", "license_mode"):
+        if not str(provenance.get(key, "")).strip():
+            blockers.append(f"source provenance missing {key}")
+
+
 def _resolve_path(value: object, manifest_base: Path | None) -> Path | None:
     if not value:
         return None
@@ -186,10 +209,12 @@ def _validate_universe(
     columns = _read_csv_columns(path, blockers, "historical universe")
     if not columns:
         return 0
-    required = {"ticker", "membership_start", "membership_end", "as_of_timestamp", "source", "source_is_pit"}
+    required = {"membership_start", "membership_end", "as_of_timestamp", "source", "source_is_pit"}
     missing = sorted(required - columns)
     if missing:
         blockers.append(f"historical universe missing columns: {', '.join(missing)}")
+    if not ({"ticker", "permno", "asset_id"} & columns):
+        blockers.append("historical universe must include ticker, permno, or asset_id")
     row_count = _count_rows(path)
     if row_count == 0:
         blockers.append("historical universe membership is required")
@@ -212,6 +237,8 @@ def _validate_csv_section(
     missing = sorted(required - columns)
     if missing:
         blockers.append(f"{label} missing columns: {', '.join(missing)}")
+    if label in {"price panel", "delisting panel"} and not ({"ticker", "permno", "asset_id"} & columns):
+        blockers.append(f"{label} must include ticker, permno, or asset_id")
     return _count_rows(path)
 
 
@@ -226,7 +253,7 @@ def _validate_delisting(
     return _validate_csv_section(
         delisting,
         manifest_base,
-        {"ticker", "delisting_date", "delisting_return"},
+        {"delisting_date", "delisting_return"},
         "delisting panel",
         blockers,
     )

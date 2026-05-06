@@ -93,6 +93,13 @@ make multifactor-research-mode-preflight
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/src poetry run pytest projects/multifactor_alpha_validation/tests/test_week1_contracts.py projects/multifactor_alpha_validation/tests/test_research_mode_preflight.py -q
 ```
 
+WRDS multifactor ingest config smoke and tests:
+
+```bash
+make multifactor-wrds-config-check
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/src poetry run pytest projects/multifactor_alpha_validation/tests/test_research_mode_preflight.py projects/multifactor_alpha_validation/tests/test_wrds_ingest.py -q
+```
+
 Standalone Multi-Factor Alpha Validation Engine smoke and tests:
 
 ```bash
@@ -261,6 +268,14 @@ PYTHONDONTWRITEBYTECODE=1 poetry run python scripts/build_sue_expanded_q2_attrib
 make alpha-registry-v2
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:projects/execution_aware_optimizer/src poetry run pytest projects/execution_aware_optimizer/tests/test_sue_expanded_typed_q2_survival.py -q
 PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_alpha_registry_v2.py -q
+```
+
+SUE optimizer input bridge smoke and tests, only when touching explicit Reopen-O1 bridge paths:
+
+```bash
+make sue-optimizer-input-bridge-fixture
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src poetry run pytest tests/test_typed_alpha_optimizer_input_bridge.py -q
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:projects/execution_aware_optimizer/src poetry run pytest projects/execution_aware_optimizer/tests/test_sue_optimizer_input_bridge_fixture.py -q
 ```
 
 Revision marginal-value gate tests:

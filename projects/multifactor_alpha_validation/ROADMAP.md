@@ -12,6 +12,15 @@ not change the root PortfolioOS phase sequence, does not create an automatic
 Phase 67, and does not promote any factor family into Q2 without the root Phase
 64 research import contract.
 
+Current state:
+
+```text
+Multi-Factor Alpha Validation Engine: infrastructure complete
+Research-grade alpha evidence: not unlocked
+Current blocker: real PIT dataset readiness
+Next phase: dataset onboarding, not more factor logic
+```
+
 ## Positioning
 
 The Multi-Factor Alpha Validation Engine is a standalone project story under
@@ -122,6 +131,7 @@ projects/multifactor_alpha_validation/
     dashboard.py
   scripts/
     run_multifactor_research_mode_preflight.py
+    run_wrds_multifactor_ingest.py
     run_factor_signal_builders.py
     run_factor_q1_evidence.py
     run_factor_redundancy_gate.py
@@ -233,6 +243,8 @@ Work:
 - Implement PIT data contract validation.
 - Add a research-mode preflight that validates actual dataset manifests before
   formal factor validation.
+- Add an opt-in WRDS ingest path that uses local credentials without storing
+  secrets in the repository.
 - Add eight base factor specs.
 - Add SUE reference and disabled analyst revision specs.
 
@@ -243,6 +255,7 @@ Artifacts:
 - `outputs/factor_spec_validation/spec_validation_report.json`
 - `outputs/multifactor_alpha_validation/research_mode_preflight/pit_contract_validation.json`
 - `outputs/multifactor_alpha_validation/research_mode_preflight/research_mode_readiness.md`
+- `data/cache/wrds_multifactor/standardized/research_mode_dataset_manifest.yaml`
 
 Acceptance:
 
@@ -253,6 +266,7 @@ Acceptance:
 - Missing coverage policy is explicit abstain.
 - Local current-constituent/yfinance proxy data fails closed before real
   research mode.
+- WRDS query config validation rejects embedded credentials.
 - No live, broker, production-approval, or security-order artifact is produced.
 
 ### Week 2: Signal Builders and AlphaView Mapper
@@ -566,3 +580,166 @@ showing:
 - what the allocator used or rejected
 - where cost or capacity killed apparent alpha
 - what each final registry status means
+
+## Next Roadmap: Real PIT Dataset Onboarding
+
+Do not add more factor logic before the real dataset gate is solved. The next
+roadmap is `MF-R0` through `MF-R5`, focused only on formal research-mode data
+readiness.
+
+Do not open:
+
+- more factors
+- better allocator logic
+- dashboard polish
+- ML models
+- return tuning
+
+### MF-R0: Dataset Manifest Contract
+
+Goal:
+Define which datasets are eligible for formal research mode.
+
+Required manifest fields:
+
+- historical universe membership
+- adjusted price-volume panel
+- QQQ benchmark panel
+- delisting and inactive asset handling
+- trading calendar
+- timestamp policy
+- source provenance
+- content hash
+- allowed use mode
+
+Acceptance:
+
+- Current-constituent/yfinance-style manifests are blocked.
+- Synthetic ready fixture manifests can pass.
+- Missing historical membership is blocked.
+- Missing adjusted price-volume panel is blocked.
+- Missing benchmark panel is blocked.
+- Missing delisting handling is blocked.
+- Same-close trading is blocked.
+
+### MF-R1: Historical Universe Membership Loader
+
+Goal:
+Load historical NASDAQ100-style membership instead of current constituents.
+
+Required fields:
+
+- date
+- asset_id
+- ticker
+- in_universe
+- entry_date
+- exit_date
+- source
+
+Acceptance:
+
+- Each rebalance date sees only the universe visible at that time.
+- Current constituents cannot be backfilled into history.
+- Exited names remain present during their valid historical windows.
+- Universe snapshots are written as artifacts.
+
+Artifacts:
+
+- `outputs/multifactor_alpha_validation/research_dataset/universe_snapshots/`
+- `outputs/multifactor_alpha_validation/research_dataset/historical_membership_validation.json`
+
+### MF-R2: Adjusted Price/Volume and Benchmark Panel
+
+Goal:
+Load adjusted OHLCV and QQQ benchmark panels.
+
+Required asset fields:
+
+- date
+- asset_id
+- adjusted_open
+- adjusted_close
+- volume
+
+Required QQQ fields:
+
+- date
+- adjusted_open
+- adjusted_close
+- volume
+
+Acceptance:
+
+- Price panel covers the universe membership window.
+- QQQ benchmark covers the full backtest date range.
+- Adjusted price convention is explicit.
+- Missing data enters coverage/abstain handling instead of being silently filled
+  with zero.
+
+### MF-R3: Delisting and Inactive Asset Handling
+
+Goal:
+Block survivorship leakage from names that disappear from the active universe.
+
+Required fields:
+
+- delisting_date
+- delisting_return or terminal_return_policy
+- inactive_reason
+- last_trade_date
+
+Acceptance:
+
+- Delisted or inactive assets do not disappear from historical validation.
+- Delisting policy is explicitly recorded.
+- Missing delisting handling blocks research mode.
+- Delisting coverage is reported.
+
+### MF-R4: First Real Research Dry Run
+
+Goal:
+Run the smallest real PIT research pass without a full strategy or allocator.
+
+Allowed factors:
+
+- `momentum_12_1`
+- `reversal_5_1`
+- `low_vol_60d`
+
+Allowed layers:
+
+- signal builder
+- AlphaView mapper
+- Q1 evidence
+- benchmark attribution
+
+Acceptance:
+
+- Research preflight status is ready.
+- Signal timestamps are correct.
+- Same-close trading is not used.
+- QQQ-relative and beta-adjusted readouts are separate.
+- Report does not claim alpha success.
+
+### MF-R5: Rolling OOS Factor Validation
+
+Goal:
+Move from infrastructure fixtures to real out-of-sample factor validation.
+
+Rule:
+
+```text
+for each rebalance month t:
+  estimate IC / ICIR / shrinkage input using history before t
+  form scores at t
+  trade no earlier than t+1 under the timestamp policy
+```
+
+Acceptance:
+
+- Full-sample ICIR weighting is forbidden.
+- Train, validation, and test windows are explicit.
+- Raw, neutralized, and cost-adjusted readouts are separate.
+- Factor survival funnel is generated.
+- Weak or collapsed results are recorded honestly.

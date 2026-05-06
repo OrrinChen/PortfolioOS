@@ -75,6 +75,14 @@ make multifactor-research-mode-preflight
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/src poetry run pytest projects/multifactor_alpha_validation/tests/test_week1_contracts.py projects/multifactor_alpha_validation/tests/test_research_mode_preflight.py -q
 ```
 
+Check and run the WRDS option B ingest after local WRDS credentials are
+configured outside the repo:
+
+```bash
+make multifactor-wrds-config-check
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/src poetry run python projects/multifactor_alpha_validation/scripts/run_wrds_multifactor_ingest.py --config projects/multifactor_alpha_validation/configs/wrds_multifactor_query_template.yaml --require-ready
+```
+
 Run the standalone Multi-Factor Alpha Validation Engine:
 
 ```bash
@@ -249,6 +257,12 @@ Build the local SUE execution-survival attribution report:
 
 ```bash
 make sue-survival-attribution
+```
+
+Run the explicit local SUE optimizer input bridge fixture:
+
+```bash
+make sue-optimizer-input-bridge-fixture
 ```
 
 Run the local-only revision marginal-value gate:

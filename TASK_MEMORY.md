@@ -174,12 +174,29 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     `outputs/multifactor_alpha_validation/research_mode_preflight/`.
   - The default local proxy manifest is expected to be blocked because current
     constituent/yfinance-style local files do not provide PIT historical
-    membership, adjusted price-volume coverage, or explicit delisting handling.
+    membership, adjusted price-volume coverage, explicit delisting handling,
+    formal use-mode metadata, source provenance, content hash, and trading
+    calendar coverage.
   - This preflight is not alpha evidence; it prevents sandbox or teaching-mode
     artifacts from being promoted into real research mode without the required
     PIT data contract.
   - Validation: research-mode preflight focused tests passed; smoke returned
-    `status=blocked` with nine blockers on the local proxy manifest.
+    `status=blocked` with thirteen blockers on the local proxy manifest.
+- WRDS option B ingest is installed for formal multifactor research mode:
+  - `multifactor_alpha_validation.wrds_ingest.run_wrds_multifactor_ingest`
+    uses a locally configured WRDS connection, rejects configs containing
+    credential-like keys, writes raw and standardized extracts under
+    `data/cache/wrds_multifactor/`, builds a research-mode manifest, and runs
+    the PIT preflight.
+  - `projects/multifactor_alpha_validation/configs/wrds_multifactor_query_template.yaml`
+    provides query aliases for historical universe membership, adjusted price
+    volume, QQQ benchmark, and delisting returns. The NASDAQ100 membership SQL
+    must be pointed at the PIT constituent table available in the user's WRDS
+    subscription before a real pull.
+  - `make multifactor-wrds-config-check` validates the query config without
+    opening a WRDS connection.
+  - Validation: WRDS ingest focused tests passed; config-check smoke passed
+    with `credentials_in_config=false`.
 - Standalone Multi-Factor Alpha Validation Engine Week 1-8 is implemented:
   - `projects/multifactor_alpha_validation/ROADMAP.md` remains independent from
     the root PortfolioOS phase sequence and does not create an automatic Phase
@@ -193,6 +210,21 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - `make factor-validate` runs the standalone local pipeline and project tests.
   - The engine remains local-only, no-production-approval, no-live-trading,
     no-security-output, and no-direct-Q2-entry.
+  - Current project state is infrastructure complete, not research-grade alpha
+    evidence. The active blocker is real PIT dataset readiness.
+  - MF-R0 Dataset Manifest Contract is complete:
+    current-constituent/yfinance-style manifests fail closed, synthetic PIT
+    fixture manifests can pass, missing historical membership / price /
+    benchmark / delisting / trading-calendar / provenance / content-hash /
+    allowed-use metadata is blocked, same-close trading is blocked, and WRDS
+    query config validation rejects embedded credentials without opening a WRDS
+    connection.
+  - Next recommended multifactor phase is MF-R1 Historical Universe Membership
+    Loader, then MF-R2 adjusted price-volume plus QQQ benchmark panels, MF-R3
+    delisting/inactive handling, MF-R4 first real research dry run, and MF-R5
+    rolling OOS factor validation.
+  - Do not add factors, tune allocator logic, add ML models, or polish returns
+    before the PIT dataset gate is ready.
   - Validation: Week 1-8 focused tests passed; `make factor-validate` is the
     required smoke for this project.
 - Phase 48 Typed Expected-Return Injection Fixture is complete:

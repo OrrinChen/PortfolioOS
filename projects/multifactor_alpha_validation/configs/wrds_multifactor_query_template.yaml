@@ -1,0 +1,55 @@
+schema_version: wrds_multifactor_query_config.v1
+raw_output_dir: data/cache/wrds_multifactor/raw
+standardized_output_dir: data/cache/wrds_multifactor/standardized
+preflight_output_dir: outputs/multifactor_alpha_validation/wrds_preflight
+timestamp_policy:
+  signal: month_end_close
+  visibility: after_month_end_close
+  tradable: next_session_close
+  allow_same_close_trading: false
+queries:
+  historical_universe_membership:
+    sql: |
+      select
+        permno,
+        ticker,
+        membership_start,
+        membership_end,
+        as_of_timestamp,
+        'wrds_index_constituents' as source,
+        true as source_is_pit
+      from replace_with_wrds_nasdaq100_constituents_table
+      where membership_start <= '2026-03-31'
+  adjusted_price_volume_panel:
+    sql: |
+      select
+        permno,
+        date,
+        abs(prc) / nullif(cfacpr, 0) as adjusted_close,
+        vol as volume,
+        ret as return
+      from crsp.dsf
+      where date between '2010-01-01' and '2026-03-31'
+  qqq_benchmark_panel:
+    sql: |
+      select
+        d.date,
+        'QQQ' as benchmark,
+        abs(d.prc) / nullif(d.cfacpr, 0) as adjusted_close,
+        d.ret as return,
+        d.vol as volume
+      from crsp.dsf as d
+      join crsp.stocknames as n
+        on d.permno = n.permno
+       and d.date between n.namedt and n.nameendt
+      where n.ticker = 'QQQ'
+        and d.date between '2010-01-01' and '2026-03-31'
+  delisting_returns:
+    sql: |
+      select
+        permno,
+        dlstdt as delisting_date,
+        dlret as delisting_return,
+        dlstcd as delisting_code
+      from crsp.msedelist
+      where dlstdt between '2010-01-01' and '2026-03-31'
