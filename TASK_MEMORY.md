@@ -67,6 +67,12 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     - `projects/execution_aware_optimizer/src/execution_aware_optimizer/sue_optimizer_input_bridge.py` runs the expanded deterministic SUE panel through actual local `run_rebalance` calls and emits Q2 rows based on optimizer outputs, not existing adapter-hook attribution mapping.
     - `make sue-optimizer-input-bridge-fixture` returns `bridge_status=observed`, `expected_return_reached_actual_optimizer_input=True`, `optimizer_decision_used_typed_expected_return=True`, `sign_flip_reversal_observed=True`, `scaled_alpha_monotonicity_observed=True`, `no_view_not_encoded_as_zero=True`, `actual_optimizer_output_rows=7`, and `adapter_hook_only=False`.
     - Known limitation: this proves local optimizer-path integration only. It does not prove real historical SUE alpha, paper readiness, live readiness, or production approval.
+  - Reopen-H1A WRDS PIT-Safe SUE Event Panel Builder is now complete as an explicit historical-evidence panel-building reopen task:
+    - `src/portfolio_os/alpha/sue_historical_schema.py` defines PIT-labeled SUE event rows and guards against timestamp violations, missing estimates being encoded as zero SUE, forward-return feature leakage, FMP frozen estimate history as PIT-safe substitute, and misleading approval language.
+    - `src/portfolio_os/alpha/sue_historical_panel.py` builds smoke-mode WRDS/IBES/CRSP-style artifacts and supports full mode from local earnings, estimate, security-link, and CRSP daily extracts with PIT estimate filtering and sdates-aware link validity.
+    - `scripts/build_wrds_sue_event_panel.py --mode smoke` writes `events.csv`, `sue_values.csv`, PIT visibility, linkage, coverage, lineage, and report artifacts under `outputs/sue_historical_event_panel/` plus `reports/sue_historical_event_panel_report.md`.
+    - Smoke validation returned `event_count=60`, `rebalance_date_count=60`, `linked_rows=57`, `unlinked_rows=3`, `missing_estimates=3`, `missing_actuals=3`, `missing_prices=2`, and `diagnostic_only_rows=11`.
+    - Known limitation: H1A builds and audits the panel only. It does not prove SUE alpha success, run typed event evidence/Q2/optimizer evaluation, approve paper/live trading, or update Alpha Registry.
 - Factor Discovery Sandbox has been added only as a Phase 64 candidate charter,
   not as active Phase 65 implementation:
   - Proposed future path:

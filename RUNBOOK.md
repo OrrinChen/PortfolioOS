@@ -80,7 +80,7 @@ configured outside the repo:
 
 ```bash
 make multifactor-wrds-config-check
-PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/src poetry run python projects/multifactor_alpha_validation/scripts/run_wrds_multifactor_ingest.py --config projects/multifactor_alpha_validation/configs/wrds_multifactor_query_template.yaml --require-ready
+WRDS_USERNAME=<your_wrds_username> PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/src poetry run python projects/multifactor_alpha_validation/scripts/run_wrds_multifactor_ingest.py --config projects/multifactor_alpha_validation/configs/wrds_nasdaq100_research_mode.yaml --require-ready
 ```
 
 Build local PIT-style universe snapshots from the synthetic onboarding fixture:
@@ -273,6 +273,12 @@ Run the explicit local SUE optimizer input bridge fixture:
 
 ```bash
 make sue-optimizer-input-bridge-fixture
+```
+
+Build the WRDS PIT-labeled historical SUE event panel smoke artifacts:
+
+```bash
+make sue-historical-event-panel-smoke
 ```
 
 Run the local-only revision marginal-value gate:

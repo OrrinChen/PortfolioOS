@@ -289,6 +289,13 @@ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src poetry run pytest tests/test_typed_alph
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:projects/execution_aware_optimizer/src poetry run pytest projects/execution_aware_optimizer/tests/test_sue_optimizer_input_bridge_fixture.py -q
 ```
 
+WRDS PIT-labeled historical SUE event panel builder smoke and tests, only when touching explicit Reopen-H1A paths:
+
+```bash
+make sue-historical-event-panel-smoke
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src poetry run pytest tests/test_sue_historical_event_panel.py -q
+```
+
 Revision marginal-value gate tests:
 
 ```bash

@@ -148,6 +148,14 @@ PIT timestamps, explicit abstain semantics, and no-live/no-order boundaries. It
 is an expanded typed-Q2 candidate benchmark, not real historical evidence,
 paper readiness, or production approval.
 
+`make sue-historical-event-panel-smoke` writes the Reopen-H1A WRDS PIT-labeled
+SUE event panel smoke artifacts under `outputs/sue_historical_event_panel/` and
+`reports/sue_historical_event_panel_report.md`. The builder records IBES/CRSP
+source lineage, PIT visibility checks, security-linkage coverage, explicit
+diagnostic-only rows, and missing estimate/actual/price coverage loss. It does
+not prove SUE alpha success, approve paper/live trading, create broker/order
+paths, or promote anything into Alpha Registry.
+
 `make revision-marginal-value-gate` writes the local Phase 52 revision
 marginal-value artifacts under `outputs/revision_marginal_value_gate/` and
 `reports/revision_marginal_value_report.md`. The gate requires WRDS as the
@@ -216,6 +224,14 @@ constituents/yfinance-style local data without PIT historical membership,
 adjusted price-volume coverage, or explicit delisting handling. A blocked
 preflight is not alpha evidence; it is the gate that prevents teaching-mode
 fixtures from being treated as real research.
+
+`projects/multifactor_alpha_validation/configs/wrds_nasdaq100_research_mode.yaml`
+is the WRDS option-B Nasdaq100 research-mode ingest config. It uses Compustat
+`idxcst_his` for historical Nasdaq100 membership, CRSP/Compustat CCM for
+`permno` mapping, CRSP CIZ daily security data for return-index adjusted
+price/volume panels, CRSP CIZ QQQ data as benchmark, and explicit CRSP
+delisting records. It contains no credentials; set WRDS credentials outside the
+repo, for example with `.pgpass` plus `WRDS_USERNAME`.
 
 `make factor-validate` runs the standalone Multi-Factor Alpha Validation Engine
 through local-only contract validation, signal panel generation, Q1-style

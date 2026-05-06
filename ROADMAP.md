@@ -62,6 +62,7 @@ Completed:
 - Phase 65: PortfolioOS v1 Research-Audit Release Hygiene packages the current local release surface, release note, Alpha Registry v2 consistency checks, Phase 56A deterministic fixture limits, and misleading-claim regression tests without adding alpha research, optimizer changes, live workflows, or broker/order paths.
 - Phase 66: PortfolioOS v1 Maintenance Freeze / Future-Only Backlog freezes the v1 research-audit release, records future-only backlog categories, and blocks automatic roadmap expansion.
 - Reopen-O1: Typed Alpha Optimizer Input Bridge v1 explicitly reopens only the local optimizer input bridge gap after the v1 freeze. It injects typed expected-return panels into an actual local PortfolioOS optimizer decision path, writes actual optimizer-output Q2 rows, preserves explicit no_view semantics, and does not add alpha research, broker/order/live workflows, paper readiness, or production approval.
+- Reopen-H1A: WRDS PIT-Safe SUE Event Panel Builder adds a local WRDS/IBES/CRSP PIT-labeled SUE event panel builder with smoke artifacts, lineage, PIT visibility, linkage, coverage, and non-claim reports. It does not run Q2, retune optimizers, add broker/order/live workflows, claim real historical alpha success, or promote Alpha Registry state.
 - FD-1: Factor Discovery Sandbox teaching baseline replication is complete with
   deterministic local fixture data, QQQ benchmark reporting, 29 price-volume
   factors, IC/ICIR tables, correlation matrix, ICIR weights, and explicit
@@ -86,6 +87,7 @@ Current phase:
 
 - Terminal maintenance freeze. Phase 66 is the final freeze phase.
 - Reopen-O1 is complete as an explicit reopen task; it is not an automatic Phase 67.
+- Reopen-H1A is complete as an explicit historical-evidence panel-building reopen task; it is not an automatic roadmap expansion.
 
 No automatic roadmap expansion after Phase 66. New work requires explicit
 reopen decision. Existing unrelated Multifactor / Factor Discovery working-tree
