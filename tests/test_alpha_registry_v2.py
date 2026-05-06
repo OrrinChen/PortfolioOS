@@ -7,6 +7,7 @@ import pytest
 import yaml
 
 from portfolio_os.alpha.registry_v2 import (
+    AlphaRegistryDecisionRecord,
     AlphaRegistryEntry,
     build_default_alpha_registry_v2,
     render_alpha_registry_report,
@@ -33,6 +34,21 @@ def test_alpha_registry_v2_freezes_required_alpha_statuses() -> None:
     assert entries["sue_pead"].typed_chain_stop_layer == "q2_observed_survives_local_fixture"
     assert "eligible_for_q2_eval" in entries["sue_pead"].status_history
     assert "q2_observed_survives" in entries["sue_pead"].status_history
+    assert entries["sue_pead"].primary_status != "production_not_approved"
+
+    sue_history = entries["sue_pead"].decision_history
+    assert len(sue_history) == 1
+    assert sue_history[0].decision_label == "sue_expanded_fixture_q2_observed_survives"
+    assert sue_history[0].evidence_type == "deterministic_expanded_fixture"
+    assert sue_history[0].event_count == 120
+    assert sue_history[0].rebalance_date_count == 12
+    assert sue_history[0].active_rebalance_count == 12
+    assert sue_history[0].median_active_names_per_active_date == 10.0
+    assert sue_history[0].expected_return_used_share == pytest.approx(0.833333)
+    assert sue_history[0].coverage_loss_count == 24
+    assert sue_history[0].q2_observed_rows == 30
+    assert sue_history[0].q2_unavailable_rows == 0
+    assert sue_history[0].production_approval_claimed is False
 
     assert entries["revision_1m"].primary_status == "real_shadow_branch"
     assert entries["revision_1m"].typed_chain_stop_layer == "revision_marginal_value_gate"
@@ -79,6 +95,37 @@ def test_alpha_registry_entry_rejects_pass_fail_labels_and_missing_stop_layer() 
         )
 
 
+def test_alpha_registry_decision_record_rejects_approval_and_workflow_claims() -> None:
+    forbidden_labels = [
+        "production approved",
+        "paper ready",
+        "live trading",
+        "broker",
+        "order",
+        "real alpha proven",
+        "historical alpha proven",
+    ]
+
+    for label in forbidden_labels:
+        with pytest.raises(ValueError, match="forbidden approval"):
+            AlphaRegistryDecisionRecord.model_validate(
+                {
+                    "decision_label": label,
+                    "evidence_type": "deterministic_expanded_fixture",
+                    "production_approval_claimed": False,
+                }
+            )
+
+    with pytest.raises(ValueError, match="production approval"):
+        AlphaRegistryDecisionRecord.model_validate(
+            {
+                "decision_label": "safe_fixture_observed",
+                "evidence_type": "deterministic_expanded_fixture",
+                "production_approval_claimed": True,
+            }
+        )
+
+
 def test_alpha_registry_writer_outputs_yaml_csv_and_report(tmp_path: Path) -> None:
     registry = build_default_alpha_registry_v2()
 
@@ -94,6 +141,12 @@ def test_alpha_registry_writer_outputs_yaml_csv_and_report(tmp_path: Path) -> No
     assert payload["schema_version"] == "alpha_registry.v2"
     assert payload["registry_id"] == "portfolioos_alpha_registry_v2"
     assert len(payload["entries"]) >= 8
+    sue_payload = next(entry for entry in payload["entries"] if entry["alpha_id"] == "sue_pead")
+    assert sue_payload["primary_status"] == "canonical_pilot"
+    assert sue_payload["decision_history"][0]["decision_label"] == "sue_expanded_fixture_q2_observed_survives"
+    assert sue_payload["decision_history"][0]["evidence_type"] == "deterministic_expanded_fixture"
+    assert sue_payload["decision_history"][0]["event_count"] == 120
+    assert sue_payload["decision_history"][0]["production_approval_claimed"] is False
 
     table = pd.read_csv(tmp_path / "alpha_registry_decision_table.csv")
     assert {
@@ -103,9 +156,15 @@ def test_alpha_registry_writer_outputs_yaml_csv_and_report(tmp_path: Path) -> No
         "decision_source_phase",
         "production_approval_claimed",
         "live_trading_allowed",
+        "decision_history_count",
+        "latest_decision_label",
     }.issubset(table.columns)
     assert not table["primary_status"].isin(["pass", "passed", "fail", "failed"]).any()
     assert table.loc[table["alpha_id"] == "revision_1m", "primary_status"].item() == "real_shadow_branch"
+    assert (
+        table.loc[table["alpha_id"] == "sue_pead", "latest_decision_label"].item()
+        == "sue_expanded_fixture_q2_observed_survives"
+    )
 
     report = render_alpha_registry_report(registry)
     assert "Alpha Registry v2" in report
@@ -113,6 +172,8 @@ def test_alpha_registry_writer_outputs_yaml_csv_and_report(tmp_path: Path) -> No
     assert "revision_1m" in report
     assert "production approval: not claimed" in report
     assert "no live trading allowed by registry" in report
+    assert "sue_expanded_fixture_q2_observed_survives" in report
+    assert "deterministic_expanded_fixture" in report
     assert "broker_output" not in report
     assert "recommended_trade" not in report
     assert "production_alpha_approved" not in report

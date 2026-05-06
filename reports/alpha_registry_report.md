@@ -11,6 +11,19 @@ no live trading allowed by registry
 - entry_count: `8`
 - primary_status_counts: `{'diagnostic_only': 2, 'canonical_pilot': 1, 'real_shadow_branch': 1, 'archived_no_marginal_value': 1, 'calibration_only': 1, 'background_partially_real': 1, 'rejected_leakage': 1}`
 
+## Latest Decision History
+
+| alpha_id | latest_decision_label | evidence_type | event_count | q2_observed_rows | q2_unavailable_rows |
+|---|---|---|---|---|---|
+| sue_pead | sue_expanded_fixture_q2_observed_survives | deterministic_expanded_fixture | 120 | 30 | 0 |
+| revision_1m |  |  |  |  |  |
+| sue_revision_composite |  |  |  |  |  |
+| phase_1_5_bridge |  |  |  |  |  |
+| qlib_fixed_horizon_revision |  |  |  |  |  |
+| residual_momentum_reversal |  |  |  |  |  |
+| ashare_anti_mom_21_5 |  |  |  |  |  |
+| forward_return_leakage_fixture |  |  |  |  |  |
+
 ## Decision Table
 
 | alpha_id | display_name | primary_status | stop_layer | source_phase |

@@ -1,0 +1,38 @@
+{
+  "active_symbols_per_date": 10,
+  "base_expected_return": 0.004,
+  "confidence_score": 0.72,
+  "cost_bps": 5.0,
+  "evidence_mode": "deterministic_fixture",
+  "fixture_id": "sue-expanded-deterministic-v1",
+  "rebalance_dates": [
+    "2025-01-10",
+    "2025-02-10",
+    "2025-03-10",
+    "2025-04-10",
+    "2025-05-12",
+    "2025-06-10",
+    "2025-07-10",
+    "2025-08-11",
+    "2025-09-10",
+    "2025-10-10",
+    "2025-11-10",
+    "2025-12-10"
+  ],
+  "risk_horizon_days": 21,
+  "schema_version": "sue_expanded_fixture_config.v1",
+  "universe_symbols": [
+    "AAPL",
+    "MSFT",
+    "NVDA",
+    "LLY",
+    "UNH",
+    "JPM",
+    "AMZN",
+    "TSLA",
+    "GOOGL",
+    "META",
+    "XOM",
+    "COST"
+  ]
+}

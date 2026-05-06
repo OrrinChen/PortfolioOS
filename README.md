@@ -139,6 +139,15 @@ fixture and writes Phase 51 attribution artifacts:
 failure from execution failure, projection sparsity from optimizer response, and
 states whether revision marginal-value testing should proceed.
 
+`make sue-expanded-typed-q2-survival` writes the local Phase 56A expanded SUE
+candidate artifacts under `outputs/sue_expanded_typed_q2_survival/` and
+`reports/sue_expanded_typed_q2_survival_report.md`. The closeout note lives at
+`reports/sue_expanded_typed_q2_closeout.md`. This deterministic fixture expands
+SUE breadth to 120 event-name rows across 12 rebalance dates while preserving
+PIT timestamps, explicit abstain semantics, and no-live/no-order boundaries. It
+is an expanded typed-Q2 candidate benchmark, not real historical evidence,
+paper readiness, or production approval.
+
 `make revision-marginal-value-gate` writes the local Phase 52 revision
 marginal-value artifacts under `outputs/revision_marginal_value_gate/` and
 `reports/revision_marginal_value_report.md`. The gate requires WRDS as the

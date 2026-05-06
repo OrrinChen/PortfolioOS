@@ -58,6 +58,7 @@ Completed:
 - Phase 51: SUE Execution-Survival Attribution Report explains SUE survival layers and records the local fixture result as observed, while keeping Phase 52 as a diagnostic and not production approval.
 - Phase 52: Revision Marginal-Value Gate archives revision as a real shadow branch in the local fixture because it does not clear the SUE-adjusted cost-aware marginal threshold.
 - Phase 55: Alpha Registry v2 / Decision State Machine freezes alpha statuses and typed-chain stop layers across SUE, revision, composite, old alpha package, Qlib revision, residual momentum, A-share, and leakage fixtures.
+- Phase 56A: Expanded SUE Typed Q2 Candidate v1 expands deterministic local SUE breadth to 120 event-name rows across 12 rebalance dates while preserving PIT timestamps, explicit abstain semantics, Q2 observed/unavailable separation, and non-approval language.
 - FD-1: Factor Discovery Sandbox teaching baseline replication is complete with
   deterministic local fixture data, QQQ benchmark reporting, 29 price-volume
   factors, IC/ICIR tables, correlation matrix, ICIR weights, and explicit

@@ -35,6 +35,44 @@ AlphaRegistryStatus = Literal[
 ]
 
 FORBIDDEN_PASS_FAIL_LABELS = {"pass", "passed", "fail", "failed"}
+FORBIDDEN_DECISION_CLAIM_PHRASES = {
+    "production approved",
+    "paper ready",
+    "live trading",
+    "broker",
+    "order",
+    "real alpha proven",
+    "historical alpha proven",
+}
+
+
+class AlphaRegistryDecisionRecord(BaseModel):
+    """Structured evidence record for one registry decision update."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    decision_label: str
+    evidence_type: str
+    event_count: int | None = None
+    rebalance_date_count: int | None = None
+    active_rebalance_count: int | None = None
+    median_active_names_per_active_date: float | None = None
+    expected_return_used_share: float | None = None
+    coverage_loss_count: int | None = None
+    q2_observed_rows: int | None = None
+    q2_unavailable_rows: int | None = None
+    production_approval_claimed: bool = False
+
+    @model_validator(mode="after")
+    def validate_decision_record(self) -> "AlphaRegistryDecisionRecord":
+        """Keep decision history as evidence metadata, not approval language."""
+
+        text = f"{self.decision_label} {self.evidence_type}".lower()
+        if any(phrase in text for phrase in FORBIDDEN_DECISION_CLAIM_PHRASES):
+            raise ValueError("AlphaRegistryDecisionRecord contains forbidden approval or workflow language")
+        if self.production_approval_claimed:
+            raise ValueError("AlphaRegistryDecisionRecord cannot claim production approval")
+        return self
 
 
 class AlphaRegistryEntry(BaseModel):
@@ -54,6 +92,7 @@ class AlphaRegistryEntry(BaseModel):
     next_allowed_work: str
     production_approval_claimed: bool = False
     live_trading_allowed: bool = False
+    decision_history: list[AlphaRegistryDecisionRecord] = Field(default_factory=list)
     notes: list[str] = Field(default_factory=list)
 
     @field_validator("primary_status", mode="before")
@@ -140,9 +179,25 @@ def build_default_alpha_registry_v2() -> AlphaRegistryV2:
                     "the risk-controlled fixture layer through the stable naive_pro_rata adapter."
                 ),
                 next_allowed_work="Keep as canonical typed-alpha pilot; do not claim paper or production approval.",
+                decision_history=[
+                    AlphaRegistryDecisionRecord(
+                        decision_label="sue_expanded_fixture_q2_observed_survives",
+                        evidence_type="deterministic_expanded_fixture",
+                        event_count=120,
+                        rebalance_date_count=12,
+                        active_rebalance_count=12,
+                        median_active_names_per_active_date=10.0,
+                        expected_return_used_share=0.833333,
+                        coverage_loss_count=24,
+                        q2_observed_rows=30,
+                        q2_unavailable_rows=0,
+                        production_approval_claimed=False,
+                    )
+                ],
                 notes=[
                     "SUE remains an integration benchmark and Q2 candidate.",
                     "Phase 51 labels the local fixture result as sue_q2_observed_survives.",
+                    "Phase 56A expands deterministic fixture breadth and does not change SUE production status.",
                 ],
             ),
             AlphaRegistryEntry(
@@ -298,11 +353,27 @@ def render_alpha_registry_report(registry: AlphaRegistryV2) -> str:
         f"- entry_count: `{len(registry.entries)}`",
         f"- primary_status_counts: `{status_counts}`",
         "",
+        "## Latest Decision History",
+        "",
+        "| alpha_id | latest_decision_label | evidence_type | event_count | q2_observed_rows | q2_unavailable_rows |",
+        "|---|---|---|---|---|---|",
+    ]
+    for entry in registry.entries:
+        latest = entry.decision_history[-1] if entry.decision_history else None
+        lines.append(
+            f"| {entry.alpha_id} | {latest.decision_label if latest else ''} | "
+            f"{latest.evidence_type if latest else ''} | {latest.event_count if latest else ''} | "
+            f"{latest.q2_observed_rows if latest else ''} | {latest.q2_unavailable_rows if latest else ''} |"
+        )
+    lines.extend(
+        [
+            "",
         "## Decision Table",
         "",
         "| alpha_id | display_name | primary_status | stop_layer | source_phase |",
         "|---|---|---|---|---|",
-    ]
+        ]
+    )
     for entry in registry.entries:
         lines.append(
             f"| {entry.alpha_id} | {entry.display_name} | {entry.primary_status} | "
@@ -337,6 +408,8 @@ def _registry_frame(registry: AlphaRegistryV2) -> pd.DataFrame:
                 "decision_source_artifact": entry.decision_source_artifact,
                 "production_approval_claimed": entry.production_approval_claimed,
                 "live_trading_allowed": entry.live_trading_allowed,
+                "decision_history_count": len(entry.decision_history),
+                "latest_decision_label": entry.decision_history[-1].decision_label if entry.decision_history else "",
                 "next_allowed_work": entry.next_allowed_work,
             }
             for entry in registry.entries
