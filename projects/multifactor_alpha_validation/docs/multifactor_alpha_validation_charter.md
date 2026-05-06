@@ -25,3 +25,7 @@ Week 1 scope is complete when at least eight enabled/reference FactorSpecs
 validate with timestamp rules, fundamental reporting lags, disabled analyst
 revision without PIT source, and explicit abstain coverage.
 
+Formal research mode also requires a dataset preflight. Current-constituent or
+yfinance-style local proxy files must be blocked until a PIT historical universe
+membership table, adjusted price-volume panel, QQQ benchmark panel, explicit
+delisting handling, and no-same-close timestamp policy are supplied.

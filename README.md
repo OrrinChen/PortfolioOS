@@ -208,6 +208,23 @@ frontier, benchmark attribution, survival funnel, final report, and a Phase 64
 research import bundle. The bundle blocks direct Q2 entry and keeps the sandbox
 as calibration-only unless separately imported through governance.
 
+`make multifactor-research-mode-preflight` writes the formal multifactor
+research-mode PIT preflight under
+`outputs/multifactor_alpha_validation/research_mode_preflight/`. The default
+local proxy manifest is expected to be blocked because it uses current
+constituents/yfinance-style local data without PIT historical membership,
+adjusted price-volume coverage, or explicit delisting handling. A blocked
+preflight is not alpha evidence; it is the gate that prevents teaching-mode
+fixtures from being treated as real research.
+
+`make factor-validate` runs the standalone Multi-Factor Alpha Validation Engine
+through local-only contract validation, signal panel generation, Q1-style
+evidence, redundancy/marginal-value gates, shrinkage/covariance diagnostics,
+factor allocation, cost/capacity survival, registry, report, dashboard, release
+manifest, and project tests. The engine lives under
+`projects/multifactor_alpha_validation/` and remains independent from the root
+PortfolioOS phase sequence.
+
 ## Safety Boundaries
 
 - No broker route is exposed by Q1, Q2, the promotion gate, the artifact service,

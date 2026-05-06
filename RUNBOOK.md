@@ -68,6 +68,19 @@ make alpha-registry-v2
 PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_alpha_registry_v2.py -q
 ```
 
+Run the formal multifactor research-mode preflight:
+
+```bash
+make multifactor-research-mode-preflight
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/src poetry run pytest projects/multifactor_alpha_validation/tests/test_week1_contracts.py projects/multifactor_alpha_validation/tests/test_research_mode_preflight.py -q
+```
+
+Run the standalone Multi-Factor Alpha Validation Engine:
+
+```bash
+make factor-validate
+```
+
 Run typed alpha dashboard readability tests:
 
 ```bash

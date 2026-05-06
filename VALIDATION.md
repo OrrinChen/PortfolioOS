@@ -67,12 +67,12 @@ PortfolioOS v1 research-audit release hygiene tests:
 ```bash
 PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_portfolioos_v1_research_audit_release.py -q
 ```
+
 PortfolioOS v1 maintenance freeze tests:
 
 ```bash
 PYTHONDONTWRITEBYTECODE=1 poetry run pytest tests/test_portfolioos_v1_maintenance_freeze.py -q
 ```
-
 
 Factor Discovery Sandbox FD-1 teaching baseline smoke and tests:
 
@@ -84,6 +84,20 @@ make factor-discovery-marginal-value-gate
 make factor-discovery-allocator
 make factor-discovery-survival
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/factor_discovery_sandbox/src poetry run pytest projects/multifactor_alpha_validation/factor_discovery_sandbox/tests -q
+```
+
+Formal multifactor research-mode preflight smoke and tests:
+
+```bash
+make multifactor-research-mode-preflight
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/src poetry run pytest projects/multifactor_alpha_validation/tests/test_week1_contracts.py projects/multifactor_alpha_validation/tests/test_research_mode_preflight.py -q
+```
+
+Standalone Multi-Factor Alpha Validation Engine smoke and tests:
+
+```bash
+make factor-validate
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/src poetry run pytest projects/multifactor_alpha_validation/tests -q
 ```
 
 Typed alpha dashboard readability tests:

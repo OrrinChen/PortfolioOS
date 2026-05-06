@@ -166,6 +166,35 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     not claim production approval.
   - Validation: FD-6 focused test passed; `make factor-discovery-survival`
     passed with `recommended_import_decision=import_as_calibration_only`.
+- Formal multifactor research-mode preflight is installed:
+  - `multifactor_alpha_validation.data_contract.run_research_mode_preflight`
+    validates actual dataset manifests before formal factor validation can
+    proceed.
+  - `make multifactor-research-mode-preflight` writes
+    `outputs/multifactor_alpha_validation/research_mode_preflight/`.
+  - The default local proxy manifest is expected to be blocked because current
+    constituent/yfinance-style local files do not provide PIT historical
+    membership, adjusted price-volume coverage, or explicit delisting handling.
+  - This preflight is not alpha evidence; it prevents sandbox or teaching-mode
+    artifacts from being promoted into real research mode without the required
+    PIT data contract.
+  - Validation: research-mode preflight focused tests passed; smoke returned
+    `status=blocked` with nine blockers on the local proxy manifest.
+- Standalone Multi-Factor Alpha Validation Engine Week 1-8 is implemented:
+  - `projects/multifactor_alpha_validation/ROADMAP.md` remains independent from
+    the root PortfolioOS phase sequence and does not create an automatic Phase
+    67.
+  - Formal MVP specs, PIT contracts, signal panels, AlphaView-compatible
+    mapping, Q1-style evidence, neutralization, redundancy/marginal-value
+    gates, shrinkage, covariance stabilization, allocator diagnostics,
+    zero-weight attribution, cost/capacity/benchmark survival, registry, final
+    report, dashboard, release manifest, project README, and interview talking
+    points are installed under `projects/multifactor_alpha_validation/`.
+  - `make factor-validate` runs the standalone local pipeline and project tests.
+  - The engine remains local-only, no-production-approval, no-live-trading,
+    no-security-output, and no-direct-Q2-entry.
+  - Validation: Week 1-8 focused tests passed; `make factor-validate` is the
+    required smoke for this project.
 - Phase 48 Typed Expected-Return Injection Fixture is complete:
   - `projects/execution_aware_optimizer/src/execution_aware_optimizer/typed_injection_schema.py` defines injection input/result/summary/manifest contracts.
   - `projects/execution_aware_optimizer/src/execution_aware_optimizer/typed_expected_return_injection.py` validates Q2InputContract v2 plus projection manifest, supports positive/scaled/sign-flipped expected-return panels, and writes optimizer input snapshots.
@@ -218,6 +247,16 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - The report states this is expanded deterministic fixture evidence, not real historical evidence, paper-ready status, or production approval.
   - `src/portfolio_os/alpha/registry_v2.py` now records a structured SUE decision-history entry for `sue_expanded_fixture_q2_observed_survives` with `evidence_type=deterministic_expanded_fixture`, `event_count=120`, `rebalance_date_count=12`, `active_rebalance_count=12`, `median_active_names_per_active_date=10.0`, `expected_return_used_share=0.833333`, `coverage_loss_count=24`, `q2_observed_rows=30`, `q2_unavailable_rows=0`, and `production_approval_claimed=false`.
   - `reports/sue_expanded_typed_q2_closeout.md` closes Phase 56A as deterministic expanded fixture breadth only; missing coverage remains explicit abstain/no_view, not zero alpha.
+- Phase 65 PortfolioOS v1 Research-Audit Release Hygiene is complete:
+  - `docs/releases/portfolioos_v1_research_audit_release.md` summarizes the release boundaries across Q1, Evidence Bundle / Promotion Gate, Typed AlphaView, SUE local typed-Q2 pilot, expanded deterministic SUE benchmark, Alpha Registry v2, dashboard, audit, provenance, and no-network safeguards.
+  - `tests/test_portfolioos_v1_research_audit_release.py` verifies the release note, Alpha Registry v2 SUE status, Phase 56A deterministic fixture metrics, `outputs/alpha_registry_v2/` consistency when generated, and misleading-claim rejection for production approval, paper readiness, live alpha orders, broker execution, real historical SUE proof, guaranteed tradable alpha, auto trading, and investment recommendations.
+  - Release hygiene does not add alpha research, optimizer changes, broker/order paths, paper canary approval, live workflows, or Factor Discovery implementation.
+- Phase 66 PortfolioOS v1 Maintenance Freeze / Future-Only Backlog is complete:
+  - `docs/releases/portfolioos_v1_maintenance_freeze.md` freezes the v1 research-audit release after Phase 56A and Phase 65.
+  - `docs/strategy/portfolioos_future_backlog.md` records locked future-only categories for real historical SUE, paper-overlay calibration, Factor Discovery import review, live/broker/order work, and production approval.
+  - `tests/test_portfolioos_v1_maintenance_freeze.py` rejects misleading freeze claims and verifies that new work is backlog-only unless explicitly reopened.
+  - SUE remains an expanded deterministic typed-Q2 candidate benchmark, not production-approved, not paper-ready, not live-ready, and not historically proven.
+  - Existing unrelated Multifactor / Factor Discovery working-tree changes are not part of the v1 freeze.
 - Phase 46 Dashboard Readability Polish is complete:
   - `src/portfolio_os/dashboard/static_dashboard.py` now renders a first-screen typed-alpha status summary, typed-alpha chain, artifact links, manifest summary, clearer safety boundaries, and missing-artifact unavailable messaging.
   - Dashboard wording explicitly distinguishes integration benchmark, unavailable/local paper-overlay execution state, no broker/orders/live workflow, and not-approved production state.
@@ -232,10 +271,6 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - validation: typed alpha closeout report tests `3 passed`.
 - Phase 44 Demo v2 Golden Snapshot Tests is complete:
   - `tests/golden/demo_v2_expected_manifest.json` records required demo-v2 artifact names, release-manifest keys, typed-alpha chain, and dashboard section headings without snapshotting full HTML.
-- Phase 65 PortfolioOS v1 Research-Audit Release Hygiene is complete:
-  - `docs/releases/portfolioos_v1_research_audit_release.md` summarizes the release boundaries across Q1, Evidence Bundle / Promotion Gate, Typed AlphaView, SUE local typed-Q2 pilot, expanded deterministic SUE benchmark, Alpha Registry v2, dashboard, audit, provenance, and no-network safeguards.
-  - `tests/test_portfolioos_v1_research_audit_release.py` verifies the release note, Alpha Registry v2 SUE status, Phase 56A deterministic fixture metrics, `outputs/alpha_registry_v2/` consistency when generated, and misleading-claim rejection for production approval, paper readiness, live alpha orders, broker execution, real historical SUE proof, guaranteed tradable alpha, auto trading, and investment recommendations.
-  - Release hygiene does not add alpha research, optimizer changes, broker/order paths, paper canary approval, live workflows, or Factor Discovery implementation.
   - `tests/test_demo_v2_golden_snapshot.py` runs `scripts/run_portfolioos_demo_v2.py` against a temp output directory and verifies artifact shape, manifest structure, required dashboard sections, read-only controls, and explicit Q2 unavailable-row semantics.
   - `src/portfolio_os/dashboard/static_dashboard.py` now renders the demo-v2 sections required by the golden contract while remaining static and read-only.
   - validation: demo-v2 golden snapshot tests `2 passed`; demo-v2/static dashboard focused tests `6 passed`.
@@ -246,12 +281,6 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - `docs/releases/typed_alpha_v0_1_release_candidate.md` documents what the typed-alpha release candidate completes and what it does not claim.
   - `tests/test_typed_alpha_release_candidate.py` guards schema version locks, demo-v2 release artifacts, unavailable Q2 row semantics, release manifest non-approval flags, and release-note non-claim language.
   - validation: typed alpha release candidate tests `4 passed`; AlphaView tests `6 passed`; Promotion Gate tests `12 passed`; Q2 typed matrix tests `3 passed`; paper overlay tests `3 passed`; demo-v2 tests `2 passed`; typed SUE pilot tests `2 passed`.
-- Phase 66 PortfolioOS v1 Maintenance Freeze / Future-Only Backlog is complete:
-  - `docs/releases/portfolioos_v1_maintenance_freeze.md` freezes the v1 research-audit release after Phase 56A and Phase 65.
-  - `docs/strategy/portfolioos_future_backlog.md` records locked future-only categories for real historical SUE, paper-overlay calibration, Factor Discovery import review, live/broker/order work, and production approval.
-  - `tests/test_portfolioos_v1_maintenance_freeze.py` rejects misleading freeze claims and verifies that new work is backlog-only unless explicitly reopened.
-  - SUE remains an expanded deterministic typed-Q2 candidate benchmark, not production-approved, not paper-ready, not live-ready, and not historically proven.
-  - Existing unrelated Multifactor / Factor Discovery working-tree changes are not part of the v1 freeze.
 - Phase 42 Typed Alpha Demo v2 is complete:
   - `scripts/run_portfolioos_demo_v2.py` writes deterministic typed-alpha artifacts under `outputs/demo_v2/` by default.
   - `make demo-v2` runs the local SUE typed pilot, paper overlay readiness fixture, and read-only typed alpha dashboard renderer.

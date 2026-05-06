@@ -7,10 +7,10 @@ A PIT-safe, redundancy-aware, cost-aware institutional factor research and backt
 ```
 
 Status:
-Independent extension roadmap. This document does not change the root
-PortfolioOS phase sequence, does not create an automatic Phase 67, and does not
-promote any factor family into Q2 without the root Phase 64 research import
-contract.
+Week 1-8 implemented as an independent extension roadmap. This document does
+not change the root PortfolioOS phase sequence, does not create an automatic
+Phase 67, and does not promote any factor family into Q2 without the root Phase
+64 research import contract.
 
 ## Positioning
 
@@ -121,6 +121,7 @@ projects/multifactor_alpha_validation/
     reports.py
     dashboard.py
   scripts/
+    run_multifactor_research_mode_preflight.py
     run_factor_signal_builders.py
     run_factor_q1_evidence.py
     run_factor_redundancy_gate.py
@@ -230,6 +231,8 @@ Work:
 - Write project charter.
 - Implement FactorSpec schema.
 - Implement PIT data contract validation.
+- Add a research-mode preflight that validates actual dataset manifests before
+  formal factor validation.
 - Add eight base factor specs.
 - Add SUE reference and disabled analyst revision specs.
 
@@ -238,6 +241,8 @@ Artifacts:
 - `docs/multifactor_alpha_validation_charter.md`
 - `factor_specs/*.yaml`
 - `outputs/factor_spec_validation/spec_validation_report.json`
+- `outputs/multifactor_alpha_validation/research_mode_preflight/pit_contract_validation.json`
+- `outputs/multifactor_alpha_validation/research_mode_preflight/research_mode_readiness.md`
 
 Acceptance:
 
@@ -246,6 +251,8 @@ Acceptance:
 - Fundamentals require reporting lag.
 - Analyst revision is disabled without a PIT source.
 - Missing coverage policy is explicit abstain.
+- Local current-constituent/yfinance proxy data fails closed before real
+  research mode.
 - No live, broker, production-approval, or security-order artifact is produced.
 
 ### Week 2: Signal Builders and AlphaView Mapper
@@ -559,4 +566,3 @@ showing:
 - what the allocator used or rejected
 - where cost or capacity killed apparent alpha
 - what each final registry status means
-

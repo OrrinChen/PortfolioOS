@@ -6,8 +6,9 @@ PYTHONPATH_PROMOTION := src:projects/promotion_gate/src:projects/evidence_bundle
 PYTHONPATH_Q2 := src:projects/execution_aware_optimizer/src
 PYTHONPATH_TYPED_PILOT := src:projects/typed_alpha_pilot/src:projects/evidence_bundle/src:projects/promotion_gate/src:projects/execution_aware_optimizer/src
 PYTHONPATH_FACTOR_DISCOVERY := projects/multifactor_alpha_validation/factor_discovery_sandbox/src
+PYTHONPATH_MULTIFACTOR := projects/multifactor_alpha_validation/src
 
-.PHONY: test lint validate-examples audit-report demo demo-v2 typed-alpha-closeout alpha-registry-v2 factor-discovery-teaching-baseline factor-discovery-factor-specs factor-discovery-rolling-oos factor-discovery-marginal-value-gate factor-discovery-allocator factor-discovery-survival typed-q2-adapter-fixture typed-expected-return-injection-fixture typed-optimizer-response-acceptance sue-typed-q2-survival sue-survival-attribution sue-expanded-typed-q2-survival revision-marginal-value-gate no-network validate
+.PHONY: test lint validate-examples audit-report demo demo-v2 typed-alpha-closeout alpha-registry-v2 factor-discovery-teaching-baseline factor-discovery-factor-specs factor-discovery-rolling-oos factor-discovery-marginal-value-gate factor-discovery-allocator factor-discovery-survival multifactor-research-mode-preflight factor-spec-validate factor-signals factor-q1 factor-redundancy factor-shrinkage factor-allocator factor-survival factor-registry factor-report factor-dashboard factor-release-manifest factor-validate typed-q2-adapter-fixture typed-expected-return-injection-fixture typed-optimizer-response-acceptance sue-typed-q2-survival sue-survival-attribution sue-expanded-typed-q2-survival revision-marginal-value-gate no-network validate
 
 test:
 	PYTHONDONTWRITEBYTECODE=1 $(PYTEST) -q
@@ -50,6 +51,45 @@ factor-discovery-allocator:
 
 factor-discovery-survival:
 	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=$(PYTHONPATH_FACTOR_DISCOVERY) $(PYTHON) scripts/run_factor_discovery_survival.py
+
+multifactor-research-mode-preflight:
+	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=$(PYTHONPATH_MULTIFACTOR) $(PYTHON) scripts/run_multifactor_research_mode_preflight.py
+
+factor-spec-validate:
+	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=$(PYTHONPATH_MULTIFACTOR) $(PYTHON) projects/multifactor_alpha_validation/scripts/validate_factor_specs.py
+
+factor-signals:
+	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=$(PYTHONPATH_MULTIFACTOR) $(PYTHON) projects/multifactor_alpha_validation/scripts/run_factor_signal_builders.py
+
+factor-q1:
+	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=$(PYTHONPATH_MULTIFACTOR) $(PYTHON) projects/multifactor_alpha_validation/scripts/run_factor_q1_evidence.py
+
+factor-redundancy:
+	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=$(PYTHONPATH_MULTIFACTOR) $(PYTHON) projects/multifactor_alpha_validation/scripts/run_factor_redundancy_gate.py
+
+factor-shrinkage:
+	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=$(PYTHONPATH_MULTIFACTOR) $(PYTHON) projects/multifactor_alpha_validation/scripts/run_factor_shrinkage.py
+
+factor-allocator:
+	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=$(PYTHONPATH_MULTIFACTOR) $(PYTHON) projects/multifactor_alpha_validation/scripts/run_factor_allocator.py
+
+factor-survival:
+	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=$(PYTHONPATH_MULTIFACTOR) $(PYTHON) projects/multifactor_alpha_validation/scripts/run_factor_survival.py
+
+factor-registry:
+	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=$(PYTHONPATH_MULTIFACTOR):projects/multifactor_alpha_validation/scripts $(PYTHON) projects/multifactor_alpha_validation/scripts/build_factor_registry.py
+
+factor-report:
+	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=$(PYTHONPATH_MULTIFACTOR):projects/multifactor_alpha_validation/scripts $(PYTHON) projects/multifactor_alpha_validation/scripts/build_factor_research_report.py
+
+factor-dashboard:
+	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=$(PYTHONPATH_MULTIFACTOR):projects/multifactor_alpha_validation/scripts $(PYTHON) projects/multifactor_alpha_validation/scripts/render_factor_dashboard.py
+
+factor-release-manifest:
+	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=$(PYTHONPATH_MULTIFACTOR):projects/multifactor_alpha_validation/scripts $(PYTHON) projects/multifactor_alpha_validation/scripts/build_factor_release_manifest.py
+
+factor-validate: factor-spec-validate factor-signals factor-q1 factor-redundancy factor-shrinkage factor-allocator factor-survival factor-registry factor-report factor-dashboard factor-release-manifest
+	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=$(PYTHONPATH_MULTIFACTOR) $(PYTEST) projects/multifactor_alpha_validation/tests -q
 
 typed-q2-adapter-fixture:
 	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=$(PYTHONPATH_Q2) $(PYTHON) scripts/run_typed_q2_adapter_fixture.py --allow-portfolioos-run
