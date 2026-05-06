@@ -65,6 +65,9 @@ Completed:
 - FD-2: FactorSpec conversion is complete with 29 committed price-volume
   FactorSpec YAML files, timestamp contracts, explicit abstain coverage rules,
   `no_view != zero_alpha`, and a validation smoke target.
+- FD-3: Rolling ICIR and OOS weighting is complete with prior-history-only
+  rolling ICIR weights, OOS factor score panel, no same-close trading, and a
+  separate research-mode OOS backtest report.
 
 Current phase:
 
@@ -2272,7 +2275,7 @@ Candidate sub-roadmap:
 - FD-2 FactorSpec Conversion: complete. Convert the factor columns into explicit specs
   with mechanism, lookback, skip, direction, horizon, timestamp contract,
   coverage rule, correlation family, and known failure mode.
-- FD-3 Rolling ICIR and OOS Weighting: estimate IC/ICIR only with history
+- FD-3 Rolling ICIR and OOS Weighting: complete. Estimate IC/ICIR only with history
   available before the rebalance month, form scores at `t`, and trade no earlier
   than `t+1`.
 - FD-4 Redundancy / Marginal-Value Gate: replace shallow correlation filtering

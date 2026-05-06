@@ -168,6 +168,12 @@ and a validation summary under `outputs/factor_discovery/`. Each spec records
 lookback, skip, direction, timestamp contract, coverage abstain rule, expected
 horizon, correlation family, and known failure mode.
 
+`make factor-discovery-rolling-oos` writes the FD-3 research-mode rolling ICIR
+artifacts under `outputs/factor_discovery/research_mode/`. The runner estimates
+factor weights only from prior history, scores names at the rebalance month, and
+uses next-session tradability timestamps. It explicitly forbids full-sample
+ICIR weighting.
+
 ## Safety Boundaries
 
 - No broker route is exposed by Q1, Q2, the promotion gate, the artifact service,

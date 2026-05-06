@@ -67,6 +67,7 @@ Factor Discovery Sandbox FD-1 teaching baseline smoke and tests:
 ```bash
 make factor-discovery-teaching-baseline
 make factor-discovery-factor-specs
+make factor-discovery-rolling-oos
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/factor_discovery_sandbox/src poetry run pytest projects/multifactor_alpha_validation/factor_discovery_sandbox/tests -q
 ```
 

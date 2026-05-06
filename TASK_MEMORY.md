@@ -108,6 +108,19 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - Validation: FD-2 focused test passed; `make
     factor-discovery-factor-specs` passed with `factor_count=29` and
     `all_specs_valid=true`.
+- FD-3 Rolling ICIR and OOS Weighting is complete:
+  - `factor_discovery_sandbox/rolling_oos.py` estimates factor ICIR weights for
+    each rebalance date using only dates before that rebalance.
+  - `scripts/run_factor_discovery_rolling_oos.py` and
+    `make factor-discovery-rolling-oos` write `rolling_icir_weights.csv`,
+    `oos_factor_score_panel.csv`, and `oos_backtest_report.md` under ignored
+    `outputs/factor_discovery/research_mode/`.
+  - OOS score rows carry signal, visibility, and tradable timestamps, with
+    tradability after signal formation.
+  - The report states full-sample ICIR is forbidden and keeps teaching-mode
+    results separate from research-mode OOS results.
+  - Validation: FD-3 focused test passed; `make
+    factor-discovery-rolling-oos` passed with `uses_full_sample_icir=false`.
 - Phase 48 Typed Expected-Return Injection Fixture is complete:
   - `projects/execution_aware_optimizer/src/execution_aware_optimizer/typed_injection_schema.py` defines injection input/result/summary/manifest contracts.
   - `projects/execution_aware_optimizer/src/execution_aware_optimizer/typed_expected_return_injection.py` validates Q2InputContract v2 plus projection manifest, supports positive/scaled/sign-flipped expected-return panels, and writes optimizer input snapshots.
