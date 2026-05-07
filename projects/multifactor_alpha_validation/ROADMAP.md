@@ -870,3 +870,42 @@ Status:
   is an explicit artifact, not an informal interpretation.
 - Allocator entry, redundancy-gate entry, direct Q2 entry, paper canary, live
   trading, security orders, and production approval all remain false.
+
+### MF-R10: PIT Exposure Store
+
+Goal:
+Build a PIT-safe exposure panel for risk attribution. This is not a factor
+builder and does not create alpha evidence.
+
+Scope:
+
+- sector
+- industry
+- trailing market beta
+- log market cap
+- liquidity ADV
+- residual volatility
+- short-term reversal exposure
+- medium-term momentum exposure
+- book-to-market proxy from visible Compustat quarterly fundamentals
+- profitability proxy from visible Compustat quarterly fundamentals
+- asset-growth proxy from visible Compustat quarterly fundamentals
+
+Status:
+
+- Complete.
+- Output lives under `outputs/multifactor_alpha_validation/risk_model/`.
+- The current real WRDS smoke writes `223,960` exposure rows across `204`
+  month-end dates, `226` assets, and `11` exposure names.
+- Timestamp checks pass: `exposure_date <= visibility_timestamp <=
+  tradable_timestamp`, and same-close trading is false.
+- Fundamentals use only the latest quarterly row with
+  `visibility_timestamp <= signal_date`; missing or unusable rows become
+  explicit abstain rows.
+- The coverage report shows high coverage for price/sector exposures and
+  explicit abstain reasons for missing fundamentals or insufficient trailing
+  price history.
+- The manifest sets `allowed_use_mode=risk_attribution_input_only`.
+- R10 does not run cross-sectional attribution, redundancy gates, allocator
+  weights, Q2, paper canary, live trading, security orders, or production
+  approval.

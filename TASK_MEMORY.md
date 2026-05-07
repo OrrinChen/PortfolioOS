@@ -195,8 +195,8 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - This preflight is not alpha evidence; it prevents sandbox or teaching-mode
     artifacts from being promoted into real research mode without the required
     PIT data contract.
-- MF-R6/R7/R8/R9 real PIT dataset onboarding is complete through the first
-  diagnostic WRDS daily OOS closeout:
+- MF-R6/R7/R8/R9/R10 real PIT dataset onboarding and risk-exposure setup is
+  complete through the first PIT exposure store:
   - The monthly WRDS PIT bundle path remains complete for MF-R7 data-readiness
     dry checks and no factor claims.
   - `projects/multifactor_alpha_validation/configs/wrds_nasdaq100_daily_research_mode.yaml`
@@ -235,9 +235,29 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     benchmark/beta failure. Allocator entry, redundancy-gate entry, direct Q2
     entry, paper canary, live trading, broker/order paths, and production
     approval all remain false.
-  - Known limitation: R8/R9 prove the real-data workflow shape and timestamped
-    daily evidence plumbing only. They do not prove real alpha, approve Q2, or
-    unlock allocator/redundancy promotion.
+  - `multifactor_alpha_validation.risk_exposure_store.run_pit_exposure_store`
+    runs MF-R10 and writes `exposure_panel.csv`,
+    `exposure_coverage_report.json`, and `exposure_manifest.yaml` under
+    `outputs/multifactor_alpha_validation/risk_model/`.
+  - Current MF-R10 smoke built `223960` PIT exposure rows across `204` month-end
+    dates, `226` assets, and `11` exposure names: sector, industry, trailing
+    market beta, log market cap, liquidity ADV, residual volatility,
+    short-term reversal, medium-term momentum, book-to-market, profitability,
+    and asset growth.
+  - R10 uses the local WRDS daily price-volume bundle plus the ignored WRDS
+    Compustat/CCM fundamentals cache under
+    `data/cache/wrds_multifactor/nasdaq100_fundamentals/`. Quarterly
+    fundamentals are used only when `visibility_timestamp <= signal_date`; rows
+    without visible or usable exposures become explicit abstain rows.
+  - R10 timestamp checks pass: `exposure_date <= visibility_timestamp <=
+    tradable_timestamp`, and same-close trading is false. The exposure store is
+    `risk_attribution_input_only`, not a factor signal, alpha evidence,
+    allocator input, Q2 input, paper canary, live workflow, or production
+    approval.
+  - Known limitation: R8/R9/R10 prove the real-data workflow shape, timestamped
+    evidence plumbing, and PIT exposure-store readiness only. They do not prove
+    real alpha, approve Q2, run cross-sectional risk attribution, or unlock
+    allocator/redundancy promotion.
   - Validation: research-mode preflight focused tests passed; smoke returned
     `status=blocked` with thirteen blockers on the local proxy manifest.
 - WRDS option B ingest is installed for formal multifactor research mode:

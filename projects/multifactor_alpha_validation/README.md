@@ -19,6 +19,7 @@ MF-R8 first real rolling OOS evidence complete as diagnostic evidence.
 MF-R9 closeout decision: diagnostic_only.
 Sector attribution and size/liquidity/volatility style proxy attribution are wired.
 Strict benchmark/beta/style conflict closeout is wired.
+MF-R10 PIT exposure store complete for risk attribution input only.
 Real allocator/redundancy promotion remains locked by style_proxy_only and benchmark_beta_style_conflict closeout.
 ```
 
@@ -108,6 +109,21 @@ beta-adjusted spreads are negative while its style-adjusted proxy net spread is
 positive. The positive style-proxy residual is diagnostic only; it does not
 override benchmark/beta failure or unlock redundancy/allocator entry.
 
+MF-R10 builds a PIT exposure store for the next risk-attribution layer:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/src poetry run python projects/multifactor_alpha_validation/scripts/run_pit_exposure_store.py --research-manifest data/cache/wrds_multifactor/nasdaq100_daily_size/standardized/research_mode_dataset_manifest.yaml --fundamentals-manifest data/cache/wrds_multifactor/nasdaq100_fundamentals/standardized/fundamentals_manifest.yaml --output-dir outputs/multifactor_alpha_validation/risk_model
+```
+
+The current R10 smoke writes `exposure_panel.csv`,
+`exposure_coverage_report.json`, and `exposure_manifest.yaml` under
+`outputs/multifactor_alpha_validation/risk_model/`. It covers sector, industry,
+trailing market beta, log market cap, liquidity ADV, residual volatility,
+short-term reversal, medium-term momentum, book-to-market, profitability, and
+asset growth exposures. These rows are `risk_attribution_input_only`; they are
+not factor signals, alpha evidence, allocator input, Q2 input, paper canary, or
+production approval.
+
 The local historical-universe smoke writes PIT-style universe snapshots from a
 synthetic fixture:
 
@@ -139,12 +155,13 @@ The next roadmap is Real PIT Dataset Onboarding:
 - `MF-R8` First Real Rolling OOS Evidence
 - `MF-R9` Real Evidence Closeout Gate
 
-MF-R8 and MF-R9 are complete on the local WRDS daily PIT bundle as diagnostic
-workflow checks. The closeout decision is `diagnostic_only` with
+MF-R8 through MF-R10 are complete on the local WRDS daily PIT bundle as
+diagnostic workflow checks. The closeout decision is `diagnostic_only` with
 `style_proxy_only` and `benchmark_beta_style_conflict`: sector attribution is
 observed, and style attribution uses WRDS size/liquidity/volatility proxies, but
 this is still not a full institutional risk model. Momentum's positive
 style-adjusted proxy residual conflicts with negative QQQ-relative and
-beta-adjusted readouts, so the correct next step is attribution/data model
-strengthening, not more factors, allocator tuning, ML models, or return-display
-polish.
+beta-adjusted readouts. MF-R10 now supplies the PIT exposure store needed for
+MF-R11 cross-sectional attribution; the correct next step is using that exposure
+store for attribution, not more factors, allocator tuning, ML models, or
+return-display polish.
