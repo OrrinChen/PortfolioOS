@@ -49,12 +49,16 @@ def test_real_rolling_oos_daily_bundle_uses_prior_history_and_separate_readouts(
     assert set(observations["same_close_trading_used"]) == {False}
 
     exposure = pd.read_csv(result.exposure_path)
-    assert {"sector", "liquidity_score_60d", "volatility_score_60d", "style_source"}.issubset(exposure.columns)
-    assert set(exposure["style_source"]) == {"price_volume_proxy"}
+    assert {"sector", "market_cap", "liquidity_score_60d", "volatility_score_60d", "style_source"}.issubset(
+        exposure.columns
+    )
+    assert exposure["market_cap"].notna().all()
+    assert set(exposure["style_source"]) == {"size_liquidity_volatility_proxy"}
 
     neutralization = pd.read_csv(result.neutralization_path)
     assert set(neutralization["sector_adjusted_status"]) == {"observed"}
-    assert set(neutralization["style_adjusted_status"]) == {"observed_price_volume_proxy"}
+    assert set(neutralization["style_adjusted_status"]) == {"observed_size_liquidity_volatility_proxy"}
+    assert set(neutralization["style_model_scope"]) == {"size_liquidity_volatility_proxy"}
     benchmark = pd.read_csv(result.benchmark_attribution_path)
     assert {
         "raw_spread_mean",
@@ -142,6 +146,9 @@ def _write_bundle(root: Path, frequency: str) -> Path:
                     "adjusted_open": round(adjusted_open, 6),
                     "adjusted_close": round(price, 6),
                     "volume": 1_000_000 + index * 10 + asset_index,
+                    "dlycap": round(price * (1_000_000 + asset_index * 10_000), 6),
+                    "shrout": 1_000_000 + asset_index * 10_000,
+                    "dlyprcvol": round(price * (1_000_000 + index * 10 + asset_index), 6),
                     "return": ret,
                     "adjusted_price_convention": convention,
                 }

@@ -1,8 +1,8 @@
 schema_version: wrds_multifactor_query_config.v1
 as_of_timestamp: "2026-05-06"
-raw_output_dir: data/cache/wrds_multifactor/nasdaq100_daily/raw
-standardized_output_dir: data/cache/wrds_multifactor/nasdaq100_daily/standardized
-preflight_output_dir: outputs/multifactor_alpha_validation/wrds_nasdaq100_daily_preflight
+raw_output_dir: data/cache/wrds_multifactor/nasdaq100_daily_size/raw
+standardized_output_dir: data/cache/wrds_multifactor/nasdaq100_daily_size/standardized
+preflight_output_dir: outputs/multifactor_alpha_validation/wrds_nasdaq100_daily_size_preflight
 timestamp_policy:
   signal: month_end_close
   visibility: after_month_end_close

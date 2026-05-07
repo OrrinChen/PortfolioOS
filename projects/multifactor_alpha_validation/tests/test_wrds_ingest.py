@@ -165,7 +165,7 @@ def test_committed_nasdaq100_daily_wrds_config_validates_without_credentials() -
     payload, _ = validate_wrds_query_config(config_path)
 
     assert payload["schema_version"] == "wrds_multifactor_query_config.v1"
-    assert payload["standardized_output_dir"] == "data/cache/wrds_multifactor/nasdaq100_daily/standardized"
+    assert payload["standardized_output_dir"] == "data/cache/wrds_multifactor/nasdaq100_daily_size/standardized"
     assert payload["queries"]["adjusted_price_volume_panel"]["permno_chunk_size"] == 5
     query_text = payload["queries"]["adjusted_price_volume_panel"]["sql"].lower()
     assert "crsp_a_stock.dsf_v2" in query_text

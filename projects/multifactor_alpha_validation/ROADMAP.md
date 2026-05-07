@@ -834,10 +834,9 @@ Status:
   `prior_history_only=true`, `allocator_ran=false`,
   `alpha_success_claimed=false`, and `not_alpha_evidence=true`.
 - Sector attribution is observed from the historical universe membership panel.
-- Style attribution is observed only as price-volume proxies
-  (`liquidity_score_60d` and `volatility_score_60d`). The daily WRDS config now
-  requests `dlycap`, `shrout`, and `dlyprcvol` for the next refresh, but the
-  current local cache does not yet populate market-cap exposure.
+- Style attribution is observed as WRDS size/liquidity/volatility proxies:
+  `market_cap`, `liquidity_score_60d`, and `volatility_score_60d`. The refreshed
+  cache lives under `data/cache/wrds_multifactor/nasdaq100_daily_size/`.
 - The output remains diagnostic evidence only.
 
 ### MF-R9: Real Evidence Closeout Gate
@@ -860,8 +859,9 @@ Status:
 
 - Complete.
 - Output lives under
-  `outputs/multifactor_alpha_validation/wrds_real_evidence_closeout/`.
+  `outputs/multifactor_alpha_validation/wrds_real_evidence_closeout_size/`.
 - Current decision: `diagnostic_only`.
-- Reason: `style_proxy_only`.
+- Reason: `style_proxy_only`. The proxy attribution is useful for diagnostics
+  but is not strong enough to enter the redundancy gate.
 - Allocator entry, redundancy-gate entry, direct Q2 entry, paper canary, live
   trading, security orders, and production approval all remain false.

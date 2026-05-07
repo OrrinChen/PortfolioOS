@@ -201,9 +201,11 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     dry checks and no factor claims.
   - `projects/multifactor_alpha_validation/configs/wrds_nasdaq100_daily_research_mode.yaml`
     defines the local daily WRDS pull without embedded credentials and writes
-    ignored cache artifacts under `data/cache/wrds_multifactor/nasdaq100_daily/`.
-  - The local daily bundle currently contains historical Nasdaq100 membership,
-    daily adjusted price-volume, QQQ benchmark coverage, and delisting records.
+    ignored cache artifacts under `data/cache/wrds_multifactor/nasdaq100_daily_size/`.
+  - The refreshed size-aware local daily bundle lives under
+    `data/cache/wrds_multifactor/nasdaq100_daily_size/` and contains historical
+    Nasdaq100 membership, daily adjusted price-volume, QQQ benchmark coverage,
+    delisting records, and non-null `dlycap`, `shrout`, and `dlyprcvol` fields.
   - `multifactor_alpha_validation.real_rolling_oos.run_first_real_rolling_oos_evidence`
     runs MF-R8 for `momentum_12_1`, `reversal_5_1`, and `low_vol_60d` only.
     It writes `real_oos_factor_evidence.csv`,
@@ -211,7 +213,7 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     `real_oos_benchmark_attribution.csv`, `real_oos_survival_funnel.csv`,
     `real_oos_summary.json`, `real_oos_exposure_panel.csv`, and
     `real_oos_readiness.md` under
-    `outputs/multifactor_alpha_validation/wrds_real_oos_evidence/`.
+    `outputs/multifactor_alpha_validation/wrds_real_oos_evidence_size/`.
   - Current MF-R8 run returned `oos_status=evidence_ready`,
     `dataset_frequency=daily`, `observation_count=612`,
     `full_sample_icir_used=false`, `prior_history_only=true`,
@@ -220,12 +222,10 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - `multifactor_alpha_validation.real_evidence_closeout.run_real_evidence_closeout`
     runs MF-R9 and writes `real_evidence_closeout_decision.json` plus
     `real_evidence_closeout_report.md` under
-    `outputs/multifactor_alpha_validation/wrds_real_evidence_closeout/`.
+    `outputs/multifactor_alpha_validation/wrds_real_evidence_closeout_size/`.
   - Sector attribution is now observed from the historical membership panel.
-    Style attribution is now observed as price-volume proxy attribution using
-    trailing liquidity and volatility. The daily WRDS config requests `dlycap`,
-    `shrout`, and `dlyprcvol` for the next refresh, but the current local cache
-    still lacks populated market-cap exposure.
+    Style attribution is now observed as size/liquidity/volatility proxy
+    attribution using `market_cap`, trailing liquidity, and trailing volatility.
   - Current MF-R9 decision is `diagnostic_only` with reason
     `style_proxy_only`. Allocator entry, redundancy-gate entry, direct Q2
     entry, paper canary, live trading, broker/order paths, and production

@@ -1,5 +1,5 @@
 schema_version: daily_price_volume_long_task.v1
-status: not_started
+status: completed_local_wrds_pull
 requires_explicit_run: true
 purpose: daily_price_volume_validation_after_monthly_pit_dry_run
 source:
@@ -13,7 +13,17 @@ requested_daily_bundle:
   adjusted_price_required: true
   start_date: "2008-01-01"
   end_date: "2025-12-31"
-  output_cache_dir: data/cache/wrds_multifactor/nasdaq100_daily
+  output_cache_dir: data/cache/wrds_multifactor/nasdaq100_daily_size
+  completed_manifest: data/cache/wrds_multifactor/nasdaq100_daily_size/standardized/research_mode_dataset_manifest.yaml
+  completed_style_fields:
+    - dlycap
+    - shrout
+    - dlyprcvol
+  completed_row_counts:
+    historical_universe_membership: 272
+    adjusted_price_volume_panel: 827439
+    qqq_benchmark_panel: 4529
+    delisting_returns: 55
   resumable_chunks_required: true
   default_chunk_axis: permno_and_date
 validation_scope:

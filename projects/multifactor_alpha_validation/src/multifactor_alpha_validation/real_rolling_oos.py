@@ -285,6 +285,7 @@ def _build_observations(
                     "forward_return",
                     "sector",
                     "industry",
+                    "market_cap",
                     "liquidity_score_60d",
                     "volatility_score_60d",
                 ]
@@ -318,7 +319,7 @@ def _build_observations(
                     "style_adjusted_rank_ic": _round_optional(style_metrics["rank_ic"]),
                     "style_adjusted_spread": _round_optional(style_metrics["spread"]),
                     "style_adjusted_status": style_metrics["status"],
-                    "style_model_scope": "price_volume_proxy",
+                    "style_model_scope": str(style_metrics["status"]).replace("observed_", ""),
                     "net_spread": round(gross_spread - _COST_DRAG, 8),
                     "sector_adjusted_net_spread": _round_optional(float(sector_metrics["spread"]) - _COST_DRAG)
                     if pd.notna(sector_metrics["spread"])
@@ -344,16 +345,17 @@ def _signals_for_date(prices: pd.DataFrame, signal_date: pd.Timestamp) -> pd.Dat
         returns = history["daily_return"].reset_index(drop=True)
         volume = pd.to_numeric(history["volume"], errors="coerce").reset_index(drop=True)
         dollar_volume = close * volume
+        market_cap = _latest_market_cap(history)
         rows.append(
             {
                 "asset_id": str(asset_id),
                 "momentum_12_1_signal": close.iloc[-22] / close.iloc[-253] - 1.0,
                 "reversal_5_1_signal": -(close.iloc[-1] / close.iloc[-6] - 1.0),
                 "low_vol_60d_signal": -float(returns.iloc[-60:].std()),
-                "market_cap": _latest_market_cap(history),
+                "market_cap": market_cap,
                 "liquidity_score_60d": float(np.log1p(dollar_volume.iloc[-60:].mean())),
                 "volatility_score_60d": float(returns.iloc[-60:].std()),
-                "style_source": "price_volume_proxy",
+                "style_source": "size_liquidity_volatility_proxy" if market_cap is not None else "price_volume_proxy",
             }
         )
     return pd.DataFrame(rows)
@@ -479,13 +481,15 @@ def _adjusted_metrics(
             design_parts.append(dummies.to_numpy(dtype=float))
     if include_style:
         style_parts: list[np.ndarray] = []
-        for column in ("liquidity_score_60d", "volatility_score_60d"):
+        used_style_columns: list[str] = []
+        for column in ("market_cap", "liquidity_score_60d", "volatility_score_60d"):
             if column not in working.columns:
                 continue
             series = pd.to_numeric(working[column], errors="coerce")
             if series.notna().sum() >= 3 and float(series.std(ddof=0)) > 0.0:
                 filled = series.fillna(series.median())
                 style_parts.append(_zscore(filled).to_numpy().reshape(-1, 1))
+                used_style_columns.append(column)
         if not style_parts:
             return {"rank_ic": np.nan, "spread": np.nan, "status": "unavailable_no_style_panel"}
         design_parts.extend(style_parts)
@@ -497,7 +501,10 @@ def _adjusted_metrics(
     adjusted["forward_return"] = residual
     rank_ic = adjusted[signal_column].corr(adjusted["forward_return"], method="spearman")
     spread = _top_bottom_spread(adjusted, signal_column)
-    status = "observed_price_volume_proxy" if include_style else "observed"
+    if include_style and "market_cap" in used_style_columns:
+        status = "observed_size_liquidity_volatility_proxy"
+    else:
+        status = "observed_price_volume_proxy" if include_style else "observed"
     return {"rank_ic": float(rank_ic) if pd.notna(rank_ic) else np.nan, "spread": spread, "status": status}
 
 
@@ -529,6 +536,7 @@ def _build_factor_evidence(observations: pd.DataFrame) -> pd.DataFrame:
                 "style_adjusted_rank_ic_mean": round(float(group["style_adjusted_rank_ic"].mean()), 8),
                 "style_adjusted_spread_mean": round(float(group["style_adjusted_spread"].mean()), 8),
                 "style_adjusted_status": _status_summary(group["style_adjusted_status"], "observed_price_volume_proxy"),
+                "style_model_scope": _style_scope_summary(group["style_adjusted_status"]),
                 "net_spread_mean": round(float(group["net_spread"].mean()), 8),
                 "sector_adjusted_net_spread_mean": round(float(group["sector_adjusted_net_spread"].mean()), 8),
                 "style_adjusted_net_spread_mean": round(float(group["style_adjusted_net_spread"].mean()), 8),
@@ -542,11 +550,20 @@ def _build_factor_evidence(observations: pd.DataFrame) -> pd.DataFrame:
 
 def _status_summary(series: pd.Series, expected: str) -> str:
     values = set(series.dropna().astype(str))
-    if values == {expected}:
-        return expected
+    if values == {expected} or values == {"observed_size_liquidity_volatility_proxy"}:
+        return next(iter(values))
     if any(value.startswith("observed") for value in values):
         return "partial"
     return sorted(values)[0] if values else "unavailable"
+
+
+def _style_scope_summary(series: pd.Series) -> str:
+    statuses = sorted(set(series.dropna().astype(str)))
+    if "observed_size_liquidity_volatility_proxy" in statuses:
+        return "size_liquidity_volatility_proxy"
+    if "observed_price_volume_proxy" in statuses:
+        return "price_volume_proxy"
+    return "unavailable"
 
 
 def _build_neutralization_report(evidence: pd.DataFrame) -> pd.DataFrame:
@@ -564,7 +581,7 @@ def _build_neutralization_report(evidence: pd.DataFrame) -> pd.DataFrame:
                 "style_adjusted_spread_mean": row.style_adjusted_spread_mean,
                 "style_adjusted_net_spread_mean": row.style_adjusted_net_spread_mean,
                 "style_adjusted_status": row.style_adjusted_status,
-                "style_model_scope": "price_volume_proxy",
+                "style_model_scope": row.style_model_scope,
                 "attribution_complete": False,
             }
             for row in evidence.itertuples(index=False)
