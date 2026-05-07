@@ -18,7 +18,8 @@ WRDS daily PIT bundle pulled.
 MF-R8 first real rolling OOS evidence complete as diagnostic evidence.
 MF-R9 closeout decision: diagnostic_only.
 Sector attribution and size/liquidity/volatility style proxy attribution are wired.
-Real allocator/redundancy promotion remains locked by style_proxy_only closeout.
+Strict benchmark/beta/style conflict closeout is wired.
+Real allocator/redundancy promotion remains locked by style_proxy_only and benchmark_beta_style_conflict closeout.
 ```
 
 ## Scope
@@ -101,6 +102,12 @@ The refreshed daily WRDS cache under
 `shrout`, and `dlyprcvol`, so R8 now uses size, liquidity, and volatility
 style proxies.
 
+The R9 closeout also writes `real_evidence_conflict_diagnostics.csv`. The
+current real-size run flags `momentum_12_1` because its QQQ-relative and
+beta-adjusted spreads are negative while its style-adjusted proxy net spread is
+positive. The positive style-proxy residual is diagnostic only; it does not
+override benchmark/beta failure or unlock redundancy/allocator entry.
+
 The local historical-universe smoke writes PIT-style universe snapshots from a
 synthetic fixture:
 
@@ -134,8 +141,10 @@ The next roadmap is Real PIT Dataset Onboarding:
 
 MF-R8 and MF-R9 are complete on the local WRDS daily PIT bundle as diagnostic
 workflow checks. The closeout decision is `diagnostic_only` with
-`style_proxy_only`: sector attribution is observed, and style attribution uses
-WRDS size/liquidity/volatility proxies, but this is still not a full
-institutional risk model. Do not add factors, tune the allocator, add ML
-models, or polish return displays before stronger attribution data is
-onboarded and a new closeout gate allows the next research layer.
+`style_proxy_only` and `benchmark_beta_style_conflict`: sector attribution is
+observed, and style attribution uses WRDS size/liquidity/volatility proxies, but
+this is still not a full institutional risk model. Momentum's positive
+style-adjusted proxy residual conflicts with negative QQQ-relative and
+beta-adjusted readouts, so the correct next step is attribution/data model
+strengthening, not more factors, allocator tuning, ML models, or return-display
+polish.

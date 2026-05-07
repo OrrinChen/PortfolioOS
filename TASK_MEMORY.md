@@ -220,14 +220,19 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     `allocator_ran=false`, `alpha_success_claimed=false`, and
     `not_alpha_evidence=true`.
   - `multifactor_alpha_validation.real_evidence_closeout.run_real_evidence_closeout`
-    runs MF-R9 and writes `real_evidence_closeout_decision.json` plus
+    runs MF-R9 and writes `real_evidence_closeout_decision.json`,
+    `real_evidence_conflict_diagnostics.csv`, and
     `real_evidence_closeout_report.md` under
     `outputs/multifactor_alpha_validation/wrds_real_evidence_closeout_size/`.
   - Sector attribution is now observed from the historical membership panel.
     Style attribution is now observed as size/liquidity/volatility proxy
     attribution using `market_cap`, trailing liquidity, and trailing volatility.
-  - Current MF-R9 decision is `diagnostic_only` with reason
-    `style_proxy_only`. Allocator entry, redundancy-gate entry, direct Q2
+  - Current MF-R9 decision is `diagnostic_only` with reasons
+    `style_proxy_only` and `benchmark_beta_style_conflict`. The stricter
+    closeout explicitly flags `momentum_12_1`: QQQ-relative and beta-adjusted
+    spreads are negative while the style-adjusted proxy net spread is positive.
+    The positive style-proxy residual is diagnostic only and does not override
+    benchmark/beta failure. Allocator entry, redundancy-gate entry, direct Q2
     entry, paper canary, live trading, broker/order paths, and production
     approval all remain false.
   - Known limitation: R8/R9 prove the real-data workflow shape and timestamped

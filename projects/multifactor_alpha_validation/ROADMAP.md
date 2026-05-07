@@ -22,7 +22,7 @@ WRDS monthly PIT dry run: complete
 WRDS daily PIT bundle: pulled
 First real rolling OOS evidence: complete as diagnostic evidence
 Real evidence closeout: diagnostic_only
-Current blocker: style_proxy_only attribution before redundancy or allocator entry
+Current blocker: style_proxy_only plus benchmark_beta_style_conflict before redundancy or allocator entry
 ```
 
 ## Positioning
@@ -861,7 +861,12 @@ Status:
 - Output lives under
   `outputs/multifactor_alpha_validation/wrds_real_evidence_closeout_size/`.
 - Current decision: `diagnostic_only`.
-- Reason: `style_proxy_only`. The proxy attribution is useful for diagnostics
-  but is not strong enough to enter the redundancy gate.
+- Reasons: `style_proxy_only` and `benchmark_beta_style_conflict`. The proxy
+  attribution is useful for diagnostics, but `momentum_12_1` has negative
+  QQQ-relative and beta-adjusted readouts while its style-adjusted proxy net
+  spread is positive. That positive proxy residual does not override
+  benchmark/beta failure and is not strong enough to enter the redundancy gate.
+- The closeout writes `real_evidence_conflict_diagnostics.csv` so this conflict
+  is an explicit artifact, not an informal interpretation.
 - Allocator entry, redundancy-gate entry, direct Q2 entry, paper canary, live
   trading, security orders, and production approval all remain false.

@@ -89,6 +89,77 @@ def test_real_evidence_closeout_is_diagnostic_when_attribution_is_incomplete(tmp
     assert "not enter allocator" in report
 
 
+def test_real_evidence_closeout_explains_benchmark_beta_style_conflict(tmp_path: Path) -> None:
+    oos_dir = tmp_path / "r8_conflict"
+    oos_dir.mkdir()
+    (oos_dir / "real_oos_summary.json").write_text(
+        json.dumps(
+            {
+                "oos_status": "evidence_ready",
+                "dataset_frequency": "daily",
+                "allocator_ran": False,
+                "alpha_success_claimed": False,
+                "not_alpha_evidence": True,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    pd.DataFrame(
+        [
+            {
+                "factor_id": "momentum_12_1",
+                "full_sample_icir_used": False,
+                "prior_history_only": True,
+                "gross_spread_mean": 0.0043,
+                "qqq_relative_spread_mean": -0.0101,
+                "beta_adjusted_spread_mean": -0.0029,
+                "net_spread_mean": 0.0033,
+                "style_adjusted_spread_mean": 0.0060,
+                "style_adjusted_net_spread_mean": 0.0050,
+                "style_adjusted_status": "observed_size_liquidity_volatility_proxy",
+                "style_model_scope": "size_liquidity_volatility_proxy",
+            }
+        ]
+    ).to_csv(oos_dir / "real_oos_factor_evidence.csv", index=False)
+    pd.DataFrame(
+        [
+            {
+                "factor_id": "momentum_12_1",
+                "beta_adjusted_spread_mean": -0.0029,
+                "sector_adjusted_status": "observed",
+                "style_adjusted_spread_mean": 0.0060,
+                "style_adjusted_net_spread_mean": 0.0050,
+                "style_adjusted_status": "observed_size_liquidity_volatility_proxy",
+                "style_model_scope": "size_liquidity_volatility_proxy",
+            }
+        ]
+    ).to_csv(oos_dir / "real_oos_neutralization_report.csv", index=False)
+
+    closeout = run_real_evidence_closeout(oos_dir, tmp_path / "r9_conflict")
+
+    decision = json.loads(Path(closeout.decision_path).read_text(encoding="utf-8"))
+    assert decision["decision"] == "diagnostic_only"
+    assert "style_proxy_only" in decision["decision_reasons"]
+    assert "benchmark_beta_style_conflict" in decision["decision_reasons"]
+    assert decision["allocator_entry_allowed"] is False
+    assert decision["conflict_factors"] == ["momentum_12_1"]
+
+    conflict_path = Path(decision["conflict_diagnostics_path"])
+    conflicts = pd.read_csv(conflict_path)
+    assert conflicts["factor_id"].tolist() == ["momentum_12_1"]
+    assert conflicts.loc[0, "conflict_type"] == "benchmark_beta_negative_style_positive"
+    assert conflicts.loc[0, "qqq_relative_spread_mean"] < 0
+    assert conflicts.loc[0, "beta_adjusted_spread_mean"] < 0
+    assert conflicts.loc[0, "style_adjusted_net_spread_mean"] > 0
+    assert "does not override" in conflicts.loc[0, "interpretation"]
+
+    report = Path(closeout.report_path).read_text(encoding="utf-8").lower()
+    assert "benchmark/beta" in report
+    assert "style-adjusted" in report
+    assert "does not override" in report
+
+
 def _write_bundle(root: Path, frequency: str) -> Path:
     root.mkdir(parents=True, exist_ok=True)
     if frequency == "daily":
