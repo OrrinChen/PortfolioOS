@@ -92,21 +92,29 @@ def _decide(
 
     reasons: list[str] = []
     if not neutralization.empty and "sector_adjusted_status" in neutralization.columns:
-        if not neutralization["sector_adjusted_status"].eq("observed").all():
+        if not _statuses_observed(neutralization["sector_adjusted_status"]):
             reasons.append("sector_attribution_unavailable")
     else:
         reasons.append("sector_attribution_unavailable")
     if not neutralization.empty and "style_adjusted_status" in neutralization.columns:
-        if not neutralization["style_adjusted_status"].eq("observed").all():
+        if not _statuses_observed(neutralization["style_adjusted_status"]):
             reasons.append("style_attribution_unavailable")
+        elif neutralization["style_adjusted_status"].astype(str).str.contains("proxy").any():
+            reasons.append("style_proxy_only")
     else:
         reasons.append("style_attribution_unavailable")
-    if "net_spread_mean" in evidence.columns and not evidence["net_spread_mean"].gt(0).any():
-        reasons.append("no_positive_net_oos_evidence")
+    adjusted_net_column = "style_adjusted_net_spread_mean" if "style_adjusted_net_spread_mean" in evidence.columns else "net_spread_mean"
+    if adjusted_net_column in evidence.columns and not evidence[adjusted_net_column].gt(0).any():
+        reasons.append("no_positive_adjusted_net_oos_evidence")
 
     if reasons:
         return "diagnostic_only", reasons
     return "ready_for_redundancy_gate", ["clean_oos_evidence_and_attribution"]
+
+
+def _statuses_observed(series: pd.Series) -> bool:
+    statuses = series.dropna().astype(str)
+    return not statuses.empty and statuses.str.startswith("observed").all()
 
 
 def _render_report(payload: dict[str, object]) -> str:

@@ -72,7 +72,7 @@ def test_daily_price_volume_long_task_config_contains_no_credentials() -> None:
     text = config.read_text(encoding="utf-8").lower()
 
     assert "requires_explicit_run: true" in text
-    assert "not_started" in text
+    assert ("status: not_started" in text) or ("status: completed_local_wrds_pull" in text)
     assert "password" not in text
     assert "secret" not in text
     assert "api_key" not in text

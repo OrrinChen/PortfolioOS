@@ -48,10 +48,21 @@ def test_real_rolling_oos_daily_bundle_uses_prior_history_and_separate_readouts(
     assert (pd.to_datetime(observations["tradable_date"]) > pd.to_datetime(observations["signal_date"])).all()
     assert set(observations["same_close_trading_used"]) == {False}
 
+    exposure = pd.read_csv(result.exposure_path)
+    assert {"sector", "liquidity_score_60d", "volatility_score_60d", "style_source"}.issubset(exposure.columns)
+    assert set(exposure["style_source"]) == {"price_volume_proxy"}
+
     neutralization = pd.read_csv(result.neutralization_path)
-    assert set(neutralization["sector_adjusted_status"]) == {"unavailable_no_sector_panel"}
+    assert set(neutralization["sector_adjusted_status"]) == {"observed"}
+    assert set(neutralization["style_adjusted_status"]) == {"observed_price_volume_proxy"}
     benchmark = pd.read_csv(result.benchmark_attribution_path)
-    assert {"raw_spread_mean", "qqq_relative_spread_mean", "beta_adjusted_spread_mean"}.issubset(benchmark.columns)
+    assert {
+        "raw_spread_mean",
+        "qqq_relative_spread_mean",
+        "beta_adjusted_spread_mean",
+        "sector_adjusted_spread_mean",
+        "style_adjusted_spread_mean",
+    }.issubset(benchmark.columns)
 
 
 def test_real_evidence_closeout_is_diagnostic_when_attribution_is_incomplete(tmp_path: Path) -> None:
@@ -66,7 +77,9 @@ def test_real_evidence_closeout_is_diagnostic_when_attribution_is_incomplete(tmp
     assert closeout.direct_q2_entry is False
     decision = json.loads(Path(closeout.decision_path).read_text(encoding="utf-8"))
     assert decision["decision"] == "diagnostic_only"
-    assert "sector_attribution_unavailable" in decision["decision_reasons"]
+    assert "sector_attribution_unavailable" not in decision["decision_reasons"]
+    assert "style_attribution_unavailable" not in decision["decision_reasons"]
+    assert "style_proxy_only" in decision["decision_reasons"]
     report = Path(closeout.report_path).read_text(encoding="utf-8").lower()
     assert "no production approval" in report
     assert "not enter allocator" in report
@@ -102,10 +115,12 @@ def _write_bundle(root: Path, frequency: str) -> Path:
                 "in_universe": True,
                 "entry_date": "2019-01-01",
                 "exit_date": "",
+                "sector": "45" if index % 2 == 0 else "35",
+                "industry": "4510" if index % 2 == 0 else "3520",
                 "source": "wrds_fixture",
                 "source_is_pit": True,
             }
-            for asset_id, ticker, _, _ in assets
+            for index, (asset_id, ticker, _, _) in enumerate(assets)
         ]
     )
     price_rows: list[dict[str, object]] = []

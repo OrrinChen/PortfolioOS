@@ -170,6 +170,9 @@ def test_committed_nasdaq100_daily_wrds_config_validates_without_credentials() -
     query_text = payload["queries"]["adjusted_price_volume_panel"]["sql"].lower()
     assert "crsp_a_stock.dsf_v2" in query_text
     assert "dlycaldt" in query_text
+    assert "dlycap" in query_text
+    assert "shrout" in query_text
+    assert "dlyprcvol" in query_text
     rendered = config_path.read_text(encoding="utf-8").lower()
     assert "password" not in rendered
     assert "api_key" not in rendered

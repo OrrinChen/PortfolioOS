@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping
 
+import numpy as np
 import pandas as pd
 
 from multifactor_alpha_validation.data_contract import run_research_mode_preflight
@@ -21,6 +22,7 @@ class RealRollingOOSResult:
     summary_path: str
     evidence_path: str
     observation_path: str
+    exposure_path: str
     neutralization_path: str
     benchmark_attribution_path: str
     survival_funnel_path: str
@@ -39,8 +41,10 @@ def run_first_real_rolling_oos_evidence(manifest_path: Path, output_dir: Path) -
         raise ValueError(f"research preflight is blocked: {list(preflight.blockers)}")
 
     manifest = _load_manifest(manifest_path)
+    universe = _load_csv(manifest, manifest_path, "universe")
     prices = _load_csv(manifest, manifest_path, "prices")
     benchmark = _load_csv(manifest, manifest_path, "benchmark")
+    universe = _normalize_universe(universe)
     prices = _normalize_prices(prices)
     benchmark = _normalize_benchmark(benchmark)
     frequency = _detect_frequency(prices)
@@ -48,13 +52,14 @@ def run_first_real_rolling_oos_evidence(manifest_path: Path, output_dir: Path) -
     summary_path = output_dir / "real_oos_summary.json"
     evidence_path = output_dir / "real_oos_factor_evidence.csv"
     observation_path = output_dir / "real_oos_observations.csv"
+    exposure_path = output_dir / "real_oos_exposure_panel.csv"
     neutralization_path = output_dir / "real_oos_neutralization_report.csv"
     benchmark_path = output_dir / "real_oos_benchmark_attribution.csv"
     survival_path = output_dir / "real_oos_survival_funnel.csv"
     readiness_path = output_dir / "real_oos_readiness.md"
 
     if frequency != "daily":
-        _write_empty_outputs(evidence_path, observation_path, neutralization_path, benchmark_path, survival_path)
+        _write_empty_outputs(evidence_path, observation_path, exposure_path, neutralization_path, benchmark_path, survival_path)
         summary = _summary(
             manifest_path=manifest_path,
             frequency=frequency,
@@ -74,15 +79,16 @@ def run_first_real_rolling_oos_evidence(manifest_path: Path, output_dir: Path) -
             summary_path=str(summary_path),
             evidence_path=str(evidence_path),
             observation_path=str(observation_path),
+            exposure_path=str(exposure_path),
             neutralization_path=str(neutralization_path),
             benchmark_attribution_path=str(benchmark_path),
             survival_funnel_path=str(survival_path),
             readiness_path=str(readiness_path),
         )
 
-    observations = _build_observations(prices, benchmark)
+    observations, exposure_panel = _build_observations(prices, benchmark, universe)
     if observations.empty:
-        _write_empty_outputs(evidence_path, observation_path, neutralization_path, benchmark_path, survival_path)
+        _write_empty_outputs(evidence_path, observation_path, exposure_path, neutralization_path, benchmark_path, survival_path)
         summary = _summary(
             manifest_path=manifest_path,
             frequency=frequency,
@@ -102,6 +108,7 @@ def run_first_real_rolling_oos_evidence(manifest_path: Path, output_dir: Path) -
             summary_path=str(summary_path),
             evidence_path=str(evidence_path),
             observation_path=str(observation_path),
+            exposure_path=str(exposure_path),
             neutralization_path=str(neutralization_path),
             benchmark_attribution_path=str(benchmark_path),
             survival_funnel_path=str(survival_path),
@@ -121,6 +128,7 @@ def run_first_real_rolling_oos_evidence(manifest_path: Path, output_dir: Path) -
     )
 
     observations.to_csv(observation_path, index=False)
+    exposure_panel.to_csv(exposure_path, index=False)
     evidence.to_csv(evidence_path, index=False)
     neutralization.to_csv(neutralization_path, index=False)
     benchmark_attribution.to_csv(benchmark_path, index=False)
@@ -137,6 +145,7 @@ def run_first_real_rolling_oos_evidence(manifest_path: Path, output_dir: Path) -
         summary_path=str(summary_path),
         evidence_path=str(evidence_path),
         observation_path=str(observation_path),
+        exposure_path=str(exposure_path),
         neutralization_path=str(neutralization_path),
         benchmark_attribution_path=str(benchmark_path),
         survival_funnel_path=str(survival_path),
@@ -162,6 +171,34 @@ def _load_csv(manifest: Mapping[str, Any], manifest_path: Path, section: str) ->
     return pd.read_csv(path)
 
 
+def _normalize_universe(universe: pd.DataFrame) -> pd.DataFrame:
+    normalized = universe.copy()
+    if "asset_id" not in normalized.columns:
+        if "permno" in normalized.columns:
+            normalized["asset_id"] = normalized["permno"].astype(str)
+        elif "ticker" in normalized.columns:
+            normalized["asset_id"] = normalized["ticker"].astype(str)
+        else:
+            raise ValueError("universe panel requires asset_id, permno, or ticker")
+    normalized["asset_id"] = normalized["asset_id"].astype(str)
+    for column in ("membership_start", "membership_end", "entry_date", "exit_date", "date"):
+        if column in normalized.columns:
+            normalized[column] = pd.to_datetime(normalized[column], errors="coerce")
+    if "membership_start" not in normalized.columns:
+        normalized["membership_start"] = normalized.get("entry_date", pd.NaT)
+    if "membership_end" not in normalized.columns:
+        normalized["membership_end"] = normalized.get("exit_date", pd.NaT)
+    normalized["membership_start"] = normalized["membership_start"].fillna(pd.Timestamp("1900-01-01"))
+    normalized["membership_end"] = normalized["membership_end"].fillna(pd.Timestamp("2100-01-01"))
+    if "sector" not in normalized.columns:
+        normalized["sector"] = pd.NA
+    if "industry" not in normalized.columns:
+        normalized["industry"] = pd.NA
+    normalized["sector"] = normalized["sector"].fillna("unknown_sector").astype(str)
+    normalized["industry"] = normalized["industry"].fillna("unknown_industry").astype(str)
+    return normalized.sort_values(["asset_id", "membership_start"])
+
+
 def _normalize_prices(prices: pd.DataFrame) -> pd.DataFrame:
     normalized = prices.copy()
     if "asset_id" not in normalized.columns:
@@ -175,6 +212,9 @@ def _normalize_prices(prices: pd.DataFrame) -> pd.DataFrame:
     normalized["date"] = pd.to_datetime(normalized["date"], errors="coerce")
     normalized["adjusted_close"] = pd.to_numeric(normalized["adjusted_close"], errors="coerce")
     normalized["volume"] = pd.to_numeric(normalized.get("volume"), errors="coerce")
+    for optional in ("market_cap", "dlycap", "shrout", "dlyprcvol"):
+        if optional in normalized.columns:
+            normalized[optional] = pd.to_numeric(normalized[optional], errors="coerce")
     normalized = normalized.dropna(subset=["asset_id", "date", "adjusted_close"]).sort_values(["asset_id", "date"])
     normalized["daily_return"] = normalized.groupby("asset_id")["adjusted_close"].pct_change()
     return normalized
@@ -206,11 +246,16 @@ def _detect_frequency(prices: pd.DataFrame) -> str:
     return "unknown"
 
 
-def _build_observations(prices: pd.DataFrame, benchmark: pd.DataFrame) -> pd.DataFrame:
+def _build_observations(
+    prices: pd.DataFrame,
+    benchmark: pd.DataFrame,
+    universe: pd.DataFrame,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     dates = sorted(pd.Timestamp(value) for value in prices["date"].dropna().unique())
     rebalance_dates = _month_end_trading_dates(dates)
     benchmark_lookup = benchmark.set_index("date")["adjusted_close"].to_dict()
     rows: list[dict[str, object]] = []
+    exposure_rows: list[dict[str, object]] = []
     for index, signal_date in enumerate(rebalance_dates[:-1]):
         signal_position = _date_position(dates, signal_date)
         if signal_position is None or signal_position < _MIN_HISTORY_DAYS:
@@ -224,18 +269,32 @@ def _build_observations(prices: pd.DataFrame, benchmark: pd.DataFrame) -> pd.Dat
             continue
         history_cutoff = dates[signal_position - 1]
         signal_frame = _signals_for_date(prices, signal_date)
+        exposure_frame = _exposures_for_date(universe, signal_frame, signal_date)
         forward_frame = _forward_returns(prices, tradable_date, horizon_end)
-        merged = signal_frame.merge(forward_frame, on="asset_id", how="inner")
+        merged = signal_frame.merge(exposure_frame, on="asset_id", how="left").merge(forward_frame, on="asset_id", how="inner")
         if len(merged) < 3:
             continue
+        exposure_rows.extend(_exposure_records(signal_date, merged))
         qqq_return = _benchmark_return(benchmark_lookup, tradable_date, horizon_end)
         for factor_id in _FACTORS:
             column = f"{factor_id}_signal"
-            factor_rows = merged[["asset_id", column, "forward_return"]].dropna()
+            factor_rows = merged[
+                [
+                    "asset_id",
+                    column,
+                    "forward_return",
+                    "sector",
+                    "industry",
+                    "liquidity_score_60d",
+                    "volatility_score_60d",
+                ]
+            ].dropna(subset=[column, "forward_return"])
             if len(factor_rows) < 3:
                 continue
             ic = factor_rows[column].corr(factor_rows["forward_return"], method="spearman")
             gross_spread = _top_bottom_spread(factor_rows, column)
+            sector_metrics = _adjusted_metrics(factor_rows, column, include_sector=True, include_style=False)
+            style_metrics = _adjusted_metrics(factor_rows, column, include_sector=True, include_style=True)
             rows.append(
                 {
                     "schema_version": "real_rolling_oos_observation.v1",
@@ -253,14 +312,26 @@ def _build_observations(prices: pd.DataFrame, benchmark: pd.DataFrame) -> pd.Dat
                     "qqq_return": round(qqq_return, 8) if qqq_return is not None else None,
                     "qqq_relative_spread": round(gross_spread - (qqq_return or 0.0), 8),
                     "beta_adjusted_spread": round(gross_spread - 0.5 * (qqq_return or 0.0), 8),
-                    "sector_adjusted_status": "unavailable_no_sector_panel",
+                    "sector_adjusted_rank_ic": _round_optional(sector_metrics["rank_ic"]),
+                    "sector_adjusted_spread": _round_optional(sector_metrics["spread"]),
+                    "sector_adjusted_status": sector_metrics["status"],
+                    "style_adjusted_rank_ic": _round_optional(style_metrics["rank_ic"]),
+                    "style_adjusted_spread": _round_optional(style_metrics["spread"]),
+                    "style_adjusted_status": style_metrics["status"],
+                    "style_model_scope": "price_volume_proxy",
                     "net_spread": round(gross_spread - _COST_DRAG, 8),
+                    "sector_adjusted_net_spread": _round_optional(float(sector_metrics["spread"]) - _COST_DRAG)
+                    if pd.notna(sector_metrics["spread"])
+                    else None,
+                    "style_adjusted_net_spread": _round_optional(float(style_metrics["spread"]) - _COST_DRAG)
+                    if pd.notna(style_metrics["spread"])
+                    else None,
                     "cost_drag": _COST_DRAG,
                     "asset_count": len(factor_rows),
                     "not_alpha_evidence": True,
                 }
             )
-    return pd.DataFrame(rows)
+    return pd.DataFrame(rows), pd.DataFrame(exposure_rows)
 
 
 def _signals_for_date(prices: pd.DataFrame, signal_date: pd.Timestamp) -> pd.DataFrame:
@@ -271,15 +342,77 @@ def _signals_for_date(prices: pd.DataFrame, signal_date: pd.Timestamp) -> pd.Dat
             continue
         close = history["adjusted_close"].reset_index(drop=True)
         returns = history["daily_return"].reset_index(drop=True)
+        volume = pd.to_numeric(history["volume"], errors="coerce").reset_index(drop=True)
+        dollar_volume = close * volume
         rows.append(
             {
                 "asset_id": str(asset_id),
                 "momentum_12_1_signal": close.iloc[-22] / close.iloc[-253] - 1.0,
                 "reversal_5_1_signal": -(close.iloc[-1] / close.iloc[-6] - 1.0),
                 "low_vol_60d_signal": -float(returns.iloc[-60:].std()),
+                "market_cap": _latest_market_cap(history),
+                "liquidity_score_60d": float(np.log1p(dollar_volume.iloc[-60:].mean())),
+                "volatility_score_60d": float(returns.iloc[-60:].std()),
+                "style_source": "price_volume_proxy",
             }
         )
     return pd.DataFrame(rows)
+
+
+def _latest_market_cap(history: pd.DataFrame) -> float | None:
+    for column in ("market_cap", "dlycap"):
+        if column in history.columns:
+            value = pd.to_numeric(history[column], errors="coerce").dropna()
+            if not value.empty:
+                return float(value.iloc[-1])
+    if {"shrout", "adjusted_close"} <= set(history.columns):
+        shrout = pd.to_numeric(history["shrout"], errors="coerce").dropna()
+        close = pd.to_numeric(history["adjusted_close"], errors="coerce").dropna()
+        if not shrout.empty and not close.empty:
+            return float(shrout.iloc[-1] * close.iloc[-1])
+    return None
+
+
+def _exposures_for_date(universe: pd.DataFrame, signal_frame: pd.DataFrame, signal_date: pd.Timestamp) -> pd.DataFrame:
+    active = universe[
+        (universe["membership_start"] <= signal_date)
+        & (universe["membership_end"] >= signal_date)
+    ].copy()
+    if active.empty:
+        active = universe.copy()
+    active = active.sort_values(["asset_id", "membership_start"]).drop_duplicates("asset_id", keep="last")
+    exposures = signal_frame[["asset_id"]].merge(active[["asset_id", "sector", "industry"]], on="asset_id", how="left")
+    exposures["sector"] = exposures["sector"].fillna("unknown_sector").astype(str)
+    exposures["industry"] = exposures["industry"].fillna("unknown_industry").astype(str)
+    return exposures
+
+
+def _exposure_records(signal_date: pd.Timestamp, merged: pd.DataFrame) -> list[dict[str, object]]:
+    records: list[dict[str, object]] = []
+    columns = [
+        "asset_id",
+        "sector",
+        "industry",
+        "market_cap",
+        "liquidity_score_60d",
+        "volatility_score_60d",
+        "style_source",
+    ]
+    for row in merged[columns].drop_duplicates("asset_id").itertuples(index=False):
+        records.append(
+            {
+                "schema_version": "real_oos_exposure_panel.v1",
+                "signal_date": _date_str(signal_date),
+                "asset_id": row.asset_id,
+                "sector": row.sector,
+                "industry": row.industry,
+                "market_cap": row.market_cap if pd.notna(row.market_cap) else None,
+                "liquidity_score_60d": _round_optional(row.liquidity_score_60d),
+                "volatility_score_60d": _round_optional(row.volatility_score_60d),
+                "style_source": row.style_source,
+            }
+        )
+    return records
 
 
 def _forward_returns(prices: pd.DataFrame, tradable_date: pd.Timestamp, horizon_end: pd.Timestamp) -> pd.DataFrame:
@@ -327,6 +460,54 @@ def _top_bottom_spread(frame: pd.DataFrame, signal_column: str) -> float:
     return float(top - bottom)
 
 
+def _adjusted_metrics(
+    frame: pd.DataFrame,
+    signal_column: str,
+    include_sector: bool,
+    include_style: bool,
+) -> dict[str, float | str]:
+    working = frame.dropna(subset=[signal_column, "forward_return"]).copy()
+    if len(working) < 3:
+        return {"rank_ic": np.nan, "spread": np.nan, "status": "unavailable_insufficient_assets"}
+    design_parts: list[np.ndarray] = [np.ones((len(working), 1))]
+    if include_sector:
+        sector = working.get("sector")
+        if sector is None or sector.fillna("unknown_sector").nunique() < 2:
+            return {"rank_ic": np.nan, "spread": np.nan, "status": "unavailable_no_sector_panel"}
+        dummies = pd.get_dummies(sector.fillna("unknown_sector").astype(str), drop_first=True, dtype=float)
+        if not dummies.empty:
+            design_parts.append(dummies.to_numpy(dtype=float))
+    if include_style:
+        style_parts: list[np.ndarray] = []
+        for column in ("liquidity_score_60d", "volatility_score_60d"):
+            if column not in working.columns:
+                continue
+            series = pd.to_numeric(working[column], errors="coerce")
+            if series.notna().sum() >= 3 and float(series.std(ddof=0)) > 0.0:
+                filled = series.fillna(series.median())
+                style_parts.append(_zscore(filled).to_numpy().reshape(-1, 1))
+        if not style_parts:
+            return {"rank_ic": np.nan, "spread": np.nan, "status": "unavailable_no_style_panel"}
+        design_parts.extend(style_parts)
+    x = np.column_stack(design_parts)
+    y = pd.to_numeric(working["forward_return"], errors="coerce").to_numpy(dtype=float)
+    beta, *_ = np.linalg.lstsq(x, y, rcond=None)
+    residual = y - x @ beta
+    adjusted = working[[signal_column]].copy()
+    adjusted["forward_return"] = residual
+    rank_ic = adjusted[signal_column].corr(adjusted["forward_return"], method="spearman")
+    spread = _top_bottom_spread(adjusted, signal_column)
+    status = "observed_price_volume_proxy" if include_style else "observed"
+    return {"rank_ic": float(rank_ic) if pd.notna(rank_ic) else np.nan, "spread": spread, "status": status}
+
+
+def _zscore(series: pd.Series) -> pd.Series:
+    std = float(series.std(ddof=0))
+    if std == 0.0:
+        return pd.Series(0.0, index=series.index)
+    return (series - float(series.mean())) / std
+
+
 def _build_factor_evidence(observations: pd.DataFrame) -> pd.DataFrame:
     rows: list[dict[str, object]] = []
     for factor_id, group in observations.groupby("factor_id", sort=False):
@@ -342,14 +523,30 @@ def _build_factor_evidence(observations: pd.DataFrame) -> pd.DataFrame:
                 "gross_spread_mean": round(float(group["gross_spread"].mean()), 8),
                 "qqq_relative_spread_mean": round(float(group["qqq_relative_spread"].mean()), 8),
                 "beta_adjusted_spread_mean": round(float(group["beta_adjusted_spread"].mean()), 8),
-                "sector_adjusted_status": "unavailable_no_sector_panel",
+                "sector_adjusted_rank_ic_mean": round(float(group["sector_adjusted_rank_ic"].mean()), 8),
+                "sector_adjusted_spread_mean": round(float(group["sector_adjusted_spread"].mean()), 8),
+                "sector_adjusted_status": _status_summary(group["sector_adjusted_status"], "observed"),
+                "style_adjusted_rank_ic_mean": round(float(group["style_adjusted_rank_ic"].mean()), 8),
+                "style_adjusted_spread_mean": round(float(group["style_adjusted_spread"].mean()), 8),
+                "style_adjusted_status": _status_summary(group["style_adjusted_status"], "observed_price_volume_proxy"),
                 "net_spread_mean": round(float(group["net_spread"].mean()), 8),
+                "sector_adjusted_net_spread_mean": round(float(group["sector_adjusted_net_spread"].mean()), 8),
+                "style_adjusted_net_spread_mean": round(float(group["style_adjusted_net_spread"].mean()), 8),
                 "cost_drag_mean": round(float(group["cost_drag"].mean()), 8),
                 "evidence_status": "first_real_oos_diagnostic",
                 "not_alpha_evidence": True,
             }
         )
     return pd.DataFrame(rows)
+
+
+def _status_summary(series: pd.Series, expected: str) -> str:
+    values = set(series.dropna().astype(str))
+    if values == {expected}:
+        return expected
+    if any(value.startswith("observed") for value in values):
+        return "partial"
+    return sorted(values)[0] if values else "unavailable"
 
 
 def _build_neutralization_report(evidence: pd.DataFrame) -> pd.DataFrame:
@@ -359,8 +556,15 @@ def _build_neutralization_report(evidence: pd.DataFrame) -> pd.DataFrame:
                 "schema_version": "real_oos_neutralization.v1",
                 "factor_id": row.factor_id,
                 "beta_adjusted_spread_mean": row.beta_adjusted_spread_mean,
+                "sector_adjusted_rank_ic_mean": row.sector_adjusted_rank_ic_mean,
+                "sector_adjusted_spread_mean": row.sector_adjusted_spread_mean,
+                "sector_adjusted_net_spread_mean": row.sector_adjusted_net_spread_mean,
                 "sector_adjusted_status": row.sector_adjusted_status,
-                "style_adjusted_status": "unavailable_no_style_panel",
+                "style_adjusted_rank_ic_mean": row.style_adjusted_rank_ic_mean,
+                "style_adjusted_spread_mean": row.style_adjusted_spread_mean,
+                "style_adjusted_net_spread_mean": row.style_adjusted_net_spread_mean,
+                "style_adjusted_status": row.style_adjusted_status,
+                "style_model_scope": "price_volume_proxy",
                 "attribution_complete": False,
             }
             for row in evidence.itertuples(index=False)
@@ -377,6 +581,8 @@ def _build_benchmark_attribution(evidence: pd.DataFrame) -> pd.DataFrame:
                 "raw_spread_mean": row.gross_spread_mean,
                 "qqq_relative_spread_mean": row.qqq_relative_spread_mean,
                 "beta_adjusted_spread_mean": row.beta_adjusted_spread_mean,
+                "sector_adjusted_spread_mean": row.sector_adjusted_spread_mean,
+                "style_adjusted_spread_mean": row.style_adjusted_spread_mean,
                 "readout_status": "diagnostic_only_not_alpha_claim",
             }
             for row in evidence.itertuples(index=False)
@@ -400,12 +606,24 @@ def _build_survival_funnel(evidence: pd.DataFrame) -> pd.DataFrame:
             {
                 "schema_version": "real_oos_survival_funnel.v1",
                 "layer": "attribution_complete",
-                "factor_count": int(evidence["sector_adjusted_status"].eq("observed").sum()) if not evidence.empty else 0,
+                "factor_count": int(
+                    (
+                        evidence["sector_adjusted_status"].eq("observed")
+                        & evidence["style_adjusted_status"].astype(str).str.startswith("observed")
+                    ).sum()
+                )
+                if not evidence.empty
+                else 0,
             },
             {
                 "schema_version": "real_oos_survival_funnel.v1",
                 "layer": "net_positive",
                 "factor_count": int(evidence["net_spread_mean"].gt(0).sum()) if not evidence.empty else 0,
+            },
+            {
+                "schema_version": "real_oos_survival_funnel.v1",
+                "layer": "style_adjusted_net_positive",
+                "factor_count": int(evidence["style_adjusted_net_spread_mean"].gt(0).sum()) if not evidence.empty else 0,
             },
         ]
     )
@@ -439,6 +657,12 @@ def _summary(
         "direct_q2_entry": False,
         "not_alpha_evidence": True,
     }
+
+
+def _round_optional(value: object) -> float | None:
+    if value is None or pd.isna(value):
+        return None
+    return round(float(value), 8)
 
 
 def _render_readiness(summary: Mapping[str, object]) -> str:

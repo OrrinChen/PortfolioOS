@@ -97,6 +97,9 @@ queries:
         abs(d.dlyopen)::double precision / nullif(d.dlycumfacpr::double precision, 0) as adjusted_open,
         abs(d.dlyprc)::double precision / nullif(d.dlycumfacpr::double precision, 0) as adjusted_close,
         d.dlyvol::double precision as volume,
+        d.dlycap::double precision as dlycap,
+        d.shrout::double precision as shrout,
+        d.dlyprcvol::double precision as dlyprcvol,
         d.dlyret::double precision as return,
         'crsp_dsf_v2_dlyprc_div_dlycumfacpr_daily' as adjusted_price_convention
       from crsp_a_stock.dsf_v2 d

@@ -22,7 +22,7 @@ WRDS monthly PIT dry run: complete
 WRDS daily PIT bundle: pulled
 First real rolling OOS evidence: complete as diagnostic evidence
 Real evidence closeout: diagnostic_only
-Current blocker: sector/style attribution data before redundancy or allocator entry
+Current blocker: style_proxy_only attribution before redundancy or allocator entry
 ```
 
 ## Positioning
@@ -833,8 +833,12 @@ Status:
 - The run records `full_sample_icir_used=false`,
   `prior_history_only=true`, `allocator_ran=false`,
   `alpha_success_claimed=false`, and `not_alpha_evidence=true`.
-- Sector/style attribution remains unavailable, so this is diagnostic evidence
-  only.
+- Sector attribution is observed from the historical universe membership panel.
+- Style attribution is observed only as price-volume proxies
+  (`liquidity_score_60d` and `volatility_score_60d`). The daily WRDS config now
+  requests `dlycap`, `shrout`, and `dlyprcvol` for the next refresh, but the
+  current local cache does not yet populate market-cap exposure.
+- The output remains diagnostic evidence only.
 
 ### MF-R9: Real Evidence Closeout Gate
 
@@ -858,7 +862,6 @@ Status:
 - Output lives under
   `outputs/multifactor_alpha_validation/wrds_real_evidence_closeout/`.
 - Current decision: `diagnostic_only`.
-- Reasons: `sector_attribution_unavailable` and
-  `style_attribution_unavailable`.
+- Reason: `style_proxy_only`.
 - Allocator entry, redundancy-gate entry, direct Q2 entry, paper canary, live
   trading, security orders, and production approval all remain false.

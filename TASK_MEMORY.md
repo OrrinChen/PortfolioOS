@@ -209,7 +209,8 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     It writes `real_oos_factor_evidence.csv`,
     `real_oos_neutralization_report.csv`,
     `real_oos_benchmark_attribution.csv`, `real_oos_survival_funnel.csv`,
-    `real_oos_summary.json`, and `real_oos_readiness.md` under
+    `real_oos_summary.json`, `real_oos_exposure_panel.csv`, and
+    `real_oos_readiness.md` under
     `outputs/multifactor_alpha_validation/wrds_real_oos_evidence/`.
   - Current MF-R8 run returned `oos_status=evidence_ready`,
     `dataset_frequency=daily`, `observation_count=612`,
@@ -220,9 +221,14 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     runs MF-R9 and writes `real_evidence_closeout_decision.json` plus
     `real_evidence_closeout_report.md` under
     `outputs/multifactor_alpha_validation/wrds_real_evidence_closeout/`.
-  - Current MF-R9 decision is `diagnostic_only` because sector and style
-    attribution are unavailable. Allocator entry, redundancy-gate entry, direct
-    Q2 entry, paper canary, live trading, broker/order paths, and production
+  - Sector attribution is now observed from the historical membership panel.
+    Style attribution is now observed as price-volume proxy attribution using
+    trailing liquidity and volatility. The daily WRDS config requests `dlycap`,
+    `shrout`, and `dlyprcvol` for the next refresh, but the current local cache
+    still lacks populated market-cap exposure.
+  - Current MF-R9 decision is `diagnostic_only` with reason
+    `style_proxy_only`. Allocator entry, redundancy-gate entry, direct Q2
+    entry, paper canary, live trading, broker/order paths, and production
     approval all remain false.
   - Known limitation: R8/R9 prove the real-data workflow shape and timestamped
     daily evidence plumbing only. They do not prove real alpha, approve Q2, or

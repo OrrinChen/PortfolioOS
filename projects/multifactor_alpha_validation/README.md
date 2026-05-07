@@ -17,7 +17,8 @@ WRDS monthly PIT dry run complete.
 WRDS daily PIT bundle pulled.
 MF-R8 first real rolling OOS evidence complete as diagnostic evidence.
 MF-R9 closeout decision: diagnostic_only.
-Real allocator/redundancy promotion remains locked by missing sector/style attribution.
+Sector attribution and price-volume style proxy attribution are wired.
+Real allocator/redundancy promotion remains locked by style_proxy_only closeout.
 ```
 
 ## Scope
@@ -91,9 +92,13 @@ PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/src p
 ```
 
 The current WRDS daily dry evidence path evaluates only `momentum_12_1`,
-`reversal_5_1`, and `low_vol_60d`; it writes diagnostic OOS evidence and a
-closeout gate. It does not run allocator weights, redundancy promotion, paper
-canaries, Q2, strategy deployment, or alpha success claims.
+`reversal_5_1`, and `low_vol_60d`; it writes diagnostic OOS evidence, an
+exposure panel, sector-adjusted readouts, price-volume style-proxy-adjusted
+readouts, and a closeout gate. It does not run allocator weights, redundancy
+promotion, paper canaries, Q2, strategy deployment, or alpha success claims.
+The daily WRDS config now requests `dlycap`, `shrout`, and `dlyprcvol` for the
+next refresh, but the current local cache still uses price-volume style proxies
+where market-cap fields are unavailable.
 
 The local historical-universe smoke writes PIT-style universe snapshots from a
 synthetic fixture:
@@ -127,7 +132,9 @@ The next roadmap is Real PIT Dataset Onboarding:
 - `MF-R9` Real Evidence Closeout Gate
 
 MF-R8 and MF-R9 are complete on the local WRDS daily PIT bundle as diagnostic
-workflow checks. The closeout decision is `diagnostic_only` because sector and
-style attribution are unavailable. Do not add factors, tune the allocator, add
-ML models, or polish return displays before attribution data is onboarded and a
-new closeout gate allows the next research layer.
+workflow checks. The closeout decision is `diagnostic_only` with
+`style_proxy_only`: sector attribution is observed, but style attribution is
+still price-volume proxy attribution rather than a full institutional risk
+model. Do not add factors, tune the allocator, add ML models, or polish return
+displays before stronger attribution data is onboarded and a new closeout gate
+allows the next research layer.
