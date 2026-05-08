@@ -22,7 +22,9 @@ WRDS monthly PIT dry run: complete
 WRDS daily PIT bundle: pulled
 First real rolling OOS evidence: complete as diagnostic evidence
 Real evidence closeout: diagnostic_only
-Current blocker: style_proxy_only plus benchmark_beta_style_conflict before redundancy or allocator entry
+PIT exposure store: complete
+Cross-sectional risk model attribution: complete as ex-post attribution only
+Current blocker: attribution waterfall and strict residual closeout before redundancy or allocator entry
 ```
 
 ## Positioning
@@ -909,3 +911,39 @@ Status:
 - R10 does not run cross-sectional attribution, redundancy gates, allocator
   weights, Q2, paper canary, live trading, security orders, or production
   approval.
+
+### MF-R11: Cross-Sectional Risk Model
+
+Goal:
+Use the PIT exposure store to decompose realized next-period returns into
+common risk components and residuals. This is ex-post attribution only, not a
+prediction model.
+
+Scope:
+
+- intercept contribution
+- trailing market beta contribution
+- industry contribution
+- configured style proxy contribution
+- fitted return
+- residual return
+- coefficient table by rebalance period
+- fit diagnostics and regression-instability reporting
+
+Status:
+
+- Complete.
+- Output lives under `outputs/multifactor_alpha_validation/risk_model/`.
+- The current real WRDS smoke writes `203` period rows, `37,152`
+  residual-return rows, and `8,622` coefficient rows.
+- Artifacts:
+  - `risk_model_returns_by_period.csv`
+  - `risk_model_exposure_coefficients.csv`
+  - `risk_model_residual_returns.csv`
+  - `risk_model_fit_diagnostics.json`
+- Rows with missing required exposures become explicit abstain rows. Missing
+  exposure coverage is not filled with zero alpha or a synthetic residual.
+- The diagnostics set `model_use=ex_post_attribution_only` and explicitly state
+  that configured proxy residuals are not style-neutral alpha.
+- R11 does not create factor signals, allocator weights, Q2 input, paper canary,
+  live trading, security orders, or production approval.

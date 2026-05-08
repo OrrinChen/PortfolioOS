@@ -20,7 +20,8 @@ MF-R9 closeout decision: diagnostic_only.
 Sector attribution and size/liquidity/volatility style proxy attribution are wired.
 Strict benchmark/beta/style conflict closeout is wired.
 MF-R10 PIT exposure store complete for risk attribution input only.
-Real allocator/redundancy promotion remains locked by style_proxy_only and benchmark_beta_style_conflict closeout.
+MF-R11 cross-sectional risk model attribution complete as ex-post attribution only.
+Real allocator/redundancy promotion remains locked pending attribution waterfall and strict residual closeout.
 ```
 
 ## Scope
@@ -124,6 +125,20 @@ asset growth exposures. These rows are `risk_attribution_input_only`; they are
 not factor signals, alpha evidence, allocator input, Q2 input, paper canary, or
 production approval.
 
+MF-R11 uses the R10 exposure store for ex-post cross-sectional risk attribution:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/src poetry run python projects/multifactor_alpha_validation/scripts/run_cross_sectional_risk_model.py --research-manifest data/cache/wrds_multifactor/nasdaq100_daily_size/standardized/research_mode_dataset_manifest.yaml --exposure-panel outputs/multifactor_alpha_validation/risk_model/exposure_panel.csv --output-dir outputs/multifactor_alpha_validation/risk_model
+```
+
+The current R11 smoke writes `risk_model_returns_by_period.csv`,
+`risk_model_exposure_coefficients.csv`, `risk_model_residual_returns.csv`, and
+`risk_model_fit_diagnostics.json`. It decomposes realized next-period returns
+into intercept, market beta, industry, configured style proxy, fitted, and
+residual components. The residual is an attribution artifact only; it is not a
+tradeable prediction, factor signal, alpha claim, allocator input, Q2 input, or
+production approval.
+
 The local historical-universe smoke writes PIT-style universe snapshots from a
 synthetic fixture:
 
@@ -148,20 +163,16 @@ make multifactor-rolling-oos-validation
 
 ## Next Phase
 
-The next roadmap is Real PIT Dataset Onboarding:
+The next roadmap step is risk-attributed evidence closeout:
 
-- `MF-R6` External PIT Dataset Source Adapter
-- `MF-R7` Real Dataset Dry Run, No Factor Claims
-- `MF-R8` First Real Rolling OOS Evidence
-- `MF-R9` Real Evidence Closeout Gate
+- `MF-R12` Attribution Waterfall
+- `MF-R13` Strict Residual Evidence Closeout
 
-MF-R8 through MF-R10 are complete on the local WRDS daily PIT bundle as
+MF-R8 through MF-R11 are complete on the local WRDS daily PIT bundle as
 diagnostic workflow checks. The closeout decision is `diagnostic_only` with
 `style_proxy_only` and `benchmark_beta_style_conflict`: sector attribution is
 observed, and style attribution uses WRDS size/liquidity/volatility proxies, but
-this is still not a full institutional risk model. Momentum's positive
-style-adjusted proxy residual conflicts with negative QQQ-relative and
-beta-adjusted readouts. MF-R10 now supplies the PIT exposure store needed for
-MF-R11 cross-sectional attribution; the correct next step is using that exposure
-store for attribution, not more factors, allocator tuning, ML models, or
-return-display polish.
+this is still not a full institutional risk model. MF-R11 now supplies the
+cross-sectional residual-return layer needed for MF-R12 attribution waterfalls.
+The correct next step is factor-level waterfall and strict residual closeout,
+not more factors, allocator tuning, ML models, or return-display polish.

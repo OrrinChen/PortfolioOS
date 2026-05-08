@@ -195,8 +195,8 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - This preflight is not alpha evidence; it prevents sandbox or teaching-mode
     artifacts from being promoted into real research mode without the required
     PIT data contract.
-- MF-R6/R7/R8/R9/R10 real PIT dataset onboarding and risk-exposure setup is
-  complete through the first PIT exposure store:
+- MF-R6/R7/R8/R9/R10/R11 real PIT dataset onboarding and risk-attribution setup
+  is complete through the first cross-sectional risk model:
   - The monthly WRDS PIT bundle path remains complete for MF-R7 data-readiness
     dry checks and no factor claims.
   - `projects/multifactor_alpha_validation/configs/wrds_nasdaq100_daily_research_mode.yaml`
@@ -254,10 +254,24 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     `risk_attribution_input_only`, not a factor signal, alpha evidence,
     allocator input, Q2 input, paper canary, live workflow, or production
     approval.
-  - Known limitation: R8/R9/R10 prove the real-data workflow shape, timestamped
-    evidence plumbing, and PIT exposure-store readiness only. They do not prove
-    real alpha, approve Q2, run cross-sectional risk attribution, or unlock
-    allocator/redundancy promotion.
+  - `multifactor_alpha_validation.cross_sectional_risk_model.run_cross_sectional_risk_model`
+    runs MF-R11 and writes `risk_model_returns_by_period.csv`,
+    `risk_model_exposure_coefficients.csv`,
+    `risk_model_residual_returns.csv`, and
+    `risk_model_fit_diagnostics.json` under
+    `outputs/multifactor_alpha_validation/risk_model/`.
+  - Current MF-R11 smoke built `203` period rows, `37152` residual-return rows,
+    and `8622` coefficient rows. The component groups are intercept, market
+    beta, industry, configured style proxy, fitted return, and residual return.
+  - R11 rows with missing required exposures become explicit abstain rows. The
+    diagnostics set `model_use=ex_post_attribution_only`; residuals are
+    attribution artifacts only, not tradeable predictions, factor signals,
+    allocator input, Q2 input, or alpha evidence.
+  - Known limitation: R8/R9/R10/R11 prove the real-data workflow shape,
+    timestamped evidence plumbing, PIT exposure-store readiness, and
+    cross-sectional attribution plumbing only. They do not prove real alpha,
+    approve Q2, run factor-level attribution waterfalls, run strict residual
+    closeout, or unlock allocator/redundancy promotion.
   - Validation: research-mode preflight focused tests passed; smoke returned
     `status=blocked` with thirteen blockers on the local proxy manifest.
 - WRDS option B ingest is installed for formal multifactor research mode:
