@@ -282,11 +282,25 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     style-proxy-adjusted, and full-residual spread readouts. It remains
     diagnostic attribution only and does not allow redundancy-gate, allocator,
     Q2, paper/live, broker/order, or production-approval entry.
-  - Known limitation: R8/R9/R10/R11/R12 prove the real-data workflow shape,
+  - `multifactor_alpha_validation.strict_residual_closeout.run_strict_residual_closeout`
+    runs MF-R13 and writes `strict_residual_closeout_decision_table.csv`,
+    `strict_residual_closeout_diagnostics.json`,
+    `factor_registry_risk_model_update.yaml`, and
+    `strict_residual_closeout_report.md` under
+    `outputs/multifactor_alpha_validation/risk_model/`.
+  - Current MF-R13 smoke built `3` factor decisions with
+    `ready_for_redundancy_count=0`: `momentum_12_1` is
+    `insufficient_residual_evidence`, while `reversal_5_1` and `low_vol_60d`
+    are `style_proxy_conflict`.
+  - MF-R13 explicitly blocks redundancy and allocator entry when a configured
+    proxy residual is positive but benchmark/beta readouts are negative, or when
+    full-residual evidence is unstable. Proxy residuals are not style-neutral
+    alpha and are not tradeable predictions.
+  - Known limitation: R8/R9/R10/R11/R12/R13 prove the real-data workflow shape,
     timestamped evidence plumbing, PIT exposure-store readiness,
-    cross-sectional attribution plumbing, and factor waterfall reporting only.
-    They do not prove real alpha, approve Q2, run strict residual closeout, or
-    unlock allocator/redundancy promotion.
+    cross-sectional attribution plumbing, factor waterfall reporting, and strict
+    residual closeout only. They do not prove real alpha, approve Q2, or unlock
+    allocator/redundancy promotion.
   - Validation: research-mode preflight focused tests passed; smoke returned
     `status=blocked` with thirteen blockers on the local proxy manifest.
 - WRDS option B ingest is installed for formal multifactor research mode:

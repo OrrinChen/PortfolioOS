@@ -22,7 +22,8 @@ Strict benchmark/beta/style conflict closeout is wired.
 MF-R10 PIT exposure store complete for risk attribution input only.
 MF-R11 cross-sectional risk model attribution complete as ex-post attribution only.
 MF-R12 factor attribution waterfall complete as diagnostic attribution only.
-Real allocator/redundancy promotion remains locked pending strict residual closeout.
+MF-R13 strict residual evidence closeout complete.
+Real allocator/redundancy promotion remains locked because no current factor has clean residual evidence.
 ```
 
 ## Scope
@@ -155,6 +156,25 @@ style-proxy-adjusted, and full-residual spread readouts. All three current MVP
 price factors are marked `style_proxy_conflict`, so they remain diagnostic-only
 until MF-R13 strict residual closeout.
 
+MF-R13 turns the R12 waterfall into strict stop-layer decisions:
+
+```bash
+make multifactor-strict-residual-closeout
+```
+
+The current R13 smoke writes `strict_residual_closeout_decision_table.csv`,
+`strict_residual_closeout_diagnostics.json`,
+`factor_registry_risk_model_update.yaml`, and
+`strict_residual_closeout_report.md`. Current decisions are:
+
+- `momentum_12_1`: `insufficient_residual_evidence`
+- `reversal_5_1`: `style_proxy_conflict`
+- `low_vol_60d`: `style_proxy_conflict`
+
+`ready_for_redundancy_count=0`. Positive configured proxy residuals remain
+diagnostic only and do not override negative benchmark/beta or unstable
+full-residual evidence.
+
 The local historical-universe smoke writes PIT-style universe snapshots from a
 synthetic fixture:
 
@@ -179,15 +199,12 @@ make multifactor-rolling-oos-validation
 
 ## Next Phase
 
-The next roadmap step is risk-attributed evidence closeout:
+MF-R8 through MF-R13 are complete on the local WRDS daily PIT bundle as
+diagnostic workflow checks. The strict residual closeout keeps redundancy and
+allocator entry blocked because the current factor set has no clean residual
+survivor under the configured proxy risk model.
 
-- `MF-R13` Strict Residual Evidence Closeout
-
-MF-R8 through MF-R12 are complete on the local WRDS daily PIT bundle as
-diagnostic workflow checks. The closeout decision is `diagnostic_only` with
-`style_proxy_only` and `benchmark_beta_style_conflict`: sector attribution is
-observed, and style attribution uses WRDS size/liquidity/volatility proxies, but
-this is still not a full institutional risk model. MF-R12 now makes the
-factor-level benchmark/beta/industry/style/residual conflict explicit. The
-correct next step is strict residual closeout, not more factors, allocator
-tuning, ML models, or return-display polish.
+The correct next step is not more factors, allocator tuning, ML models, or
+return-display polish. The useful next phase is either an institutional
+risk-model/data improvement pass or an explicit stop/closeout memo for this
+candidate set.

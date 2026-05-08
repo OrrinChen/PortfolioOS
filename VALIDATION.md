@@ -127,6 +127,13 @@ make factor-validate
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/src poetry run pytest projects/multifactor_alpha_validation/tests -q
 ```
 
+Multifactor strict residual evidence closeout smoke and tests:
+
+```bash
+make multifactor-strict-residual-closeout
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/src poetry run pytest projects/multifactor_alpha_validation/tests/test_strict_residual_closeout.py -q
+```
+
 Typed alpha dashboard readability tests:
 
 ```bash

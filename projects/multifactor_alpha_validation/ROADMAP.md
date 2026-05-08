@@ -25,7 +25,8 @@ Real evidence closeout: diagnostic_only
 PIT exposure store: complete
 Cross-sectional risk model attribution: complete as ex-post attribution only
 Factor attribution waterfall: complete as diagnostic attribution only
-Current blocker: strict residual closeout before redundancy or allocator entry
+Strict residual evidence closeout: complete
+Current blocker: no clean residual factor is ready for redundancy or allocator entry
 ```
 
 ## Positioning
@@ -984,3 +985,40 @@ Status:
 - R12 outputs are diagnostic attribution only. They do not create alpha
   evidence, factor promotion, redundancy-gate access, allocator weights, Q2
   input, paper canary, live trading, security orders, or production approval.
+
+### MF-R13: Strict Residual Evidence Closeout
+
+Goal:
+Convert the MF-R12 factor attribution waterfall into strict factor-level
+stop-layer decisions before any redundancy or allocator gate can see the
+candidate set.
+
+Scope:
+
+- raw, QQQ-relative, beta-adjusted, industry-adjusted, style-proxy-adjusted, and
+  full-residual gate checks
+- residual-positive stability check
+- style-proxy conflict blocking
+- factor registry risk-model update
+- explicit non-claim and no-Q2/no-allocator boundaries
+
+Status:
+
+- Complete.
+- Output lives under `outputs/multifactor_alpha_validation/risk_model/`.
+- The current real WRDS smoke writes `3` factor decisions and
+  `ready_for_redundancy_count=0`.
+- Artifacts:
+  - `strict_residual_closeout_decision_table.csv`
+  - `strict_residual_closeout_diagnostics.json`
+  - `factor_registry_risk_model_update.yaml`
+  - `strict_residual_closeout_report.md`
+- Current factor decisions:
+  - `momentum_12_1`: `insufficient_residual_evidence`
+  - `reversal_5_1`: `style_proxy_conflict`
+  - `low_vol_60d`: `style_proxy_conflict`
+- Positive configured proxy residuals do not override negative benchmark/beta
+  readouts or unstable full-residual evidence.
+- R13 outputs are research closeout states only. They do not create alpha
+  evidence, redundancy-gate access, allocator weights, Q2 input, paper canary,
+  live trading, security orders, or production approval.

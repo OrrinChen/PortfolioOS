@@ -79,6 +79,9 @@ multifactor-rolling-oos-validation:
 multifactor-real-dataset-dry-run:
 	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=$(PYTHONPATH_MULTIFACTOR) $(PYTHON) projects/multifactor_alpha_validation/scripts/run_real_dataset_dry_run.py
 
+multifactor-strict-residual-closeout:
+	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=$(PYTHONPATH_MULTIFACTOR) $(PYTHON) projects/multifactor_alpha_validation/scripts/run_strict_residual_closeout.py
+
 factor-spec-validate:
 	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=$(PYTHONPATH_MULTIFACTOR) $(PYTHON) projects/multifactor_alpha_validation/scripts/validate_factor_specs.py
 
