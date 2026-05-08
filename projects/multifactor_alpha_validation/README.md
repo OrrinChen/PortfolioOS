@@ -21,7 +21,8 @@ Sector attribution and size/liquidity/volatility style proxy attribution are wir
 Strict benchmark/beta/style conflict closeout is wired.
 MF-R10 PIT exposure store complete for risk attribution input only.
 MF-R11 cross-sectional risk model attribution complete as ex-post attribution only.
-Real allocator/redundancy promotion remains locked pending attribution waterfall and strict residual closeout.
+MF-R12 factor attribution waterfall complete as diagnostic attribution only.
+Real allocator/redundancy promotion remains locked pending strict residual closeout.
 ```
 
 ## Scope
@@ -139,6 +140,21 @@ residual components. The residual is an attribution artifact only; it is not a
 tradeable prediction, factor signal, alpha claim, allocator input, Q2 input, or
 production approval.
 
+MF-R12 turns the R11 per-asset residual components into factor-level waterfalls:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/src poetry run python projects/multifactor_alpha_validation/scripts/run_factor_attribution_waterfall.py --research-manifest data/cache/wrds_multifactor/nasdaq100_daily_size/standardized/research_mode_dataset_manifest.yaml --residual-returns outputs/multifactor_alpha_validation/risk_model/risk_model_residual_returns.csv --output-dir outputs/multifactor_alpha_validation/risk_model
+```
+
+The current R12 smoke writes `factor_attribution_waterfall.csv`,
+`factor_attribution_waterfall_by_period.csv`,
+`factor_attribution_waterfall_{factor_id}.json`,
+`factor_attribution_diagnostics.json`, and `factor_attribution_report.md`. It
+reports gross, QQQ-relative, beta-adjusted, industry-adjusted,
+style-proxy-adjusted, and full-residual spread readouts. All three current MVP
+price factors are marked `style_proxy_conflict`, so they remain diagnostic-only
+until MF-R13 strict residual closeout.
+
 The local historical-universe smoke writes PIT-style universe snapshots from a
 synthetic fixture:
 
@@ -165,14 +181,13 @@ make multifactor-rolling-oos-validation
 
 The next roadmap step is risk-attributed evidence closeout:
 
-- `MF-R12` Attribution Waterfall
 - `MF-R13` Strict Residual Evidence Closeout
 
-MF-R8 through MF-R11 are complete on the local WRDS daily PIT bundle as
+MF-R8 through MF-R12 are complete on the local WRDS daily PIT bundle as
 diagnostic workflow checks. The closeout decision is `diagnostic_only` with
 `style_proxy_only` and `benchmark_beta_style_conflict`: sector attribution is
 observed, and style attribution uses WRDS size/liquidity/volatility proxies, but
-this is still not a full institutional risk model. MF-R11 now supplies the
-cross-sectional residual-return layer needed for MF-R12 attribution waterfalls.
-The correct next step is factor-level waterfall and strict residual closeout,
-not more factors, allocator tuning, ML models, or return-display polish.
+this is still not a full institutional risk model. MF-R12 now makes the
+factor-level benchmark/beta/industry/style/residual conflict explicit. The
+correct next step is strict residual closeout, not more factors, allocator
+tuning, ML models, or return-display polish.

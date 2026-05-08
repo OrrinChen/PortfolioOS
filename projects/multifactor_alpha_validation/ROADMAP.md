@@ -24,7 +24,8 @@ First real rolling OOS evidence: complete as diagnostic evidence
 Real evidence closeout: diagnostic_only
 PIT exposure store: complete
 Cross-sectional risk model attribution: complete as ex-post attribution only
-Current blocker: attribution waterfall and strict residual closeout before redundancy or allocator entry
+Factor attribution waterfall: complete as diagnostic attribution only
+Current blocker: strict residual closeout before redundancy or allocator entry
 ```
 
 ## Positioning
@@ -947,3 +948,39 @@ Status:
   that configured proxy residuals are not style-neutral alpha.
 - R11 does not create factor signals, allocator weights, Q2 input, paper canary,
   live trading, security orders, or production approval.
+
+### MF-R12: Attribution Waterfall
+
+Goal:
+Explain each factor sleeve's realized spread as a configured risk-model
+decomposition before any redundancy or allocator gate can see it.
+
+Scope:
+
+- gross spread
+- QQQ-relative spread
+- market-beta contribution and beta-adjusted spread
+- industry contribution and industry-adjusted spread
+- configured style-proxy contribution and style-proxy-adjusted spread
+- full residual spread
+- reconstruction diagnostics
+- style-proxy conflict flags
+
+Status:
+
+- Complete.
+- Output lives under `outputs/multifactor_alpha_validation/risk_model/`.
+- The current real WRDS smoke writes `3` factor rows and `609` factor-period
+  waterfall rows.
+- Artifacts:
+  - `factor_attribution_waterfall.csv`
+  - `factor_attribution_waterfall_by_period.csv`
+  - `factor_attribution_waterfall_{factor_id}.json`
+  - `factor_attribution_diagnostics.json`
+  - `factor_attribution_report.md`
+- Current factor statuses are `style_proxy_conflict` for `momentum_12_1`,
+  `reversal_5_1`, and `low_vol_60d`. Positive configured proxy residuals do
+  not override negative benchmark/beta readouts.
+- R12 outputs are diagnostic attribution only. They do not create alpha
+  evidence, factor promotion, redundancy-gate access, allocator weights, Q2
+  input, paper canary, live trading, security orders, or production approval.

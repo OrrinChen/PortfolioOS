@@ -195,8 +195,8 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
   - This preflight is not alpha evidence; it prevents sandbox or teaching-mode
     artifacts from being promoted into real research mode without the required
     PIT data contract.
-- MF-R6/R7/R8/R9/R10/R11 real PIT dataset onboarding and risk-attribution setup
-  is complete through the first cross-sectional risk model:
+- MF-R6/R7/R8/R9/R10/R11/R12 real PIT dataset onboarding and risk-attribution
+  setup is complete through the first factor attribution waterfall:
   - The monthly WRDS PIT bundle path remains complete for MF-R7 data-readiness
     dry checks and no factor claims.
   - `projects/multifactor_alpha_validation/configs/wrds_nasdaq100_daily_research_mode.yaml`
@@ -267,11 +267,26 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     diagnostics set `model_use=ex_post_attribution_only`; residuals are
     attribution artifacts only, not tradeable predictions, factor signals,
     allocator input, Q2 input, or alpha evidence.
-  - Known limitation: R8/R9/R10/R11 prove the real-data workflow shape,
-    timestamped evidence plumbing, PIT exposure-store readiness, and
-    cross-sectional attribution plumbing only. They do not prove real alpha,
-    approve Q2, run factor-level attribution waterfalls, run strict residual
-    closeout, or unlock allocator/redundancy promotion.
+  - `multifactor_alpha_validation.factor_attribution_waterfall.run_factor_attribution_waterfall`
+    runs MF-R12 and writes `factor_attribution_waterfall.csv`,
+    `factor_attribution_waterfall_by_period.csv`,
+    `factor_attribution_waterfall_{factor_id}.json`,
+    `factor_attribution_diagnostics.json`, and
+    `factor_attribution_report.md` under
+    `outputs/multifactor_alpha_validation/risk_model/`.
+  - Current MF-R12 smoke built `3` factor rows and `609` factor-period rows.
+    `momentum_12_1`, `reversal_5_1`, and `low_vol_60d` are all marked
+    `style_proxy_conflict`: positive configured proxy residuals do not override
+    negative benchmark/beta readouts.
+  - R12 reports gross, QQQ-relative, beta-adjusted, industry-adjusted,
+    style-proxy-adjusted, and full-residual spread readouts. It remains
+    diagnostic attribution only and does not allow redundancy-gate, allocator,
+    Q2, paper/live, broker/order, or production-approval entry.
+  - Known limitation: R8/R9/R10/R11/R12 prove the real-data workflow shape,
+    timestamped evidence plumbing, PIT exposure-store readiness,
+    cross-sectional attribution plumbing, and factor waterfall reporting only.
+    They do not prove real alpha, approve Q2, run strict residual closeout, or
+    unlock allocator/redundancy promotion.
   - Validation: research-mode preflight focused tests passed; smoke returned
     `status=blocked` with thirteen blockers on the local proxy manifest.
 - WRDS option B ingest is installed for formal multifactor research mode:
