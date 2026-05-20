@@ -1,18 +1,84 @@
-schema_version: factor_spec.v1
+schema_version: factor_spec.v2
 factor_id: liquidity_dollar_volume_3m
-mechanism: Trading activity may proxy for attention, capacity, and liquidity regime.
+formula_version: price_volume_29_mechanism_v2
+formula_hash: 492fd3a49ae3f280
+formula_summary: Persistent 3m dollar-volume capacity level.
+design_contract:
+  design_contract_schema: fd_factor_design_contract.v1
+  factor_id: liquidity_dollar_volume_3m
+  market_pain_point: Investability and capacity can determine whether a signal can
+    be expressed.
+  mechanism_hypothesis: Persistent dollar volume is a context and capacity proxy,
+    not alpha by itself.
+  investor_constraint_or_behavior: Institutional participation is constrained by ADV
+    and impact budgets.
+  expected_universe: All candidate universes where execution survival matters.
+  expected_regime: Capacity level should explain tradability more than directional
+    return.
+  why_not_arbitraged_away: It is not an alpha thesis; it controls implementation feasibility.
+  observable_pre_formula_diagnostics:
+  - ADV breadth
+  - capacity frontier
+  - liquidity exposure attribution
+  placebo_design:
+  - capacity-matched placebo
+  - value-weight control
+  - same-coverage shuffled signal
+  cost_capacity_risks:
+  - capacity concentration
+  - large-cap beta
+  - liquidity exposure
+  expected_failure_modes:
+  - treated as alpha
+  - pure size/capacity exposure
+  - capacity-matched placebo wins
+  formula_measurement_role: The formula is only a measurement of the stated market
+    pain point; it is not itself the thesis.
+  design_review_questions:
+  - What pain point or repeated constraint creates the signal?
+  - Which investors or flows plausibly create the mispricing?
+  - Why should the effect persist after costs, capacity, and placebo controls?
+  - Where should this mechanism fail if the thesis is real?
+  not_alpha_evidence: true
+  direct_q2_entry_allowed: false
+design_review_required: true
+pre_formula_evidence_required: true
+formula_is_measurement_not_thesis: true
+raw_value_definition: log(mean(adjusted_close * volume over trailing 63 trading days))
+oriented_score_definition: raw persistent capacity proxy; higher means larger dollar-volume
+  capacity
+required_inputs:
+- adjusted_close
+- volume
+fallback_policy: no fallback; missing price or volume windows are explicit_abstain
+fallback_audit_required: true
+duplicate_cluster_audit_required: true
+mechanism: Persistent dollar-volume level is a capacity proxy rather than a short-term
+  shock.
+mechanism_family: capacity_level
 lookback: 3
+required_lookback_days: 63
 skip: 1
 direction: positive
 signal_timestamp: month_end_close
 visibility_timestamp: after_month_end_close
 tradable_timestamp: next_rebalance_session
+timestamp_contract:
+  lookback_start: signal_timestamp - skip_days - required_lookback_days
+  lookback_end: last_trading_day <= signal_timestamp - skip_days
+  signal_timestamp: month_end_close
+  visibility_timestamp: after_month_end_close
+  tradable_timestamp: next_rebalance_session
+  allow_same_close_trading: false
 coverage_rule:
-  minimum_observations: 4
+  minimum_observations: 64
   insufficient_coverage: explicit_abstain
   abstain_reason: insufficient_price_volume_history
+no_view_policy: explicit_abstain
 expected_horizon: next_month_excess_return
-known_correlation_family: liquidity_volume
-known_failure_mode: Can be attention or size exposure with high cost drag.
+known_correlation_family: capacity_level
+known_failure_mode: Can be size/capacity exposure rather than alpha evidence.
 no_view_is_not_zero_alpha: true
+not_alpha_evidence: true
+direct_q2_entry_allowed: false
 production_approval_claimed: false

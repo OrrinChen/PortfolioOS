@@ -5,7 +5,7 @@ fetched_at: '2026-05-06T00:00:00Z'
 inputs:
   earnings_events_path: data/cache/wrds_sue_event_panel/ibes_actuals.csv
   estimate_snapshots_path: data/cache/wrds_sue_event_panel/ibes_estimates.csv
-  security_links_path: data/cache/wrds_sue_event_panel/ibes_links.csv
+  security_links_path: data/cache/wrds_sue_event_panel/ibes_links_rescued.csv
   crsp_daily_path: data/cache/wrds_sue_event_panel/crsp_daily.csv
 
 outputs:

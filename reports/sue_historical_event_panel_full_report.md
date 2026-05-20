@@ -14,8 +14,9 @@ Downstream typed event evidence and Q2 optimizer-path evaluation require separat
 - unlinked_rows: `1790`
 - missing_estimates: `700`
 - missing_actuals: `730`
-- missing_prices: `4990`
-- diagnostic_only_rows: `4990`
+- missing_prices: `3772`
+- diagnostic_only_rows: `3831`
+- final_pit_safe_rows: `1169`
 
 ## PIT Rules
 

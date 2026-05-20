@@ -226,6 +226,56 @@ The project records these as TODOs rather than faking diagnostics:
 - risk exposure attribution at each rebalance
 - transaction-cost attribution by layer beyond available period attribution
 
+## Small-Emotion Q2 Complete Closeout
+
+`make factor-discovery-small-emotion-q2-complete` closes the local
+small-emotion Q2 execution-survival chain after candidate intake,
+cost/capacity survival, and optimizer dry-run artifacts exist. It verifies that
+each candidate has survived intake, execution diagnostics, optimizer panel
+response, sign-flip response, and constraint checks.
+
+The closeout writes only diagnostics under
+`outputs/factor_discovery/small_emotion/q2_complete_20260520/`. It does not
+write orders, build a portfolio construction artifact, update Alpha Registry,
+open paper/live/broker/order workflows, or claim production approval.
+
+## Small-Emotion Q2 Portfolio Quant Replay
+
+`make factor-discovery-small-emotion-q2-portfolio-replay` runs a local
+portfolio quant replay for candidates that completed Q2. It joins the
+Q2-completed candidate matrix, Q2 expected-return/cost fields, and observed Q1
+primary-window event returns to produce event-level, monthly, NAV/drawdown,
+cost-attribution, and policy-gate artifacts.
+
+The replay is still diagnostic. It does not write orders, build production
+portfolio construction artifacts, update Alpha Registry, open paper/live/broker
+workflows, or claim production approval.
+
+## Small-Emotion Q2 Factor Exposure / Beta Residual Audit
+
+`make factor-discovery-small-emotion-q2-factor-exposure-audit` runs a local Q2
+factor exposure audit for candidates that completed Q2. It joins completed
+candidates to the Q1 event/window panels, estimates trailing benchmark beta and
+volatility from the local daily price panel, and reports whether directional
+returns remain positive after benchmark, beta, size, liquidity, volatility,
+reversal, shock, and attention proxy controls.
+
+The audit is still diagnostic. It does not modify frozen formulas, write
+orders, build production portfolio construction artifacts, update Alpha
+Registry, open paper/live/broker workflows, or claim production approval.
+
+## Small-Emotion Q2 Robustness Profile Audit
+
+`make factor-discovery-small-emotion-q2-robustness-audit` runs a local Q2
+robustness profile audit for candidates that completed Q2. It checks temporal
+breadth, horizon decay, tail / issuer / month / sector concentration,
+candidate overlap, and bootstrap stability. Drawdown remains observed
+elsewhere and is ignored as a hard gate in this audit by explicit request.
+
+The audit is still diagnostic. It does not modify frozen formulas, write
+orders, build production portfolio construction artifacts, update Alpha
+Registry, open paper/live/broker workflows, or claim production approval.
+
 ## Tests
 
 Run the project tests from the repository root:

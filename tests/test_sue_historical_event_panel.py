@@ -6,11 +6,18 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
+from portfolio_os.alpha.sue_crsp_price_extract import (
+    SueCrspPriceExtractConfig,
+    extract_crsp_prices_for_sue_links,
+)
 from portfolio_os.alpha.sue_historical_panel import (
     SueHistoricalPanelConfig,
     build_sue_historical_event_panel,
+    build_sue_historical_coverage_rescue_report,
     load_sue_historical_panel_run_config,
     render_sue_historical_event_panel_report,
+    render_sue_historical_panel_expansion_report,
+    write_sue_historical_expansion_artifacts,
     write_sue_historical_missing_inputs_artifacts,
     write_sue_historical_panel_artifacts,
 )
@@ -357,6 +364,287 @@ def test_full_mode_yaml_config_loads_output_paths_and_missing_inputs(tmp_path: P
     assert run_config.panel_config.earnings_events_path == str(tmp_path / "missing_actuals.csv")
     assert run_config.output_dir == str(output_dir)
     assert run_config.report_path == str(report_path)
+
+
+def test_expanded_mode_config_loads_date_window_and_max_events(tmp_path: Path) -> None:
+    config_path = tmp_path / "wrds_sue_event_panel_expanded.yaml"
+    output_dir = tmp_path / "expanded_outputs"
+    report_path = tmp_path / "expanded_report.md"
+    config_path.write_text(
+        "\n".join(
+            [
+                "schema_version: wrds_sue_event_panel_expanded_config.v1",
+                "mode: full",
+                "start_date: '2020-02-01'",
+                "end_date: '2020-03-31'",
+                "max_events: 50",
+                "sampled: true",
+                "sample_seed: 7",
+                "fetched_at: '2026-05-06T00:00:00Z'",
+                "inputs:",
+                f"  earnings_events_path: {tmp_path / 'actuals.csv'}",
+                f"  estimate_snapshots_path: {tmp_path / 'estimates.csv'}",
+                f"  security_links_path: {tmp_path / 'links.csv'}",
+                f"  crsp_daily_path: {tmp_path / 'prices.csv'}",
+                "outputs:",
+                f"  output_dir: {output_dir}",
+                f"  report_path: {report_path}",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    run_config = load_sue_historical_panel_run_config(config_path)
+
+    assert run_config.panel_config.start_date == "2020-02-01"
+    assert run_config.panel_config.end_date == "2020-03-31"
+    assert run_config.panel_config.max_events == 50
+    assert run_config.panel_config.sampled is True
+    assert run_config.panel_config.sample_seed == 7
+
+
+def test_expanded_panel_filters_date_window_and_writes_rescue_artifacts(tmp_path: Path) -> None:
+    earnings_path = tmp_path / "actuals.csv"
+    estimates_path = tmp_path / "estimates.csv"
+    links_path = tmp_path / "links.csv"
+    prices_path = tmp_path / "prices.csv"
+    output_dir = tmp_path / "expanded"
+    report_path = tmp_path / "expanded_report.md"
+
+    pd.DataFrame(
+        [
+            {
+                "symbol": "AAPL",
+                "ibes_ticker": "AAPL",
+                "cusip": "03783310",
+                "fiscal_period": "2020Q1",
+                "announcement_date": "2020-01-15",
+                "event_available_timestamp": "2020-01-15T21:15:00Z",
+                "actual_eps": 0.65,
+            },
+            {
+                "symbol": "MSFT",
+                "ibes_ticker": "MSFT",
+                "cusip": "59491810",
+                "fiscal_period": "2020Q1",
+                "announcement_date": "2020-02-20",
+                "event_available_timestamp": "2020-02-20T21:15:00Z",
+                "actual_eps": 1.20,
+            },
+            {
+                "symbol": "NOEST",
+                "ibes_ticker": "NOEST",
+                "cusip": "11111111",
+                "fiscal_period": "2020Q1",
+                "announcement_date": "2020-03-10",
+                "event_available_timestamp": "2020-03-10T21:15:00Z",
+                "actual_eps": 1.00,
+            },
+            {
+                "symbol": "NOPRICE",
+                "ibes_ticker": "NOPR",
+                "cusip": "22222222",
+                "fiscal_period": "2020Q1",
+                "announcement_date": "2020-03-11",
+                "event_available_timestamp": "2020-03-11T21:15:00Z",
+                "actual_eps": 1.00,
+            },
+        ]
+    ).to_csv(earnings_path, index=False)
+    pd.DataFrame(
+        [
+            {
+                "ibes_ticker": "AAPL",
+                "cusip": "03783310",
+                "fiscal_period": "2020Q1",
+                "estimate_snapshot_date": "2020-01-14",
+                "expected_eps": 0.60,
+            },
+            {
+                "ibes_ticker": "MSFT",
+                "cusip": "59491810",
+                "fiscal_period": "2020Q1",
+                "estimate_snapshot_date": "2020-02-19",
+                "expected_eps": 1.10,
+            },
+            {
+                "ibes_ticker": "NOPR",
+                "cusip": "22222222",
+                "fiscal_period": "2020Q1",
+                "estimate_snapshot_date": "2020-03-10",
+                "expected_eps": 0.95,
+            },
+        ]
+    ).to_csv(estimates_path, index=False)
+    pd.DataFrame(
+        [
+            {
+                "ibes_ticker": "MSFT",
+                "cusip": "59491810",
+                "permno": 10107,
+                "link_method": "ibes_idsum_cusip_sdates",
+                "link_start_date": "2010-01-01",
+                "link_end_date": "2022-12-31",
+                "link_validity_flag": True,
+            },
+            {
+                "ibes_ticker": "NOPR",
+                "cusip": "22222222",
+                "permno": 22222,
+                "link_method": "ibes_idsum_cusip_sdates",
+                "link_start_date": "2010-01-01",
+                "link_end_date": "2022-12-31",
+                "link_validity_flag": True,
+            },
+        ]
+    ).to_csv(links_path, index=False)
+    price_rows = [
+        {"permno": 10107, "date": date.date().isoformat(), "prc": 100.0, "ret": 0.001}
+        for date in pd.bdate_range("2020-02-21", periods=25)
+    ]
+    pd.DataFrame(price_rows).to_csv(prices_path, index=False)
+
+    result = build_sue_historical_event_panel(
+        SueHistoricalPanelConfig(
+            mode="full",
+            start_date="2020-02-01",
+            end_date="2020-03-31",
+            max_events=3,
+            earnings_events_path=str(earnings_path),
+            estimate_snapshots_path=str(estimates_path),
+            security_links_path=str(links_path),
+            crsp_daily_path=str(prices_path),
+            fetched_at="2026-05-06T00:00:00Z",
+        )
+    )
+    artifacts = write_sue_historical_expansion_artifacts(result, output_dir=output_dir, report_path=report_path)
+
+    assert result.event_count == 3
+    assert {row.symbol for row in result.event_rows} == {"MSFT", "NOEST", "NOPRICE"}
+    rescue = json.loads(artifacts["coverage_rescue_report"].read_text(encoding="utf-8"))
+    assert rescue["missing_expected_eps"] == 1
+    assert rescue["missing_price_rows"] == 1
+    assert rescue["unlinked_ibes_crsp_rows"] == 1
+    assert rescue["missing_coverage_encoded_as_zero_alpha"] is False
+    linkage = pd.read_csv(artifacts["linkage_failure_report"])
+    assert set(linkage["symbol"]) == {"NOEST"}
+    missing_prices = pd.read_csv(artifacts["missing_price_report"])
+    assert set(missing_prices["symbol"]) == {"NOPRICE"}
+    report = artifacts["report"].read_text(encoding="utf-8")
+    assert "This is expanded WRDS/PIT historical evidence, not production approval." in report
+    validate_sue_historical_report_language(report)
+
+
+def test_coverage_rescue_report_counts_diagnostic_rows_without_zero_alpha() -> None:
+    result = build_sue_historical_event_panel(SueHistoricalPanelConfig(mode="smoke", sample_event_count=60))
+
+    rescue = build_sue_historical_coverage_rescue_report(result)
+
+    assert rescue["diagnostic_only_rows"] > 0
+    assert rescue["missing_expected_eps"] > 0
+    assert rescue["missing_coverage_encoded_as_zero_alpha"] is False
+    assert rescue["q2_evaluation_ran"] is False
+    assert rescue["production_approval_claimed"] is False
+    report = render_sue_historical_panel_expansion_report(result, rescue)
+    assert "This does not run Q2 or optimizer-path evaluation." in report
+    validate_sue_historical_report_language(report)
+
+
+class _FakeWrdsConnection:
+    def __init__(self) -> None:
+        self.queries: list[str] = []
+
+    def raw_sql(self, query: str) -> pd.DataFrame:
+        self.queries.append(query)
+        if "10001" in query:
+            return pd.DataFrame(
+                [
+                    {"permno": 10001, "date": "2020-01-02", "prc": 10.0, "ret": 0.01},
+                    {"permno": 10001, "date": "2020-01-03", "prc": 10.5, "ret": 0.02},
+                ]
+            )
+        if "10002" in query:
+            return pd.DataFrame(
+                [
+                    {"permno": 10002, "date": "2020-01-02", "prc": 20.0, "ret": -0.01},
+                ]
+            )
+        raise AssertionError(f"unexpected query: {query}")
+
+
+class _FailingWrdsConnection:
+    def raw_sql(self, query: str) -> pd.DataFrame:
+        raise AssertionError(f"resumable extract should not query completed chunks: {query}")
+
+
+def test_crsp_price_extract_writes_resumable_chunks_and_manifest(tmp_path: Path) -> None:
+    links_path = tmp_path / "ibes_links.csv"
+    output_path = tmp_path / "crsp_daily.csv"
+    chunk_dir = tmp_path / "chunks"
+    manifest_path = tmp_path / "crsp_price_extract_manifest.json"
+    pd.DataFrame(
+        [
+            {"permno": 10001, "link_validity_flag": True},
+            {"permno": 10002, "link_validity_flag": True},
+            {"permno": 10001, "link_validity_flag": True},
+        ]
+    ).to_csv(links_path, index=False)
+
+    result = extract_crsp_prices_for_sue_links(
+        SueCrspPriceExtractConfig(
+            links_path=str(links_path),
+            output_path=str(output_path),
+            chunk_dir=str(chunk_dir),
+            manifest_path=str(manifest_path),
+            start_date="2020-01-01",
+            end_date="2020-01-31",
+            chunk_size=1,
+            max_permnos=2,
+            fetched_at="2026-05-06T00:00:00Z",
+        ),
+        connection=_FakeWrdsConnection(),
+    )
+
+    assert result["status"] == "completed"
+    assert result["queried_chunks"] == 2
+    assert result["skipped_chunks"] == 0
+    assert result["distinct_permnos"] == 2
+    assert result["row_count"] == 3
+    prices = pd.read_csv(output_path)
+    assert set(prices["permno"]) == {10001, 10002}
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assert manifest["source_table"] == "crsp.dsf"
+    assert manifest["resumable"] is True
+    assert manifest["production_approval_claimed"] is False
+    assert manifest["broker_order_workflow_added"] is False
+
+
+def test_crsp_price_extract_skips_existing_chunks_on_rerun(tmp_path: Path) -> None:
+    links_path = tmp_path / "ibes_links.csv"
+    output_path = tmp_path / "crsp_daily.csv"
+    chunk_dir = tmp_path / "chunks"
+    manifest_path = tmp_path / "crsp_price_extract_manifest.json"
+    pd.DataFrame([{"permno": 10001}, {"permno": 10002}]).to_csv(links_path, index=False)
+    config = SueCrspPriceExtractConfig(
+        links_path=str(links_path),
+        output_path=str(output_path),
+        chunk_dir=str(chunk_dir),
+        manifest_path=str(manifest_path),
+        start_date="2020-01-01",
+        end_date="2020-01-31",
+        chunk_size=1,
+        max_permnos=2,
+        fetched_at="2026-05-06T00:00:00Z",
+    )
+
+    first = extract_crsp_prices_for_sue_links(config, connection=_FakeWrdsConnection())
+    second = extract_crsp_prices_for_sue_links(config, connection=_FailingWrdsConnection())
+
+    assert first["queried_chunks"] == 2
+    assert second["queried_chunks"] == 0
+    assert second["skipped_chunks"] == 2
+    assert second["row_count"] == 3
 
 
 def test_rendered_report_rejects_approval_claim_if_added() -> None:

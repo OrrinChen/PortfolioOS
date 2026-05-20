@@ -1,19 +1,84 @@
-schema_version: factor_spec.v1
+schema_version: factor_spec.v2
 factor_id: price_to_high_12m
+formula_version: price_volume_29_mechanism_v2
+formula_hash: aea185366de3b19b
+formula_summary: Current adjusted close distance from the 12m rolling high.
+design_contract:
+  design_contract_schema: fd_factor_design_contract.v1
+  factor_id: price_to_high_12m
+  market_pain_point: A repeated market behavior may create a measurable pricing pattern.
+  mechanism_hypothesis: The candidate must state a specific mechanism before formula
+    validation.
+  investor_constraint_or_behavior: The design must identify the constrained investor,
+    flow, or behavior.
+  expected_universe: Must be specified before validation.
+  expected_regime: Must be specified before validation.
+  why_not_arbitraged_away: Must explain frictions, limits to arbitrage, or implementation
+    constraints.
+  observable_pre_formula_diagnostics:
+  - Check whether the pain point exists before scoring formulas.
+  - Compare against same-coverage placebo and regime controls.
+  placebo_design:
+  - same_coverage_placebo
+  - mechanism_matched_placebo
+  - rebalance_shifted_placebo
+  cost_capacity_risks:
+  - turnover
+  - spread
+  - ADV capacity
+  - impact
+  - shortability if short leg is used
+  expected_failure_modes:
+  - placebo dominance
+  - cost drag
+  - capacity concentration
+  - regime instability
+  formula_measurement_role: The formula is only a measurement of the stated market
+    pain point; it is not itself the thesis.
+  design_review_questions:
+  - What pain point or repeated constraint creates the signal?
+  - Which investors or flows plausibly create the mispricing?
+  - Why should the effect persist after costs, capacity, and placebo controls?
+  - Where should this mechanism fail if the thesis is real?
+  not_alpha_evidence: true
+  direct_q2_entry_allowed: false
+design_review_required: true
+pre_formula_evidence_required: true
+formula_is_measurement_not_thesis: true
+raw_value_definition: log(P_t-skip / rolling_high_252)
+oriented_score_definition: raw log distance; values closer to zero are nearer the
+  window high
+required_inputs:
+- adjusted_close
+fallback_policy: no fallback; insufficient price history is explicit_abstain
+fallback_audit_required: true
+duplicate_cluster_audit_required: true
 mechanism: Distance from recent highs and drawdowns may capture trend quality and
   fragility.
+mechanism_family: price_position
 lookback: 12
+required_lookback_days: 252
 skip: 1
 direction: positive
 signal_timestamp: month_end_close
 visibility_timestamp: after_month_end_close
 tradable_timestamp: next_rebalance_session
+timestamp_contract:
+  lookback_start: signal_timestamp - skip_days - required_lookback_days
+  lookback_end: last_trading_day <= signal_timestamp - skip_days
+  signal_timestamp: month_end_close
+  visibility_timestamp: after_month_end_close
+  tradable_timestamp: next_rebalance_session
+  allow_same_close_trading: false
 coverage_rule:
-  minimum_observations: 13
+  minimum_observations: 253
   insufficient_coverage: explicit_abstain
   abstain_reason: insufficient_price_volume_history
+no_view_policy: explicit_abstain
 expected_horizon: next_month_excess_return
 known_correlation_family: price_position
 known_failure_mode: Can duplicate momentum windows without marginal value.
 no_view_is_not_zero_alpha: true
+not_alpha_evidence: true
+direct_q2_entry_allowed: false
 production_approval_claimed: false

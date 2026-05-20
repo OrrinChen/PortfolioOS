@@ -33,6 +33,26 @@ class BacktestAlphaModelConfig(BaseModel):
     add_alpha_only_baseline: bool = True
 
 
+class PortfolioQuantPolicyConfig(BaseModel):
+    """Ex-post portfolio quant policy gates for walk-forward evaluation."""
+
+    turnover_cap: float | None = Field(default=None, gt=0.0)
+    max_drawdown_limit: float | None = None
+    cvar_alpha: float = Field(default=0.05, gt=0.0, lt=1.0)
+    min_cvar_limit: float | None = None
+    exposure_check: Literal["if_available", "disabled"] = "if_available"
+
+
+class BacktestPortfolioQuantConfig(BaseModel):
+    """Optional portfolio quant walk-forward reporting controls."""
+
+    enabled: bool = False
+    rebalance_frequency: Literal["monthly"] = "monthly"
+    include_cost_unaware_baseline: bool = True
+    benchmark_strategy: str = "naive_pro_rata"
+    policy: PortfolioQuantPolicyConfig = Field(default_factory=PortfolioQuantPolicyConfig)
+
+
 class BacktestManifest(BaseModel):
     """Serialized backtest manifest."""
 
@@ -50,6 +70,7 @@ class BacktestManifest(BaseModel):
     baselines: list[str] = Field(default_factory=lambda: ["naive_pro_rata", "buy_and_hold"])
     rebalance: BacktestRebalanceConfig = Field(default_factory=BacktestRebalanceConfig)
     alpha_model: BacktestAlphaModelConfig | None = None
+    portfolio_quant: BacktestPortfolioQuantConfig | None = None
 
 
 @dataclass
@@ -71,6 +92,7 @@ class LoadedBacktestManifest:
     baselines: list[str]
     rebalance: BacktestRebalanceConfig
     alpha_model: BacktestAlphaModelConfig | None
+    portfolio_quant: BacktestPortfolioQuantConfig | None
 
 
 def _resolve_manifest_path(raw_path: str, *, manifest_dir: Path, cwd: Path) -> Path:
@@ -114,4 +136,5 @@ def load_backtest_manifest(path: str | Path) -> LoadedBacktestManifest:
         baselines=list(manifest.baselines),
         rebalance=manifest.rebalance,
         alpha_model=manifest.alpha_model,
+        portfolio_quant=manifest.portfolio_quant,
     )

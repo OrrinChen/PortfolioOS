@@ -1,0 +1,45 @@
+schema_version: portfolioos_research_freeze.v1
+freeze_reason: pivot_to_portfolio_quant_walk_forward_v1
+freeze_is_governance_only: true
+delete_or_revert_research_artifacts: false
+commit_required: false
+portfolio_quant_pivot_allowed: true
+factor_discovery_direct_q2_allowed: false
+
+lines:
+  - line_id: sue_historical_timing_line
+    title: SUE historical timing and score-definition line
+    state: blocked
+    stop_reason: No auditable earlier public-availability timestamp was found; no score was selected.
+    next_allowed_work:
+      - explicit reopen only if auditable timestamp repair exists
+
+  - line_id: open_market_insider_buying_post_2023_v0
+    title: Open-market-or-private Form 4 P-code insider buying v0
+    state: retired_before_promotion
+    stop_reason: Retired before Promotion Gate after Q1 label rescue remained insufficient and diagnostics were negative.
+    next_allowed_work:
+      - explicit new MeasurementSpec only after a new D2/D3 decision
+
+  - line_id: planned_vs_discretionary_sell_contrast_post_2023
+    title: Planned versus discretionary Form 4 S-code sell contrast
+    state: stopped_before_d3
+    stop_reason: Plan-flag source/locator/parser repair did not produce a clean planned-sell contrast source.
+    next_allowed_work:
+      - explicit reopen only with clean structured or high-confidence plan-flag source coverage
+
+  - line_id: eightk_subtype_underreaction
+    title: Real EDGAR 8-K subtype underreaction observability line
+    state: hold_pending_data_coverage
+    stop_reason: Fixture path is observable, but real 8-K archive and market coverage are not sufficient.
+    next_allowed_work:
+      - source coverage rescue
+      - market mapping rescue
+      - explicit reopen before D3
+
+  - line_id: small_cap_shock_conditioned_emotion_liquidity
+    title: Small-cap shock-conditioned emotion and liquidity D2 line
+    state: d2_only_hold_insufficient_sample
+    stop_reason: D2 is no-formula only and did not allow a D3 charter.
+    next_allowed_work:
+      - chunked full replay only by explicit reopen

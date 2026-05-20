@@ -213,6 +213,11 @@ def load_sue_historical_panel_run_config(path: str | Path) -> SueHistoricalPanel
         estimate_snapshots_path=inputs.get("estimate_snapshots_path") or payload.get("estimate_snapshots_path"),
         security_links_path=inputs.get("security_links_path") or payload.get("security_links_path"),
         crsp_daily_path=inputs.get("crsp_daily_path") or payload.get("crsp_daily_path"),
+        start_date=payload.get("start_date"),
+        end_date=payload.get("end_date"),
+        max_events=payload.get("max_events"),
+        sampled=bool(payload.get("sampled", False)),
+        sample_seed=int(payload.get("sample_seed", 20260506)),
     )
     return SueHistoricalPanelRunConfig(
         panel_config=panel_config,
@@ -352,6 +357,7 @@ def render_sue_historical_event_panel_report(result: SueHistoricalPanelBuildResu
         f"- missing_actuals: `{result.coverage_report['missing_actuals']}`",
         f"- missing_prices: `{result.coverage_report['missing_prices']}`",
         f"- diagnostic_only_rows: `{result.coverage_report['diagnostic_only_rows']}`",
+        f"- final_pit_safe_rows: `{result.coverage_report['final_pit_safe_rows']}`",
         "",
         "## PIT Rules",
         "",
@@ -490,7 +496,7 @@ def _build_full_mode_rows(config: SueHistoricalPanelConfig, *, fetched_at: str) 
     if missing_price:
         raise ValueError("full mode CRSP daily extract missing columns: " + ", ".join(sorted(missing_price)))
 
-    normalized_events = events.copy()
+    normalized_events = _filter_full_mode_events(events.copy(), config)
     normalized_events["symbol"] = normalized_events["symbol"].astype(str).str.upper()
     normalized_events["ibes_ticker"] = _column_or_default(normalized_events, "ibes_ticker", normalized_events["symbol"]).astype(str).str.upper()
     normalized_events["cusip"] = _column_or_default(normalized_events, "cusip", "").astype(str)
@@ -623,12 +629,205 @@ def _coverage_report(event_rows: list[SueHistoricalEventRow]) -> dict[str, Any]:
     }
 
 
+def build_sue_historical_coverage_rescue_report(result: SueHistoricalPanelBuildResult) -> dict[str, Any]:
+    """Build H1C coverage-loss diagnostics from an expanded SUE panel."""
+
+    missing_expected = sum(1 for row in result.event_rows if row.expected_eps is None)
+    missing_actual = sum(1 for row in result.event_rows if row.actual_eps is None)
+    missing_snapshot = sum(1 for row in result.event_rows if row.estimate_snapshot_date is None)
+    unlinked = sum(1 for row in result.event_rows if row.permno is None)
+    missing_prices = sum(1 for row in result.event_rows if row.permno is not None and row.price_anchor_date is None)
+    missing_return_windows = sum(1 for row in result.event_rows if row.price_anchor_date is None)
+    diagnostic_only = sum(1 for row in result.event_rows if row.diagnostic_only)
+    invalid_link_date = sum(1 for row in result.event_rows if "invalid_link_date" in row.pit_safety_status)
+    payload = {
+        "schema_version": "sue_historical_coverage_rescue_report.v1",
+        "run_id": "sue_historical_event_panel_expanded",
+        "mode": result.mode,
+        "event_count": result.event_count,
+        "rebalance_date_count": result.rebalance_date_count,
+        "missing_prices": missing_prices,
+        "missing_price_rows": missing_prices,
+        "missing_expected_eps": missing_expected,
+        "missing_actual_eps": missing_actual,
+        "missing_estimate_snapshot_date": missing_snapshot,
+        "unlinked_ibes_crsp_rows": unlinked,
+        "invalid_link_date_rows": invalid_link_date,
+        "missing_return_windows": missing_return_windows,
+        "diagnostic_only_rows": diagnostic_only,
+        "pit_safe_rows": result.coverage_report["final_pit_safe_rows"],
+        "missing_coverage_encoded_as_zero_alpha": False,
+        "no_view_not_zero_alpha": True,
+        "q2_evaluation_ran": False,
+        "optimizer_path_evaluation_ran": False,
+        "alpha_registry_promoted": False,
+        "production_approval_claimed": False,
+        "paper_ready_claimed": False,
+        "live_trading_claimed": False,
+        "broker_order_workflow_added": False,
+    }
+    payload["content_hash"] = hash_payload(payload)
+    return payload
+
+
+def write_sue_historical_expansion_artifacts(
+    result: SueHistoricalPanelBuildResult,
+    *,
+    output_dir: str | Path = "outputs/sue_historical_event_panel_expanded",
+    report_path: str | Path = "reports/sue_historical_event_panel_expansion_report.md",
+) -> dict[str, Path]:
+    """Write H1C expanded panel artifacts with coverage rescue diagnostics."""
+
+    artifacts = write_sue_historical_panel_artifacts(result, output_dir=output_dir, report_path=report_path)
+    output_path = Path(output_dir)
+    rescue = build_sue_historical_coverage_rescue_report(result)
+    coverage_rescue_path = output_path / "coverage_rescue_report.json"
+    linkage_failure_path = output_path / "linkage_failure_report.csv"
+    missing_price_path = output_path / "missing_price_report.csv"
+    _write_json(coverage_rescue_path, rescue)
+    _linkage_failure_frame(result).to_csv(linkage_failure_path, index=False)
+    _missing_price_frame(result).to_csv(missing_price_path, index=False)
+    report_text = render_sue_historical_panel_expansion_report(result, rescue)
+    validate_sue_historical_report_language(report_text)
+    Path(report_path).write_text(report_text, encoding="utf-8")
+    artifacts.update(
+        {
+            "coverage_rescue_report": coverage_rescue_path,
+            "linkage_failure_report": linkage_failure_path,
+            "missing_price_report": missing_price_path,
+            "report": Path(report_path),
+        }
+    )
+    return artifacts
+
+
+def render_sue_historical_panel_expansion_report(
+    result: SueHistoricalPanelBuildResult,
+    rescue_report: dict[str, Any],
+) -> str:
+    """Render the H1C expanded panel coverage report."""
+
+    return "\n".join(
+        [
+            "# SUE Historical Event Panel Expansion Report",
+            "",
+            "This is expanded WRDS/PIT historical evidence, not production approval.",
+            "This does not run Q2 or optimizer-path evaluation.",
+            "This does not prove paper readiness or production approval.",
+            "This does not create broker/order/live workflows.",
+            "If evidence remains mixed, recommend diagnosis rather than optimizer evaluation.",
+            "",
+            "## Coverage Rescue",
+            "",
+            f"- event_count: `{result.event_count}`",
+            f"- rebalance_date_count: `{result.rebalance_date_count}`",
+            f"- pit_safe_rows: `{rescue_report['pit_safe_rows']}`",
+            f"- missing_prices: `{rescue_report['missing_prices']}`",
+            f"- missing_expected_eps: `{rescue_report['missing_expected_eps']}`",
+            f"- missing_actual_eps: `{rescue_report['missing_actual_eps']}`",
+            f"- missing_estimate_snapshot_date: `{rescue_report['missing_estimate_snapshot_date']}`",
+            f"- unlinked_ibes_crsp_rows: `{rescue_report['unlinked_ibes_crsp_rows']}`",
+            f"- invalid_link_date_rows: `{rescue_report['invalid_link_date_rows']}`",
+            f"- missing_return_windows: `{rescue_report['missing_return_windows']}`",
+            f"- diagnostic_only_rows: `{rescue_report['diagnostic_only_rows']}`",
+            f"- missing_coverage_encoded_as_zero_alpha: `{rescue_report['missing_coverage_encoded_as_zero_alpha']}`",
+            "",
+            "## Boundaries",
+            "",
+            "- Missing SUE coverage remains explicit diagnostic/no_view, not zero alpha.",
+            "- Expanded event evidence requires the separate H1B evidence-grid runner.",
+            "- Alpha Registry status is not promoted by this report.",
+            "",
+        ]
+    )
+
+
 def _column_or_default(frame: pd.DataFrame, column: str, default: Any) -> pd.Series:
     if column in frame.columns:
         return frame[column]
     if isinstance(default, pd.Series):
         return default
     return pd.Series([default] * len(frame), index=frame.index)
+
+
+def _filter_full_mode_events(events: pd.DataFrame, config: SueHistoricalPanelConfig) -> pd.DataFrame:
+    frame = events.copy()
+    frame["_announcement_date"] = pd.to_datetime(frame["announcement_date"], errors="raise")
+    if config.start_date:
+        frame = frame.loc[frame["_announcement_date"] >= pd.Timestamp(config.start_date)]
+    if config.end_date:
+        frame = frame.loc[frame["_announcement_date"] <= pd.Timestamp(config.end_date)]
+    frame = frame.sort_values(["_announcement_date", "symbol" if "symbol" in frame.columns else "ibes_ticker"]).drop(
+        columns=["_announcement_date"]
+    )
+    if config.max_events is not None and len(frame) > config.max_events:
+        if config.sampled:
+            frame = frame.sample(n=config.max_events, random_state=config.sample_seed).sort_index()
+        else:
+            frame = frame.head(config.max_events)
+    return frame.reset_index(drop=True)
+
+
+def _linkage_failure_frame(result: SueHistoricalPanelBuildResult) -> pd.DataFrame:
+    rows = [
+        {
+            "event_id": row.event_id,
+            "symbol": row.symbol,
+            "ibes_ticker": row.ibes_ticker,
+            "cusip": row.cusip,
+            "announcement_date": row.announcement_date.isoformat(),
+            "link_method": row.link_method,
+            "pit_safety_status": row.pit_safety_status,
+            "failure_reason": "invalid_link_date" if "invalid_link_date" in row.pit_safety_status else "unlinked",
+        }
+        for row in result.event_rows
+        if row.permno is None or "invalid_link_date" in row.pit_safety_status
+    ]
+    return pd.DataFrame(
+        rows,
+        columns=[
+            "event_id",
+            "symbol",
+            "ibes_ticker",
+            "cusip",
+            "announcement_date",
+            "link_method",
+            "pit_safety_status",
+            "failure_reason",
+        ],
+    )
+
+
+def _missing_price_frame(result: SueHistoricalPanelBuildResult) -> pd.DataFrame:
+    rows = [
+        {
+            "event_id": row.event_id,
+            "symbol": row.symbol,
+            "permno": row.permno,
+            "announcement_date": row.announcement_date.isoformat(),
+            "tradable_timestamp": row.tradable_timestamp.isoformat(),
+            "return_window_start": row.return_window_start.isoformat(),
+            "return_window_end": row.return_window_end.isoformat(),
+            "pit_safety_status": row.pit_safety_status,
+            "failure_reason": "missing_price_or_return_window",
+        }
+        for row in result.event_rows
+        if row.permno is not None and row.price_anchor_date is None
+    ]
+    return pd.DataFrame(
+        rows,
+        columns=[
+            "event_id",
+            "symbol",
+            "permno",
+            "announcement_date",
+            "tradable_timestamp",
+            "return_window_start",
+            "return_window_end",
+            "pit_safety_status",
+            "failure_reason",
+        ],
+    )
 
 
 def _event_available_timestamp(event: pd.Series, announcement_date: date) -> datetime:

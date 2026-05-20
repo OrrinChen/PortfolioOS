@@ -1,0 +1,40 @@
+schema_version: sue_announcement_timestamp_policy_config.v1
+
+inputs:
+  events_path: outputs/sue_historical_event_panel_expanded/events.csv
+  crsp_daily_path: data/cache/wrds_sue_event_panel/crsp_daily.csv
+
+outputs:
+  output_dir: outputs/sue_announcement_timestamp_policy
+  report_path: reports/sue_announcement_timestamp_policy_report.md
+
+after_close_utc_hour: 21
+before_open_utc_hour: 14
+market_open_utc_hour: 14
+market_open_utc_minute: 30
+rerun_h1e_if_repairable: true
+quantiles: 5
+min_rank_ic_names: 3
+min_spread_names: 5
+placebo_shift_trading_days: 10
+random_seed: 20260508
+
+guards:
+  source_conflict_max_days: 1
+  min_repaired_events_for_h1e: 30
+  denominator_abs_min: 0.01
+  winsorization_scope: month
+  winsor_lower_quantile: 0.01
+  winsor_upper_quantile: 0.99
+  extreme_value_cap: 1000.0
+
+non_goals:
+  score_selection_without_proven_timestamp_policy: false
+  q2_evaluation_ran: false
+  optimizer_path_evaluation_ran: false
+  alpha_registry_promoted: false
+  production_approval_claimed: false
+  paper_ready_claimed: false
+  live_trading_claimed: false
+  broker_order_workflow_added: false
+  factor_discovery_implementation_added: false

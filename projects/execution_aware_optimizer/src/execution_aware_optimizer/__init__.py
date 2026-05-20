@@ -44,6 +44,18 @@ from execution_aware_optimizer.scenario_grid import (
     ScenarioGridConfig,
     build_scenario_grid,
 )
+from execution_aware_optimizer.small_emotion_q2_complete import (
+    run_small_emotion_q2_complete,
+)
+from execution_aware_optimizer.small_emotion_q2_factor_exposure_audit import (
+    run_small_emotion_q2_factor_exposure_audit,
+)
+from execution_aware_optimizer.small_emotion_q2_portfolio_replay import (
+    run_small_emotion_q2_portfolio_replay,
+)
+from execution_aware_optimizer.small_emotion_q2_robustness_audit import (
+    run_small_emotion_q2_robustness_audit,
+)
 from execution_aware_optimizer.sue_execution_survival_attribution import (
     build_sue_execution_survival_attribution,
     render_sue_execution_survival_attribution_report,
@@ -141,6 +153,10 @@ __all__ = [
     "run_alpha_decay_ladder",
     "run_execution_matrix",
     "run_revision_marginal_value_gate",
+    "run_small_emotion_q2_complete",
+    "run_small_emotion_q2_factor_exposure_audit",
+    "run_small_emotion_q2_portfolio_replay",
+    "run_small_emotion_q2_robustness_audit",
     "run_typed_alpha_execution_matrix",
     "run_typed_expected_return_injection",
     "run_typed_optimizer_response_acceptance",

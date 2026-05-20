@@ -1,0 +1,165 @@
+schema_version: portfolioos_research_tracks.v1
+
+shared_boundaries:
+  - Factor Discovery outputs cannot enter Q2 directly.
+  - Single-alpha candidates must pass Q1 evidence and Promotion Gate before Q2.
+  - Multi-factor portfolio diagnostics cannot be used as single-alpha proof.
+  - Portfolio/component diagnostics cannot claim production approval.
+  - Missing coverage remains explicit abstain/no_view, not zero alpha.
+  - Broker, live-trading, order, paper-canary, and production workflows require separate explicit approval.
+
+tracks:
+  - track_id: shared_governance_platform
+    title: Shared PortfolioOS Governance Platform
+    question: Which research artifacts are safe enough to evaluate further?
+    role: Shared Q1/Q2, Promotion Gate, Alpha Registry, audit, provenance, and reporting infrastructure.
+    code_roots:
+      - projects/agentic_alpha_triage
+      - projects/evidence_bundle
+      - projects/promotion_gate
+      - projects/execution_aware_optimizer
+      - projects/audit_report
+      - src/portfolio_os/provenance
+      - src/portfolio_os/observability
+    owns_q2_execution: true
+    may_generate_candidates: false
+    may_validate_portfolios: false
+    may_run_broker_or_live: false
+
+  - track_id: single_alpha_research_factory
+    title: PortfolioOS Single-Alpha Research Factory
+    question: Is this individual alpha real, timestamp-safe, and eligible for execution evaluation?
+    role: Candidate-level factor/event design, timestamp evidence, placebo diagnostics, typed AlphaView, and Q1-ready evidence preparation.
+    code_roots:
+      - src/portfolio_os/alpha
+      - projects/typed_alpha_pilot
+      - projects/alpha_view_contract
+      - projects/multifactor_alpha_validation/factor_discovery_sandbox
+    owns_q2_execution: false
+    may_generate_candidates: true
+    may_validate_portfolios: false
+    may_run_broker_or_live: false
+
+  - track_id: multifactor_portfolio_validation
+    title: Multi-Factor Portfolio Validation Engine
+    question: Can preregistered factor/components form a robust portfolio-level diagnostic ensemble?
+    role: Formal factor/component validation, risk attribution, component roles, ensemble OOS, ablation, and portfolio assembly diagnostics.
+    code_roots:
+      - projects/multifactor_alpha_validation/src/multifactor_alpha_validation
+      - projects/multifactor_alpha_validation/factor_specs
+      - projects/multifactor_alpha_validation/scripts
+      - projects/multifactor_alpha_validation/tests
+    owns_q2_execution: false
+    may_generate_candidates: false
+    may_validate_portfolios: true
+    may_run_broker_or_live: false
+
+projects:
+  - project_id: sue_historical_timing_line
+    title: SUE Historical Timing / Timestamp Evidence Line
+    track_id: single_alpha_research_factory
+    state: blocked_timing
+    stop_layer: H1E.5 timestamp enrichment
+    code_roots:
+      - src/portfolio_os/alpha
+      - scripts/run_sue_timestamp_enrichment.py
+      - scripts/extract_wrds_sue_timestamp_sources.py
+    evidence_artifacts:
+      - outputs/sue_timestamp_enrichment/timestamp_enrichment_decision.json
+      - reports/sue_timestamp_enrichment_report.md
+    decision_summary: WRDS IBES/Compustat timestamp sources were pulled, but no repairable earlier public-availability timestamp was found; SUE remains blocked before score selection, typed projection, and Q2.
+    next_allowed_work:
+      - closeout memo
+      - exact third-party earnings-release timestamp import
+      - rerun H1E only if auditable exact timestamp repair exists
+    direct_q2_entry_allowed: false
+    alpha_registry_promotion_allowed: false
+    production_approval_claimed: false
+    live_trading_allowed: false
+    broker_order_workflow_allowed: false
+
+  - project_id: factor_discovery_sandbox
+    title: Factor Discovery Sandbox / Candidate Design Factory
+    track_id: single_alpha_research_factory
+    state: factor_design_reset
+    stop_layer: candidate design / placebo gates
+    code_roots:
+      - projects/multifactor_alpha_validation/factor_discovery_sandbox
+    evidence_artifacts:
+      - outputs/factor_discovery/real_data_daily/fd_r5/placebo_robustness_summary.json
+      - outputs/factor_discovery/research_mode/weighting_failure_diagnosis.json
+    decision_summary: Price-volume and candidate-generation experiments are retained as failed-candidate design constraints; sandbox output cannot enter Q2 or formal validation without a preregistered import contract.
+    next_allowed_work:
+      - preregister FactorDesignSpec
+      - candidate design layer tests
+      - Phase 64 import package only after design gate
+    direct_q2_entry_allowed: false
+    alpha_registry_promotion_allowed: false
+    production_approval_claimed: false
+    live_trading_allowed: false
+    broker_order_workflow_allowed: false
+
+  - project_id: revision_confirmed_earnings_underreaction
+    title: Revision-Confirmed Earnings Underreaction Candidate
+    track_id: single_alpha_research_factory
+    state: insufficient_support
+    stop_layer: candidate support gate
+    code_roots:
+      - projects/multifactor_alpha_validation/factor_discovery_sandbox/src/factor_discovery_sandbox/revision_confirmed_earnings_underreaction.py
+    evidence_artifacts:
+      - outputs/factor_discovery/research_mode/revision_confirmed_earnings_underreaction/revision_confirmed_alpha_summary.json
+      - outputs/factor_discovery/research_mode/revision_confirmed_earnings_underreaction/revision_confirmed_alpha_report.md
+    decision_summary: Mechanism is plausible but current support is insufficient; it remains a candidate-design branch, not Q1/Q2 input.
+    next_allowed_work:
+      - stronger support audit
+      - PIT timestamp and coverage preregistration
+      - placebo plan before validation
+    direct_q2_entry_allowed: false
+    alpha_registry_promotion_allowed: false
+    production_approval_claimed: false
+    live_trading_allowed: false
+    broker_order_workflow_allowed: false
+
+  - project_id: small_cap_quality_residual_momentum
+    title: Small-Cap Quality Residual Momentum Candidate Line
+    track_id: single_alpha_research_factory
+    state: rejected_capacity_or_placebo
+    stop_layer: capacity / temporal / placebo diagnostics
+    code_roots:
+      - projects/multifactor_alpha_validation/factor_discovery_sandbox/src/factor_discovery_sandbox/small_cap_quality_family.py
+      - projects/multifactor_alpha_validation/factor_discovery_sandbox/src/factor_discovery_sandbox/small_cap_s4_3_preregistration.py
+    evidence_artifacts:
+      - outputs/factor_discovery/small_cap/family_candidates/quality_residual_momentum/family_decision.json
+      - outputs/factor_discovery/small_cap/family_candidates/capacity_filtered_live_s4_3/s4_3_decision.json
+    decision_summary: Small-cap candidate variants failed placebo, temporal-noise, or capacity-filter hypotheses; retain as design constraints before any new candidate definition.
+    next_allowed_work:
+      - redesign capacity and spread assumptions
+      - preregister revised candidate
+      - keep microcap and shortability boundaries explicit
+    direct_q2_entry_allowed: false
+    alpha_registry_promotion_allowed: false
+    production_approval_claimed: false
+    live_trading_allowed: false
+    broker_order_workflow_allowed: false
+
+  - project_id: formal_multifactor_validation_engine
+    title: Formal Multi-Factor Alpha Validation Engine
+    track_id: multifactor_portfolio_validation
+    state: diagnostic_component_pool
+    stop_layer: portfolio assembly / component OOS diagnostics
+    code_roots:
+      - projects/multifactor_alpha_validation
+    evidence_artifacts:
+      - outputs/multifactor_alpha_validation/portfolio_validation/ensemble_validation_summary.json
+      - outputs/multifactor_alpha_validation/portfolio_validation/component_oos_availability_summary.json
+      - outputs/multifactor_alpha_validation/component_oos_observations/component_oos_observation_expansion_summary.json
+    decision_summary: Formal multi-factor validation remains a portfolio/component diagnostic engine; current ensemble and component pool are not production alpha and do not enter Q2.
+    next_allowed_work:
+      - post-portfolio contribution diagnosis
+      - ablation analysis
+      - component role refinement
+    direct_q2_entry_allowed: false
+    alpha_registry_promotion_allowed: false
+    production_approval_claimed: false
+    live_trading_allowed: false
+    broker_order_workflow_allowed: false

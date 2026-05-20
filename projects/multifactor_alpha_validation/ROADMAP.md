@@ -26,7 +26,12 @@ PIT exposure store: complete
 Cross-sectional risk model attribution: complete as ex-post attribution only
 Factor attribution waterfall: complete as diagnostic attribution only
 Strict residual evidence closeout: complete
-Current blocker: no clean residual factor is ready for redundancy or allocator entry
+Portfolio component gate: complete
+Candidate filter audit / soft resurrection: complete
+Portfolio-level diagnostic ensemble OOS validation: complete
+Component OOS observation expansion: complete
+Post-portfolio contribution / ablation diagnosis: complete
+Current next step: stop or run bounded diagnostic cost/capacity attribution; OR remains locked
 ```
 
 ## Positioning
@@ -83,6 +88,11 @@ The sandbox has already proved a local, controlled version of several concepts:
 - factor spec generation for 29 price-volume candidates
 - timestamp contracts and explicit abstain coverage rules
 - rolling out-of-sample ICIR weighting
+- weighting reliability diagnostics comparing rolling ICIR against equal,
+  family-equal, shrunk ICIR, signed shrunk ICIR, and rolling ridge estimators
+- a separate small-cap candidate-family line with data admission, universe
+  tiering, microcap quarantine, a locally pulled WRDS CRSP daily small-cap
+  bundle, and fixed single-signal residual momentum diagnostics
 - redundancy and marginal-value decisions
 - shrinkage, covariance stabilization, diagnostic allocation, and zero-weight
   attribution
@@ -1000,6 +1010,8 @@ Scope:
 - residual-positive stability check
 - style-proxy conflict blocking
 - factor registry risk-model update
+- fixed failure diagnosis report
+- QQQ-relative hard-gate review for long-short factor spreads
 - explicit non-claim and no-Q2/no-allocator boundaries
 
 Status:
@@ -1013,12 +1025,362 @@ Status:
   - `strict_residual_closeout_diagnostics.json`
   - `factor_registry_risk_model_update.yaml`
   - `strict_residual_closeout_report.md`
+  - `factor_failure_diagnosis.csv`
+  - `qqq_relative_guard_review.json`
+  - `factor_failure_diagnosis_report.md`
 - Current factor decisions:
   - `momentum_12_1`: `insufficient_residual_evidence`
   - `reversal_5_1`: `style_proxy_conflict`
   - `low_vol_60d`: `style_proxy_conflict`
 - Positive configured proxy residuals do not override negative benchmark/beta
   readouts or unstable full-residual evidence.
+- The fixed failure diagnosis says the QQQ-relative guard is over-strict as a
+  hard gate for long-short factor spreads, but softening it rescues `0` current
+  factors because residual stability and beta/exposure blockers remain.
 - R13 outputs are research closeout states only. They do not create alpha
   evidence, redundancy-gate access, allocator weights, Q2 input, paper canary,
   live trading, security orders, or production approval.
+
+### MF-R14: Portfolio Component Gate
+
+Goal:
+Convert risk-attributed closeout rows into portfolio component roles. A factor
+does not need standalone clean residual alpha to be studied as a documented
+portfolio component, but hard validity failures still block it.
+
+Scope:
+
+- standalone clean alpha count
+- eligible benchmark/style premia components
+- eligible hedge/diversifier components
+- hard validity blocking for PIT, timestamp, coverage, or unavailable data
+- diagnostic ensemble validation mode
+- explicit non-claim and no-Q2/no-unrestricted-allocator boundaries
+
+Status:
+
+- Complete.
+- Output lives under `outputs/multifactor_alpha_validation/risk_model/`.
+- The current real WRDS smoke writes `3` component rows with
+  `standalone_clean_alpha_count=0`, `component_candidate_count=3`, and
+  `portfolio_validation_mode=diagnostic_ensemble_only`.
+- Artifacts:
+  - `component_candidate_table.csv`
+  - `portfolio_component_gate_summary.json`
+  - `portfolio_component_gate_report.md`
+- Current component roles:
+  - `momentum_12_1`: `eligible_benchmark_premia_component`
+  - `reversal_5_1`: `eligible_benchmark_premia_component`
+  - `low_vol_60d`: `eligible_hedge_component`
+- R14 does not promote factors as standalone alpha. It allows only portfolio-level
+  diagnostic ensemble validation with later ablation and baseline comparison.
+
+### MF-R14.5: Filter Audit and Candidate Resurrection
+
+Goal:
+Audit the formal factor candidate set before portfolio-level validation, so R15
+does not accidentally run only the factors that survived early standalone
+residual screening.
+
+Scope:
+
+- audit every formal `factor_specs/*.yaml` candidate
+- separate hard validity failures from soft evidence labels
+- keep PIT, timestamp, lookahead, survivorship, same-close trading, missing
+  required data, and forward-return leakage failures blocked
+- resurrect soft failures such as weak standalone IC, insufficient residual
+  evidence, benchmark exposure, style-proxy conflict, high correlation, high
+  turnover warning, or unstable standalone evidence as portfolio components
+- preserve Factor Discovery teaching/proxy candidates outside formal research
+  mode unless separately imported through the approved contract
+- write the R15 input component pool explicitly
+
+Status:
+
+- Complete.
+- Output lives under `outputs/multifactor_alpha_validation/risk_model/`.
+- The current formal-spec audit writes `10` candidate rows with
+  `component_pool_count=9` and `hard_excluded_count=1`.
+- Artifacts:
+  - `candidate_filter_audit.csv`
+  - `hard_excluded_candidates.csv`
+  - `soft_resurrected_component_pool.csv`
+  - `component_pool_manifest.json`
+  - `filter_audit_report.md`
+- Current hard exclusion:
+  - `analyst_revision_disabled`: `missing_pit_estimate_source`
+- Current resurrected pool includes the three R14 component rows plus enabled
+  formal specs not yet risk-attributed and the `sue_event_reference` reference
+  component.
+- R14.5 does not create alpha evidence, redundancy-gate access, allocator
+  weights, Q2 input, paper canary, live trading, security orders, or production
+  approval. It only defines the correct portfolio-level diagnostic input set.
+
+### MF-R15: Portfolio-Level OOS Ensemble Validation
+
+Goal:
+Evaluate whether the soft-resurrected component pool has basic portfolio-level
+life before any OR optimizer, unrestricted allocator, or security-level
+portfolio construction is opened.
+
+Scope:
+
+- consume `soft_resurrected_component_pool.csv`
+- exclude hard-blocked components
+- keep soft-labeled components eligible when OOS observations exist
+- report unavailable component observations explicitly
+- evaluate rolling/prior-only diagnostic ensembles:
+  - `equal_weight_all_components`
+  - `equal_weight_by_cluster`
+  - `inverse_vol_ensemble`
+  - `simple_shrinkage_ensemble`
+  - `current_three_factor_component_ensemble`
+  - `best_single_factor`
+  - `QQQ_benchmark`
+  - `random_weight_placebo`
+  - `permuted_signal_placebo`
+- compare against QQQ, best single factor, random-weight placebo, and permuted
+  placebo
+- keep `full_sample_weights_used=false`
+- keep OR optimizer, security-level construction, Q2, paper/live, broker/order,
+  and production approval disabled
+
+Status:
+
+- Complete.
+- Output lives under `outputs/multifactor_alpha_validation/portfolio_validation/`.
+- Artifacts:
+  - `portfolio_ensemble_oos_report.csv`
+  - `ensemble_vs_baselines.csv`
+  - `ensemble_validation_summary.json`
+  - `random_weight_placebo_report.csv`
+  - `permuted_signal_placebo_report.csv`
+  - `portfolio_validation_report.md`
+- Current real WRDS smoke:
+  - `validation_status=evaluated`
+  - `decision_state=portfolio_component_pool_fails_cost`
+  - `input_component_count=9`
+  - `available_component_count=8`
+  - `unavailable_component_count=1`
+  - `hard_blocked_component_count=0`
+  - `full_sample_weights_used=false`
+  - `or_optimizer_used=false`
+- Current available components are `momentum_12_1`, `reversal_5_1`,
+  `low_vol_60d`, `liquidity_turnover`, `value_bm`,
+  `profitability_quality`, `investment_asset_growth`, and `accruals`.
+  `sue_event_reference` remains unavailable until a PIT event visibility
+  timestamp path is wired.
+- The primary equal-weight component ensemble has negative gross,
+  cost-adjusted annualized, and QQQ-relative returns, so the component pool does
+  not justify OR optimization.
+- R15 is diagnostic portfolio validation only. It does not create alpha evidence,
+  redundancy-gate access, allocator weights, Q2 input, paper canary, live
+  trading, security orders, OR optimization, or production approval.
+
+### MF-R15.5: Portfolio Assembly Audit
+
+Goal:
+Determine whether the R15 result reflects a true component-pool failure, an
+observed-subset failure, a construction issue, a cost issue, a direction issue,
+or an incomplete-observation problem.
+
+Scope:
+
+- consume the R15 portfolio validation artifacts
+- compare observed components against the full resurrected component pool
+- report unavailable components instead of fabricating returns
+- audit component direction conventions
+- split gross return, cost drag, and net return
+- evaluate role-aware diagnostic ensemble mixes:
+  - `return_driver_only`
+  - `hedge_only`
+  - `benchmark_premia_only`
+  - `return_driver_plus_hedge_80_20`
+  - `momentum_plus_low_vol`
+  - `momentum_plus_reversal`
+  - `risk_balanced_by_component_vol`
+  - `turnover_capped_equal_weight`
+- review whether QQQ-relative weakness is a benchmark/beta conflict
+- keep OR optimizer, security-level construction, Q2, paper/live, broker/order,
+  and production approval disabled
+
+Status:
+
+- Complete.
+- Output lives under `outputs/multifactor_alpha_validation/portfolio_validation/`.
+- Artifacts:
+  - `portfolio_assembly_audit.json`
+  - `observed_subset_coverage_report.csv`
+  - `component_direction_audit.csv`
+  - `gross_to_net_waterfall.csv`
+  - `role_aware_ensemble_report.csv`
+  - `decision_state_reclassification.md`
+- Current real WRDS smoke after component OOS observation expansion:
+  - `original_decision_state=portfolio_component_pool_fails_cost`
+  - `reclassified_decision_state=component_pool_fails_gross`
+  - `component_pool_validation_state=component_pool_observation_sufficient`
+  - `eligible_component_count=9`
+  - `observed_component_count=8`
+  - `unavailable_component_count=1`
+  - `coverage_ratio=0.8888888889`
+  - `benchmark_exposure_conflict=true`
+  - `or_optimizer_used=false`
+  - `security_level_portfolio_construction_used=false`
+- R15.5 now diagnoses the current observed component pool: the primary
+  construction fails gross and cost-adjusted OOS, while `sue_event_reference`
+  remains explicitly unavailable. OR optimization remains blocked.
+
+### MF-R15.6A: Component OOS Observation Expansion
+
+Goal:
+Safely add real OOS observations for resurrected components where the local
+WRDS daily price-volume bundle and lagged Compustat fundamentals satisfy PIT,
+timestamp, lag, and horizon requirements.
+
+Scope:
+
+- consume the original real OOS observations from the three price/style factors
+- consume `soft_resurrected_component_pool.csv`
+- read the local WRDS daily research-mode manifest
+- read the local lagged Compustat fundamentals manifest when present
+- generate observations only for components with supported builders:
+  - `liquidity_turnover`
+  - `value_bm`
+  - `profitability_quality`
+  - `investment_asset_growth`
+  - `accruals`
+- keep `sue_event_reference` unavailable until a PIT event visibility timestamp
+  path is wired
+- keep same-close trading, full-sample ICIR, OR, Q2, broker/order, live, and
+  production-approval paths disabled
+- write no raw WRDS data into git and fabricate no returns
+
+Status:
+
+- Complete.
+- Output lives under
+  `outputs/multifactor_alpha_validation/component_oos_observations/`.
+- Artifacts:
+  - `real_oos_observations.csv`
+  - `component_oos_observation_expansion_summary.json`
+  - `component_oos_observation_enablement_report.csv`
+- Current real WRDS smoke:
+  - generated factors: `accruals`, `investment_asset_growth`,
+    `liquidity_turnover`, `profitability_quality`, `value_bm`
+  - `observed_factor_count_after_expansion=8`
+  - `unavailable_factor_ids_after_expansion=sue_event_reference`
+  - `fabricated_returns=false`
+  - `same_close_trading_used=false`
+  - `full_sample_icir_used=false`
+- R15 and R15.5 should be run after this target so portfolio diagnostics use the
+  expanded observation panel.
+
+### MF-R15.6: Component OOS Availability Expansion
+
+Goal:
+Classify why resurrected components are observed or unavailable before any
+full-pool contribution, survival, or OR decision is attempted.
+
+Scope:
+
+- consume `soft_resurrected_component_pool.csv`
+- consume current real OOS observations
+- load formal FactorSpecs for data tier, horizon, timestamp policy, and
+  reporting lag
+- assign an unavailable reason from the fixed taxonomy:
+  - `missing_signal_panel`
+  - `missing_pit_source`
+  - `missing_fundamental_lag`
+  - `missing_event_timestamp`
+  - `missing_oos_return_alignment`
+  - `horizon_incompatible_with_monthly_ensemble`
+  - `insufficient_coverage`
+  - `disabled_by_policy`
+  - `research_mode_blocked`
+- require tier-2 fundamentals to retain reporting lag
+- require event/reference components to retain visibility timestamps
+- enforce `component_pool_validation_min_coverage=0.60`
+- keep full-pool pass/fail decisions blocked below the coverage threshold
+- write no fabricated returns
+- keep OR optimizer, security-level construction, Q2, paper/live, broker/order,
+  and production approval disabled
+
+Status:
+
+- Complete.
+- Output lives under `outputs/multifactor_alpha_validation/portfolio_validation/`.
+- Artifacts:
+  - `component_oos_availability_report.csv`
+  - `component_oos_availability_summary.json`
+  - `component_enablement_plan.md`
+- Current real WRDS smoke after component OOS observation expansion:
+  - `eligible_component_count=9`
+  - `observed_component_count=8`
+  - `unavailable_component_count=1`
+  - `coverage_ratio=0.8888888889`
+  - `component_pool_validation_state=component_pool_observation_coverage_sufficient`
+  - `full_pool_decision_allowed=true`
+  - unavailable reasons: `missing_event_timestamp=1`
+  - `fabricated_returns=false`
+- R15.6 confirms that observation coverage is now sufficient for a current
+  observed component-pool diagnostic, but not for OR. The current R15/R15.5
+  rerun still fails gross and cost-adjusted OOS under the primary diagnostic
+  construction. OR remains blocked.
+
+### MF-R16: Post-Portfolio Contribution / Ablation
+
+Goal:
+Explain which observed components, clusters, roles, and regimes contributed to
+the R15 portfolio-level failure before any optimizer or security-level
+construction is considered.
+
+Scope:
+
+- consume `soft_resurrected_component_pool.csv`
+- consume expanded component OOS observations
+- consume the R15 validation summary for source decision context
+- run leave-one-factor-out ablation
+- run drop-cluster ablation
+- run component-role contribution diagnostics
+- split factor contribution by QQQ up/down regimes
+- classify component contribution as one of:
+  - `core_component`
+  - `diversifier_component`
+  - `hedge_component`
+  - `regime_specific_component`
+  - `redundant_after_portfolio`
+  - `cost_negative_component`
+  - `diagnostic_component`
+- keep OR optimizer, security-level construction, Q2, paper/live, broker/order,
+  and production approval disabled
+
+Status:
+
+- Complete.
+- Output lives under
+  `outputs/multifactor_alpha_validation/portfolio_contribution/`.
+- Artifacts:
+  - `factor_ablation_report.csv`
+  - `cluster_ablation_report.csv`
+  - `factor_role_contribution.csv`
+  - `contribution_by_regime.csv`
+  - `portfolio_contribution_summary.json`
+  - `post_portfolio_contribution_report.md`
+- Current real WRDS smoke:
+  - `validation_status=evaluated`
+  - `decision_state=portfolio_contribution_diagnostic_only`
+  - `observed_component_count=8`
+  - baseline gross annualized return `-0.0260405898`
+  - baseline cost-adjusted return `-0.0376911544`
+  - baseline Sharpe `-0.6257279985`
+  - `or_optimizer_used=false`
+  - `security_level_portfolio_construction_used=false`
+- Current diagnosis:
+  - `fundamental_premia_component` and `style_premia_return_driver` have
+    positive role contribution under the diagnostic equal-weight construction.
+  - `hedge_or_diversifier_component` is negative as a role.
+  - `low_vol_60d` has positive QQQ-down contribution but is negative overall.
+  - `liquidity_turnover` is a negative post-portfolio contribution.
+- R16 is attribution only. It does not create alpha evidence, factor weights,
+  security-level targets, OR entry, Q2 input, paper canary, live trading,
+  security orders, or production approval.

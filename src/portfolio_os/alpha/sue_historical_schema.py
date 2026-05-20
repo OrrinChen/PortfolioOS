@@ -152,6 +152,11 @@ class SueHistoricalPanelConfig(BaseModel):
     estimate_snapshots_path: str | None = None
     security_links_path: str | None = None
     crsp_daily_path: str | None = None
+    start_date: str | None = None
+    end_date: str | None = None
+    max_events: int | None = Field(default=None, gt=0)
+    sampled: bool = False
+    sample_seed: int = 20260506
 
     @model_validator(mode="after")
     def validate_full_mode_inputs(self) -> "SueHistoricalPanelConfig":

@@ -1,0 +1,38 @@
+schema_version: wrds_sue_event_panel_expanded_config.v1
+mode: full
+start_date: '2020-01-01'
+end_date: '2020-12-31'
+max_events: 30000
+sampled: false
+sample_seed: 20260506
+fetched_at: '2026-05-06T00:00:00Z'
+
+inputs:
+  earnings_events_path: data/cache/wrds_sue_event_panel_expanded/ibes_actuals.csv
+  estimate_snapshots_path: data/cache/wrds_sue_event_panel_expanded/ibes_estimates.csv
+  security_links_path: data/cache/wrds_sue_event_panel/ibes_links_rescued.csv
+  crsp_daily_path: data/cache/wrds_sue_event_panel/crsp_daily.csv
+
+outputs:
+  output_dir: outputs/sue_historical_event_panel_expanded
+  report_path: reports/sue_historical_event_panel_expansion_report.md
+
+wrds_extract:
+  enabled: true
+  actuals_source_table: ibes.actu_epsus
+  estimates_source_table: ibes.statsum_epsus
+  estimate_lookback_days: 730
+  estimate_forward_days: 365
+  query_strategy: statsum_latest
+  target_pair_chunk_size: 500
+  ticker_chunk_size: 250
+  overwrite: false
+
+non_goals:
+  q2_evaluation_ran: false
+  optimizer_path_evaluation_ran: false
+  alpha_registry_promoted: false
+  production_approval_claimed: false
+  paper_ready_claimed: false
+  live_trading_claimed: false
+  broker_order_workflow_added: false

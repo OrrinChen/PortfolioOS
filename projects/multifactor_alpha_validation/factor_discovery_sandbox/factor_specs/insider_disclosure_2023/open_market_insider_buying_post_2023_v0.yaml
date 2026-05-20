@@ -1,0 +1,182 @@
+schema_version: track_a_measurement_spec.v1
+measurement_spec_id: open_market_insider_buying_post_2023_v0
+candidate_id: insider_disclosure_regime_2023
+status: d3_measurement_spec_frozen_after_real_d2_observable
+track: track_a_forensic_research
+mechanism_family: insider_disclosure_regime_2023
+measurement_role: primary_open_market_buy_measurement
+formula_version: insider_disclosure_regime_2023_d3_v0
+formula_hash: 081ac1fa5d8a8b05
+formula_summary: >
+  Event-conditional open-market insider buy conviction score after post-2023
+  Form 4 disclosure visibility. This is a frozen Track A measurement
+  definition, not Q1 evidence, Q2 entry, portfolio construction, paper workflow,
+  live workflow, or production approval.
+source_d2_observability_artifact: outputs/factor_discovery/insider_disclosure/d2_real_archive_batched_aggregate/d2_observability_summary_real.json
+source_d2_observability_decision:
+  stage: D2-INSIDER-01R
+  real_data_status: local_form4_batched_replay_complete
+  overall_decision: observable
+  allow_d3_charter_for:
+    - open_market_insider_buying_post_2023
+  open_market_buy_gate:
+    passed: true
+    event_count: 1798
+    covered_count: 1458
+    coverage_share: 0.810901
+    covered_event_month_count: 39
+    covered_cluster_count: 820
+    minimum_event_count: 300
+    minimum_event_month_count: 24
+    minimum_cluster_count: 50
+    minimum_coverage_share: 0.8
+design_contract:
+  design_contract_schema: fd_factor_design_contract.v1
+  market_pain_point: >
+    Public Form 4 filings reveal discretionary insider common-stock purchases
+    only after EDGAR acceptance. Market participants may underreact to
+    event-local insider conviction when purchases are clustered or come from
+    senior roles.
+  mechanism_hypothesis: >
+    Post-2023 disclosure structure makes it cleaner to separate voluntary
+    common-stock buy conviction from planned-sale and compensation noise.
+    Open-market purchase events should be measured only after the filing is
+    publicly visible.
+  investor_constraint_or_behavior: >
+    Fundamental investors and screen-driven flows can process insider purchase
+    filings slowly, while insiders face legal, liquidity, and disclosure
+    constraints that make voluntary open-market buys sparse.
+  expected_universe: >
+    US common-stock issuers with local SEC Form 4 ownership filings, EDGAR
+    accepted timestamps, valid ticker mapping, and PIT price/volume controls.
+  expected_regime: >
+    Post-2023 Form 4 disclosure regime; pre-2023 observations are diagnostic
+    controls only unless a separate D2 protocol is opened.
+  why_not_arbitraged_away: >
+    Events are sparse, capacity is issuer-specific, disclosure parsing is
+    operationally costly, and false positives from compensation or planned-sale
+    activity must be excluded.
+  observable_pre_formula_diagnostics:
+    - D2 no-formula event registry parsed from local Form 4 archive.
+    - SEC accepted timestamp and next-market-open tradability policy pass.
+    - Open-market buy subset passes sample, cluster, month, placebo, and market coverage gates.
+  placebo_design:
+    - shifted filing dates
+    - same-coverage random events
+    - randomized insider role labels
+    - non-open-market compensation controls
+    - sector-size-liquidity matched controls
+    - pre-filing drift dominance check
+  cost_capacity_risks:
+    - event sparsity
+    - issuer-specific capacity
+    - spread and ADV concentration
+    - delayed entry after public filing visibility
+  expected_failure_modes:
+    - shifted filing dates beat live filing dates
+    - compensation controls mimic or beat code P purchases
+    - coverage falls below real D2 gate
+    - pre-filing drift dominates post-filing window
+    - market/sector/liquidity controls fully explain the footprint
+  formula_measurement_role: >
+    The formula is only a frozen measurement of the open-market buy mechanism.
+    It is not itself the thesis and does not validate an alpha.
+primary_measurement:
+  name: open_market_insider_buying_post_2023_v0
+  expected_direction: positive
+  event_source: local_sec_form4_archive
+  event_subset: open_market_buy
+  include_transaction_codes:
+    - P
+  acquired_disposed_required: A
+  require_non_derivative_common_stock: true
+  exclude_transaction_codes:
+    - A
+    - M
+    - F
+    - G
+    - S
+  planned_sell_policy: no_view_diagnostic_only
+  discretionary_sell_policy: out_of_scope_contrast_only
+  non_event_issuers_policy: no_view_not_zero
+  raw_value_definition: >
+    log1p(sum_open_market_buy_dollars_since_prior_signal / market_cap_at_event)
+    * role_weight
+    * log1p(distinct_buying_insiders_since_prior_signal)
+    * sqrt(1 + min(2.0, shares_bought / max(1, prior_reported_holding_shares)))
+  oriented_score_definition: >
+    Cross-sectional z-score by signal date after predeclared winsorization of
+    raw_buy_conviction. Higher score means stronger measured insider buy
+    conviction.
+role_weights:
+  ceo: 1.30
+  cfo: 1.30
+  other_officer: 1.15
+  director: 1.00
+  ten_pct_owner: 0.80
+  other: diagnostic_only
+timestamp_contract:
+  event_visibility_timestamp: sec_edgar_filing_accepted_timestamp
+  tradable_timestamp: next_regular_market_open_after_acceptance
+  return_anchor: tradable_timestamp
+  transaction_date_policy: never_return_anchor
+  allow_same_close_trading: false
+  timezone: UTC
+holding_windows:
+  primary: post_1_22_trading_days
+  diagnostics:
+    - post_1_5_trading_days
+    - post_1_10_trading_days
+    - post_1_44_trading_days
+  falsifier_windows:
+    - pre_20_1_trading_days
+    - pre_10_1_trading_days
+    - pre_5_1_trading_days
+coverage_rule:
+  minimum_open_market_buy_events: 300
+  minimum_covered_open_market_buy_events: 300
+  minimum_event_months: 24
+  minimum_clusters: 50
+  minimum_market_coverage_share: 0.8
+  required_market_controls:
+    - market_cap_at_event
+    - adv_20d
+    - spread_proxy_if_available
+    - sector_if_available
+  insufficient_coverage: explicit_abstain
+  abstain_reason: missing_market_join_or_price_volume_controls
+no_view_policy:
+  missing_coverage: explicit_no_view_abstain_not_zero
+  non_event_issuers: no_view_not_zero
+  unknown_ten_b5_one_flag: audit_no_view
+  unsupported_transaction_code: audit_no_view
+allowed_diagnostic_variants:
+  - discretionary_sell_vs_planned_sell_contrast_only
+  - planned_sell_information_compression_only
+  - role_bucket_readout_only
+  - event_cluster_readout_only
+hard_falsifiers:
+  - shifted_filing_dates_beat_live
+  - same_coverage_random_beats_live
+  - randomized_role_labels_beat_live
+  - compensation_controls_beat_code_p_purchases
+  - pre_filing_drift_dominates_post_filing_window
+  - market_or_sector_or_liquidity_controls_explain_full_read
+forbidden_next_steps:
+  - direct_q1_entry
+  - direct_q2_entry
+  - optimizer_or_portfolio_path
+  - alpha_registry_promotion
+  - paper_workflow
+  - broker_or_order_workflow
+  - live_workflow
+  - production_approval
+formula_score_written: false
+measurement_spec_written_after_real_d2_pass: true
+q1_entry_allowed: false
+q2_entry_allowed: false
+alpha_registry_update_allowed: false
+production_approval_claimed: false
+no_view_is_not_zero_alpha: true
+not_alpha_evidence: true
+direct_q2_entry_allowed: false

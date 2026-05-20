@@ -61,9 +61,22 @@ Completed:
 - Phase 56A: Expanded SUE Typed Q2 Candidate v1 expands deterministic local SUE breadth to 120 event-name rows across 12 rebalance dates while preserving PIT timestamps, explicit abstain semantics, Q2 observed/unavailable separation, and non-approval language.
 - Phase 65: PortfolioOS v1 Research-Audit Release Hygiene packages the current local release surface, release note, Alpha Registry v2 consistency checks, Phase 56A deterministic fixture limits, and misleading-claim regression tests without adding alpha research, optimizer changes, live workflows, or broker/order paths.
 - Phase 66: PortfolioOS v1 Maintenance Freeze / Future-Only Backlog freezes the v1 research-audit release, records future-only backlog categories, and blocks automatic roadmap expansion.
+- Research Track Boundary Registry: the repo now separates the Single-Alpha Research Factory from the Multi-Factor Portfolio Validation Engine while keeping Q1/Q2, Promotion Gate, Alpha Registry, audit, provenance, and validation as shared governance infrastructure. The source of truth is `configs/research_tracks.yaml`, validated by `make research-track-boundaries`. This is a boundary/status layer only; it does not move code, run Q2, promote candidates, or approve production use.
 - Reopen-O1: Typed Alpha Optimizer Input Bridge v1 explicitly reopens only the local optimizer input bridge gap after the v1 freeze. It injects typed expected-return panels into an actual local PortfolioOS optimizer decision path, writes actual optimizer-output Q2 rows, preserves explicit no_view semantics, and does not add alpha research, broker/order/live workflows, paper readiness, or production approval.
 - Reopen-H1A: WRDS PIT-Safe SUE Event Panel Builder adds a local WRDS/IBES/CRSP PIT-labeled SUE event panel builder with smoke artifacts, lineage, PIT visibility, linkage, coverage, and non-claim reports. It does not run Q2, retune optimizers, add broker/order/live workflows, claim real historical alpha success, or promote Alpha Registry state.
 - Reopen-H1A.1: WRDS Full Extract Run + Panel Audit adds a YAML-driven local full-mode audit path for WRDS/IBES/CRSP extracts. It produced a bounded real WRDS-backed panel from local cache extracts and preserves structured unavailable reporting when extracts are missing.
+- Reopen-H1A.2: CRSP Price Coverage Expansion / Resumable Extract adds a chunked CRSP daily price extractor for linked SUE PERMNOs and raises the bounded panel's final PIT-safe rows from 10 to 1,169 without changing SUE evidence or approval status.
+- Reopen-H1B: Bounded Historical SUE Event Evidence Grid computes `[+2,+2]`, `[+2,+3]`, and `[+2,+22]` rank-IC/spread evidence, placebo diagnostics, coverage reports, and PIT/leakage audit on the bounded WRDS/PIT-safe sample without running Q2, optimizer-path evaluation, broker/order/live workflows, paper trading, production approval, or Alpha Registry promotion.
+- Reopen-H1C: WRDS SUE Panel Expansion and Coverage Rescue expands the WRDS/PIT SUE panel to a 2020 `statsum`-derived actual/estimate sample, writes coverage rescue diagnostics, and reruns event-window evidence on the expanded PIT-safe sample without running Q2, optimizer-path evaluation, broker/order/live workflows, paper trading, production approval, or Alpha Registry promotion.
+- Post-H1C coverage/linkage/price diagnostics explain expanded SUE coverage loss by linkage failure, missing price windows, and CRSP cache gaps without running Q2, optimizer-path evaluation, broker/order/live workflows, paper trading, production approval, or Alpha Registry promotion.
+- Post-H1C data coverage rescue expands CRSP PERMNO coverage and exact-CUSIP CRSP stocknames linkage, while keeping the SUE path historical-evidence-only and outside Q2, optimizer-path evaluation, paper/live trading, broker/order workflows, production approval, and Alpha Registry promotion.
+- Reopen-H1D: SUE Score Definition Diagnostics compares raw EPS difference with scale-aware expected-EPS, actual-EPS, winsorized, and price-scaled SUE variants to explain why Rank IC can be positive while raw-tail top-bottom spread is negative. It remains historical score diagnosis only and does not run Q2, optimizer-path evaluation, paper/live trading, broker/order workflows, production approval, or Alpha Registry promotion.
+- Reopen-H1E: Scale-Aware SUE Score Definition Gate preregisters SUE score variants, downgrades raw EPS difference to diagnostic-only, applies denominator/winsorization/tail/placebo guards, and selects or rejects a scale-aware SUE candidate without running Q2, optimizer-path evaluation, paper/live trading, broker/order workflows, production approval, or Alpha Registry promotion.
+- Reopen-H1E.1: Event-Date-Shift Placebo Failure Attribution diagnoses why the H1E provisional scale-aware SUE read fails the event-date-shift placebo, decomposing timing, return-window overlap, regime concentration, denominator/tail, and unavailable sector/size/liquidity hooks without selecting a score, running Q2, optimizer-path evaluation, paper/live trading, broker/order workflows, production approval, or Alpha Registry promotion.
+- Reopen-H1E.2: Market-Regime Placebo Filter Check validates the H1E.1 market-regime attribution by excluding March 2020, high-volatility weeks, low-liquidity weeks, and their union before rerunning filtered score-gate summaries and placebo curves. It does not select a score, run Q2, optimizer-path evaluation, paper/live trading, broker/order workflows, production approval, or Alpha Registry promotion.
+- Reopen-H1E.3: SUE Event Timing / Anchor Definition Audit compares current tradable, announcement-date, and shifted anchors plus pre-event drift windows to explain whether the -5/-10 placebo advantage reflects late anchoring, pre-event drift, window bugs, or timing contamination. The current run returns `interpretation=anchor_definition_likely_late`, with `best_anchor_definition=shift_minus_5_td`, current-tradable `[+2,+22]` mean top-bottom spread `0.020484`, and shifted-minus-5 `[+2,+22]` mean top-bottom spread `0.089401`. It does not select a score, run Q2, optimizer-path evaluation, paper/live trading, broker/order workflows, production approval, or Alpha Registry promotion.
+- Reopen-H1E.4: SUE Announcement Timestamp Source / Anchor Policy Correction audits whether any earlier SUE anchor has an auditable actual-EPS public-availability source. The current run returns `decision_label=no_auditable_earlier_timestamp_sue_blocked`, `event_count=17027`, `auditable_source_event_count=0`, and `repaired_event_count=0`, so -5/-10 windows remain unusable as tradable SUE evidence. It blocks blind -5/-10 tradable shifts unless source proof exists and does not select a score, run Q2, optimizer-path evaluation, paper/live trading, broker/order workflows, production approval, Factor Discovery implementation, or Alpha Registry promotion.
+- Reopen-H1E.5: SUE Timestamp Data Acquisition / Source Enrichment now pulls local WRDS timestamp-source cache files from IBES actuals and Compustat quarterly data, then enriches SUE events with IBES `anndats_act`, Compustat `rdq`, exact earnings-release timestamps, and SEC filing timestamps. The current WRDS source extract matched IBES actual timestamps for `17027` events and Compustat RDQ for `12987` events. The enrichment run returns `decision_label=timestamp_enrichment_no_repair_sue_blocked`, `event_count=17027`, `repairable_event_count=0`, `ibes_anndats_act_count=17027`, and `compustat_rdq_count=12987`. It can write repairable event candidates only when an auditable exact source proves earlier public availability; it does not rerun H1E, select a score, run Q2, run optimizer-path evaluation, promote Alpha Registry state, create paper/live/broker/order workflows, approve production use, or use -5/-10 shifted returns as evidence.
 - FD-1: Factor Discovery Sandbox teaching baseline replication is complete with
   deterministic local fixture data, QQQ benchmark reporting, 29 price-volume
   factors, IC/ICIR tables, correlation matrix, ICIR weights, and explicit
@@ -83,6 +96,254 @@ Completed:
 - FD-6: Cost / Capacity / Benchmark Survival is complete with cost stress,
   capacity frontier, benchmark attribution, survival funnel, final report, and a
   Phase 64 research import bundle that blocks direct Q2 entry.
+- FD-R0/R1/R2: Factor Discovery real-data validation line is started with a
+  WRDS monthly PIT data admission contract, PIT universe builder,
+  symbol-mapping/survivorship audits, return panel, benchmark returns, and
+  corporate-action audit. The missing daily/raw/sector data has now been pulled
+  into a local WRDS daily PIT bundle, and FD-R0/R1/R2 daily admission returns
+  `admitted_for_daily_pit_r0_r2` with `full_daily_price_volume_ready=true`. It
+  remains not alpha evidence and does not run factor ranking, allocator weights,
+  production approval, or Q2 entry.
+- FD-R3: Factor Discovery real-data FactorSpec replay is complete on the local
+  WRDS daily PIT bundle and has been rerun with
+  `price_volume_29_mechanism_v2`. It preserves all 29 factor IDs while writing
+  formula hashes, mechanism families, raw values, oriented scores,
+  cross-sectional ranks, fallback audit fields, coverage report, timestamp
+  audit, replay report, summary JSON, and parquet-status JSON under
+  `outputs/factor_discovery/real_data_daily/fd_r3/`. The replay keeps
+  same-close trading disabled, preserves explicit abstain rows, keeps
+  `no_view != zero_alpha`, and does not run allocator weights, alpha success
+  claims, production approval, Q2 entry, or Alpha Registry import.
+- FD-R4: Factor Discovery true rolling OOS validation is complete on the FD-R3
+  real-data panel. It writes rolling ICIR weights, OOS factor scores, 1m/3m
+  QQQ-relative decile spreads, validation report, and summary JSON under
+  `outputs/factor_discovery/real_data_daily/fd_r4/`. It uses a 36-month rolling
+  train window, 12-month validation window, forward test window, prior-visible
+  returns only, and forbids full-sample ICIR, future universe membership, future
+  normalization, and post-period factor selection. The current smoke is weak /
+  negative on average and remains not alpha evidence, not allocator output, not
+  production approval, and not Q2 entry.
+- FD-R5: Factor Discovery placebo / robustness / family diagnostics are
+  complete on the FD-R4 score panel. It writes placebo report, robustness by
+  period, robustness by regime, factor-family diagnostics, and summary JSON
+  under `outputs/factor_discovery/real_data_daily/fd_r5/`. The current real-data
+  result is `placebo_status=failed_placebo_gate` and
+  `recommended_next_action=stop_before_allocator`, so allocator entry, Q1/Q2,
+  production approval, and Alpha Registry import remain blocked.
+- FD-R5.1: Factor Discovery candidate failure diagnosis is complete on existing
+  FD-R3/R4/R5 artifacts and has been rerun after the FactorSpec v2 mechanism
+  rewrite. It writes standalone factor OOS diagnostics, family composite
+  diagnostics, rolling-weight failure attribution, redundancy clusters,
+  candidate revision recommendations, and a failure diagnosis report under
+  `outputs/factor_discovery/real_data_daily/fd_r5_1/`. The current v2 diagnosis
+  says data/timestamp, coverage, factor definition, and redundancy are not the
+  main failure; rolling ICIR noise remains true and FD-R5 still says
+  `recommended_next_action=stop_before_allocator`. Allocator, Q1/Q2,
+  production approval, and Alpha Registry import remain blocked.
+- FD-R5.1 Formula Mechanism Separation Audit is complete for
+  `price_volume_29_mechanism_v2`. It writes formula mechanism, duplicate
+  cluster, and rank-identity audit artifacts under
+  `outputs/factor_discovery/research_mode/` plus
+  `reports/factor_formula_mechanism_v2_audit.md`. The current audit checks 406
+  factor pairs and finds 0 hard-fail exact value, rank, or sign-flip duplicate
+  pairs. High correlation remains review-only, not allocator approval.
+- FD-R4.1 / FD-R5.2 Rolling Weighting Reliability Gate is complete. It compares
+  current rolling ICIR against equal-weight, family-equal, shrunk ICIR, signed
+  shrunk ICIR, and rolling ridge estimators, then writes estimator comparison,
+  weight stability, placebo comparison, failure diagnosis, and report artifacts
+  under `outputs/factor_discovery/research_mode/` plus
+  `reports/factor_discovery_weighting_reliability_report.md`. The current gate
+  returns `decision=close`, `best_estimator=equal_weight_all`, and
+  `rolling_icir_overfit_noise_failure=true`: the learned weighting methods do
+  not beat baseline/placebo requirements, so allocator, Q1/Q2, production
+  approval, and Alpha Registry import remain blocked.
+- FD-S0/S1/S3 Small-Cap Candidate Family v1 is started as a separate Factor
+  Discovery line, not as a rescue of `price_volume_29`. It adds a small-cap data
+  admission gate, universe tiering into `large_cap_control`,
+  `small_cap_investable`, and `microcap_quarantine`, and the fixed single-signal
+  `small_cap_quality_residual_momentum_6m_ex1m` family shell. The WRDS
+  small-cap CRSP daily bundle has now been pulled locally with common-share /
+  major-exchange filters, PIT market cap, shares outstanding, spread proxy
+  fields, IWM benchmark, historical name intervals, and delisting rows. Data
+  admission now passes, the Compustat/CCM PIT quality bundle is present, and
+  the family rerun returns `decision_label=reject_placebo_failure`. FD-S4.1
+  small-cap lag / capacity dominance diagnosis is complete and returns
+  `decision_label=diagnostic_only_cost_blocked`: lagged/smoothed variants are
+  stronger gross reads, the update component is negative, and broad fixed
+  weighting schemes remain net negative after spread/ADV cost drag. FD-S4.2 is
+  complete as a preregistered slow / capacity-filtered diagnostic rerun; it
+  adds a 1m/3m/6m target cache and returns
+  `decision_label=reject_temporal_noise_confirmed` because lagged/smoothed
+  variants do not beat the live signal after the locked capacity filter.
+  FD-S4.3 is complete as a capacity-filtered live-signal preregistration gate:
+  it closes the slow branch, locks `live_signal / 3m / quarterly /
+  adv_weight_within_bucket`, creates a nested confirmation split, and returns
+  `decision_label=reject_capacity_filter_hypothesis` because same-coverage,
+  capacity-matched, and rebalance-shifted placebos beat the primary
+  confirmation row. Allocator, Q1/Q2, production approval, and Alpha Registry
+  import remain blocked.
+- FD-D0 Factor Design Layer is now installed as a pre-formula gate for all
+  Factor Discovery work. It writes a design contract validation artifact and
+  report, embeds design contracts into the 29 FactorSpecs, and requires every
+  future candidate to document market pain point, mechanism hypothesis,
+  investor constraint or flow, expected universe/regime, observable
+  pre-formula diagnostics, placebo design, cost/capacity risks, and expected
+  failure modes before FD validation. Standalone candidate-family runners now
+  write `candidate_design_manifest.json` before validation. The FD-wide audit
+  target scans candidate output directories and blocks further FD validation
+  for any candidate/family decision artifact missing a valid same-directory
+  design manifest. Formula is measurement, not thesis.
+- FD-D1 Factor Pain-Point Map is complete as the mechanism-first planning
+  layer after FD-D0. It writes `factor_pain_point_map.md`,
+  `factor_design_ledger.csv`, `candidate_family_backlog.json`, and
+  `factor_design_d1_summary.json` under
+  `outputs/factor_discovery/design_layer/d1/`. Existing formula-first results
+  are preserved only as prior diagnostics, while future work must move from
+  market pain point to mechanism to pre-formula diagnostics before validation.
+  FD-D1 does not run allocator, Q1/Q2, Alpha Registry, broker/order/live, or
+  production approval paths.
+- FD-D2 Pre-Formula Diagnostics is complete as the diagnostic gate after
+  FD-D1. It writes `pre_formula_diagnostics.csv`,
+  `candidate_family_d2_decisions.json`,
+  `pre_formula_diagnostic_summary.json`, and
+  `pre_formula_diagnostic_report.md` under
+  `outputs/factor_discovery/design_layer/d2/`. It checks coverage,
+  PIT/timestamp readiness, placebo design, exposure-contamination risk, and
+  cost/capacity before any formula validation. The current D2 run keeps
+  formula validation blocked for every family and marks only
+  `sector_neutral_residual_momentum` as ready for a D3 charter. It does not
+  run allocator, Q1/Q2, Alpha Registry, broker/order/live, or production
+  approval paths.
+- Track A Forensic Research Workflow v1 is implemented as a stricter-than-Qlib
+  single-alpha research harness. The fixture uses
+  `sector_neutral_residual_momentum` to prove CandidateCharter /
+  MeasurementSpec separation, PIT/as-of join hard blocking, explicit
+  no_view/abstain/tradability panels, evidence/placebo records, deterministic
+  manifest hashing, and report/boundary guards. It is workflow discipline only:
+  it does not prove alpha quality, run Q2 or optimizers, construct portfolios,
+  promote Alpha Registry state, open paper/live/broker/order workflows, or
+  approve production use.
+- Q1-INSIDER-01 Evidence Review is implemented for the frozen
+  `open_market_insider_buying_post_2023_v0` D3 signal panel. It builds
+  issuer-event clusters, creates local price/benchmark labels, separates event
+  treatment evidence from within-event ranking evidence, and writes placebo,
+  pre-filing, concentration, and liquidity/cost pre-gate artifacts. The current
+  local run returns `q1_decision=hold_insufficient_sample` because primary
+  `[+1,+22]` label coverage is only `140 / 654` active event clusters
+  (`label_coverage_share=0.214067`). It writes no expected-return panel and
+  opens no Q2, optimizer, portfolio, Alpha Registry, paper, broker/order/live,
+  or production approval path.
+- Q1-INSIDER-01A Label Coverage Rescue is implemented as a one-time narrow
+  coverage repair for Q1 labels only. It preserves the frozen D3 signal hash,
+  MeasurementSpec, formula, role weights, cluster logic, and holding windows,
+  then reruns the same Q1 evidence path. The explicit WRDS `crsp.dsf_v2`
+  rescue lifted primary label coverage to `429 / 654`
+  (`label_coverage_share=0.655963`) and `34` observed event months, but remains
+  below the pre-registered `0.75` coverage threshold because the available WRDS
+  source ends at `2025-12-31` while active events extend into 2026. Q1 remains
+  `hold_insufficient_sample`; no Promotion Gate, Q2, optimizer, portfolio,
+  Alpha Registry, paper, broker/order/live, or production path is opened.
+- `open_market_insider_buying_post_2023_v0` is retired before Promotion Gate as
+  observed-negative-after-rescue / not worth further rescue. This is a minimal
+  stop marker only: it does not claim the broader insider-disclosure mechanism
+  failed.
+- D2-INSIDER-02 planned-vs-discretionary sell contrast is implemented as a
+  no-formula observability pass. The real aggregate run is
+  `blocked_plan_flag_coverage` because the parsed post-2023 S-code stream has
+  `planned_sell_event_count=0` and `unknown_plan_flag_event_count=16429`.
+  D3 MeasurementSpec, Q1, Q2, optimizer, portfolio, Alpha Registry, paper,
+  broker/order/live, and production paths remain closed for this candidate.
+- D2-INSIDER-02A plan-flag parser/source audit is implemented as a one-time
+  narrow source audit. The current audit samples available raw Form 4 sources
+  and finds `structured_true_count=10`, `structured_false_count=12`,
+  `structured_missing_count=178`, `registry_true_count=0`, and
+  `known_plan_flag_share=0.326743`; it returns
+  `hold_pending_clean_plan_flag_source`, so D2-INSIDER-02 remains blocked and
+  no D3/Q1/Q2 path is opened.
+- D2-INSIDER-02B plan-flag source locator / parser repair is implemented as
+  the final narrow repair gate. The current run returns
+  `source_locator_repair_failed_switch_to_8k` with
+  `raw_file_found_share=0.002241`, `known_plan_flag_share=0.001582`,
+  `repaired_planned_sell_event_count=25`, and
+  `repaired_planned_sell_month_count=6`. D2-INSIDER-02 remains blocked and the
+  next action is `switch_to_D2_8K_01_subtype_underreaction`.
+- D2-8K-01 subtype underreaction observability is opened as a no-formula
+  deterministic fixture path. It prioritizes auditor change, CFO departure,
+  CEO departure, material agreement termination, and restatement/amendment
+  8-K rows, then writes subtype counts, timestamp and no-view/coverage audits,
+  CAR diagnostics, matched controls, placebo diagnostics, and a D2 summary.
+  The current fixture run returns `overall_decision=observable` with
+  `priority_event_count=20` and `allow_d3_charter_for` limited to the five
+  configured 8-K subtypes. This is fixture observability only, not real EDGAR
+  evidence, and it opens no MeasurementSpec, Q1/Q2, optimizer, portfolio,
+  Alpha Registry, paper, broker/order/live, or production path.
+- D2-8K-01R real EDGAR 8-K archive source admission + subtype replay is
+  implemented as a local-only no-formula replay. The controlled local archive
+  run reads 2,000 indexed files from the repo-external SEC filing archive,
+  finds `raw_file_found_share=1.0`,
+  `accepted_timestamp_coverage_share=1.0`,
+  `item_header_parse_coverage_share=0.439`, and
+  `market_coverage_share=0.07` after filtering and combining five local price
+  panels, including a bounded WRDS CRSP rescue cache for 2022-2024 priority
+  events. Priority subtype market coverage is `0.396396` across
+  `333` priority events, so the real replay still returns
+  `overall_decision=blocked_market_coverage` and `allow_d3_charter_for=[]`.
+  No 8-K subtype is allowed into D3 until market coverage and source/item
+  parsing coverage are improved and real D2 gates pass.
+  It writes no formula score, MeasurementSpec, expected-return panel, Q1/Q2
+  handoff, optimizer input, Alpha Registry update, paper workflow,
+  broker/order/live path, or production approval.
+- D2-SMALL-EMOTION-01 Small-Cap Shock-Conditioned Emotion / Liquidity
+  Observability is opened as the active Factor Discovery mainline after the
+  insider sell contrast plan-flag repair failed and 8-K remains held for data
+  coverage. It reads the local PIT small-cap daily price-volume, benchmark, and
+  delisting cache, builds panic-overreaction, FOMO-continuation, and
+  liquidity-vacuum reversal candidate subsets, and writes stale-price,
+  ADV/capacity, cost/spread, delisting, CAR-window, matched-control, placebo,
+  no-view, and summary artifacts under
+  `outputs/factor_discovery/small_emotion/d2_observability/`. The current
+  controlled smoke reads 750,000 price rows, records `event_count=5696`,
+  `active_event_count=5196`, `no_view_count=500`, and returns
+  `overall_decision=hold_insufficient_sample` with `allow_d3_charter_for=[]`.
+  It is no-formula D2 observability only: no MeasurementSpec, Q1/Q2 handoff,
+  expected-return panel, optimizer, portfolio, Alpha Registry, paper,
+  broker/order/live, or production path is opened.
+- E0/D3/D4/Q1 small-cap emotion sharpening is now explicitly separated from
+  the original D2 gate. The sharpened `up_shock_reversal` pocket has a frozen
+  D3 charter and D4 MeasurementSpec
+  `small_cap_sharpened_up_shock_reversal_post_1_22_v0` with
+  `measurement_spec_hash=eb56b3e27b0e0b397e3143b7a01e0d8e089b25a560dbc53dcf7ee94f51d2b976`.
+  `make factor-discovery-small-emotion-q1-oos` runs a bounded 750k-row Q1
+  falsifier/OOS smoke by default and keeps full single-file replay opt-in via
+  `--max-rows 0`. The current bounded Q1 read returns
+  `q1_decision=passed_q1_research_review`, `observed_primary_label_count=54`,
+  `event_month_count=6`, `mean_primary_directional_return=0.219921`,
+  `oos_test_mean_directional_return=0.221275`, and
+  `falsifier_dominance_count=0`. This is Q1 research evidence for a heavily
+  searched pocket only; it writes no expected-return panel, Q2 handoff,
+  optimizer input, portfolio artifact, Alpha Registry update, paper workflow,
+  broker/order/live path, or production approval.
+- PG-SMALL-EMOTION-01 Promotion Gate is now implemented for the same frozen
+  MeasurementSpec hash. The gate runs full no-cap Q1 replay first and then
+  audits search burden, tail concentration, data anomalies, cost/liquidity, and
+  time breadth. Current full local decision is
+  `reject_overfit_or_data_artifact` with `stop_reason=q1_failed_full_replay`:
+  the full sample observes 1,182 labels across 45 event months and passes
+  tail, anomaly, time-breadth, and cost/liquidity audits, but Q1 is
+  `blocked_placebo_dominance` because same-coverage random, large-cap matched
+  shock, and ADV/capacity matched placebos beat the live read. No Q2,
+  optimizer, portfolio construction, Alpha Registry, paper/live/broker/order
+  workflow, or production approval is opened.
+- E1-SMALL-EMOTION-FULL-MARKET-OVERFIT is implemented as a separate
+  exploratory overfit lab after PG rejected the frozen small-cap pocket. It
+  widens the research universe to full-market common-stock coverage, searches
+  shock direction, holding window, liquidity, spread, market regime, size,
+  price, prior-return, and close-location leaves, and writes a top-pocket
+  leaderboard plus tail and cost/liquidity audits. It is explicitly overfit
+  discovery only: it writes no MeasurementSpec, signal panel,
+  expected-return panel, Q1/Q2 handoff, optimizer input, portfolio artifact,
+  Alpha Registry update, paper/live/broker/order workflow, or production
+  approval.
 
 Current phase:
 
@@ -90,6 +351,52 @@ Current phase:
 - Reopen-O1 is complete as an explicit reopen task; it is not an automatic Phase 67.
 - Reopen-H1A is complete as an explicit historical-evidence panel-building reopen task; it is not an automatic roadmap expansion.
 - Reopen-H1A.1 is complete as a full-mode local extract audit path; the current workspace generated a bounded WRDS-backed panel with 5,000 event rows, 77 rebalance dates, and 10 final PIT-safe rows because CRSP price coverage was intentionally sampled.
+- Reopen-H1A.2 is complete as a narrow CRSP price-coverage expansion; the current workspace generated 665,875 CRSP daily rows for 1,250 linked PERMNO chunks and lifted final PIT-safe rows to 1,169.
+- Reopen-H1B is complete as a bounded event-evidence grid; the current result is `sue_bounded_evidence_mixed` with best window `[+2,+3]`, mean Rank IC `0.067034`, Rank IC t-stat `1.468260`, and mean top-bottom spread `0.019819`. This remains bounded evidence only, not full historical SUE proof.
+- Reopen-H1C is complete as expanded panel coverage rescue; the current expanded panel has `event_count=17027`, `rebalance_date_count=255`, `final_pit_safe_rows=4435`, and expanded event evidence is `sue_expanded_evidence_mixed`.
+- Post-H1C coverage/linkage/price diagnostics are complete; the current diagnostic result is `event_count=17027`, `final_pit_safe_rows=4435`, `unlinked_ibes_crsp_rows=5777`, `missing_price_rows=6815`, `missing_return_windows=12592`, `crsp_cache_rows=665875`, `crsp_cache_permnos=1244`, `price_gap_classifications.permno_absent_from_crsp_cache=6814`, and `recommended_next_action=rescue_linkage_and_price_coverage_before_q2`.
+- Post-H1C data coverage rescue is complete; exact-CUSIP CRSP stocknames linkage rescued `4098` failed event rows, the CRSP cache now covers `4373` PERMNOs and `2325833` rows, the expanded panel now has `final_pit_safe_rows=15365`, `unlinked_ibes_crsp_rows=1661`, and `missing_price_rows=1`, and the rerun evidence grid remains `sue_expanded_evidence_mixed`.
+- Reopen-H1D is complete as a score-definition diagnostic reopen task; the current run returns `preferred_diagnostic_score=surprise_pct_actual_eps`, `raw_eps_diff_scale_warning=true`, and explains the `[+2,+22]` mismatch where raw EPS diff has positive mean Rank IC (`0.039434`) but negative mean top-bottom spread (`-0.006599`). Missing coverage remains unavailable/no_view rather than zero alpha.
+- Reopen-H1E is complete as a scale-aware SUE score-definition gate; raw EPS difference is diagnostic-only after this phase. The current gate has `provisional_score=surprise_pct_actual_eps`, but final `selected_score=None` and `interpretation=scale_aware_sue_mixed` because event-date-shift placebo does not pass. Any future typed projection/Q2 work requires a separate explicit reopen.
+- Reopen-H1E.1 is available as a placebo-failure attribution diagnostic; it explains the H1E event-date-shift failure before any future typed projection/Q2 work and preserves the current `selected_score=None` / mixed-SUE status.
+- Reopen-H1E.2 is complete as a narrow market-regime filter validation diagnostic; the current result is `market_regime_filter_reduces_but_does_not_resolve_placebo_failure`, with high-volatility-week exclusion reducing the `[+2,+22]` placebo advantage by only `0.0059384` and all filtered slices still failing the event-date-shift check. `selected_score` remains `None`.
+- Reopen-H1E.3 is complete as an event timing / anchor definition audit. The current result is `anchor_definition_likely_late`; `shift_minus_5_td` is the strongest primary anchor and `minus_5_minus_1` is the strongest pre-event drift window. SUE remains blocked before typed projection/Q2 until the anchor policy is explained or corrected and H1E is rerun.
+- Reopen-H1E.4 is complete as a timestamp-source policy audit. The current expanded panel contains no earlier auditable actual-EPS availability source, so SUE remains blocked before anchor repair, H1E rerun, typed projection, or Q2 work.
+- Reopen-H1E.5 is complete as a WRDS-backed timestamp-source enrichment layer. The current WRDS source extract finds no repair candidates; a truly earlier auditable exact public-availability source is still required before any H1E rerun, typed projection, or Q2 work.
+- FD-R5 is complete as an explicit Factor Discovery placebo / robustness task
+  on the admitted daily bundle. The current run fails the placebo gate and
+  should stop before FD-R6 allocator/marginal-value escalation unless the
+  candidate set is revised and replayed from FD-R3/FD-R4.
+- FD-R5.1 is complete as the diagnosis gate explaining why this candidate set
+  stopped before allocator. FactorSpec v2 removed the hard duplicate/formula
+  definition blocker, but FD-R5 still fails placebo and rolling ICIR remains
+  noisy. The next useful FD work is candidate-family selection or weighting
+  redesign followed by FD-R3/R4/R5 replay, not allocator escalation.
+- FD-S4.1 is complete as a small-cap targeted lag / capacity diagnosis. The
+  family remains diagnostic-only because live and lagged/smoothed gross reads
+  do not survive broad fixed cost/capacity gates; any next work must remain FD
+  diagnosis or preregister a revised capacity-filtered/slow-signal experiment,
+  not promotion.
+- FD-S4.2 is complete as the preregistered capacity-filtered slow-signal
+  diagnostic rerun. It confirms that 6m targets are available and that the
+  high-capacity filter improves the live signal read, but the slow/lagged
+  hypothesis fails because lagged and smoothed signals do not beat live on the
+  held-out filtered grid. The small-cap family remains diagnostic-only.
+- Standalone Multi-Factor Alpha Validation MF-R15.6 plus component OOS
+  observation expansion are complete, independent of the root PortfolioOS phase
+  sequence. The current local WRDS daily/Compustat run expands R15/R15.5
+  observations from 3 of 9 to 8 of 9 resurrected components; `sue_event_reference`
+  remains unavailable because an auditable event visibility timestamp path is
+  not wired. The rerun still diagnoses `component_pool_fails_gross` /
+  `portfolio_component_pool_fails_cost` under the primary diagnostic
+  construction, so OR optimization, security-level construction, Q2 entry,
+  paper/live workflows, and production approval remain blocked.
+- Standalone Multi-Factor Alpha Validation MF-R16 is complete as a diagnostic
+  post-portfolio contribution / ablation pass. The current run writes
+  leave-one-factor-out, drop-cluster, role, and QQQ up/down regime contribution
+  artifacts for the 8 observed components. It remains diagnostic-only after the
+  R15 gross/cost failure and does not unlock OR optimization, security-level
+  construction, Q2 entry, paper/live workflows, or production approval.
 
 No automatic roadmap expansion after Phase 66. New work requires explicit
 reopen decision. Existing unrelated Multifactor / Factor Discovery working-tree

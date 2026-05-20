@@ -14,3 +14,15 @@ rebalance:
 baselines:
   - naive_pro_rata
   - buy_and_hold
+  - cost_unaware_rebalance
+portfolio_quant:
+  enabled: true
+  rebalance_frequency: monthly
+  include_cost_unaware_baseline: true
+  benchmark_strategy: naive_pro_rata
+  policy:
+    turnover_cap: 0.35
+    max_drawdown_limit: -0.20
+    cvar_alpha: 0.05
+    min_cvar_limit: -0.03
+    exposure_check: if_available

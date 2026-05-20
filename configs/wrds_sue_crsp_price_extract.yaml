@@ -1,0 +1,16 @@
+schema_version: sue_crsp_price_extract_config.v1
+links_path: data/cache/wrds_sue_event_panel/ibes_links_rescued.csv
+output_path: data/cache/wrds_sue_event_panel/crsp_daily.csv
+chunk_dir: data/cache/wrds_sue_event_panel/crsp_daily_chunks_linkage_rescue
+manifest_path: outputs/sue_historical_event_panel_full/crsp_price_extract_manifest.json
+start_date: '2020-01-01'
+end_date: '2022-03-25'
+chunk_size: 25
+max_permnos:
+fetched_at: '2026-05-06T00:00:00Z'
+
+non_goals:
+  production_approval_claimed: false
+  paper_ready_claimed: false
+  live_trading_claimed: false
+  broker_order_workflow_added: false
