@@ -1,0 +1,15 @@
+hypothesis_id: H-SEC-GUIDANCE-RAISE-001
+title: Guidance Raise Post-Event Drift
+description: Tests whether timestamp-visible guidance raises are followed by short-horizon drift after sector-neutral controls.
+economic_rationale: Investors may underreact to credible forward-guidance upgrades when event visibility is clean and revisions are not already priced.
+required_data:
+  - sec_event_timestamps
+  - price_history
+  - sector_reference
+  - guidance_revision_fields
+signal_direction: positive
+expected_horizon: 5-20 trading days
+timestamp_assumptions:
+  - event_available_timestamp is the first timestamp when the filing or press release is visible to the market.
+  - entry is anchored to the next tradable open after event_available_timestamp.
+risk_notes: Earnings momentum, sector momentum, and liquidity effects must be controlled before promotion.

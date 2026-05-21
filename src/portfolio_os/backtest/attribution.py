@@ -28,6 +28,7 @@ _PERIOD_ATTRIBUTION_COLUMNS = [
     "period_return",
     "optimizer_vs_naive_period_pnl_delta",
     "optimizer_vs_alpha_only_period_pnl_delta",
+    "optimizer_vs_cost_unaware_period_pnl_delta",
     "alpha_only_vs_naive_period_pnl_delta",
 ]
 
@@ -74,6 +75,8 @@ def build_period_attribution_frame(period_rows: list[dict[str, Any]]) -> pd.Data
         frame["optimizer_vs_naive_period_pnl_delta"] = np.nan
     if "optimizer_vs_alpha_only_period_pnl_delta" not in frame.columns:
         frame["optimizer_vs_alpha_only_period_pnl_delta"] = np.nan
+    if "optimizer_vs_cost_unaware_period_pnl_delta" not in frame.columns:
+        frame["optimizer_vs_cost_unaware_period_pnl_delta"] = np.nan
     if "alpha_only_vs_naive_period_pnl_delta" not in frame.columns:
         frame["alpha_only_vs_naive_period_pnl_delta"] = np.nan
     _attach_period_delta(
@@ -87,6 +90,12 @@ def build_period_attribution_frame(period_rows: list[dict[str, Any]]) -> pd.Data
         lhs_strategy="optimizer",
         rhs_strategy="alpha_only_top_quintile",
         output_column="optimizer_vs_alpha_only_period_pnl_delta",
+    )
+    _attach_period_delta(
+        frame,
+        lhs_strategy="optimizer",
+        rhs_strategy="cost_unaware_rebalance",
+        output_column="optimizer_vs_cost_unaware_period_pnl_delta",
     )
     _attach_period_delta(
         frame,
@@ -240,6 +249,16 @@ def build_backtest_summary(
         left_name="optimizer",
         right_name="alpha_only_top_quintile",
         prefix="optimizer_vs_alpha_only",
+        ending_nav_by_strategy=ending_nav_by_strategy,
+        total_return_by_strategy=total_return_by_strategy,
+        annualized_by_strategy=annualized_by_strategy,
+        sharpe_by_strategy=sharpe_by_strategy,
+    )
+    _update_pairwise_comparison(
+        summary,
+        left_name="optimizer",
+        right_name="cost_unaware_rebalance",
+        prefix="optimizer_vs_cost_unaware",
         ending_nav_by_strategy=ending_nav_by_strategy,
         total_return_by_strategy=total_return_by_strategy,
         annualized_by_strategy=annualized_by_strategy,

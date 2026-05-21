@@ -1,0 +1,30 @@
+schema_version: sue_timestamp_enrichment_config.v1
+
+inputs:
+  events_path: outputs/sue_historical_event_panel_expanded/events.csv
+  ibes_actuals_path: data/cache/wrds_sue_timestamp_sources/ibes_actuals.csv
+  compustat_quarterly_path: data/cache/wrds_sue_timestamp_sources/compustat_quarterly.csv
+  release_timestamps_path:
+  sec_filing_timestamps_path:
+
+outputs:
+  output_dir: outputs/sue_timestamp_enrichment
+  report_path: reports/sue_timestamp_enrichment_report.md
+
+policy:
+  allow_sec_as_first_public_release: false
+  before_open_utc_hour: 14
+  after_close_utc_hour: 21
+  market_open_utc_hour: 14
+  market_open_utc_minute: 30
+
+non_goals:
+  score_selection_ran: false
+  typed_projection_ran: false
+  q2_evaluation_ran: false
+  optimizer_path_evaluation_ran: false
+  alpha_registry_promoted: false
+  production_approval_claimed: false
+  paper_ready_claimed: false
+  live_trading_claimed: false
+  broker_order_workflow_added: false

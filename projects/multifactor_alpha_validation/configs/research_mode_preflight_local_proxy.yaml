@@ -1,0 +1,27 @@
+schema_version: research_mode_dataset_manifest.v1
+mode: research_mode
+universe:
+  path: ../../../data/universe/us_universe_reference.csv
+  constituent_mode: current_constituents
+  source: yfinance
+  source_is_pit: false
+prices:
+  path: ../../../data/risk_inputs_us_expanded/returns_long.csv
+  source: yfinance
+  adjusted: false
+benchmark:
+  path: ../../../data/risk_inputs_us_expanded/returns_long.csv
+  benchmark_id: QQQ
+  source: yfinance
+delisting:
+  handling: missing
+timestamp_policy:
+  signal: month_end_close
+  visibility: after_month_end_close
+  tradable: next_session_close
+  allow_same_close_trading: false
+non_claims:
+  production_approval: false
+  live_trading: false
+  security_orders: false
+  direct_q2_entry: false

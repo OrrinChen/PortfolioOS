@@ -1,0 +1,32 @@
+bundle_id: EB-GUIDANCE-RAISE-ANCHOR-BEFORE-SIGNAL-001
+hypothesis_id: H-SEC-GUIDANCE-RAISE-001
+signal_id: guidance_raise_drift
+evaluation_id: EV-GUIDANCE-RAISE-DRIFT-001
+status: rejected
+pit_safety:
+  event_available_timestamp_present: true
+  signal_timestamp_present: true
+  anchor_trade_date_present: true
+  anchor_not_before_event_available: true
+  anchor_not_before_signal_timestamp: false
+  point_in_time_inputs_only: true
+leakage_checks:
+  - check_name: anchor_trade_date_before_signal_timestamp
+    passed: false
+    severity: critical
+    details: Anchor trade date precedes signal visibility timestamp.
+required_columns:
+  - event_available_timestamp
+  - signal_timestamp
+  - anchor_trade_date
+  - symbol
+  - guidance_delta
+planned_tests:
+  - test_name: leakage_timestamp_check
+    description: Verify every feature timestamp is no later than signal timestamp.
+    required: true
+coverage_requirements:
+  - minimum event coverage must be declared before promotion.
+rejection_reasons:
+  - anchor_trade_date before signal timestamp
+promotion_eligibility: not_eligible

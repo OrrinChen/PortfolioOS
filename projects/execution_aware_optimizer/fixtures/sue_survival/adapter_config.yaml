@@ -1,0 +1,24 @@
+experiment_name: sue_typed_q2_survival_fixture
+
+portfolioos:
+  allow_portfolioos_run: false
+  transaction_cost_objective_mode: nav_fraction
+  output_dir: projects/execution_aware_optimizer/reports/sue_typed_q2_survival
+
+layers:
+  - layer_name: raw_top_alpha_equal_weight
+  - layer_name: risk_controlled
+  - layer_name: full_execution_aware_cost_adjusted
+
+cost_sensitivity_bps:
+  - 5
+
+execution_matrix:
+  participation_rates:
+    - 0.001
+  liquidity_buckets:
+    - high
+  constraint_levels:
+    - full_execution_aware
+  execution_modes:
+    - impact_aware

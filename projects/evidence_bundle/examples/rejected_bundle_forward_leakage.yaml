@@ -1,0 +1,33 @@
+bundle_id: EB-GUIDANCE-RAISE-LEAKAGE-001
+hypothesis_id: H-SEC-GUIDANCE-RAISE-001
+signal_id: guidance_raise_drift
+evaluation_id: EV-GUIDANCE-RAISE-DRIFT-001
+status: rejected
+pit_safety:
+  event_available_timestamp_present: true
+  signal_timestamp_present: true
+  anchor_trade_date_present: true
+  anchor_not_before_event_available: true
+  anchor_not_before_signal_timestamp: true
+  point_in_time_inputs_only: true
+leakage_checks:
+  - check_name: forward_return_feature_leakage
+    passed: false
+    severity: critical
+    details: Forward return columns appear in the feature contract.
+required_columns:
+  - event_available_timestamp
+  - signal_timestamp
+  - anchor_trade_date
+  - symbol
+  - guidance_delta
+  - realized_forward_return_5d
+planned_tests:
+  - test_name: leakage_timestamp_check
+    description: Verify every feature timestamp is no later than signal timestamp.
+    required: true
+coverage_requirements:
+  - minimum event coverage must be declared before promotion.
+rejection_reasons:
+  - forward-return leakage
+promotion_eligibility: not_eligible

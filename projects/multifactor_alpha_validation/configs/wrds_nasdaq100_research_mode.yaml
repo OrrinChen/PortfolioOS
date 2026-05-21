@@ -1,0 +1,131 @@
+schema_version: wrds_multifactor_query_config.v1
+as_of_timestamp: "2026-05-06"
+raw_output_dir: data/cache/wrds_multifactor/nasdaq100/raw
+standardized_output_dir: data/cache/wrds_multifactor/nasdaq100/standardized
+preflight_output_dir: outputs/multifactor_alpha_validation/wrds_nasdaq100_preflight
+timestamp_policy:
+  signal: month_end_close
+  visibility: after_month_end_close
+  tradable: next_session_close
+  allow_same_close_trading: false
+queries:
+  historical_universe_membership:
+    sql: |
+      with params as (
+        select date '2010-01-01' as research_start,
+               date '2025-12-31' as research_end
+      ),
+      ndx as (
+        select gvkey,
+               iid,
+               "from" as fromdate,
+               thru as thrudate
+        from comp.idxcst_his
+        where gvkeyx = '000208'
+      ),
+      linked as (
+        select
+          ndx.gvkey,
+          ndx.iid,
+          sec.tic as ticker,
+          l.lpermno::integer as permno,
+          greatest(ndx.fromdate, coalesce(l.linkdt, ndx.fromdate)) as membership_start,
+          least(coalesce(ndx.thrudate, params.research_end),
+                coalesce(l.linkenddt, params.research_end)) as membership_end,
+          ndx.thrudate,
+          l.linkenddt
+        from ndx
+        cross join params
+        join crsp_a_ccm.ccmxpf_lnkhist l
+          on l.gvkey = ndx.gvkey
+         and l.lpermno is not null
+         and l.linktype in ('LC','LU','LS')
+         and l.linkprim in ('P','C')
+         and ndx.fromdate <= coalesce(l.linkenddt, params.research_end)
+         and coalesce(ndx.thrudate, params.research_end) >= coalesce(l.linkdt, ndx.fromdate)
+        left join comp.security sec
+          on sec.gvkey = ndx.gvkey
+         and sec.iid = ndx.iid
+        where ndx.fromdate <= params.research_end
+          and coalesce(ndx.thrudate, params.research_end) >= params.research_start
+      )
+      select
+        permno,
+        permno::text as asset_id,
+        ticker,
+        gvkey,
+        iid,
+        membership_start,
+        membership_end,
+        membership_start as as_of_timestamp,
+        membership_start as date,
+        true as in_universe,
+        membership_start as entry_date,
+        case
+          when thrudate is null and linkenddt is null then null
+          else membership_end
+        end as exit_date,
+        'wrds_compustat_idxcst_his_crsp_ccm' as source,
+        true as source_is_pit
+      from linked
+      where membership_start <= membership_end
+      order by membership_start, permno, gvkey, iid
+  adjusted_price_volume_panel:
+    permno_chunk_size: 25
+    sql: |
+      select
+        m.permno,
+        m.permno::text as asset_id,
+        m.ticker,
+        m.mthcaldt as date,
+        abs(m.mthprc)::double precision / nullif(m.mthcumfacpr::double precision, 0) as adjusted_open,
+        abs(m.mthprc)::double precision / nullif(m.mthcumfacpr::double precision, 0) as adjusted_close,
+        m.mthvol::double precision as volume,
+        m.mthret::double precision as return,
+        'crsp_msf_v2_mthprc_div_mthcumfacpr_monthly_close_proxy_open' as adjusted_price_convention
+      from crsp_a_stock.msf_v2 m
+      where m.permno in ({universe_permno_csv})
+        and m.mthcaldt between date '2008-01-01' and date '2025-12-31'
+        and m.mthret is not null
+        and m.mthret > -0.999999
+        and m.mthcumfacpr is not null
+        and m.mthcumfacpr <> 0
+        and m.mthprc is not null
+  qqq_benchmark_panel:
+    sql: |
+      select
+        m.mthcaldt as date,
+        'QQQ' as benchmark,
+        abs(m.mthprc)::double precision / nullif(m.mthcumfacpr::double precision, 0) as adjusted_open,
+        abs(m.mthprc)::double precision / nullif(m.mthcumfacpr::double precision, 0) as adjusted_close,
+        m.mthvol::double precision as volume,
+        m.mthret::double precision as return,
+        'crsp_msf_v2_mthprc_div_mthcumfacpr_monthly_close_proxy_open' as adjusted_price_convention
+      from crsp_a_stock.msf_v2 m
+      where m.permno = 86755
+        and m.mthcaldt between date '2008-01-01' and date '2025-12-31'
+        and m.mthret is not null
+        and m.mthret > -0.999999
+        and m.mthcumfacpr is not null
+        and m.mthcumfacpr <> 0
+        and m.mthprc is not null
+  delisting_returns:
+    permno_chunk_size: 100
+    date_chunk_start: "2010-01-01"
+    date_chunk_end: "2025-12-31"
+    date_chunk_years: 4
+    sql: |
+      select
+        dl.permno,
+        dl.permno::text as asset_id,
+        dl.delistingdt as delisting_date,
+        dl.delret as delisting_return,
+        coalesce(dl.delreasontype, dl.delstatustype, dl.delactiontype, 'delisted') as inactive_reason,
+        coalesce(dl.deldlydt, dl.delistingdt) as last_trade_date,
+        dl.delactiontype as delisting_action_type,
+        dl.delstatustype as delisting_status_type,
+        dl.delreasontype as delisting_reason_type
+      from crsp_a_stock.stkdelists dl
+      where dl.permno in ({universe_permno_csv})
+        and dl.delistingdt between date '{chunk_start}' and date '{chunk_end}'
+      order by dl.delistingdt, dl.permno

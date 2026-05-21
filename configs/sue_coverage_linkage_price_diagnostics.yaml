@@ -1,0 +1,12 @@
+schema_version: sue_coverage_linkage_price_diagnostics_config.v1
+
+inputs:
+  events_path: outputs/sue_historical_event_panel_expanded/events.csv
+  coverage_rescue_report_path: outputs/sue_historical_event_panel_expanded/coverage_rescue_report.json
+  linkage_failure_report_path: outputs/sue_historical_event_panel_expanded/linkage_failure_report.csv
+  missing_price_report_path: outputs/sue_historical_event_panel_expanded/missing_price_report.csv
+  crsp_daily_path: data/cache/wrds_sue_event_panel/crsp_daily.csv
+
+outputs:
+  output_dir: outputs/sue_coverage_linkage_price_diagnostics
+  report_path: reports/sue_coverage_linkage_price_diagnostics_report.md

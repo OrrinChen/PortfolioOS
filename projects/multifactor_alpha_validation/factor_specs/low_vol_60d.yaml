@@ -1,0 +1,46 @@
+schema_version: factor_spec.v1
+factor_id: low_vol_60d
+family_id: low_volatility
+display_name: 60-Day Low Volatility
+mechanism: Lower realized volatility may proxy defensive risk preference.
+mechanism_type: fixed_horizon
+data_tier: tier_1_price
+status: enabled
+data_requirements:
+  required_fields: [adjusted_close, trading_calendar]
+  optional_fields: [sector, beta]
+pit_contract:
+  signal_timestamp_rule: close_on_signal_date
+  visibility_timestamp_rule: after_market_close
+  tradable_timestamp_rule: next_trading_day_open
+  reporting_lag_days: 0
+  reject_if_missing_visibility: true
+signal_definition:
+  lookback_days: 60
+  skip_days: 0
+  transform: inverse_cross_sectional_rank_zscore
+  winsorize: true
+  winsorize_limits: [0.01, 0.99]
+horizon:
+  horizon_type: rebalance_period
+  holding_days: 21
+  rebalance_frequency: monthly
+coverage:
+  min_assets: 300
+  min_history_days: 60
+  missing_policy: explicit_abstain
+neutralization:
+  beta: report
+  sector: report
+  size: report
+  liquidity: report
+cost_sensitivity:
+  expected_turnover: low
+  capacity_risk: low
+known_failure_modes: [beta_exposure_only, sector_defensive_bias]
+no_view_is_not_zero_alpha: true
+non_claims:
+  production_approval: false
+  live_trading: false
+  security_orders: false
+  direct_q2_entry: false

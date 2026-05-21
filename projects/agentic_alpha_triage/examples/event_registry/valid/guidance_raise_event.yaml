@@ -1,0 +1,13 @@
+registry_id: REG-GUIDANCE-RAISE-001
+description: Timestamp-safe guidance raise event examples for Q1 evaluator fixtures.
+hypothesis_id: H-SEC-GUIDANCE-RAISE-001
+hypothesis_path: ../../hypothesis_guidance_raise_drift.yaml
+event_source: SEC 8-K or press-release guidance update visible through a timestamped archive record.
+events:
+  - event_id: EVT-GUIDANCE-RAISE-ACME-2026Q1
+    symbol: ACME
+    event_type: guidance_raise
+    event_available_timestamp: "2026-02-02T21:15:00Z"
+    anchor_trade_date: "2026-02-03"
+    source: sec_filing_primary_document
+    source_record_id: "0000000000-26-000001"

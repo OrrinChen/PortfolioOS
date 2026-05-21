@@ -1,0 +1,37 @@
+experiment_name: execution_aware_optimizer
+
+alpha_input:
+  path: null
+  rank_normalize_by_date: true
+  winsorize_quantile: null
+
+portfolioos:
+  backtest_manifest: data/backtest_samples/manifest_us_expanded_alpha_phase_1_5.yaml
+  allow_portfolioos_run: false
+  transaction_cost_objective_mode: nav_fraction
+  output_dir: projects/execution_aware_optimizer/reports
+
+layers:
+  - layer_name: raw_top_alpha_equal_weight
+    description: Raw top-alpha equal-weight baseline. Requires alpha input and a future benchmark adapter.
+  - layer_name: risk_controlled
+    description: Risk-controlled construction layer. Uses PortfolioOS risk hooks when adapter coverage is complete.
+  - layer_name: sector_constrained
+    description: Sector or industry constrained layer.
+  - layer_name: position_constrained
+    description: Single-name and cash-aware position layer.
+  - layer_name: turnover_constrained
+    description: Turnover-budget layer.
+  - layer_name: liquidity_constrained
+    description: Participation and liquidity-aware layer.
+  - layer_name: full_execution_aware_cost_adjusted
+    description: Full PortfolioOS optimizer/backtest layer when explicitly enabled.
+
+cost_sensitivity_bps:
+  - 0
+  - 5
+  - 10
+  - 25
+  - 50
+
+report_path: projects/execution_aware_optimizer/reports/execution_aware_optimizer_report.md

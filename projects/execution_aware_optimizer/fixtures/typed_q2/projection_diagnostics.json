@@ -1,0 +1,16 @@
+{
+  "diagnostics": [
+    {
+      "active_views": [
+        "AV-TYPED-Q2-FIXTURE-001"
+      ],
+      "abstained_views": [],
+      "coverage_count": 2,
+      "date": "2026-02-28",
+      "final_expected_return_scale": {
+        "AAPL": 0.004,
+        "MSFT": 0.002
+      }
+    }
+  ]
+}

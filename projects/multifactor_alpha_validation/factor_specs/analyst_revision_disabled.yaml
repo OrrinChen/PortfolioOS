@@ -1,0 +1,48 @@
+schema_version: factor_spec.v1
+factor_id: analyst_revision_disabled
+family_id: analyst_revision
+display_name: Analyst Revision Disabled
+mechanism: Analyst estimate revisions require PIT estimate history and remain disabled without that source.
+mechanism_type: event_reference
+data_tier: tier_3_estimates
+status: disabled
+disabled_reason: missing_pit_estimate_source
+pit_source_required: wrds_ibescorp_pit
+data_requirements:
+  required_fields: [statpers, estimate_timestamp, analyst_estimate, trading_calendar]
+  optional_fields: [sector, market_cap]
+pit_contract:
+  signal_timestamp_rule: estimate_revision_timestamp
+  visibility_timestamp_rule: pit_estimate_history_available_timestamp
+  tradable_timestamp_rule: next_trading_day_open_after_visibility
+  reporting_lag_days: 0
+  reject_if_missing_visibility: true
+signal_definition:
+  lookback_days: 0
+  skip_days: 0
+  transform: disabled_until_pit_source_exists
+  winsorize: true
+  winsorize_limits: [0.01, 0.99]
+horizon:
+  horizon_type: event_window
+  holding_days: 21
+  rebalance_frequency: event_driven
+coverage:
+  min_assets: 50
+  min_history_days: 0
+  missing_policy: explicit_abstain
+neutralization:
+  beta: report
+  sector: report
+  size: report
+  liquidity: report
+cost_sensitivity:
+  expected_turnover: medium
+  capacity_risk: medium
+known_failure_modes: [missing_pit_estimate_history, frozen_estimate_history_leakage]
+no_view_is_not_zero_alpha: true
+non_claims:
+  production_approval: false
+  live_trading: false
+  security_orders: false
+  direct_q2_entry: false

@@ -1,0 +1,29 @@
+schema_version: wrds_sue_timestamp_source_extract_config.v1
+fetched_at: '2026-05-08T00:00:00Z'
+
+inputs:
+  events_path: outputs/sue_historical_event_panel_expanded/events.csv
+
+outputs:
+  output_dir: data/cache/wrds_sue_timestamp_sources
+  ibes_actuals_output_path: data/cache/wrds_sue_timestamp_sources/ibes_actuals.csv
+  compustat_quarterly_output_path: data/cache/wrds_sue_timestamp_sources/compustat_quarterly.csv
+  manifest_path: outputs/sue_timestamp_enrichment/timestamp_source_extract_manifest.json
+
+wrds_extract:
+  ibes_actuals_source_table: ibes.actu_epsus
+  compustat_source_table: comp.fundq
+  ticker_chunk_size: 250
+  compustat_chunk_size: 500
+  max_events:
+
+non_goals:
+  score_selection_ran: false
+  typed_projection_ran: false
+  q2_evaluation_ran: false
+  optimizer_path_evaluation_ran: false
+  alpha_registry_promoted: false
+  production_approval_claimed: false
+  paper_ready_claimed: false
+  live_trading_claimed: false
+  broker_order_workflow_added: false

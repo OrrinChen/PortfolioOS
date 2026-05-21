@@ -1,0 +1,9 @@
+schema_version: sue_linkage_rescue_config.v1
+existing_links_path: data/cache/wrds_sue_event_panel/ibes_links.csv
+linkage_failure_report_path: outputs/sue_historical_event_panel_expanded/linkage_failure_report.csv
+output_links_path: data/cache/wrds_sue_event_panel/ibes_links_rescued.csv
+rescue_report_path: outputs/sue_coverage_linkage_price_diagnostics/linkage_rescue_report.json
+stocknames_probe_path: outputs/sue_coverage_linkage_price_diagnostics/stocknames_failed_cusip_matches.csv
+source_table: crsp.stocknames
+batch_size: 500
+fetched_at: '2026-05-07T00:00:00Z'

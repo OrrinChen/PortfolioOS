@@ -1,0 +1,85 @@
+schema_version: factor_spec.v2
+factor_id: residual_momentum_6m
+formula_version: price_volume_29_mechanism_v2
+formula_hash: 779da962777b6b85
+formula_summary: 6m momentum residualized by same-date same-sector median momentum.
+design_contract:
+  design_contract_schema: fd_factor_design_contract.v1
+  factor_id: residual_momentum_6m
+  market_pain_point: Within-sector relative strength may reveal stock-specific underreaction.
+  mechanism_hypothesis: Residual winners outperform if stock-specific information
+    diffuses slowly.
+  investor_constraint_or_behavior: Sector allocators and benchmark-relative investors
+    may adjust single-name weights slowly.
+  expected_universe: Names with reliable PIT sector classification and enough within-sector
+    breadth.
+  expected_regime: Should work better when stock dispersion is high and sector rotation
+    does not dominate.
+  why_not_arbitraged_away: Sector neutrality reduces but does not remove turnover,
+    crowding, and capacity constraints.
+  observable_pre_formula_diagnostics:
+  - Within-sector dispersion and breadth check.
+  - Residual signal must not be rank-identical to raw momentum.
+  placebo_design:
+  - sector-shuffled placebo
+  - raw momentum control
+  - same-sector random signal
+  cost_capacity_risks:
+  - sector concentration
+  - turnover
+  - ADV capacity
+  - shortability for short leg
+  expected_failure_modes:
+  - sector classification drift
+  - raw momentum duplicate
+  - capacity-matched placebo dominance
+  formula_measurement_role: The formula is only a measurement of the stated market
+    pain point; it is not itself the thesis.
+  design_review_questions:
+  - What pain point or repeated constraint creates the signal?
+  - Which investors or flows plausibly create the mispricing?
+  - Why should the effect persist after costs, capacity, and placebo controls?
+  - Where should this mechanism fail if the thesis is real?
+  not_alpha_evidence: true
+  direct_q2_entry_allowed: false
+design_review_required: true
+pre_formula_evidence_required: true
+formula_is_measurement_not_thesis: true
+raw_value_definition: log(P_t-skip / P_t-skip-126) - median_same_sector_6m_log_momentum
+oriented_score_definition: raw sector-neutral residual momentum; higher means stronger
+  within-group momentum
+required_inputs:
+- adjusted_close
+- pit_sector_or_industry
+fallback_policy: PIT sector -> PIT industry -> cross-section median; fallback is audited
+  as degraded evidence
+fallback_audit_required: true
+duplicate_cluster_audit_required: true
+mechanism: Same-sector residual momentum removes cross-sectional sector median momentum.
+mechanism_family: sector_neutral_residual_momentum
+lookback: 6
+required_lookback_days: 126
+skip: 1
+direction: positive
+signal_timestamp: month_end_close
+visibility_timestamp: after_month_end_close
+tradable_timestamp: next_rebalance_session
+timestamp_contract:
+  lookback_start: signal_timestamp - skip_days - required_lookback_days
+  lookback_end: last_trading_day <= signal_timestamp - skip_days
+  signal_timestamp: month_end_close
+  visibility_timestamp: after_month_end_close
+  tradable_timestamp: next_rebalance_session
+  allow_same_close_trading: false
+coverage_rule:
+  minimum_observations: 127
+  insufficient_coverage: explicit_abstain
+  abstain_reason: insufficient_price_volume_history
+no_view_policy: explicit_abstain
+expected_horizon: next_month_excess_return
+known_correlation_family: sector_neutral_residual_momentum
+known_failure_mode: Can degrade if sector classifications are stale or non-PIT.
+no_view_is_not_zero_alpha: true
+not_alpha_evidence: true
+direct_q2_entry_allowed: false
+production_approval_claimed: false

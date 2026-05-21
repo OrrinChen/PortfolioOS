@@ -1,0 +1,8 @@
+layer_name,date,gross_return,net_return,turnover,estimated_transaction_cost,realized_transaction_cost,num_positions,max_position_weight,cash_weight,sector_exposure,risk_exposure,rejected_symbols,binding_constraints,infeasibility_reason
+raw_top_alpha_equal_weight,,,,,,,,,,,,[],[],PortfolioOS run disabled by config. Set portfolioos.allow_portfolioos_run=true to execute the configured backtest adapter explicitly.
+risk_controlled,,,,,,,,,,,,[],[],PortfolioOS run disabled by config. Set portfolioos.allow_portfolioos_run=true to execute the configured backtest adapter explicitly.
+sector_constrained,,,,,,,,,,,,[],[],PortfolioOS run disabled by config. Set portfolioos.allow_portfolioos_run=true to execute the configured backtest adapter explicitly.
+position_constrained,,,,,,,,,,,,[],[],PortfolioOS run disabled by config. Set portfolioos.allow_portfolioos_run=true to execute the configured backtest adapter explicitly.
+turnover_constrained,,,,,,,,,,,,[],[],PortfolioOS run disabled by config. Set portfolioos.allow_portfolioos_run=true to execute the configured backtest adapter explicitly.
+liquidity_constrained,,,,,,,,,,,,[],[],PortfolioOS run disabled by config. Set portfolioos.allow_portfolioos_run=true to execute the configured backtest adapter explicitly.
+full_execution_aware_cost_adjusted,,,,,,,,,,,,[],[],PortfolioOS run disabled by config. Set portfolioos.allow_portfolioos_run=true to execute the configured backtest adapter explicitly.

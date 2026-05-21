@@ -114,6 +114,12 @@ def render_backtest_report(result: "BacktestResult") -> str:
     )
     _append_pairwise_comparison(
         lines,
+        title="Optimizer Vs Cost-Unaware",
+        comparison=comparison,
+        prefix="optimizer_vs_cost_unaware",
+    )
+    _append_pairwise_comparison(
+        lines,
         title="Alpha-Only Vs Naive",
         comparison=comparison,
         prefix="alpha_only_vs_naive",

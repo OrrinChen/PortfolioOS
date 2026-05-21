@@ -1,0 +1,82 @@
+schema_version: factor_spec.v2
+factor_id: drawdown_3m
+formula_version: price_volume_29_mechanism_v2
+formula_hash: 3ed320c7c893fd38
+formula_summary: 3m window maximum peak-to-trough drawdown severity.
+design_contract:
+  design_contract_schema: fd_factor_design_contract.v1
+  factor_id: drawdown_3m
+  market_pain_point: Current distance from highs misses intrawindow path damage.
+  mechanism_hypothesis: Large peak-to-trough damage may indicate fragile demand or
+    impaired risk appetite.
+  investor_constraint_or_behavior: Drawdown-sensitive investors may reduce exposure
+    after severe path damage.
+  expected_universe: Assets with reliable daily adjusted price paths.
+  expected_regime: Should matter more in risk-off and deleveraging regimes.
+  why_not_arbitraged_away: Drawdown signals can be risk premia and are costly to short
+    in stressed names.
+  observable_pre_formula_diagnostics:
+  - Peak-to-trough distribution
+  - distance-to-high duplicate audit
+  placebo_design:
+  - price-to-high control
+  - volatility-matched placebo
+  - rebalance-shifted placebo
+  cost_capacity_risks:
+  - wide spreads in damaged names
+  - shortability
+  - gap risk
+  expected_failure_modes:
+  - volatility proxy only
+  - mean reversion dominates
+  - cost drag
+  formula_measurement_role: The formula is only a measurement of the stated market
+    pain point; it is not itself the thesis.
+  design_review_questions:
+  - What pain point or repeated constraint creates the signal?
+  - Which investors or flows plausibly create the mispricing?
+  - Why should the effect persist after costs, capacity, and placebo controls?
+  - Where should this mechanism fail if the thesis is real?
+  not_alpha_evidence: true
+  direct_q2_entry_allowed: false
+design_review_required: true
+pre_formula_evidence_required: true
+formula_is_measurement_not_thesis: true
+raw_value_definition: max(1 - P_d / running_peak_d) inside the trailing 63-day window
+oriented_score_definition: negative raw drawdown severity; higher oriented score means
+  less path damage
+required_inputs:
+- adjusted_close
+fallback_policy: no fallback; insufficient price history is explicit_abstain
+fallback_audit_required: true
+duplicate_cluster_audit_required: true
+mechanism: Peak-to-trough drawdown captures path damage rather than only current distance
+  from highs.
+mechanism_family: path_fragility
+lookback: 3
+required_lookback_days: 63
+skip: 1
+direction: negative
+signal_timestamp: month_end_close
+visibility_timestamp: after_month_end_close
+tradable_timestamp: next_rebalance_session
+timestamp_contract:
+  lookback_start: signal_timestamp - skip_days - required_lookback_days
+  lookback_end: last_trading_day <= signal_timestamp - skip_days
+  signal_timestamp: month_end_close
+  visibility_timestamp: after_month_end_close
+  tradable_timestamp: next_rebalance_session
+  allow_same_close_trading: false
+coverage_rule:
+  minimum_observations: 64
+  insufficient_coverage: explicit_abstain
+  abstain_reason: insufficient_price_volume_history
+no_view_policy: explicit_abstain
+expected_horizon: next_month_excess_return
+known_correlation_family: path_fragility
+known_failure_mode: Can become a volatility proxy or penalize temporary dislocations
+  that recover.
+no_view_is_not_zero_alpha: true
+not_alpha_evidence: true
+direct_q2_entry_allowed: false
+production_approval_claimed: false

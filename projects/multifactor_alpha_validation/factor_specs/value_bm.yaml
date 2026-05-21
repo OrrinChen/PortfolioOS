@@ -1,0 +1,46 @@
+schema_version: factor_spec.v1
+factor_id: value_bm
+family_id: value
+display_name: Book-to-Market Value
+mechanism: Cheaper book-to-market names may earn a value premium after accounting lag.
+mechanism_type: fixed_horizon
+data_tier: tier_2_fundamental
+status: enabled
+data_requirements:
+  required_fields: [book_value, market_cap, report_date, filing_date, trading_calendar]
+  optional_fields: [sector]
+pit_contract:
+  signal_timestamp_rule: filing_date_plus_lag
+  visibility_timestamp_rule: public_filing_available
+  tradable_timestamp_rule: next_trading_day_open_after_visibility
+  reporting_lag_days: 90
+  reject_if_missing_visibility: true
+signal_definition:
+  lookback_days: 365
+  skip_days: 0
+  transform: cross_sectional_rank_zscore
+  winsorize: true
+  winsorize_limits: [0.01, 0.99]
+horizon:
+  horizon_type: rebalance_period
+  holding_days: 63
+  rebalance_frequency: quarterly
+coverage:
+  min_assets: 300
+  min_history_days: 365
+  missing_policy: explicit_abstain
+neutralization:
+  beta: report
+  sector: report
+  size: report
+  liquidity: report
+cost_sensitivity:
+  expected_turnover: low
+  capacity_risk: medium
+known_failure_modes: [reporting_lag_error, sector_concentration, value_trap]
+no_view_is_not_zero_alpha: true
+non_claims:
+  production_approval: false
+  live_trading: false
+  security_orders: false
+  direct_q2_entry: false

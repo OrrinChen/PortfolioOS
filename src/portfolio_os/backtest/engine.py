@@ -10,7 +10,12 @@ import pandas as pd
 
 from portfolio_os.alpha.backtest_bridge import AlphaRebalanceSnapshot, build_alpha_snapshot_for_rebalance
 from portfolio_os.backtest.attribution import build_backtest_summary, build_period_attribution_frame
-from portfolio_os.backtest.baseline import SUPPORTED_BASELINES, run_alpha_only_top_quintile, run_naive_pro_rata
+from portfolio_os.backtest.baseline import (
+    SUPPORTED_BASELINES,
+    run_alpha_only_top_quintile,
+    run_cost_unaware_rebalance,
+    run_naive_pro_rata,
+)
 from portfolio_os.backtest.manifest import load_backtest_manifest
 from portfolio_os.backtest.report import render_backtest_report
 from portfolio_os.compliance.pretrade import collect_data_quality_findings
@@ -409,6 +414,12 @@ def run_backtest(manifest_path: str | Path) -> BacktestResult:
             quantities=initial_quantities.copy(),
             cash=float(initial_state.available_cash),
         )
+    if "cost_unaware_rebalance" in manifest.baselines:
+        states["cost_unaware_rebalance"] = _StrategyState(
+            name="cost_unaware_rebalance",
+            quantities=initial_quantities.copy(),
+            cash=float(initial_state.available_cash),
+        )
     if "alpha_only_top_quintile" in strategy_order:
         states["alpha_only_top_quintile"] = _StrategyState(
             name="alpha_only_top_quintile",
@@ -603,6 +614,64 @@ def run_backtest(manifest_path: str | Path) -> BacktestResult:
                     half_spread_bps=half_spread_bps,
                 )
             )
+
+        if "cost_unaware_rebalance" in states:
+            cost_unaware_start_quantities = states["cost_unaware_rebalance"].quantities.copy()
+            cost_unaware_start_cash = float(states["cost_unaware_rebalance"].cash)
+            cost_unaware_universe, cost_unaware_config = _build_strategy_universe(
+                current_date=current_date,
+                quantities=cost_unaware_start_quantities,
+                cash=cost_unaware_start_cash,
+                targets=targets,
+                base_market_frame=base_market_frame,
+                base_reference_frame=base_reference_frame,
+                price_row=price_row,
+                app_config_template=app_config,
+            )
+            cost_unaware_universe = _inject_expected_returns(
+                cost_unaware_universe,
+                alpha_snapshot=alpha_snapshot,
+            )
+            cost_unaware_findings = collect_data_quality_findings(
+                cost_unaware_universe,
+                cost_unaware_config,
+            )
+            cost_unaware_run = run_cost_unaware_rebalance(
+                cost_unaware_universe,
+                cost_unaware_config,
+                input_findings=cost_unaware_findings,
+            )
+            states["cost_unaware_rebalance"].rebalance_count += 1
+            states["cost_unaware_rebalance"].total_turnover += (
+                cost_unaware_run.basket.gross_traded_notional / cost_unaware_run.pre_trade_nav
+                if cost_unaware_run.pre_trade_nav
+                else 0.0
+            )
+            period_rows.append(
+                _build_period_attribution_row(
+                    strategy_name="cost_unaware_rebalance",
+                    period_index=period_index,
+                    start_date=current_date,
+                    fill_date=next_date,
+                    end_date=period_end_date,
+                    start_quantities=cost_unaware_start_quantities,
+                    start_cash=cost_unaware_start_cash,
+                    start_price_row=price_row,
+                    fill_price_row=fill_price_row,
+                    end_price_row=end_price_row,
+                    orders=list(cost_unaware_run.orders),
+                    gross_traded_notional=float(cost_unaware_run.basket.gross_traded_notional),
+                    turnover=(
+                        cost_unaware_run.basket.gross_traded_notional / cost_unaware_run.pre_trade_nav
+                        if cost_unaware_run.pre_trade_nav
+                        else 0.0
+                    ),
+                    commission_rate=commission_rate,
+                    half_spread_bps=half_spread_bps,
+                )
+            )
+            states["cost_unaware_rebalance"].pending_orders = list(cost_unaware_run.orders)
+            states["cost_unaware_rebalance"].pending_fill_date = next_date
 
         if "alpha_only_top_quintile" in states and alpha_snapshot is not None:
             alpha_start_quantities = states["alpha_only_top_quintile"].quantities.copy()

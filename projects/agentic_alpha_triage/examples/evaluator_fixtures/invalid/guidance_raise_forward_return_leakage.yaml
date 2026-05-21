@@ -1,0 +1,28 @@
+fixture_id: EV-GUIDANCE-RAISE-DRIFT-LEAKAGE-001
+hypothesis_id: H-SEC-GUIDANCE-RAISE-001
+hypothesis_path: ../../hypothesis_guidance_raise_drift.yaml
+signal_name: guidance_raise_drift
+signal_contract_path: ../../signal_guidance_raise_drift.yaml
+evaluation_contract_path: ../../evaluation_guidance_raise_drift.yaml
+description: Unsafe evaluator fixture that demonstrates forward-return leakage and must be rejected.
+event_source: SEC or press-release guidance raise events with market-visible timestamps.
+required_input_columns:
+  - event_available_timestamp
+  - anchor_trade_date
+  - symbol
+  - guidance_delta
+  - realized_forward_return_5d
+feature_columns:
+  - guidance_delta
+  - realized_forward_return_5d
+event_available_timestamp_column: event_available_timestamp
+anchor_trade_date_column: anchor_trade_date
+label_column: realized_forward_return_5d
+leakage_checks:
+  - detect forward return in feature_columns
+placebo_tests:
+  - randomly permute event dates within sector and month
+cost_assumption_keys:
+  - commission_bps
+uses_future_data_as_feature: true
+entry_after_event_available: true

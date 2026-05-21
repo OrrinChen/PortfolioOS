@@ -1,0 +1,6 @@
+bundle_id: rejected_bundle_forward_leakage
+decision: reject
+reasons:
+  - forward-return leakage in required_columns
+q2_allowed_inputs: null
+forbidden_outputs_checked: true

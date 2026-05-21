@@ -1,0 +1,34 @@
+schema_version: sue_score_definition_gate_config.v1
+
+inputs:
+  events_path: outputs/sue_historical_event_panel_expanded/events.csv
+  crsp_daily_path: data/cache/wrds_sue_event_panel/crsp_daily.csv
+
+outputs:
+  output_dir: outputs/sue_score_definition_gate
+  report_path: reports/sue_score_definition_gate_report.md
+
+quantiles: 5
+min_rank_ic_names: 3
+min_spread_names: 5
+placebo_shift_trading_days: 10
+random_seed: 20260508
+
+guards:
+  denominator_abs_min: 0.01
+  winsorization_scope: month
+  winsor_lower_quantile: 0.01
+  winsor_upper_quantile: 0.99
+  extreme_value_cap: 1000.0
+  max_tail_abs_share: 0.75
+  min_month_breadth: 2
+  min_year_breadth: 1
+
+non_goals:
+  q2_evaluation_ran: false
+  optimizer_path_evaluation_ran: false
+  alpha_registry_promoted: false
+  production_approval_claimed: false
+  paper_ready_claimed: false
+  live_trading_claimed: false
+  broker_order_workflow_added: false

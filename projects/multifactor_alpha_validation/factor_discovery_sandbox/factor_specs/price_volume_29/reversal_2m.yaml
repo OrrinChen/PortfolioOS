@@ -1,0 +1,84 @@
+schema_version: factor_spec.v2
+factor_id: reversal_2m
+formula_version: price_volume_29_mechanism_v2
+formula_hash: 4f578493239e87a2
+formula_summary: Vol-adjusted overshoot reversal gated by prior-trend extension.
+design_contract:
+  design_contract_schema: fd_factor_design_contract.v1
+  factor_id: reversal_2m
+  market_pain_point: Short-term forced-flow overshoots may create mean-reversion pressure.
+  mechanism_hypothesis: Recent moves reverse only when they extend an existing trend
+    under high pressure.
+  investor_constraint_or_behavior: De-risking, stop-outs, and attention shocks may
+    temporarily overshoot prices.
+  expected_universe: Liquid names where reversal can survive spread and impact.
+  expected_regime: Should work in liquidity-stress overshoot windows and fail in persistent
+    trend regimes.
+  why_not_arbitraged_away: High turnover, adverse selection, and crash continuation
+    risk limit arbitrage.
+  observable_pre_formula_diagnostics:
+  - Overshoot event frequency
+  - prior-trend gate activation rate
+  placebo_design:
+  - negative momentum control
+  - volatility-matched placebo
+  - event-window shifted placebo
+  cost_capacity_risks:
+  - high turnover
+  - spread
+  - impact
+  - shortability
+  expected_failure_modes:
+  - pure negative momentum clone
+  - trend continuation
+  - cost-adjusted failure
+  formula_measurement_role: The formula is only a measurement of the stated market
+    pain point; it is not itself the thesis.
+  design_review_questions:
+  - What pain point or repeated constraint creates the signal?
+  - Which investors or flows plausibly create the mispricing?
+  - Why should the effect persist after costs, capacity, and placebo controls?
+  - Where should this mechanism fail if the thesis is real?
+  not_alpha_evidence: true
+  direct_q2_entry_allowed: false
+design_review_required: true
+pre_formula_evidence_required: true
+formula_is_measurement_not_thesis: true
+raw_value_definition: -recent_return / realized_sigma * clipped prior-trend extension
+  gate, where the prior trend is robust cross-sectionally z-scored
+oriented_score_definition: raw reversal score; higher means stronger overshoot-reversal
+  candidate
+required_inputs:
+- adjusted_close
+fallback_policy: no fallback; missing recent, prior, or volatility window is explicit_abstain
+fallback_audit_required: true
+duplicate_cluster_audit_required: true
+mechanism: Vol-adjusted reversal only activates after a same-direction prior-trend
+  extension.
+mechanism_family: overshoot_reversal
+lookback: 2
+required_lookback_days: 252
+skip: 1
+direction: positive
+signal_timestamp: month_end_close
+visibility_timestamp: after_month_end_close
+tradable_timestamp: next_rebalance_session
+timestamp_contract:
+  lookback_start: signal_timestamp - skip_days - required_lookback_days
+  lookback_end: last_trading_day <= signal_timestamp - skip_days
+  signal_timestamp: month_end_close
+  visibility_timestamp: after_month_end_close
+  tradable_timestamp: next_rebalance_session
+  allow_same_close_trading: false
+coverage_rule:
+  minimum_observations: 253
+  insufficient_coverage: explicit_abstain
+  abstain_reason: insufficient_price_volume_history
+no_view_policy: explicit_abstain
+expected_horizon: next_month_excess_return
+known_correlation_family: overshoot_reversal
+known_failure_mode: Can fight persistent trends and can be cost-sensitive.
+no_view_is_not_zero_alpha: true
+not_alpha_evidence: true
+direct_q2_entry_allowed: false
+production_approval_claimed: false

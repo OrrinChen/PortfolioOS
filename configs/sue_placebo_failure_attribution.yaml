@@ -1,0 +1,41 @@
+schema_version: sue_placebo_failure_attribution_config.v1
+
+inputs:
+  events_path: outputs/sue_historical_event_panel_expanded/events.csv
+  crsp_daily_path: data/cache/wrds_sue_event_panel/crsp_daily.csv
+
+outputs:
+  output_dir: outputs/sue_placebo_failure_attribution
+  report_path: reports/sue_placebo_failure_attribution_report.md
+
+score_name: surprise_pct_actual_eps
+shift_trading_days:
+  - -10
+  - -5
+  - -2
+  - 0
+  - 2
+  - 5
+  - 10
+quantiles: 5
+min_rank_ic_names: 3
+min_spread_names: 5
+random_seed: 20260508
+
+guards:
+  denominator_abs_min: 0.01
+  winsorization_scope: month
+  winsor_lower_quantile: 0.01
+  winsor_upper_quantile: 0.99
+  extreme_value_cap: 1000.0
+  high_tail_quantile: 0.99
+
+non_goals:
+  score_selection_ran: false
+  q2_evaluation_ran: false
+  optimizer_path_evaluation_ran: false
+  alpha_registry_promoted: false
+  production_approval_claimed: false
+  paper_ready_claimed: false
+  live_trading_claimed: false
+  broker_order_workflow_added: false

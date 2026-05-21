@@ -1,0 +1,4 @@
+asset_id,delisting_date,delisting_return,inactive_reason,last_trade_date
+AAPL,,,active,
+OLD,2011-12-31,-0.35,delisted,2011-12-30
+NEW,,,active,

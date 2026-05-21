@@ -1,0 +1,65 @@
+{
+  "abstain_policy": {
+    "coverage_threshold": 0.7,
+    "mode": "explicit_abstain",
+    "stale_after_days": 45
+  },
+  "alpha_view_id": "AV-US-REVISION-TNA-001",
+  "anchor_event_timestamp": "2025-03-31T00:00:00Z",
+  "capacity_view": {
+    "adv_participation_cap": 0.001,
+    "capacity_bucket": "high"
+  },
+  "confidence_view": {
+    "confidence_score": 0.61,
+    "evidence_strength": "to_next_announcement_rank_ic"
+  },
+  "cost_sensitivity_view": {
+    "expected_cost_bps": 5.0,
+    "sensitivity_bucket": "low"
+  },
+  "coverage_mask": {
+    "covered_symbols": [
+      "AAPL",
+      "MSFT"
+    ],
+    "mode": "explicit_abstain",
+    "uncovered_symbols": []
+  },
+  "decay_policy": {
+    "mode": "active_until_next_event"
+  },
+  "expected_return_view": {
+    "AAPL": {
+      "state": "active_view",
+      "value": 0.004
+    },
+    "MSFT": {
+      "state": "active_view",
+      "value": -0.002
+    }
+  },
+  "family_id": "US_ANALYST_REVISION",
+  "holding_window": {
+    "end_event": "next_announcement",
+    "next_event_timestamp": "2025-05-01T20:00:00Z",
+    "start_offset_days": 1
+  },
+  "horizon_type": "to_next_event",
+  "mechanism_type": "event",
+  "pit_safety_report": {
+    "anchor_not_before_visibility": true,
+    "no_future_data": true,
+    "pit_source": "WRDS",
+    "visibility_not_after_tradable": true
+  },
+  "provenance": {
+    "created_by": "fixture",
+    "source": "synthetic_wrds_revision_contract",
+    "version": "v1"
+  },
+  "signal_timestamp": "2025-03-31T00:00:00Z",
+  "tradable_timestamp": "2025-04-01T13:30:00Z",
+  "universe_id": "US_LARGE_CAP_FIXTURE",
+  "visibility_timestamp": "2025-03-31T23:59:00Z"
+}

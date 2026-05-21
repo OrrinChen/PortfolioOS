@@ -1,0 +1,14 @@
+event_available_timestamp: event_available_timestamp
+anchor_trade_date: next_open_trade_date
+entry_rule: Enter at the next open after event_available_timestamp when the symbol is tradable and in universe.
+holding_windows:
+  - 1d
+  - 5d
+  - 20d
+benchmark: sector_neutral_equal_weight_event_cohort
+cost_assumptions:
+  commission_bps: 1.0
+  half_spread_bps: 5.0
+  slippage_bps: 5.0
+placebo_tests_required: true
+leakage_tests_required: true

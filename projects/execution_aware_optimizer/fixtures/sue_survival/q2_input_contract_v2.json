@@ -1,0 +1,12 @@
+{
+  "alpha_abstain_report_artifact": "us_sue_abstain_report.json",
+  "alpha_projection_diagnostics_artifact": "us_sue_projection_diagnostics.json",
+  "alpha_view_id": "AV-US-SUE-PEAD-001",
+  "allowed_consumer": "projects/execution_aware_optimizer",
+  "bundle_id": "EB-GUIDANCE-RAISE-DRIFT-001",
+  "direct_q2_execution_allowed": false,
+  "expected_return_panel_artifact": "us_sue_projection_panel.csv",
+  "input_type": "projected_expected_return_panel",
+  "projection_manifest_hash": "6b080b234ead8c36f99deead73c9fbe4cfa7cb3ce1addce6dae8d55ade6e3172",
+  "schema_version": "q2_input_contract.v2"
+}

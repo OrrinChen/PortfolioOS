@@ -1,0 +1,83 @@
+schema_version: factor_spec.v2
+factor_id: momentum_1m
+formula_version: price_volume_29_mechanism_v2
+formula_hash: a52db9bf8780db85
+formula_summary: 1m log price momentum using adjusted close and one-month signal skip.
+design_contract:
+  design_contract_schema: fd_factor_design_contract.v1
+  factor_id: momentum_1m
+  market_pain_point: price trend persistence may reflect slow information diffusion
+    or persistent demand.
+  mechanism_hypothesis: Recent winners continue only if demand or information adjustment
+    is not complete.
+  investor_constraint_or_behavior: Slow-moving capital, benchmark constraints, and
+    delayed attention.
+  expected_universe: Liquid enough equities where trend continuation can be traded
+    after timestamp lag.
+  expected_regime: Trending regimes; should weaken in violent reversals and crowded
+    momentum unwind periods.
+  why_not_arbitraged_away: Crowding, risk limits, turnover, and crash risk limit arbitrage
+    capital.
+  observable_pre_formula_diagnostics:
+  - Trend persistence by horizon before formula selection.
+  - Reversal and crash-regime sensitivity before candidate promotion.
+  placebo_design:
+  - lag-shifted trend placebo
+  - same-coverage shuffled signal
+  - sector-neutral placebo
+  cost_capacity_risks:
+  - turnover
+  - momentum crowding
+  - spread drag
+  - capacity in smaller names
+  expected_failure_modes:
+  - momentum crash
+  - sector beta explanation
+  - mega-cap growth exposure
+  formula_measurement_role: The formula is only a measurement of the stated market
+    pain point; it is not itself the thesis.
+  design_review_questions:
+  - What pain point or repeated constraint creates the signal?
+  - Which investors or flows plausibly create the mispricing?
+  - Why should the effect persist after costs, capacity, and placebo controls?
+  - Where should this mechanism fail if the thesis is real?
+  not_alpha_evidence: true
+  direct_q2_entry_allowed: false
+design_review_required: true
+pre_formula_evidence_required: true
+formula_is_measurement_not_thesis: true
+raw_value_definition: log(P_t-skip / P_t-skip-21)
+oriented_score_definition: raw log momentum; higher means stronger prior price trend
+required_inputs:
+- adjusted_close
+fallback_policy: no fallback; insufficient price history is explicit_abstain
+fallback_audit_required: true
+duplicate_cluster_audit_required: true
+mechanism: Recent winners may continue if price trend captures persistent demand.
+mechanism_family: price_momentum
+lookback: 1
+required_lookback_days: 21
+skip: 1
+direction: positive
+signal_timestamp: month_end_close
+visibility_timestamp: after_month_end_close
+tradable_timestamp: next_rebalance_session
+timestamp_contract:
+  lookback_start: signal_timestamp - skip_days - required_lookback_days
+  lookback_end: last_trading_day <= signal_timestamp - skip_days
+  signal_timestamp: month_end_close
+  visibility_timestamp: after_month_end_close
+  tradable_timestamp: next_rebalance_session
+  allow_same_close_trading: false
+coverage_rule:
+  minimum_observations: 22
+  insufficient_coverage: explicit_abstain
+  abstain_reason: insufficient_price_volume_history
+no_view_policy: explicit_abstain
+expected_horizon: next_month_excess_return
+known_correlation_family: price_momentum
+known_failure_mode: Can collapse in sharp reversals and may be mega-cap growth exposure.
+no_view_is_not_zero_alpha: true
+not_alpha_evidence: true
+direct_q2_entry_allowed: false
+production_approval_claimed: false

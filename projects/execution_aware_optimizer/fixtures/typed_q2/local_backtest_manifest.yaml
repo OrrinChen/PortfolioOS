@@ -1,0 +1,2 @@
+name: typed_q2_adapter_fixture_placeholder
+description: "Placeholder local manifest path for typed Q2 adapter contract tests; tests inject a deterministic backtest runner."

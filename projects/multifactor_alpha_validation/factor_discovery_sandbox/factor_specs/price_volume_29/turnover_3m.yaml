@@ -1,0 +1,86 @@
+schema_version: factor_spec.v2
+factor_id: turnover_3m
+formula_version: price_volume_29_mechanism_v2
+formula_hash: b4f5051836d29237
+formula_summary: 3m turnover trend persistence using OLS trend quality on log1p(turnover).
+design_contract:
+  design_contract_schema: fd_factor_design_contract.v1
+  factor_id: turnover_3m
+  market_pain_point: Persistent changes in trading activity may show improving or
+    deteriorating sponsorship.
+  mechanism_hypothesis: Turnover trend matters if active participation changes persist
+    rather than spike.
+  investor_constraint_or_behavior: Institutional accumulation or distribution may
+    appear as gradual activity trend.
+  expected_universe: Names with reliable volume and shares histories.
+  expected_regime: Gradual accumulation/distribution regimes; should fail in one-off
+    event spikes.
+  why_not_arbitraged_away: The signal is noisy and can be capacity or attention exposure.
+  observable_pre_formula_diagnostics:
+  - Turnover trend persistence
+  - shock-vs-trend separation audit
+  placebo_design:
+  - turnover shock control
+  - capacity-matched placebo
+  - same-coverage shuffled signal
+  cost_capacity_risks:
+  - activity crowding
+  - spread
+  - impact
+  - capacity concentration
+  expected_failure_modes:
+  - liquidity exposure only
+  - event contamination
+  - placebo dominance
+  formula_measurement_role: The formula is only a measurement of the stated market
+    pain point; it is not itself the thesis.
+  design_review_questions:
+  - What pain point or repeated constraint creates the signal?
+  - Which investors or flows plausibly create the mispricing?
+  - Why should the effect persist after costs, capacity, and placebo controls?
+  - Where should this mechanism fail if the thesis is real?
+  not_alpha_evidence: true
+  direct_q2_entry_allowed: false
+design_review_required: true
+pre_formula_evidence_required: true
+formula_is_measurement_not_thesis: true
+raw_value_definition: slope_tstat * R_squared from OLS(log1p(turnover), time_index)
+  over 63 trading days
+oriented_score_definition: raw signed turnover-trend score; higher means persistently
+  improving trading activity
+required_inputs:
+- volume
+- shares_float_or_shares_outstanding
+fallback_policy: shares_float -> shares_outstanding -> volume-based proxy; fallback
+  is audited as degraded evidence
+fallback_audit_required: true
+duplicate_cluster_audit_required: true
+mechanism: Turnover trend persistence captures steady improvement or deterioration
+  in trading activity.
+mechanism_family: turnover_trend
+lookback: 3
+required_lookback_days: 63
+skip: 1
+direction: positive
+signal_timestamp: month_end_close
+visibility_timestamp: after_month_end_close
+tradable_timestamp: next_rebalance_session
+timestamp_contract:
+  lookback_start: signal_timestamp - skip_days - required_lookback_days
+  lookback_end: last_trading_day <= signal_timestamp - skip_days
+  signal_timestamp: month_end_close
+  visibility_timestamp: after_month_end_close
+  tradable_timestamp: next_rebalance_session
+  allow_same_close_trading: false
+coverage_rule:
+  minimum_observations: 64
+  insufficient_coverage: explicit_abstain
+  abstain_reason: insufficient_price_volume_history
+no_view_policy: explicit_abstain
+expected_horizon: next_month_excess_return
+known_correlation_family: turnover_trend
+known_failure_mode: Can be liquidity regime exposure rather than return prediction.
+no_view_is_not_zero_alpha: true
+not_alpha_evidence: true
+direct_q2_entry_allowed: false
+production_approval_claimed: false
