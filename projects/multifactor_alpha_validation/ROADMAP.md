@@ -31,7 +31,11 @@ Candidate filter audit / soft resurrection: complete
 Portfolio-level diagnostic ensemble OOS validation: complete
 Component OOS observation expansion: complete
 Post-portfolio contribution / ablation diagnosis: complete
-Current next step: stop or run bounded diagnostic cost/capacity attribution; OR remains locked
+Bounded diagnostic cost/capacity attribution: complete
+Full-market E0 overfit/discovery sweep: open
+Full-market E0 supervisor retry loop: open
+Current next step: inspect full-market sweep output and explicitly freeze at most
+one pocket/template before any D3 charter; OR remains locked
 ```
 
 ## Positioning
@@ -1384,3 +1388,77 @@ Status:
 - R16 is attribution only. It does not create alpha evidence, factor weights,
   security-level targets, OR entry, Q2 input, paper canary, live trading,
   security orders, or production approval.
+
+## MF-R17: Bounded Diagnostic Cost / Capacity Attribution
+
+Status: complete.
+
+`make multifactor-portfolio-cost-capacity` writes component cost/capacity
+attribution, cost-stress, component-proxy capacity-frontier, summary, and report
+artifacts under `outputs/multifactor_alpha_validation/portfolio_cost_capacity/`.
+
+Scope:
+
+- Uses observed component OOS rows only.
+- Reports cost-toxic and capacity-fragile components.
+- Runs base, 2x, and 3x cost-stress diagnostics.
+- Writes component-proxy capacity rows when security-level ADV is unavailable.
+- Does not fabricate capacity, security-level holdings, or target weights.
+- Does not run OR optimization, create Q2 input, open paper/live workflows,
+  route broker/order paths, or approve production use.
+
+## MF-E0: Full-Market Multifactor Overfit / Discovery Sweep
+
+Status: open as discovery lab.
+
+`make multifactor-full-market-sweep` scans a returns-long panel for leaf pockets
+and fixed multi-factor templates. It writes a feature cache, leaf-pocket grid,
+template grid, placebo top-pocket report, summary, and markdown report under
+`outputs/multifactor_alpha_validation/full_market_sweep/`.
+
+Scope:
+
+- Uses past-return features only in the persisted feature cache.
+- Uses forward labels internally only for E0 diagnostics.
+- Records search burden across features, templates, windows, and quantiles.
+- Compares the top live diagnostic pocket with same-coverage random and
+  shifted-date placebo top pockets.
+- Does not write a D3 charter, MeasurementSpec, Q1/Q2 input, OR optimizer
+  output, Alpha Registry update, paper/live workflow, broker/order path, or
+  production approval.
+
+## MF-E0 Supervisor: Freeze-Only Retry Loop
+
+Status: open as diagnostic infrastructure.
+
+`make multifactor-full-market-supervisor` runs the full-market sweep, freezes
+top candidates one at a time, validates each frozen candidate through
+chronological train/validation/test diagnostics, and retries the next candidate
+if the locked gate fails. The default retry budget is 100 candidates.
+
+Artifacts are written under
+`outputs/multifactor_alpha_validation/full_market_supervisor/`:
+
+- `e0_sweep/`
+- `locked_validation/`
+- `supervisor_attempt_log.csv`
+- `frozen_candidate_manifest.json`
+- `supervisor_run_summary.json`
+- `full_market_supervisor_report.md`
+
+Scope:
+
+- This is a supervisor retry loop, not alpha approval.
+- Passing locked validation is freeze-only and does not create a D3 charter.
+- No MeasurementSpec, Q1/Q2 input, OR optimizer output, Alpha Registry update,
+  paper/live workflow, broker/order path, or production approval is written.
+- Current local smoke finds a freeze-only pass on attempt 76:
+  `low_vol_momentum`, template, `side=top`, `quantile=0.8`, `window=post_1_44`.
+  Locked test metrics are mean `0.0325262359`, t-stat `4.0578996726`, and hit
+  rate `0.5846153846`. This still does not create alpha approval.
+- Candidate full audit returns `full_audit_passed_cost_capacity_pending`.
+  The test benchmark residual mean is `0.0357569672`, tail concentration is not
+  dominant, and two selected-path extreme daily-return rows remain data-anomaly
+  watch items. Static US universe ADV/market inputs now cover `1.0` of selected
+  rows and proxy cost/capacity is evaluated, but real bid-ask spread remains
+  unavailable, so cost/capacity remains pending.

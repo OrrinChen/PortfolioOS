@@ -1153,6 +1153,44 @@ smoke is diagnostic-only: it identifies component drags and regime-specific
 contributors after the R15 pool failed gross/cost diagnostics. It does not open
 OR optimization, security-level construction, Q2, or production approval.
 
+`make multifactor-portfolio-cost-capacity` runs MF-R17 bounded cost/capacity
+attribution. It writes component cost/capacity attribution, cost-stress,
+capacity-frontier, summary, and report artifacts under
+`outputs/multifactor_alpha_validation/portfolio_cost_capacity/`. The v1 scope is
+component-proxy only when security-level ADV is unavailable; it does not
+fabricate capacity, run OR optimization, create security-level weights, enter
+Q2, or approve paper/live/broker/order/production workflows.
+
+`make multifactor-full-market-sweep` opens MF-E0 as a full-market overfit /
+discovery lab. It scans leaf pockets and preregistered multi-factor templates
+from a returns-long panel, records the search burden, writes top diagnostic
+candidates and placebo-selected top pockets under
+`outputs/multifactor_alpha_validation/full_market_sweep/`, and keeps D3,
+MeasurementSpec, Q1, Q2, OR optimization, Alpha Registry, paper/live,
+broker/order, and production paths closed.
+
+`make multifactor-full-market-supervisor` runs the MF-E0 supervisor retry loop.
+It runs the full-market sweep, freezes each attempted candidate, performs locked
+train/validation/test diagnostics, retries the next candidate if the locked
+diagnostic gate fails, and stops after the first freeze-only pass or the
+default 100-attempt limit. It writes artifacts under
+`outputs/multifactor_alpha_validation/full_market_supervisor/` and still does
+not write a D3 charter, MeasurementSpec, Q1/Q2 input, OR output, Alpha Registry
+state, paper/live workflow, broker/order path, or production approval.
+The current local smoke finds a freeze-only locked-validation pass on attempt 76:
+`low_vol_momentum`, `top`, `quantile=0.8`, `post_1_44`. Its test split has
+mean return `0.0325262359`, t-stat `4.0578996726`, and hit rate
+`0.5846153846`, while all downstream flags remain false.
+
+`make multifactor-full-market-candidate-audit` runs the full audit for the
+freeze-only candidate. The current local audit returns
+`full_audit_passed_cost_capacity_pending`: tail concentration is not dominant
+(`top10_abs_share=0.0339767369`), the test benchmark residual mean is
+`0.0357569672`, and two extreme daily-return rows remain explicit data-anomaly
+watch items. Static US universe ADV/market inputs now cover `1.0` of selected
+rows; the audit reports proxy cost/capacity, but real bid-ask spread remains
+unavailable, so cost/capacity stays pending and Q2 remains closed.
+
 ## Safety Boundaries
 
 - No broker route is exposed by Q1, Q2, the promotion gate, the artifact service,
