@@ -2166,6 +2166,68 @@ This file is the short handoff note for continuing PortfolioOS. It keeps only th
     positive QQQ-down hedge contribution but is negative overall, and
     `liquidity_turnover` is a negative post-portfolio contribution. This is
     attribution only; it does not create weights or revive the failed R15 pool.
+  - MF-R17 bounded cost/capacity attribution is installed via
+    `multifactor_alpha_validation.portfolio_cost_capacity.run_portfolio_cost_capacity_attribution`
+    and `make multifactor-portfolio-cost-capacity`. It writes
+    `component_cost_capacity_attribution.csv`, `cost_stress_report.csv`,
+    `capacity_frontier.csv`, `portfolio_cost_capacity_summary.json`, and
+    `portfolio_cost_capacity_report.md` under
+    `outputs/multifactor_alpha_validation/portfolio_cost_capacity/`.
+  - MF-R17 is component-proxy diagnostic only. If security-level ADV is
+    unavailable, capacity rows are marked
+    `proxy_only_missing_security_level_adv`; no executable capacity is
+    fabricated. It keeps `or_optimizer_used=false`,
+    `security_level_portfolio_construction_used=false`, and
+    `direct_q2_entry=false`.
+  - MF-E0 full-market multifactor sweep is opened via
+    `multifactor_alpha_validation.full_market_sweep.run_full_market_multifactor_sweep`
+    and `make multifactor-full-market-sweep`. It writes
+    `full_market_feature_cache.csv`, `full_market_pocket_grid.csv`,
+    `full_market_template_grid.csv`, `full_market_placebo_top_pockets.csv`,
+    `full_market_sweep_summary.json`, and `full_market_sweep_report.md` under
+    `outputs/multifactor_alpha_validation/full_market_sweep/`.
+  - MF-E0 is an overfit/discovery lab only. It scans leaf pockets and fixed
+    multi-factor templates from a returns-long panel, records search burden, and
+    keeps `d3_charter_allowed=false`, `measurement_spec_written=false`,
+    `q1_entry_allowed=false`, `q2_entry_allowed=false`, and
+    `or_optimizer_used=false`.
+  - MF-E0 supervisor retry loop is installed via
+    `multifactor_alpha_validation.full_market_supervisor.run_full_market_multifactor_supervisor`
+    and `make multifactor-full-market-supervisor`. It runs the E0 sweep,
+    freezes each attempted candidate, performs locked train/validation/test
+    diagnostics through `full_market_locked_validation`, retries up to 100
+    candidates by default if the locked gate fails, and writes
+    `supervisor_run_summary.json`, `supervisor_attempt_log.csv`,
+    `frozen_candidate_manifest.json`, and `full_market_supervisor_report.md`.
+  - The supervisor is freeze-only diagnostic infrastructure. It keeps
+    `d3_charter_allowed=false`, `measurement_spec_written=false`,
+    `q1_entry_allowed=false`, `q2_entry_allowed=false`, `or_optimizer_used=false`,
+    `expected_return_panel_written=false`, and
+    `alpha_registry_update_allowed=false`.
+  - Current `make multifactor-full-market-supervisor` smoke uses
+    `data/risk_inputs_us_expanded/returns_long.csv`, searches 1160 E0
+    candidates, and finds a freeze-only locked-validation pass on attempt 76:
+    `low_vol_momentum`, template, `side=top`, `quantile=0.8`, `window=post_1_44`.
+    Locked test metrics are mean return `0.0325262359`, t-stat
+    `4.0578996726`, hit rate `0.5846153846`, month breadth `3`, and issuer
+    breadth `40`; same-coverage random is negative and shifted-date profile is
+    below live. This is not D3, not Q1, not Q2, and not alpha approval.
+  - `make multifactor-full-market-candidate-audit` runs a full audit on the
+    freeze-only candidate and writes `candidate_full_audit_summary.json`,
+    `candidate_temporal_breadth.csv`, `candidate_tail_concentration.csv`,
+    `candidate_data_anomaly_audit.json`, `candidate_cost_capacity_audit.json`,
+    `candidate_benchmark_residual_audit.csv`, and
+    `candidate_full_audit_report.md` under
+    `outputs/multifactor_alpha_validation/full_market_candidate_audit/`.
+  - Current full audit returns
+    `decision_label=full_audit_passed_cost_capacity_pending`. Tail concentration
+    is not dominant (`top10_abs_share=0.0339767369`), but two selected-path
+    extreme daily-return rows remain explicit data-anomaly watch items. Test
+    benchmark residual mean is `0.0357569672`. The audit now joins static US
+    universe ADV/market inputs with `market_input_coverage_share=1.0`; proxy
+    cost/capacity is evaluated, but real bid-ask spread remains unavailable, so
+    cost/capacity remains pending. All D3/Q1/Q2/OR/Alpha Registry and
+    production flags remain false.
   - Known limitation: R8/R9/R10/R11/R12/R13/R14/R14.5/R15/R15.5/R15.6 prove the real-data workflow shape,
     timestamped evidence plumbing, PIT exposure-store readiness,
     cross-sectional attribution plumbing, factor waterfall reporting, and strict

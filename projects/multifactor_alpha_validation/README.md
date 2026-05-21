@@ -351,6 +351,85 @@ R16 does not turn these observations into factor weights or security-level
 portfolio decisions. It does not unlock OR, Q2, paper/live, broker/order, or
 production approval.
 
+MF-R17 diagnoses cost and capacity pressure after the post-portfolio
+contribution pass:
+
+```bash
+make multifactor-portfolio-cost-capacity
+```
+
+This writes `component_cost_capacity_attribution.csv`,
+`cost_stress_report.csv`, `capacity_frontier.csv`,
+`portfolio_cost_capacity_summary.json`, and
+`portfolio_cost_capacity_report.md` under
+`outputs/multifactor_alpha_validation/portfolio_cost_capacity/`.
+
+The current scope is diagnostic-only and component-proxy only when
+security-level ADV is unavailable. It marks cost-toxic and capacity-fragile
+components, stress-tests cost drag, and labels capacity rows as proxy
+diagnostics rather than executable capacity estimates. It does not unlock OR,
+Q2, paper/live, broker/order, or production approval.
+
+MF-E0 opens a full-market overfit / discovery sweep:
+
+```bash
+make multifactor-full-market-sweep
+```
+
+This writes `full_market_feature_cache.csv`, `full_market_pocket_grid.csv`,
+`full_market_template_grid.csv`, `full_market_placebo_top_pockets.csv`,
+`full_market_sweep_summary.json`, and `full_market_sweep_report.md` under
+`outputs/multifactor_alpha_validation/full_market_sweep/`.
+
+The sweep scans leaf pockets and fixed multi-factor templates from a
+returns-long panel. It records search burden and top diagnostic pockets. It does
+not write a D3 charter, MeasurementSpec, Q1/Q2 input, OR optimizer output, Alpha
+Registry update, paper/live workflow, broker/order path, or production approval.
+
+MF-E0 supervisor runs the freeze-only retry loop:
+
+```bash
+make multifactor-full-market-supervisor
+```
+
+This writes sweep, locked validation, frozen candidate, attempt log, summary,
+and report artifacts under
+`outputs/multifactor_alpha_validation/full_market_supervisor/`. It freezes each
+attempted candidate, runs train/validation/test locked diagnostics, retries the
+next candidate when the locked gate fails, and stops at the first freeze-only
+pass or the default 100-attempt limit. It does not write a D3 charter, MeasurementSpec, Q1/Q2
+input, OR optimizer output, Alpha Registry update, paper/live workflow,
+broker/order path, or production approval.
+
+Current local smoke:
+
+- searched E0 candidates: `1160`
+- supervisor attempt count: `76`
+- freeze-only pass: `low_vol_momentum`
+- candidate shape: template, `side=top`, `quantile=0.8`, `window=post_1_44`
+- locked test mean return: `0.0325262359`
+- locked test t-stat: `4.0578996726`
+- locked test hit rate: `0.5846153846`
+- downstream state: no D3, no MeasurementSpec, no Q1/Q2, no OR, no Alpha
+  Registry, no paper/live/broker/order/production approval
+
+Candidate full audit:
+
+```bash
+make multifactor-full-market-candidate-audit
+```
+
+Current local audit returns `full_audit_passed_cost_capacity_pending` for the
+freeze-only `low_vol_momentum` candidate. The test split benchmark residual mean
+is `0.0357569672`, tail concentration is not dominant
+(`top10_abs_share=0.0339767369`), and two selected-path extreme daily-return
+rows remain explicit anomaly watch items. Static US universe ADV/market inputs
+cover `1.0` of selected rows and proxy cost/capacity is evaluated, but real
+bid-ask spread remains unavailable, so cost/capacity remains pending. This
+still does not write D3, MeasurementSpec, Q1/Q2 input, OR optimizer output,
+Alpha Registry update, paper/live workflow, broker/order path, or production
+approval.
+
 The local historical-universe smoke writes PIT-style universe snapshots from a
 synthetic fixture:
 

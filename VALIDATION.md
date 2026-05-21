@@ -287,6 +287,34 @@ make multifactor-portfolio-contribution
 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/src poetry run pytest projects/multifactor_alpha_validation/tests/test_portfolio_contribution.py -q
 ```
 
+Multifactor bounded cost/capacity attribution smoke and tests:
+
+```bash
+make multifactor-portfolio-cost-capacity
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/src poetry run pytest projects/multifactor_alpha_validation/tests/test_portfolio_cost_capacity_attribution.py -q
+```
+
+Multifactor full-market E0 sweep smoke and tests:
+
+```bash
+make multifactor-full-market-sweep
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/src poetry run pytest projects/multifactor_alpha_validation/tests/test_full_market_sweep.py -q
+```
+
+Multifactor full-market E0 supervisor smoke and tests:
+
+```bash
+make multifactor-full-market-supervisor
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/src poetry run pytest projects/multifactor_alpha_validation/tests/test_full_market_locked_validation.py projects/multifactor_alpha_validation/tests/test_full_market_supervisor.py -q
+```
+
+Multifactor full-market candidate full audit smoke and tests:
+
+```bash
+make multifactor-full-market-candidate-audit
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=projects/multifactor_alpha_validation/src poetry run pytest projects/multifactor_alpha_validation/tests/test_full_market_candidate_audit.py -q
+```
+
 Typed alpha dashboard readability tests:
 
 ```bash

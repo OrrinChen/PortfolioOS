@@ -1151,6 +1151,62 @@ diagnostics on the observed component pool. It is post-portfolio attribution
 only; it does not run an OR optimizer, generate security-level target weights,
 enter Q2, or approve production use.
 
+Run bounded multifactor cost/capacity attribution diagnostics:
+
+```bash
+make multifactor-portfolio-cost-capacity
+```
+
+The cost/capacity target writes MF-R17 component cost-drag, cost-stress, and
+component-proxy capacity-frontier artifacts under
+`outputs/multifactor_alpha_validation/portfolio_cost_capacity/`. If
+security-level ADV is unavailable, capacity is explicitly proxy-only. It does
+not fabricate capacity, run OR optimization, generate security-level target
+weights, enter Q2, or approve production use.
+
+Run the full-market multifactor E0 overfit/discovery sweep:
+
+```bash
+make multifactor-full-market-sweep
+```
+
+The sweep target writes feature-cache, leaf-pocket grid, template grid, placebo
+top-pocket, summary, and report artifacts under
+`outputs/multifactor_alpha_validation/full_market_sweep/`. It is a discovery
+lab only: it records search burden and top diagnostic pockets, but it does not
+write a D3 charter, MeasurementSpec, Q1/Q2 input, OR optimizer output, Alpha
+Registry update, paper/live workflow, broker/order path, or production approval.
+
+Run the full-market multifactor E0 supervisor retry loop:
+
+```bash
+make multifactor-full-market-supervisor
+```
+
+The supervisor target writes sweep, locked validation, frozen candidate, attempt
+log, summary, and markdown artifacts under
+`outputs/multifactor_alpha_validation/full_market_supervisor/`. It freezes each
+attempted candidate before locked diagnostics and retries the next candidate on
+failure. The default retry budget is 100 candidates. It remains diagnostic-only and does not write a D3 charter,
+MeasurementSpec, Q1/Q2 input, OR optimizer output, Alpha Registry update,
+paper/live workflow, broker/order path, or production approval.
+
+Run the full-market candidate full audit:
+
+```bash
+make multifactor-full-market-candidate-audit
+```
+
+The candidate full audit writes temporal breadth, tail concentration, data
+anomaly, cost/capacity, benchmark residual, summary, and report artifacts under
+`outputs/multifactor_alpha_validation/full_market_candidate_audit/`. It keeps
+cost/capacity pending when executable cost inputs remain incomplete. The current
+default reads `data/universe/us_universe_reference.csv` and
+`data/universe/us_universe_market_2026-03-27.csv` for static ADV/market-cap
+capacity proxies; real bid-ask spread is still marked unavailable rather than
+fabricated. The runner does not write D3, MeasurementSpec, Q1/Q2, OR optimizer,
+Alpha Registry, paper/live, broker/order, or production artifacts.
+
 The diagnosis writes `factor_failure_diagnosis.csv`,
 `qqq_relative_guard_review.json`, and `factor_failure_diagnosis_report.md`.
 It records each factor's stop layer and reviews whether the QQQ-relative guard

@@ -397,6 +397,22 @@ Current phase:
   artifacts for the 8 observed components. It remains diagnostic-only after the
   R15 gross/cost failure and does not unlock OR optimization, security-level
   construction, Q2 entry, paper/live workflows, or production approval.
+- Standalone Multi-Factor Alpha Validation MF-R17 is complete as bounded
+  diagnostic cost/capacity attribution. It reports component cost drag,
+  cost-stress scenarios, and component-proxy capacity frontiers after the R15/R16
+  diagnostic failures. Security-level ADV remains unavailable in v1, so capacity
+  is not executable proof. OR optimization, security-level construction, Q2
+  entry, paper/live workflows, and production approval remain locked.
+- Standalone Multi-Factor Alpha Validation MF-E0 full-market sweep is opened as
+  an overfit/discovery lab, not formal validation. It scans leaf pockets and
+  fixed multi-factor templates, records search burden and placebo top pockets,
+  and does not write D3 charters, MeasurementSpecs, Q1/Q2 inputs, OR weights,
+  Alpha Registry state, paper/live workflows, or production approval.
+- Standalone Multi-Factor Alpha Validation MF-E0 supervisor is installed as a
+  freeze-only retry loop. It attempts top E0 candidates through locked
+  train/validation/test diagnostics, retries if a candidate fails, and keeps D3,
+  MeasurementSpec, Q1/Q2, OR, Alpha Registry, paper/live, broker/order, and
+  production paths closed.
 
 No automatic roadmap expansion after Phase 66. New work requires explicit
 reopen decision. Existing unrelated Multifactor / Factor Discovery working-tree
