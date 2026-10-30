@@ -2,6 +2,8 @@
 
 ## Current State
 
+The short entry point is the root `README.md`. The previous long README is `docs/platform_manual.md`. Agent scaffold files (`AGENTS.md`, `TASK_MEMORY.md`, `RUNBOOK.md`, `VALIDATION.md`) and `docs/superpowers/plans/` are no longer in the tree. Phase notes below still name those files where they record past work.
+
 Completed:
 
 - Phase 0: Core PortfolioOS platform and research machinery are implemented through the existing platform phases recorded in `TASK_MEMORY.md`.

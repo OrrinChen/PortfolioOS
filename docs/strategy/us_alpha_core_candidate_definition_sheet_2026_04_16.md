@@ -20,7 +20,7 @@ These conventions are frozen for all Week 2-3 candidate runs.
 - `DV_i(t) = P_i(t) * V_i(t)` = dollar volume on day `t`
 - `r_i(t) = P_i(t) / P_i(t-1) - 1`
 - `r_M(t)` = market return using the frozen market proxy consumed by the current platform research stack
-- `sector(i)` = static sector label from [`data/universe/us_universe_reference.csv`](/C:/Users/14574/Quant/PortfolioOS/.worktrees/codex-us-alpha-week1-freeze/data/universe/us_universe_reference.csv)
+- `sector(i)` = static sector label from [`data/universe/us_universe_reference.csv`](data/universe/us_universe_reference.csv)
 
 ### PIT / Data-Lag Rule
 

@@ -4,7 +4,7 @@ Short branch-local operating note for the active discovery-v2 lane.
 
 ## Status
 
-- Worktree: `C:\Users\14574\Quant\PortfolioOS\.worktrees\codex-us-alpha-week1-freeze`
+- Worktree: `a local worktree`
 - Branch: `codex/us-alpha-week1-freeze`
 - Last sync: `2026-04-17`
 - Active lane: discovery-v2 charter closeout complete
@@ -18,8 +18,6 @@ Short branch-local operating note for the active discovery-v2 lane.
   - `docs/strategy/alpha_discovery_family_selection_memo_2026_04_16.md`
 - Calibration D1:
   - `docs/strategy/us_residual_momentum_calibration_d1_2026_04_16.md`
-- Kickoff plan:
-  - `docs/superpowers/plans/2026-04-16-alpha-discovery-v2-kickoff.md`
 - Calibration setup note:
   - `docs/strategy/us_residual_momentum_calibration_setup_note_2026_04_16.md`
 - Calibration failure taxonomy:

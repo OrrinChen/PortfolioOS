@@ -12,11 +12,11 @@ First neutral Alpaca paper calibration run for the PortfolioOS paper calibration
 ## Artifact Roots
 
 - First raw run:
-  - `C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_live_2026-04-15`
+  - `outputs/paper_calibration_live_2026-04-15`
 - Corrected rerun after workflow fixes:
-  - `C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_live_2026-04-15_v2`
+  - `outputs/paper_calibration_live_2026-04-15_v2`
 - Reference-snapshot rerun after dedicated pre-trade capture:
-  - `C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_live_2026-04-15_v3`
+  - `outputs/paper_calibration_live_2026-04-15_v3`
 
 Use the `_v3` run as the canonical read.
 
@@ -24,10 +24,10 @@ Use the `_v3` run as the canonical read.
 
 From:
 
-- [pretrade_reference_snapshot.csv](/C:/Users/14574/Quant/PortfolioOS/outputs/paper_calibration_live_2026-04-15_v3/pretrade_reference_snapshot.csv)
-- [alpaca_fill_manifest.json](/C:/Users/14574/Quant/PortfolioOS/outputs/paper_calibration_live_2026-04-15_v3/alpaca_fill_manifest.json)
-- [reconciliation_report.json](/C:/Users/14574/Quant/PortfolioOS/outputs/paper_calibration_live_2026-04-15_v3/reconciliation_report.json)
-- [paper_calibration_report.md](/C:/Users/14574/Quant/PortfolioOS/outputs/paper_calibration_live_2026-04-15_v3/paper_calibration_report.md)
+- [pretrade_reference_snapshot.csv](outputs/paper_calibration_live_2026-04-15_v3/pretrade_reference_snapshot.csv)
+- [alpaca_fill_manifest.json](outputs/paper_calibration_live_2026-04-15_v3/alpaca_fill_manifest.json)
+- [reconciliation_report.json](outputs/paper_calibration_live_2026-04-15_v3/reconciliation_report.json)
+- [paper_calibration_report.md](outputs/paper_calibration_live_2026-04-15_v3/paper_calibration_report.md)
 
 Observed:
 
@@ -89,7 +89,7 @@ The goal is to observe whether:
 
 Same-day repeated neutral tranche now exists at:
 
-- `C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_tranche_2026-04-15_session1`
+- `outputs/paper_calibration_tranche_2026-04-15_session1`
 
 Aggregated read:
 
@@ -116,38 +116,38 @@ Immediate next step:
 
 Use a new root:
 
-- `C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_tranche_2026-04-16_session2`
+- `outputs/paper_calibration_tranche_2026-04-16_session2`
 
 Run four separate one-shot commands instead of one repeated loop so that phase coverage can be controlled manually.
 
 ### `run_001` (`09:45` ET)
 
 ```powershell
-python -m portfolio_os.api.cli paper-calibration --ticker SPY --quantity 1 --submit-paper --output-dir C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_tranche_2026-04-16_session2\run_001
+python -m portfolio_os.api.cli paper-calibration --ticker SPY --quantity 1 --submit-paper --output-dir outputs/paper_calibration_tranche_2026-04-16_session2/run_001
 ```
 
 ### `run_002` (`10:30` ET)
 
 ```powershell
-python -m portfolio_os.api.cli paper-calibration --ticker SPY --quantity 1 --submit-paper --output-dir C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_tranche_2026-04-16_session2\run_002
+python -m portfolio_os.api.cli paper-calibration --ticker SPY --quantity 1 --submit-paper --output-dir outputs/paper_calibration_tranche_2026-04-16_session2/run_002
 ```
 
 ### `run_003` (`12:30` ET)
 
 ```powershell
-python -m portfolio_os.api.cli paper-calibration --ticker SPY --quantity 1 --submit-paper --output-dir C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_tranche_2026-04-16_session2\run_003
+python -m portfolio_os.api.cli paper-calibration --ticker SPY --quantity 1 --submit-paper --output-dir outputs/paper_calibration_tranche_2026-04-16_session2/run_003
 ```
 
 ### `run_004` (`14:00` ET)
 
 ```powershell
-python -m portfolio_os.api.cli paper-calibration --ticker SPY --quantity 1 --submit-paper --output-dir C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_tranche_2026-04-16_session2\run_004
+python -m portfolio_os.api.cli paper-calibration --ticker SPY --quantity 1 --submit-paper --output-dir outputs/paper_calibration_tranche_2026-04-16_session2/run_004
 ```
 
 After `run_004`, aggregate the whole session:
 
 ```powershell
-python -m portfolio_os.api.cli paper-calibration-aggregate --input-root C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_tranche_2026-04-16_session2 --output-dir C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_tranche_2026-04-16_session2\aggregate_session
+python -m portfolio_os.api.cli paper-calibration-aggregate --input-root outputs/paper_calibration_tranche_2026-04-16_session2 --output-dir outputs/paper_calibration_tranche_2026-04-16_session2/aggregate_session
 ```
 
 Expected use of the aggregate:
@@ -160,6 +160,6 @@ Expected use of the aggregate:
 Implementation support for that next step now exists:
 
 - repeated runner:
-  - `python -m portfolio_os.api.cli paper-calibration --ticker SPY --quantity 1 --submit-paper --output-dir C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_live_batch --repeat 8 --interval-seconds 1800`
+  - `python -m portfolio_os.api.cli paper-calibration --ticker SPY --quantity 1 --submit-paper --output-dir outputs/paper_calibration_live_batch --repeat 8 --interval-seconds 1800`
 - offline aggregation:
-  - `python -m portfolio_os.api.cli paper-calibration-aggregate --input-root C:\Users\14574\Quant\PortfolioOS\outputs --output-dir C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_drift_aggregate`
+  - `python -m portfolio_os.api.cli paper-calibration-aggregate --input-root outputs --output-dir outputs/paper_calibration_drift_aggregate`

@@ -7,7 +7,7 @@ This note closes the first live `D2 -> D3` read for the primary family:
 - `A-share state-transition microstructure`
 
 It covers only the first admitted slice from
-[a_share_state_transition_d2_pilot_scope_2026_04_17.md](C:\Users\14574\Quant\PortfolioOS\.worktrees\codex-us-alpha-week1-freeze\docs\strategy\a_share_state_transition_d2_pilot_scope_2026_04_17.md):
+[a_share_state_transition_d2_pilot_scope_2026_04_17.md](docs/strategy/a_share_state_transition_d2_pilot_scope_2026_04_17.md):
 
 - upper-limit daily-state pilot
 - mechanisms `M1 / M2 / M5`

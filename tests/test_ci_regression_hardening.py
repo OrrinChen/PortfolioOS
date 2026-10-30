@@ -34,8 +34,10 @@ def test_audit_report_has_golden_output_regression_test() -> None:
 
 
 def test_validation_docs_include_no_network_and_trace_checks() -> None:
-    validation = (REPO_ROOT / "VALIDATION.md").read_text(encoding="utf-8")
+    readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+    makefile = (REPO_ROOT / "Makefile").read_text(encoding="utf-8")
 
-    assert "Structured trace tests" in validation
-    assert "No-network guard" in validation
-    assert "make validate" in validation
+    assert "make validate" in readme
+    assert "no-network guard" in readme.lower()
+    assert "no-network:" in makefile
+    assert "validate:" in makefile

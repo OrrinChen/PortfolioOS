@@ -14,7 +14,7 @@ Its job is to answer a narrower question:
 
 Primary source set:
 
-- `PortfolioOS/TASK_MEMORY.md`
+- former root handoff `TASK_MEMORY.md` (removed from the published tree; conclusions below were taken from that handoff and the closeout notes listed here)
 - `PortfolioOS/docs/phase_1_alpha_closeout_note.md`
 - `PortfolioOS/docs/phase_1_5_alpha_decision_note.md`
 - `PortfolioOS/docs/cost_model_decision_note.md`

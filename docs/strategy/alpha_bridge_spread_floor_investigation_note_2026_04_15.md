@@ -22,7 +22,7 @@ and gives the rationale:
 
 Source:
 
-- [2026-04-01-phase-1-5-alpha-integration-design.md](/C:/Users/14574/Quant/PortfolioOS/docs/superpowers/specs/2026-04-01-phase-1-5-alpha-integration-design.md)
+- [2026-04-01-phase-1-5-alpha-integration-design.md](docs/superpowers/specs/2026-04-01-phase-1-5-alpha-integration-design.md)
 
 ### 2. The current implementation matches that design exactly
 
@@ -37,7 +37,7 @@ annualized_spread = float(
 
 Source:
 
-- [backtest_bridge.py](/C:/Users/14574/Quant/PortfolioOS/src/portfolio_os/alpha/backtest_bridge.py)
+- [backtest_bridge.py](src/portfolio_os/alpha/backtest_bridge.py)
 
 ### 3. Existing repo docs already describe the observed behavior
 
@@ -45,7 +45,7 @@ The Phase 1.5 decision note states that signal-ready dates can still produce zer
 
 Source:
 
-- [phase_1_5_alpha_decision_note.md](/C:/Users/14574/Quant/PortfolioOS/docs/phase_1_5_alpha_decision_note.md)
+- [phase_1_5_alpha_decision_note.md](docs/phase_1_5_alpha_decision_note.md)
 
 ### 4. The latest structural-ablation diagnosis shows the floor is currently binding
 
@@ -65,7 +65,7 @@ Ready-month breakdown:
 
 Source:
 
-- [alpha_ready_vs_nonzero_diagnosis.md](/C:/Users/14574/Quant/PortfolioOS/outputs/objective_units_v1_structural_ablation_2026-04-15/alpha_ready_vs_nonzero_diagnosis.md)
+- [alpha_ready_vs_nonzero_diagnosis.md](outputs/objective_units_v1_structural_ablation_2026-04-15/alpha_ready_vs_nonzero_diagnosis.md)
 
 ## Interpretation
 
