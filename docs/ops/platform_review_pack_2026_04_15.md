@@ -18,12 +18,12 @@ It is a platform-review artifact.
 ### Command
 
 ```powershell
-python -m portfolio_os.api.cli promotion-registry --input-root C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\ashare-a1\outputs\ashare_stage3_promotion_bundle --output-dir C:\Users\14574\Quant\PortfolioOS\outputs\promotion_registry_smoke_2026-04-15_ashare_stage3
+python -m portfolio_os.api.cli promotion-registry --input-root qlib_spikes/portfolioos_signal_probe_01/.worktrees/ashare-a1/outputs/ashare_stage3_promotion_bundle --output-dir outputs/promotion_registry_smoke_2026-04-15_ashare_stage3
 ```
 
 ### Output Root
 
-- `C:\Users\14574\Quant\PortfolioOS\outputs\promotion_registry_smoke_2026-04-15_ashare_stage3`
+- `outputs/promotion_registry_smoke_2026-04-15_ashare_stage3`
 
 ### Reviewer Read
 
@@ -51,7 +51,7 @@ python -m portfolio_os.api.cli promotion-registry --input-root C:\Users\14574\Qu
 
 ### Canonical Single-Run Root
 
-- `C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_live_2026-04-15_v3`
+- `outputs/paper_calibration_live_2026-04-15_v3`
 
 ### Canonical Single-Run Read
 
@@ -74,7 +74,7 @@ python -m portfolio_os.api.cli promotion-registry --input-root C:\Users\14574\Qu
 
 ### Repeated Tranche Root
 
-- `C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_tranche_2026-04-15_session1`
+- `outputs/paper_calibration_tranche_2026-04-15_session1`
 
 ### Repeated Tranche Read
 

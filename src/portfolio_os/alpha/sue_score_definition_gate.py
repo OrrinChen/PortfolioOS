@@ -666,13 +666,13 @@ def _placebo_report(
         "sign_flip": _primary_metric_summary(sign_flip, selected_score, helper_config),
         "randomized_sue": _primary_metric_summary(randomized, selected_score, helper_config),
     }
-    live_rank = _float_or_none(diagnostics["live"].get("mean_rank_ic")) or -999.0
-    live_spread = _float_or_none(diagnostics["live"].get("mean_top_bottom_spread")) or -999.0
-    random_rank = _float_or_none(diagnostics["randomized_sue"].get("mean_rank_ic")) or 999.0
-    random_spread = _float_or_none(diagnostics["randomized_sue"].get("mean_top_bottom_spread")) or 999.0
+    live_rank = _float_or_default(diagnostics["live"].get("mean_rank_ic"), -999.0)
+    live_spread = _float_or_default(diagnostics["live"].get("mean_top_bottom_spread"), -999.0)
+    random_rank = _float_or_default(diagnostics["randomized_sue"].get("mean_rank_ic"), 999.0)
+    random_spread = _float_or_default(diagnostics["randomized_sue"].get("mean_top_bottom_spread"), 999.0)
     shifted_rank = _float_or_none(diagnostics["event_date_shift"].get("mean_rank_ic"))
     shifted_spread = _float_or_none(diagnostics["event_date_shift"].get("mean_top_bottom_spread"))
-    sign_rank = _float_or_none(diagnostics["sign_flip"].get("mean_rank_ic")) or 999.0
+    sign_rank = _float_or_default(diagnostics["sign_flip"].get("mean_rank_ic"), 999.0)
     shift_passed = bool(
         (shifted_rank is None or live_rank > shifted_rank)
         and (shifted_spread is None or live_spread > shifted_spread)
@@ -898,6 +898,11 @@ def _float_or_none(value: Any) -> float | None:
     if value is None or pd.isna(value):
         return None
     return float(value)
+
+
+def _float_or_default(value: Any, default: float) -> float:
+    parsed = _float_or_none(value)
+    return default if parsed is None else parsed
 
 
 def _fmt(value: Any) -> str:

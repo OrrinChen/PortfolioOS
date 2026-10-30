@@ -28,7 +28,7 @@ That mismatch created the kill-switch behavior. The repair was:
 
 Source outputs:
 
-- `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\ashare-a1\outputs\ashare_a5_transaction_cost_autopsy\`
+- `qlib_spikes/portfolioos_signal_probe_01/.worktrees/ashare-a1/outputs/ashare_a5_transaction_cost_autopsy/`
 
 Key result on `2022-06-02 / top_k_50_long_only`:
 
@@ -42,7 +42,7 @@ That is the decisive unit mismatch.
 
 Source outputs:
 
-- `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\ashare-a1\outputs\ashare_a5_target_concentration_topk50_navfraction_sample8\`
+- `qlib_spikes/portfolioos_signal_probe_01/.worktrees/ashare-a1/outputs/ashare_a5_target_concentration_topk50_navfraction_sample8/`
 
 Key result:
 
@@ -55,8 +55,8 @@ This showed the fix changed the shape from "cost on => dead" to "cost on => more
 
 Stable source outputs:
 
-- `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\ashare-a1\outputs\ashare_a5_target_concentration_topk50_navfraction_full\`
-- `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\ashare-a1\outputs\ashare_a5_target_concentration_topk100_navfraction_full\`
+- `qlib_spikes/portfolioos_signal_probe_01/.worktrees/ashare-a1/outputs/ashare_a5_target_concentration_topk50_navfraction_full/`
+- `qlib_spikes/portfolioos_signal_probe_01/.worktrees/ashare-a1/outputs/ashare_a5_target_concentration_topk100_navfraction_full/`
 
 `top_k_50_long_only`:
 
@@ -138,15 +138,15 @@ Locked decisions:
 
 Existing reusable scripts already cover most of this pipeline skeleton:
 
-- `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\ashare-a1\scripts\build_phase3_universes.py`
-- `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\ashare-a1\scripts\fmp_to_staging.py`
-- `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\ashare-a1\scripts\staging_to_qlib.py`
+- `qlib_spikes/portfolioos_signal_probe_01/.worktrees/ashare-a1/scripts/build_phase3_universes.py`
+- `qlib_spikes/portfolioos_signal_probe_01/.worktrees/ashare-a1/scripts/fmp_to_staging.py`
+- `qlib_spikes/portfolioos_signal_probe_01/.worktrees/ashare-a1/scripts/staging_to_qlib.py`
 
 Kickoff is already started at the universe-manifest layer.
 
 Current output:
 
-- `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\ashare-a1\outputs\phase3_0_us_universe_manifest\phase3_universe_manifest.json`
+- `qlib_spikes/portfolioos_signal_probe_01/.worktrees/ashare-a1/outputs/phase3_0_us_universe_manifest/phase3_universe_manifest.json`
 
 Current read:
 

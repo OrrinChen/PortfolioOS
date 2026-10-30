@@ -61,17 +61,17 @@ Implementation commit:
 
 Fresh verification:
 
-- `python -m pytest tests\\test_alpha_promotion_contract.py tests\\test_promotion_registry.py tests\\test_e2e_cli.py::test_promotion_registry_cli_produces_expected_outputs -q`
+- `python -m pytest tests/test_alpha_promotion_contract.py tests/test_promotion_registry.py tests/test_e2e_cli.py::test_promotion_registry_cli_produces_expected_outputs -q`
   - `5 passed`
-- `python -m py_compile src\\portfolio_os\\alpha\\promotion_contract.py src\\portfolio_os\\workflow\\promotion_registry.py src\\portfolio_os\\api\\cli.py`
+- `python -m py_compile src/portfolio_os/alpha/promotion_contract.py src/portfolio_os/workflow/promotion_registry.py src/portfolio_os/api/cli.py`
   - passed
 
 Real archived-research smoke test:
 
 - input bundle:
-  - `C:\Users\14574\Quant\qlib_spikes\portfolioos_signal_probe_01\.worktrees\ashare-a1\outputs\ashare_stage3_promotion_bundle`
+  - `qlib_spikes/portfolioos_signal_probe_01/.worktrees/ashare-a1/outputs/ashare_stage3_promotion_bundle`
 - output root:
-  - `C:\Users\14574\Quant\PortfolioOS\outputs\promotion_registry_smoke_2026-04-15_ashare_stage3`
+  - `outputs/promotion_registry_smoke_2026-04-15_ashare_stage3`
 
 Observed reviewer-facing result:
 
@@ -139,7 +139,7 @@ Strategy boundary:
 Canonical single live read:
 
 - root:
-  - `C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_live_2026-04-15_v3`
+  - `outputs/paper_calibration_live_2026-04-15_v3`
 
 Observed:
 
@@ -163,7 +163,7 @@ Observed:
 Repeated tranche proof-of-life:
 
 - root:
-  - `C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_tranche_2026-04-15_session1`
+  - `outputs/paper_calibration_tranche_2026-04-15_session1`
 - aggregate:
   - `Run Count = 3`
   - `Observation Count = 3`

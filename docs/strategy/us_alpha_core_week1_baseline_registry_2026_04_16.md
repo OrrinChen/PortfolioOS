@@ -44,7 +44,7 @@ These are frozen numeric comparators because they already exist in checked-in Po
 
 ### Caveats On The Platform-Native Scorecard
 
-- These numbers come from [`docs/phase_1_alpha_closeout_note.md`](/C:/Users/14574/Quant/PortfolioOS/.worktrees/codex-us-alpha-week1-freeze/docs/phase_1_alpha_closeout_note.md), not from a fresh Week 1 rerun on `rank_500_1500`.
+- These numbers come from [`docs/phase_1_alpha_closeout_note.md`](docs/phase_1_alpha_closeout_note.md), not from a fresh Week 1 rerun on `rank_500_1500`.
 - The accepted recipe carries an explicit stability warning:
   - development mean rank IC was negative while holdout mean rank IC was positive
   - the Phase 1 closeout treats it as a provisional seed, not a fully validated production alpha

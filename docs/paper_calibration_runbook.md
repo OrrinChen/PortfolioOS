@@ -13,7 +13,7 @@ The calibration line is not an alpha test. It is a controlled execution and simu
 Use this first to validate the target/export/report contract without sending broker orders.
 
 ```powershell
-python -m portfolio_os.api.cli paper-calibration --ticker SPY --output-dir C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_demo
+python -m portfolio_os.api.cli paper-calibration --ticker SPY --output-dir outputs/paper_calibration_demo
 ```
 
 Expected outputs:
@@ -34,7 +34,7 @@ Use this mode whenever:
 Use this only after the dry-run path is verified and Alpaca paper credentials are configured.
 
 ```powershell
-python -m portfolio_os.api.cli paper-calibration --ticker SPY --quantity 1 --submit-paper --output-dir C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_live
+python -m portfolio_os.api.cli paper-calibration --ticker SPY --quantity 1 --submit-paper --output-dir outputs/paper_calibration_live
 ```
 
 Required environment variables:
@@ -63,7 +63,7 @@ Expected outputs:
 Use this when you want a small repeated sample of neutral paper runs without introducing a scheduler.
 
 ```powershell
-python -m portfolio_os.api.cli paper-calibration --ticker SPY --quantity 1 --submit-paper --output-dir C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_live_batch --repeat 8 --interval-seconds 1800
+python -m portfolio_os.api.cli paper-calibration --ticker SPY --quantity 1 --submit-paper --output-dir outputs/paper_calibration_live_batch --repeat 8 --interval-seconds 1800
 ```
 
 Behavior:
@@ -80,7 +80,7 @@ Behavior:
 Use this after you have accumulated a tranche of live paper runs and want one compact drift readout.
 
 ```powershell
-python -m portfolio_os.api.cli paper-calibration-aggregate --input-root C:\Users\14574\Quant\PortfolioOS\outputs --output-dir C:\Users\14574\Quant\PortfolioOS\outputs\paper_calibration_drift_aggregate
+python -m portfolio_os.api.cli paper-calibration-aggregate --input-root outputs --output-dir outputs/paper_calibration_drift_aggregate
 ```
 
 Expected outputs:
@@ -92,7 +92,7 @@ Expected outputs:
 
 Use the note template below when accumulating repeated tranches:
 
-- [paper_calibration_drift_note_template.md](/C:/Users/14574/Quant/PortfolioOS/docs/paper_calibration_drift_note_template.md)
+- [paper_calibration_drift_note_template.md](docs/paper_calibration_drift_note_template.md)
 
 Interpretation guardrail:
 

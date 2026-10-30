@@ -34,9 +34,10 @@ def test_required_engineering_files_exist() -> None:
 
 
 def test_readme_contains_engineering_standards_entry_links() -> None:
-    readme_path = REPO_ROOT / "README.md"
-    content = readme_path.read_text(encoding="utf-8")
-    assert "## Engineering Standards" in content
-    assert "docs/standards/engineering_workflow.md" in content
-    assert "docs/standards/testing_policy.md" in content
-    assert "py -3 scripts/devtools/run_engineering_gate.py" in content
+    readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+    manual = (REPO_ROOT / "docs" / "platform_manual.md").read_text(encoding="utf-8")
+    assert "docs/platform_manual.md" in readme
+    assert "## Engineering Standards" in manual
+    assert "docs/standards/engineering_workflow.md" in manual
+    assert "docs/standards/testing_policy.md" in manual
+    assert "py -3 scripts/devtools/run_engineering_gate.py" in manual

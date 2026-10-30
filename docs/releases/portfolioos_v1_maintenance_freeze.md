@@ -11,14 +11,11 @@ Q2 observed rows still come through existing local fixture adapter hooks. The
 current observed-row status is a local fixture mapping result, not a new
 execution venue, paper-stage, or production pathway.
 
-Future work is backlog-only unless explicitly reopened. New work requires
-explicit reopen decision and must preserve Q1, Evidence Bundle, Promotion Gate,
-Q2, Alpha Registry, and safety-boundary governance.
+Future work is backlog-only unless explicitly reopened. New work requires explicit reopen decision and must preserve Q1, Evidence Bundle, Promotion Gate, Q2, Alpha Registry, and safety-boundary governance.
 
 ## Working Tree Hygiene
 
-Existing unrelated Multifactor / Factor Discovery working-tree changes are not
-part of the v1 freeze. The Phase 65 release commit was Phase65-only, while HEAD may include other prior multifactor commits. This freeze note does not rewrite or revert those commits.
+Existing unrelated Multifactor / Factor Discovery working-tree changes are not part of the v1 freeze. The Phase 65 release commit was Phase65-only, while HEAD may include other prior multifactor commits. This freeze note does not rewrite or revert those commits.
 
 ## Frozen Boundaries
 

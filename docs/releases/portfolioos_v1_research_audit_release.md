@@ -68,9 +68,9 @@ Generated demo and registry artifacts are local and reproducible.
 ## Release Artifacts
 
 - `README.md`
+- `docs/platform_manual.md`
 - `ROADMAP.md`
-- `TASK_MEMORY.md`
-- `VALIDATION.md`
+- `LICENSE`
 - `reports/alpha_registry_report.md`
 - `reports/sue_expanded_typed_q2_closeout.md`
 - `reports/sue_expanded_typed_q2_survival_report.md`

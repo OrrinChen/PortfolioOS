@@ -1,7 +1,7 @@
 # CNInfo Paired Disclosure NLP v1 Design
 
 **Date:** 2026-04-08  
-**Workspace:** `C:\Users\14574\Quant\PortfolioOS`  
+**Workspace:** `the repository root`
 **Status:** Proposed
 
 ## Goal

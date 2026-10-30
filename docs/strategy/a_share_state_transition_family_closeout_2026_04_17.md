@@ -38,7 +38,7 @@ The slice-level closeout therefore remained:
 
 Reference:
 
-- [a_share_state_transition_upper_limit_slice_closeout_2026_04_17.md](C:\Users\14574\Quant\PortfolioOS\.worktrees\codex-us-alpha-week1-freeze\docs\strategy\a_share_state_transition_upper_limit_slice_closeout_2026_04_17.md)
+- [a_share_state_transition_upper_limit_slice_closeout_2026_04_17.md](docs/strategy/a_share_state_transition_upper_limit_slice_closeout_2026_04_17.md)
 
 ### 2. The turnover-conditioned extension did not rescue the branch
 

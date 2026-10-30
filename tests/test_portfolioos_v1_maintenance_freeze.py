@@ -7,8 +7,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 FREEZE_NOTE = REPO_ROOT / "docs" / "releases" / "portfolioos_v1_maintenance_freeze.md"
 FUTURE_BACKLOG = REPO_ROOT / "docs" / "strategy" / "portfolioos_future_backlog.md"
 ROADMAP = REPO_ROOT / "ROADMAP.md"
-TASK_MEMORY = REPO_ROOT / "TASK_MEMORY.md"
-VALIDATION = REPO_ROOT / "VALIDATION.md"
+MAKEFILE = REPO_ROOT / "Makefile"
 
 FORBIDDEN_FREEZE_CLAIMS = [
     "production approved",
@@ -63,16 +62,16 @@ def test_future_backlog_is_locked_to_explicit_reopen_paths() -> None:
 
 def test_phase_66_updates_repo_operating_instructions() -> None:
     roadmap = ROADMAP.read_text(encoding="utf-8")
-    memory = TASK_MEMORY.read_text(encoding="utf-8")
-    validation = VALIDATION.read_text(encoding="utf-8")
-    combined = f"{roadmap}\n{memory}\n{validation}"
+    freeze_note = FREEZE_NOTE.read_text(encoding="utf-8")
+    makefile = MAKEFILE.read_text(encoding="utf-8")
+    combined = f"{roadmap}\n{freeze_note}"
     lower_combined = combined.lower()
 
     assert "phase 66 is the final freeze phase" in lower_combined
     assert "no automatic roadmap expansion after phase 66" in lower_combined
     assert "new work requires explicit reopen decision" in lower_combined
     assert "existing unrelated multifactor / factor discovery working-tree changes are not part of the v1 freeze" in lower_combined
-    assert "test_portfolioos_v1_maintenance_freeze.py" in validation
+    assert "test_portfolioos_v1_maintenance_freeze.py" in makefile
 
 
 def _assert_no_forbidden_freeze_claims(text: str) -> None:

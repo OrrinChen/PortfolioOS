@@ -1,7 +1,7 @@
 # Promotion Registry Review Surface Design
 
 **Date:** 2026-04-15  
-**Workspace:** `C:\Users\14574\Quant\PortfolioOS`  
+**Workspace:** `the repository root`
 **Status:** Approved-for-implementation
 
 ## Goal

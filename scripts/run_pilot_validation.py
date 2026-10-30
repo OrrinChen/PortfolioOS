@@ -28,9 +28,6 @@ US_REPLAY_ROOT = ROOT / "data" / "samples" / "us"
 SCENARIO_TEMPLATE_PATH = ROOT / "data" / "scenario_samples" / "manifest.yaml"
 RUN_TAG = datetime.now().strftime("%Y%m%d_%H%M%S")
 RUN_ROOT = ROOT / "outputs" / f"pilot_validation_{RUN_TAG}"
-DEFAULT_VENV_SCRIPTS = Path(
-    r"C:\Users\14574\AppData\Local\pypoetry\Cache\virtualenvs\portfolioos-Su-HS-3U-py3.11\Scripts"
-)
 
 CLI_APP_OBJECTS = {
     "portfolio-os": "app",
@@ -276,12 +273,15 @@ def _cli_executable(name: str) -> str:
     env_candidate = ROOT / ".venv" / "Scripts" / f"{name}.exe"
     if env_candidate.exists():
         return str(env_candidate)
-    global_candidate = DEFAULT_VENV_SCRIPTS / f"{name}.exe"
-    return str(global_candidate)
+    resolved = shutil.which(name) or shutil.which(f"{name}.exe")
+    if resolved:
+        return resolved
+    return name
 
 
 def _normalize_cli_name(raw: str) -> str:
-    name = Path(str(raw)).name.strip().lower()
+    normalized = str(raw).replace("\\", "/").strip()
+    name = Path(normalized).name.strip().lower()
     if name.endswith(".exe"):
         return name[:-4]
     return name
